@@ -51,12 +51,13 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const fetchEvents = useCallback(async () => {
-    const eventsCollectionRef = getEventsCollectionRef();
-    if (!eventsCollectionRef) {
+    if (!user) {
       setCalendarEvents([]);
       setLoading(false);
       return;
     }
+    const eventsCollectionRef = getEventsCollectionRef();
+    if (!eventsCollectionRef) return;
     
     try {
       setLoading(true);
@@ -71,20 +72,17 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [getEventsCollectionRef]);
+  }, [user, getEventsCollectionRef]);
 
   useEffect(() => {
-    if(user) {
-      fetchEvents();
-    } else {
-      setCalendarEvents([]);
-      setLoading(false);
-    }
+    fetchEvents();
   }, [user, fetchEvents]);
 
   const addEvent = async (event: NewCalendarEvent) => {
+    if (!user) return;
     const eventsCollectionRef = getEventsCollectionRef();
     if (!eventsCollectionRef) return;
+
     try {
       const eventDate = parse(event.date, 'yyyy-MM-dd', new Date());
       const dateToStore = eventDate.toISOString();
@@ -100,8 +98,10 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateEvent = async (updatedEvent: CalendarEvent) => {
+    if (!user) return;
     const eventsCollectionRef = getEventsCollectionRef();
     if (!eventsCollectionRef) return;
+
     try {
       const eventRef = doc(eventsCollectionRef, updatedEvent.id);
       
@@ -119,8 +119,10 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteEvent = async (eventId: string) => {
+     if (!user) return;
      const eventsCollectionRef = getEventsCollectionRef();
      if (!eventsCollectionRef) return;
+
      try {
       const eventRef = doc(eventsCollectionRef, eventId);
       await deleteDoc(eventRef);

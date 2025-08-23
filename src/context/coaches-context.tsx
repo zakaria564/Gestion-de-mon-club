@@ -46,12 +46,13 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const fetchCoaches = useCallback(async () => {
-    const coachesCollectionRef = getCoachesCollectionRef();
-    if (!coachesCollectionRef) {
+    if (!user) {
         setCoaches([]);
         setLoading(false);
         return;
     }
+    const coachesCollectionRef = getCoachesCollectionRef();
+    if (!coachesCollectionRef) return;
     
     try {
       setLoading(true);
@@ -64,15 +65,10 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [getCoachesCollectionRef]);
+  }, [user, getCoachesCollectionRef]);
 
   useEffect(() => {
-    if(user) {
-      fetchCoaches();
-    } else {
-        setCoaches([]);
-        setLoading(false);
-    }
+    fetchCoaches();
   }, [user, fetchCoaches]);
 
   const uploadPhoto = async (photo: string, coachId: string): Promise<string> => {
@@ -85,6 +81,7 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const addCoach = async (coach: CoachWithoutId) => {
+    if (!user) return;
     const coachesCollectionRef = getCoachesCollectionRef();
     if (!coachesCollectionRef) return;
 
@@ -103,6 +100,7 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateCoach = async (updatedCoach: Coach) => {
+    if (!user) return;
     const coachesCollectionRef = getCoachesCollectionRef();
     if (!coachesCollectionRef) return;
     
@@ -135,6 +133,7 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteCoach = async (coachId: string) => {
+     if (!user) return;
      const coachesCollectionRef = getCoachesCollectionRef();
      if (!coachesCollectionRef) return;
 

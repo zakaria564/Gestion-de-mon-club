@@ -64,6 +64,8 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
       return;
     }
+    
+    setLoading(true);
     const playerPaymentsCol = getCollectionRef('playerPayments');
     const coachSalariesCol = getCollectionRef('coachSalaries');
 
@@ -73,7 +75,6 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      setLoading(true);
       const [playerPaymentsSnapshot, coachSalariesSnapshot] = await Promise.all([
         getDocs(playerPaymentsCol),
         getDocs(coachSalariesCol)
@@ -89,20 +90,17 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [getCollectionRef, user]);
+  }, [user, getCollectionRef]);
 
   useEffect(() => {
-    if(user) {
-      fetchPayments();
-    } else {
-        setPlayerPayments([]);
-        setCoachSalaries([]);
-        setLoading(false);
-    }
+    fetchPayments();
   }, [user, fetchPayments]);
 
-  const addPayment = async (collectionRef: CollectionReference<DocumentData> | null, payment: NewPayment) => {
+  const addPayment = async (collectionName: 'playerPayments' | 'coachSalaries', payment: NewPayment) => {
+      if (!user) return;
+      const collectionRef = getCollectionRef(collectionName);
       if (!collectionRef) return;
+      
       const { member, totalAmount, initialPaidAmount, dueDate } = payment;
       const newTransaction: Transaction | undefined = initialPaidAmount > 0 ? {
           id: Date.now(),
@@ -120,15 +118,18 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addPlayerPayment = async (payment: NewPayment) => {
-    await addPayment(getCollectionRef('playerPayments'), payment);
+    await addPayment('playerPayments', payment);
   };
 
   const addCoachSalary = async (payment: NewPayment) => {
-    await addPayment(getCollectionRef('coachSalaries'), payment);
+    await addPayment('coachSalaries', payment);
   };
 
-  const updatePayment = async (collectionRef: CollectionReference<DocumentData> | null, payments: Payment[], paymentId: string, complementAmount: number) => {
+  const updatePayment = async (collectionName: 'playerPayments' | 'coachSalaries', payments: Payment[], paymentId: string, complementAmount: number) => {
+      if (!user) return;
+      const collectionRef = getCollectionRef(collectionName);
       if (!collectionRef) return;
+
       const payment = payments.find(p => p.id === paymentId);
       if (!payment) return;
 
@@ -146,11 +147,11 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const updatePlayerPayment = async (paymentId: string, complementAmount: number) => {
-    await updatePayment(getCollectionRef('playerPayments'), playerPayments, paymentId, complementAmount);
+    await updatePayment('playerPayments', playerPayments, paymentId, complementAmount);
   };
 
   const updateCoachSalary = async (paymentId: string, complementAmount: number) => {
-    await updatePayment(getCollectionRef('coachSalaries'), coachSalaries, paymentId, complementAmount);
+    await updatePayment('coachSalaries', coachSalaries, paymentId, complementAmount);
   };
 
   const playerPaymentsOverview = useMemo(() => calculateOverview(playerPayments), [playerPayments]);
