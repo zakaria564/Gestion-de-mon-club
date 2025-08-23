@@ -22,8 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function PlayerDetailPage() {
-  const params = useParams();
-  const id = params.id as string;
+  const { id } = useParams() as { id: string };
   const router = useRouter();
   const { toast } = useToast();
 

@@ -25,8 +25,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CoachPaymentDetailPage() {
-  const params = useParams();
-  const id = params.id as string;
+  const { id } = useParams() as { id: string };
   const context = useFinancialContext();
   
   if (!context) {

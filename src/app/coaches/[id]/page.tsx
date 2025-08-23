@@ -20,8 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function CoachDetailPage() {
-  const params = useParams();
-  const id = params.id as string;
+  const { id } = useParams() as { id: string };
   const router = useRouter();
   
   const context = useCoachesContext();
