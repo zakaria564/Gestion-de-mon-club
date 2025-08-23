@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState } from "react";
-import { playerPayments } from "@/lib/data";
+import { useState, useMemo } from "react";
+import { playerPayments as initialPlayerPayments } from "@/lib/data";
 import { notFound, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,8 +26,15 @@ import { Label } from "@/components/ui/label";
 export default function PlayerPaymentDetailPage() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
-  const payment = playerPayments.find((p) => p.id.toString() === id);
+  
+  const [playerPayments, setPlayerPayments] = useState(initialPlayerPayments);
+  const payment = useMemo(() => {
+    return playerPayments.find((p) => p.id.toString() === id);
+  }, [id, playerPayments]);
+
   const [open, setOpen] = useState(false);
+  const [complementAmount, setComplementAmount] = useState('');
+
 
   if (!payment) {
     notFound();
@@ -61,8 +68,24 @@ export default function PlayerPaymentDetailPage() {
 
   const handleAddComplement = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Logique pour ajouter un complément
-    console.log("Complément ajouté");
+    const amount = parseFloat(complementAmount);
+    if (!amount || amount <= 0 || !payment) return;
+
+    const newPaidAmount = payment.paidAmount + amount;
+    const newRemainingAmount = payment.totalAmount - newPaidAmount;
+
+    const updatedPayment = {
+      ...payment,
+      paidAmount: newPaidAmount,
+      remainingAmount: newRemainingAmount,
+      status: newRemainingAmount <= 0 ? 'payé' : 'partiel',
+    };
+
+    setPlayerPayments(prevPayments => 
+        prevPayments.map(p => p.id === payment.id ? updatedPayment : p)
+    );
+    
+    setComplementAmount('');
     setOpen(false);
   };
 
@@ -136,7 +159,7 @@ export default function PlayerPaymentDetailPage() {
                       <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
                           <Label htmlFor="complementAmount">Montant du complément (DH)</Label>
-                          <Input id="complementAmount" type="number" placeholder={payment.remainingAmount.toFixed(2)} />
+                          <Input id="complementAmount" type="number" placeholder={payment.remainingAmount.toFixed(2)} value={complementAmount} onChange={(e) => setComplementAmount(e.target.value)} max={payment.remainingAmount} min="0.01" step="0.01" />
                         </div>
                       </div>
                       <DialogFooter>
