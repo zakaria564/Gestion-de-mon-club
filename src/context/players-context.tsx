@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { createContext, useState, ReactNode, useEffect, useCallback, useContext } from 'react';
+import React, { createContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { Player } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
@@ -44,26 +44,15 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const getPlayersCollectionRef = useCallback(() => {
-    if (!user) return null;
-    return collection(db, 'users', user.uid, 'players');
-  }, [user]);
-
-
-  const fetchPlayers = useCallback(async () => {
-    if (!user) {
+  const fetchPlayers = useCallback(async (currentUser) => {
+    if (!currentUser) {
         setPlayers([]);
         setLoading(false);
         return;
     }
-    const playersCollectionRef = getPlayersCollectionRef();
-    if (!playersCollectionRef) {
-      setLoading(false);
-      return;
-    };
-
     setLoading(true);
     try {
+      const playersCollectionRef = collection(db, 'users', currentUser.uid, 'players');
       const playersSnapshot = await getDocs(playersCollectionRef);
       const playersList = playersSnapshot.docs.map(playerFromDoc);
       setPlayers(playersList);
@@ -73,11 +62,11 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [user, getPlayersCollectionRef]);
+  }, []);
 
   useEffect(() => {
     if (user) {
-      fetchPlayers();
+      fetchPlayers(user);
     } else {
       setPlayers([]);
       setLoading(false);
@@ -94,8 +83,8 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const addPlayer = async (player: PlayerWithoutId) => {
-    const playersCollectionRef = getPlayersCollectionRef();
-    if (!playersCollectionRef) return;
+    if (!user) return;
+    const playersCollectionRef = collection(db, 'users', user.uid, 'players');
 
     try {
       const docRef = await addDoc(playersCollectionRef, { ...player, photo: '' });
@@ -105,15 +94,15 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
         await updateDoc(docRef, { photo: photoURL });
       }
 
-      await fetchPlayers();
+      await fetchPlayers(user);
     } catch (error) {
       console.error("Error adding player: ", error);
     }
   };
 
   const updatePlayer = async (updatedPlayer: Player) => {
-    const playersCollectionRef = getPlayersCollectionRef();
-    if (!playersCollectionRef) return;
+    if (!user) return;
+    const playersCollectionRef = collection(db, 'users', user.uid, 'players');
 
     try {
         const playerRef = doc(playersCollectionRef, updatedPlayer.id);
@@ -137,15 +126,15 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
 
         const { id, ...playerData } = updatedPlayer;
         await updateDoc(playerRef, { ...playerData, photo: photoURL });
-        await fetchPlayers();
+        await fetchPlayers(user);
     } catch (error) {
         console.error("Error updating player: ", error);
     }
   };
 
   const deletePlayer = async (playerId: string) => {
-    const playersCollectionRef = getPlayersCollectionRef();
-    if (!playersCollectionRef) return;
+    if (!user) return;
+    const playersCollectionRef = collection(db, 'users', user.uid, 'players');
     try {
       const playerRef = doc(playersCollectionRef, playerId);
       const playerToDelete = players.find(p => p.id === playerId);
@@ -160,7 +149,7 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
           }
       }
       await deleteDoc(playerRef);
-      await fetchPlayers();
+      await fetchPlayers(user);
     } catch (error) {
       console.error("Error deleting player: ", error);
     }

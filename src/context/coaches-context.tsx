@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { createContext, useState, ReactNode, useCallback, useEffect, useContext } from 'react';
+import React, { createContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { Coach } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
@@ -40,25 +40,15 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const getCoachesCollectionRef = useCallback(() => {
-    if (!user) return null;
-    return collection(db, 'users', user.uid, 'coaches');
-  }, [user]);
-
-  const fetchCoaches = useCallback(async () => {
-    if (!user) {
+  const fetchCoaches = useCallback(async (currentUser) => {
+    if (!currentUser) {
         setCoaches([]);
         setLoading(false);
         return;
     }
-    const coachesCollectionRef = getCoachesCollectionRef();
-    if (!coachesCollectionRef) {
-        setLoading(false);
-        return;
-    }
-    
     setLoading(true);
     try {
+      const coachesCollectionRef = collection(db, 'users', currentUser.uid, 'coaches');
       const coachesSnapshot = await getDocs(coachesCollectionRef);
       const coachesList = coachesSnapshot.docs.map(coachFromDoc);
       setCoaches(coachesList);
@@ -68,11 +58,11 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [user, getCoachesCollectionRef]);
+  }, []);
 
   useEffect(() => {
     if (user) {
-      fetchCoaches();
+      fetchCoaches(user);
     } else {
       setCoaches([]);
       setLoading(false);
@@ -89,8 +79,8 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const addCoach = async (coach: CoachWithoutId) => {
-    const coachesCollectionRef = getCoachesCollectionRef();
-    if (!coachesCollectionRef) return;
+    if (!user) return;
+    const coachesCollectionRef = collection(db, 'users', user.uid, 'coaches');
 
     try {
         const docRef = await addDoc(coachesCollectionRef, { ...coach, photo: '' });
@@ -100,15 +90,15 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
             await updateDoc(docRef, { photo: photoURL });
         }
         
-        await fetchCoaches();
+        await fetchCoaches(user);
     } catch (error) {
       console.error("Error adding coach: ", error);
     }
   };
 
   const updateCoach = async (updatedCoach: Coach) => {
-    const coachesCollectionRef = getCoachesCollectionRef();
-    if (!coachesCollectionRef) return;
+    if (!user) return;
+    const coachesCollectionRef = collection(db, 'users', user.uid, 'coaches');
     
     try {
         const coachRef = doc(coachesCollectionRef, updatedCoach.id);
@@ -132,15 +122,15 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
 
         const { id, ...coachData } = updatedCoach;
         await updateDoc(coachRef, { ...coachData, photo: photoURL });
-        await fetchCoaches();
+        await fetchCoaches(user);
     } catch (error) {
         console.error("Error updating coach: ", error);
     }
   };
 
   const deleteCoach = async (coachId: string) => {
-     const coachesCollectionRef = getCoachesCollectionRef();
-     if (!coachesCollectionRef) return;
+     if (!user) return;
+     const coachesCollectionRef = collection(db, 'users', user.uid, 'coaches');
 
      try {
       const coachRef = doc(coachesCollectionRef, coachId);
@@ -156,7 +146,7 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
           }
       }
       await deleteDoc(coachRef);
-      await fetchCoaches();
+      await fetchCoaches(user);
     } catch (error) {
       console.error("Error deleting coach: ", error);
     }

@@ -45,25 +45,15 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const getEventsCollectionRef = useCallback(() => {
-    if (!user) return null;
-    return collection(db, 'users', user.uid, 'calendarEvents');
-  }, [user]);
-
-  const fetchEvents = useCallback(async () => {
-    if (!user) {
+  const fetchEvents = useCallback(async (currentUser) => {
+    if (!currentUser) {
       setCalendarEvents([]);
       setLoading(false);
       return;
     }
-    const eventsCollectionRef = getEventsCollectionRef();
-    if (!eventsCollectionRef) {
-        setLoading(false);
-        return;
-    };
-    
     setLoading(true);
     try {
+      const eventsCollectionRef = collection(db, 'users', currentUser.uid, 'calendarEvents');
       const eventsSnapshot = await getDocs(eventsCollectionRef);
       const eventsList = eventsSnapshot.docs
         .map(eventFromDoc)
@@ -75,11 +65,11 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [user, getEventsCollectionRef]);
+  }, []);
 
   useEffect(() => {
     if (user) {
-      fetchEvents();
+      fetchEvents(user);
     } else {
       setCalendarEvents([]);
       setLoading(false);
@@ -87,8 +77,8 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
   }, [user, fetchEvents]);
 
   const addEvent = async (event: NewCalendarEvent) => {
-    const eventsCollectionRef = getEventsCollectionRef();
-    if (!eventsCollectionRef) return;
+    if (!user) return;
+    const eventsCollectionRef = collection(db, 'users', user.uid, 'calendarEvents');
 
     try {
       const eventDate = parse(event.date, 'yyyy-MM-dd', new Date());
@@ -98,15 +88,15 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
         ...event,
         date: dateToStore
       });
-      await fetchEvents();
+      await fetchEvents(user);
     } catch (error) {
       console.error("Error adding event: ", error);
     }
   };
 
   const updateEvent = async (updatedEvent: CalendarEvent) => {
-    const eventsCollectionRef = getEventsCollectionRef();
-    if (!eventsCollectionRef) return;
+    if (!user) return;
+    const eventsCollectionRef = collection(db, 'users', user.uid, 'calendarEvents');
 
     try {
       const eventRef = doc(eventsCollectionRef, updatedEvent.id);
@@ -118,20 +108,20 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
         ...eventData,
         date: dateToStore,
       });
-      await fetchEvents();
+      await fetchEvents(user);
     } catch (error) {
       console.error("Error updating event: ", error);
     }
   };
 
   const deleteEvent = async (eventId: string) => {
-     const eventsCollectionRef = getEventsCollectionRef();
-     if (!eventsCollectionRef) return;
+     if (!user) return;
+     const eventsCollectionRef = collection(db, 'users', user.uid, 'calendarEvents');
 
      try {
       const eventRef = doc(eventsCollectionRef, eventId);
       await deleteDoc(eventRef);
-      await fetchEvents();
+      await fetchEvents(user);
     } catch (error) {
       console.error("Error deleting event: ", error);
     }
