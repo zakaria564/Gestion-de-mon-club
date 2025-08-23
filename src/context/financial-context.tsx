@@ -66,15 +66,15 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
     }
     
     setLoading(true);
-    const playerPaymentsCol = getCollectionRef('playerPayments');
-    const coachSalariesCol = getCollectionRef('coachSalaries');
-
-    if (!playerPaymentsCol || !coachSalariesCol) {
-        setLoading(false);
-        return;
-    }
-
     try {
+      const playerPaymentsCol = getCollectionRef('playerPayments');
+      const coachSalariesCol = getCollectionRef('coachSalaries');
+
+      if (!playerPaymentsCol || !coachSalariesCol) {
+          setLoading(false);
+          return;
+      }
+      
       const [playerPaymentsSnapshot, coachSalariesSnapshot] = await Promise.all([
         getDocs(playerPaymentsCol),
         getDocs(coachSalariesCol)
@@ -93,11 +93,16 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
   }, [user, getCollectionRef]);
 
   useEffect(() => {
-    fetchPayments();
+    if (user) {
+      fetchPayments();
+    } else {
+        setPlayerPayments([]);
+        setCoachSalaries([]);
+        setLoading(false);
+    }
   }, [user, fetchPayments]);
 
   const addPayment = async (collectionName: 'playerPayments' | 'coachSalaries', payment: NewPayment) => {
-      if (!user) return;
       const collectionRef = getCollectionRef(collectionName);
       if (!collectionRef) return;
       
@@ -126,7 +131,6 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updatePayment = async (collectionName: 'playerPayments' | 'coachSalaries', payments: Payment[], paymentId: string, complementAmount: number) => {
-      if (!user) return;
       const collectionRef = getCollectionRef(collectionName);
       if (!collectionRef) return;
 

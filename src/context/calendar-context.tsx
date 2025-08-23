@@ -1,11 +1,11 @@
 
 "use client";
 
-import React, { createContext, useState, ReactNode, useCallback, useEffect, useContext } from 'react';
+import React, { createContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { useAuth } from './auth-context';
-import { format, parse, parseISO } from 'date-fns';
+import { parse } from 'date-fns';
 
 export type CalendarEvent = {
   id: string;
@@ -57,10 +57,13 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     const eventsCollectionRef = getEventsCollectionRef();
-    if (!eventsCollectionRef) return;
+    if (!eventsCollectionRef) {
+        setLoading(false);
+        return;
+    };
     
+    setLoading(true);
     try {
-      setLoading(true);
       const eventsSnapshot = await getDocs(eventsCollectionRef);
       const eventsList = eventsSnapshot.docs
         .map(eventFromDoc)
@@ -75,11 +78,15 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
   }, [user, getEventsCollectionRef]);
 
   useEffect(() => {
-    fetchEvents();
+    if (user) {
+      fetchEvents();
+    } else {
+      setCalendarEvents([]);
+      setLoading(false);
+    }
   }, [user, fetchEvents]);
 
   const addEvent = async (event: NewCalendarEvent) => {
-    if (!user) return;
     const eventsCollectionRef = getEventsCollectionRef();
     if (!eventsCollectionRef) return;
 
@@ -98,7 +105,6 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateEvent = async (updatedEvent: CalendarEvent) => {
-    if (!user) return;
     const eventsCollectionRef = getEventsCollectionRef();
     if (!eventsCollectionRef) return;
 
@@ -119,7 +125,6 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteEvent = async (eventId: string) => {
-     if (!user) return;
      const eventsCollectionRef = getEventsCollectionRef();
      if (!eventsCollectionRef) return;
 
