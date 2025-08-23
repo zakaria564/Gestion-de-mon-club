@@ -1,5 +1,4 @@
-
-"use client"
+'use client';
 
 import { useMemo, useState, useContext, useEffect } from 'react';
 import React from 'react';
@@ -26,9 +25,9 @@ export default function PlayerDetailPage() {
   const id = params.id as string;
   const router = useRouter();
   const { toast } = useToast();
-  
+
   const context = useContext(PlayersContext);
-  
+
   if (!context) {
     throw new Error("PlayerDetailPage must be used within a PlayersProvider");
   }
@@ -36,7 +35,7 @@ export default function PlayerDetailPage() {
   const { players, loading, updatePlayer, deletePlayer } = context;
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  
+
   const player = useMemo(() => {
     return players.find((p) => p.id === id);
   }, [id, players]);
@@ -49,10 +48,9 @@ export default function PlayerDetailPage() {
     }
   }, [player]);
 
-
   if (loading) {
     return (
-       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <Skeleton className="h-8 w-48" />
         <Card>
           <CardHeader className="flex flex-col md:flex-row md:items-start gap-6">
@@ -93,7 +91,7 @@ export default function PlayerDetailPage() {
     const { id, value, type } = e.target;
     setSelectedPlayer(prev => prev ? ({ ...prev, [id]: type === 'number' ? parseInt(value, 10) || 0 : value }) : null);
   };
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -113,27 +111,29 @@ export default function PlayerDetailPage() {
       setSelectedPlayer(player);
       setDialogOpen(true);
   };
-  
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!selectedPlayer) return;
 
+    // Validation du numéro de maillot
     const jerseyNumberValue = (event.target as any).jerseyNumber.value;
-    const jerseyNumber = parseInt(jerseyNumberValue, 10);
-
-    if (isNaN(jerseyNumber) || jerseyNumber <= 0) {
+    const jerseyNumber = jerseyNumberValue ? parseInt(jerseyNumberValue, 10) : null;
+    
+    if (jerseyNumber !== null && (isNaN(jerseyNumber) || jerseyNumber <= 0)) {
       toast({
         variant: "destructive",
         title: "Erreur de validation",
-        description: "Veuillez entrer un numéro de maillot valide.",
+        description: "Veuillez entrer un numéro de maillot valide (nombre positif) ou laisser le champ vide.",
       });
       return;
     }
     
-    await updatePlayer({ ...selectedPlayer, jerseyNumber });
+    const { id, ...dataToUpdate } = { ...selectedPlayer, jerseyNumber };
+    await updatePlayer({ id, ...dataToUpdate } as Player);
     setDialogOpen(false);
   };
-  
+
   const handleDeletePlayer = async () => {
     if (typeof id === 'string') {
         await deletePlayer(id);
@@ -166,7 +166,7 @@ export default function PlayerDetailPage() {
       <Card>
         <CardHeader className="flex flex-col md:flex-row md:items-start gap-6">
           <Avatar className="h-32 w-32 border">
-            <AvatarImage src={player.photo} alt={player.name} data-ai-hint="player photo" />
+            <AvatarImage src={player.photo || undefined} alt={player.name} data-ai-hint="player photo" />
             <AvatarFallback className="text-4xl">{player.name.substring(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
@@ -175,7 +175,7 @@ export default function PlayerDetailPage() {
             <div className="flex flex-wrap gap-2 mt-4">
               <Badge variant={getBadgeVariant(player.status) as any}>{player.status}</Badge>
               <Badge variant="secondary">{player.category}</Badge>
-              <Badge variant="outline">Maillot n°{player.jerseyNumber}</Badge>
+              {player.jerseyNumber && <Badge variant="outline">Maillot n°{player.jerseyNumber}</Badge>}
             </div>
           </div>
         </CardHeader>
@@ -218,7 +218,7 @@ export default function PlayerDetailPage() {
                 </div>
             </div>
         </CardContent>
-         <CardFooter className="justify-end gap-2">
+        <CardFooter className="justify-end gap-2">
             <Button variant="outline" onClick={handleOpenDialog}>
                 <Edit className="h-4 w-4 mr-2" /> Modifier
             </Button>
@@ -304,6 +304,7 @@ export default function PlayerDetailPage() {
                                         <SelectItem value="Actif">Actif</SelectItem>
                                         <SelectItem value="Blessé">Blessé</SelectItem>
                                         <SelectItem value="Suspendu">Suspendu</SelectItem>
+                                        <SelectItem value="Inactif">Inactif</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -332,7 +333,7 @@ export default function PlayerDetailPage() {
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="jerseyNumber">Numéro de maillot</Label>
-                                <Input id="jerseyNumber" type="number" placeholder="10" value={selectedPlayer.jerseyNumber || ''} onChange={handleInputChange} required />
+                                <Input id="jerseyNumber" type="number" placeholder="10" value={selectedPlayer.jerseyNumber || ''} onChange={handleInputChange} />
                             </div>
                         </div>
                     </div>
@@ -380,5 +381,3 @@ export default function PlayerDetailPage() {
     </div>
   );
 }
-
-    
