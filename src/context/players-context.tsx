@@ -3,14 +3,14 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Player } from "@/lib/data";
 
 interface PlayersContextType {
   players: Player[];
   loading: boolean;
-  addPlayer: (player: Omit<Player, 'id' | 'uid'>) => Promise<void>;
+  addPlayer: (player: Omit<Player, 'id'>) => Promise<void>;
   updatePlayer: (player: Player) => Promise<void>;
   deletePlayer: (id: string) => Promise<void>;
   getPlayerById: (id: string) => Player | undefined;
@@ -51,7 +51,7 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, fetchPlayers]);
 
-  const addPlayer = async (playerData: Omit<Player, 'id' | 'uid'>) => {
+  const addPlayer = async (playerData: Omit<Player, 'id'>) => {
     if (!user) return;
     try {
       const collectionRef = collection(db, "users", user.uid, "players");

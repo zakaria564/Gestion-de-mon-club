@@ -10,7 +10,7 @@ import type { Coach } from "@/lib/data";
 interface CoachesContextType {
   coaches: Coach[];
   loading: boolean;
-  addCoach: (coach: Omit<Coach, 'id' | 'uid'>) => Promise<void>;
+  addCoach: (coach: Omit<Coach, 'id'>) => Promise<void>;
   updateCoach: (coach: Coach) => Promise<void>;
   deleteCoach: (id: string) => Promise<void>;
   getCoachById: (id: string) => Coach | undefined;
@@ -51,7 +51,7 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, fetchCoaches]);
 
-  const addCoach = async (coachData: Omit<Coach, 'id' | 'uid'>) => {
+  const addCoach = async (coachData: Omit<Coach, 'id'>) => {
     if (!user) return;
     try {
       const collectionRef = collection(db, "users", user.uid, "coaches");
