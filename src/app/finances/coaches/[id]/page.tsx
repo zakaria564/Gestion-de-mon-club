@@ -25,8 +25,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 
 export default function CoachPaymentDetailPage() {
-  const params = useParams();
-  const id = params.id as string;
+  const { id } = useParams() as { id: string };
   const context = useContext(FinancialContext);
   
   if (!context) {

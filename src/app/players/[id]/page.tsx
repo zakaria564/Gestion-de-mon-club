@@ -18,9 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { PlayersContext } from '@/context/players-context';
 
 export default function PlayerDetailPage() {
-  const params = useParams();
+  const { id } = useParams() as { id: string };
   const router = useRouter();
-  const id = params.id as string;
   
   const context = useContext(PlayersContext);
   
