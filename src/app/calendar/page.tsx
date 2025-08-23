@@ -30,6 +30,15 @@ export default function CalendarPage() {
     setOpen(false);
   };
 
+  const eventsByDate = calendarEvents.reduce((acc, event) => {
+    const eventDate = new Date(event.date).toDateString();
+    if (!acc[eventDate]) {
+      acc[eventDate] = [];
+    }
+    acc[eventDate].push(event);
+    return acc;
+  }, {} as Record<string, typeof calendarEvents>);
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -93,53 +102,71 @@ export default function CalendarPage() {
           </DialogContent>
         </Dialog>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <div className="col-span-4 lg:col-span-3">
-            <Card>
-                <CardContent className="p-0">
-                    <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={setDate}
-                        className="p-3"
-                        classNames={{
-                            month: "space-y-4 w-full",
-                            table: "w-full border-collapse space-y-1",
-                            head_row: "flex justify-around",
-                            row: "flex w-full mt-2 justify-around",
-                          }}
-                    />
-                </CardContent>
-            </Card>
-        </div>
-        <div className="col-span-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Événements à Venir</CardTitle>
-                    <CardDescription>
-                        Liste des prochains matchs et entraînements.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        {calendarEvents.map((event) => (
-                            <div key={event.id} className="p-4 rounded-md border flex items-start gap-4">
-                                <div className="flex-shrink-0">
-                                    <Badge variant={event.type === 'Match' ? 'default' : 'secondary'}>{event.type}</Badge>
-
-                                </div>
-                                <div className="flex-1">
-                                    <p className="font-semibold">{event.type === 'Match' ? `vs ${event.opponent}` : 'Session d\'entraînement'}</p>
-                                    <p className="text-sm text-muted-foreground">{event.date} à {event.time}</p>
-                                    <p className="text-sm text-muted-foreground">{event.location}</p>
-                                </div>
-                            </div>
+      <Card>
+        <CardContent className="p-0">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={setDate}
+            className="w-full"
+            components={{
+              DayContent: ({ date, ...props }) => {
+                const dayEvents = eventsByDate[date.toDateString()];
+                return (
+                  <div className="relative h-full w-full flex flex-col items-center justify-center">
+                    <span>{date.getDate()}</span>
+                    {dayEvents && (
+                      <div className="absolute bottom-1 flex space-x-1">
+                        {dayEvents.map(event => (
+                          <div key={event.id} className={`h-1.5 w-1.5 rounded-full ${event.type === 'Match' ? 'bg-primary' : 'bg-secondary-foreground'}`} />
                         ))}
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-      </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              },
+            }}
+             classNames={{
+              months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+              month: "space-y-4 w-full",
+              table: "w-full border-collapse",
+              head_row: "flex justify-around",
+              head_cell: "w-full text-muted-foreground rounded-md font-normal text-[0.8rem]",
+              row: "flex w-full mt-2 justify-around",
+              cell: "h-24 w-full text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+              day: "h-full w-full p-2 font-normal",
+              day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-md",
+              day_today: "bg-accent text-accent-foreground rounded-md",
+              day_outside: "text-muted-foreground opacity-50",
+            }}
+          />
+        </CardContent>
+      </Card>
+
+      {date && eventsByDate[date.toDateString()] && (
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>Événements du {date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {eventsByDate[date.toDateString()].map((event) => (
+                <div key={event.id} className="p-4 rounded-md border flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <Badge variant={event.type === 'Match' ? 'default' : 'secondary'}>{event.type}</Badge>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">{event.type === 'Match' ? `vs ${event.opponent}` : 'Session d\'entraînement'}</p>
+                    <p className="text-sm text-muted-foreground">{event.date} à {event.time}</p>
+                    <p className="text-sm text-muted-foreground">{event.location}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
     </div>
   );
 }
