@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useState, useMemo, ReactNode } from 'react';
-import { initialPlayerPayments, initialCoachSalaries, type Payment, type NewPayment, type Overview } from '@/lib/financial-data';
+import { initialPlayerPayments, initialCoachSalaries, type Payment, type NewPayment, type Overview, type Transaction } from '@/lib/financial-data';
 
 interface FinancialContextType {
   playerPayments: Payment[];
@@ -17,14 +17,29 @@ interface FinancialContextType {
 
 export const FinancialContext = createContext<FinancialContextType | undefined>(undefined);
 
-const processPayments = (payments: NewPayment[]): Payment[] => {
+const processPayments = (payments: (NewPayment | Payment)[]): Payment[] => {
     return payments.map(p => {
-        const remainingAmount = p.totalAmount - p.paidAmount;
-        const status = remainingAmount <= 0 ? 'payé' : p.paidAmount > 0 ? 'partiel' : 'non payé';
+        const paidAmount = 'transactions' in p 
+            ? p.transactions.reduce((acc, t) => acc + t.amount, 0)
+            : p.initialPaidAmount;
+
+        const transactions: Transaction[] = 'transactions' in p 
+            ? p.transactions 
+            : p.initialPaidAmount > 0 
+                ? [{ id: Date.now(), amount: p.initialPaidAmount, date: new Date().toISOString() }]
+                : [];
+
+        const remainingAmount = p.totalAmount - paidAmount;
+        const status = remainingAmount <= 0 ? 'payé' : paidAmount > 0 ? 'partiel' : 'non payé';
+        
+        const basePayment = 'transactions' in p ? p : { id: p.id, member: p.member, totalAmount: p.totalAmount, dueDate: p.dueDate };
+
         return {
-            ...p,
+            ...basePayment,
+            paidAmount,
             remainingAmount,
-            status
+            status,
+            transactions,
         };
     });
 };
@@ -52,7 +67,12 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
     setPlayerPaymentsState(prevState => {
         const updatedPayments = prevState.map(p => {
             if (p.id === paymentId) {
-                return { ...p, paidAmount: p.paidAmount + complementAmount };
+                const newTransaction: Transaction = {
+                    id: Date.now(),
+                    amount: complementAmount,
+                    date: new Date().toISOString(),
+                };
+                return { ...p, transactions: [...p.transactions, newTransaction] };
             }
             return p;
         });
@@ -64,7 +84,12 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
     setCoachSalariesState(prevState => {
         const updatedPayments = prevState.map(p => {
             if (p.id === paymentId) {
-                return { ...p, paidAmount: p.paidAmount + complementAmount };
+                 const newTransaction: Transaction = {
+                    id: Date.now(),
+                    amount: complementAmount,
+                    date: new Date().toISOString(),
+                };
+                return { ...p, transactions: [...p.transactions, newTransaction] };
             }
             return p;
         });

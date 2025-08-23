@@ -5,7 +5,7 @@ import { useState, useMemo, useContext } from "react";
 import { notFound, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Banknote, Calendar, CheckCircle, Clock, XCircle, UserCheck, PlusCircle } from "lucide-react";
+import { ArrowLeft, Banknote, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, UserCheck, PlusCircle, History } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FinancialContext } from "@/context/financial-context";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 
 export default function CoachPaymentDetailPage() {
@@ -127,11 +128,32 @@ export default function CoachPaymentDetailPage() {
                     <span className="font-bold ml-auto text-red-600 dark:text-red-400">{payment.remainingAmount.toFixed(2)} DH</span>
                 </div>
                  <div className="flex items-center gap-4 text-lg">
-                    <Calendar className="h-6 w-6 text-muted-foreground" />
+                    <CalendarIcon className="h-6 w-6 text-muted-foreground" />
                     <span>Mois de paie:</span>
                     <span className="font-bold ml-auto">{payment.dueDate}</span>
                 </div>
             </div>
+            {payment.transactions.length > 0 && (
+                <div className="mt-8">
+                    <h3 className="text-xl font-bold mb-4 flex items-center"><History className="mr-2 h-6 w-6" />Historique des transactions</h3>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Date et Heure</TableHead>
+                                <TableHead className="text-right">Montant (DH)</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {payment.transactions.map(tx => (
+                                <TableRow key={tx.id}>
+                                    <TableCell>{new Date(tx.date).toLocaleString()}</TableCell>
+                                    <TableCell className="text-right font-medium">{tx.amount.toFixed(2)}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            )}
         </CardContent>
          {canAddComplement && (
             <CardFooter className="justify-end">

@@ -104,7 +104,7 @@ export default function FinancesPage() {
             id: Date.now(),
             member: selectedPlayer.name,
             totalAmount,
-            paidAmount,
+            initialPaidAmount: paidAmount,
             dueDate: newPlayerPaymentData.dueDate,
         });
         setPlayerPaymentOpen(false);
@@ -123,7 +123,7 @@ export default function FinancesPage() {
             id: Date.now(),
             member: selectedCoach.name,
             totalAmount,
-            paidAmount,
+            initialPaidAmount: paidAmount,
             dueDate: newCoachSalaryData.dueDate,
         });
         setCoachSalaryOpen(false);
