@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useContext, useEffect } from 'react';
@@ -116,11 +117,10 @@ export default function PlayerDetailPage() {
     event.preventDefault();
     if (!selectedPlayer) return;
 
-    // Validation du numéro de maillot
     const jerseyNumberValue = (event.target as any).jerseyNumber.value;
-    const jerseyNumber = jerseyNumberValue ? parseInt(jerseyNumberValue, 10) : null;
+    const jerseyNumber = jerseyNumberValue ? parseInt(jerseyNumberValue, 10) : 0;
     
-    if (jerseyNumber !== null && (isNaN(jerseyNumber) || jerseyNumber <= 0)) {
+    if (jerseyNumberValue && (isNaN(jerseyNumber) || jerseyNumber <= 0)) {
       toast({
         variant: "destructive",
         title: "Erreur de validation",
@@ -381,3 +381,5 @@ export default function PlayerDetailPage() {
     </div>
   );
 }
+
+    

@@ -117,13 +117,13 @@ export default function PlayersPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const jerseyNumberValue = (event.target as any).jerseyNumber.value;
-    const jerseyNumber = parseInt(jerseyNumberValue, 10);
+    const jerseyNumber = jerseyNumberValue ? parseInt(jerseyNumberValue, 10) : 0;
 
-    if (isNaN(jerseyNumber) || jerseyNumber <= 0) {
+    if (jerseyNumberValue && (isNaN(jerseyNumber) || jerseyNumber <= 0)) {
       toast({
         variant: "destructive",
         title: "Erreur de validation",
-        description: "Veuillez entrer un numéro de maillot valide.",
+        description: "Veuillez entrer un numéro de maillot valide (nombre positif) ou laisser le champ vide.",
       });
       return;
     }
@@ -228,7 +228,7 @@ export default function PlayersPage() {
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="jerseyNumber">Numéro de maillot</Label>
-                                <Input id="jerseyNumber" type="number" placeholder="10" value={selectedPlayer.jerseyNumber || ''} onChange={handleInputChange} required />
+                                <Input id="jerseyNumber" type="number" placeholder="10" value={selectedPlayer.jerseyNumber || ''} onChange={handleInputChange} />
                             </div>
                         </div>
                     </div>
@@ -335,3 +335,5 @@ export default function PlayersPage() {
     </div>
   );
 }
+
+    
