@@ -8,6 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -207,8 +208,8 @@ export default function PlayersPage() {
             <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {playersInCategory.map((player) => (
-                <Card key={player.id} className="flex flex-col w-full hover:shadow-lg transition-shadow group relative">
-                    <Link href={`/players/${player.id}`} className="flex flex-col h-full">
+                <Card key={player.id} className="flex flex-col w-full hover:shadow-lg transition-shadow">
+                    <Link href={`/players/${player.id}`} className="flex flex-col h-full flex-grow">
                         <CardHeader className="p-4">
                             <div className="flex items-center gap-4">
                             <Avatar className="h-16 w-16">
@@ -221,23 +222,25 @@ export default function PlayersPage() {
                             </div>
                             </div>
                         </CardHeader>
-                        <CardContent className="p-4 pt-0 mt-auto">
+                        <CardContent className="p-4 pt-0">
                             <div className="flex justify-between items-center">
                                 <Badge variant="outline" className="text-xs">{player.category}</Badge>
                                 <Badge variant={getBadgeVariant(player.status) as any} className="text-xs">{player.status}</Badge>
                             </div>
                         </CardContent>
                     </Link>
-                    <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="outline" size="icon" className="h-8 w-8">
-                            <Edit className="h-4 w-4" />
-                            <span className="sr-only">Modifier</span>
-                        </Button>
-                        <Button variant="destructive" size="icon" className="h-8 w-8">
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Supprimer</span>
-                        </Button>
-                    </div>
+                    <CardFooter className="p-4 pt-0 mt-auto border-t border-border pt-4">
+                        <div className="flex w-full justify-end gap-2">
+                            <Button variant="outline" size="icon" className="h-8 w-8">
+                                <Edit className="h-4 w-4" />
+                                <span className="sr-only">Modifier</span>
+                            </Button>
+                            <Button variant="destructive" size="icon" className="h-8 w-8">
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Supprimer</span>
+                            </Button>
+                        </div>
+                    </CardFooter>
                 </Card>
             ))}
             </div>
