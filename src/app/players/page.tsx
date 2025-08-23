@@ -38,7 +38,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const emptyPlayer: Omit<Player, 'id'> = {
+const emptyPlayer: Omit<Player, 'id' | 'uid'> = {
     name: '',
     birthDate: '',
     address: '',
@@ -64,7 +64,7 @@ export default function PlayersPage() {
     const { players, loading, addPlayer } = context;
 
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [selectedPlayer, setSelectedPlayer] = useState<Omit<Player, 'id'>>(emptyPlayer);
+    const [selectedPlayer, setSelectedPlayer] = useState<Omit<Player, 'id' | 'uid'>>(emptyPlayer);
 
 
   const getBadgeVariant = (status: string) => {
@@ -105,7 +105,7 @@ export default function PlayersPage() {
     }
   };
   
-  const handleSelectChange = (name: keyof Omit<Player, 'id'>, value: string) => {
+  const handleSelectChange = (name: keyof Omit<Player, 'id' | 'uid'>, value: string) => {
     setSelectedPlayer(prev => ({ ...prev, [name]: value }));
   };
 

@@ -2,11 +2,12 @@
 
 export type Player = {
   id: string;
+  uid: string;
   name: string;
   birthDate: string;
   address: string;
   poste: string;
-  status: 'Actif' | 'Blessé' | 'Suspendu';
+  status: 'Actif' | 'Blessé' | 'Suspendu' | 'Inactif';
   phone: string;
   email: string;
   tutorName: string;
@@ -18,6 +19,7 @@ export type Player = {
 
 export type Coach = {
   id: string;
+  uid: string;
   name: string;
   specialization: string;
   status: 'Actif' | 'Inactif';
@@ -29,6 +31,7 @@ export type Coach = {
 
 export type CalendarEvent = {
   id: string;
+  uid: string;
   type: string;
   opponent: string;
   date: string;

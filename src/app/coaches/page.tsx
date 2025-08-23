@@ -36,7 +36,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCoachesContext } from "@/context/coaches-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const emptyCoach: Omit<Coach, 'id'> = {
+const emptyCoach: Omit<Coach, 'id' | 'uid'> = {
     name: '',
     specialization: 'Entraîneur Principal',
     status: 'Actif',
@@ -56,7 +56,7 @@ export default function CoachesPage() {
   const { coaches, loading, addCoach } = context;
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id'>>(emptyCoach);
+  const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id' | 'uid'>>(emptyCoach);
 
 
   const getBadgeVariant = (status: string) => {
@@ -95,7 +95,7 @@ export default function CoachesPage() {
     }
   };
 
-  const handleSelectChange = (name: keyof Omit<Coach, 'id'>, value: string) => {
+  const handleSelectChange = (name: keyof Omit<Coach, 'id' | 'uid'>, value: string) => {
     setSelectedCoach(prev => ({ ...prev, [name]: value }));
   };
   

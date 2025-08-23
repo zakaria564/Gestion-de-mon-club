@@ -7,7 +7,7 @@ import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase
 import { useAuth } from "./auth-context";
 import type { CalendarEvent } from "@/lib/data";
 
-export type NewCalendarEvent = Omit<CalendarEvent, 'id'>;
+export type NewCalendarEvent = Omit<CalendarEvent, 'id' | 'uid'>;
 
 interface CalendarContextType {
   calendarEvents: CalendarEvent[];
@@ -59,9 +59,10 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
 
   const addEvent = async (eventData: NewCalendarEvent) => {
     const collectionRef = getEventsCollectionRef();
-    if (!collectionRef) return;
+    if (!collectionRef || !user) return;
     try {
-      await addDoc(collectionRef, eventData);
+      const newEventData = { ...eventData, uid: user.uid };
+      await addDoc(collectionRef, newEventData);
       fetchEvents();
     } catch (err) {
       console.error("Error adding event: ", err);
