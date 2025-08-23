@@ -113,6 +113,7 @@ export default function PlayersPage() {
                                   <SelectItem value="latéral-droit">Latéral Droit</SelectItem>
                                   <SelectItem value="latéral-gauche">Latéral Gauche</SelectItem>
                                   <SelectItem value="milieu-défensif">Milieu Défensif</SelectItem>
+                                  <SelectItem value="milieu-central">Milieu Central</SelectItem>
                                   <SelectItem value="milieu-offensif">Milieu Offensif</SelectItem>
                                   <SelectItem value="ailier-droit">Ailier Droit</SelectItem>
                                   <SelectItem value="ailier-gauche">Ailier Gauche</SelectItem>
@@ -145,6 +146,12 @@ export default function PlayersPage() {
                                   <SelectItem value="Sénior">Sénior</SelectItem>
                                   <SelectItem value="U23">U23</SelectItem>
                                   <SelectItem value="U19">U19</SelectItem>
+                                  <SelectItem value="U17">U17</SelectItem>
+                                  <SelectItem value="U15">U15</SelectItem>
+                                  <SelectItem value="U13">U13</SelectItem>
+                                  <SelectItem value="U11">U11</SelectItem>
+                                  <SelectItem value="U9">U9</SelectItem>
+                                  <SelectItem value="U7">U7</SelectItem>
                               </SelectContent>
                           </Select>
                       </div>
