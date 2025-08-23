@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useContext } from "react";
+import React from 'react';
 import Link from "next/link";
 import {
   Card,
@@ -58,6 +59,8 @@ export default function CoachesPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id'>>(emptyCoach);
+  const formRef = React.useRef<HTMLFormElement>(null);
+
 
   const getBadgeVariant = (status: string) => {
     switch (status) {
@@ -130,8 +133,7 @@ export default function CoachesPage() {
                   Remplissez les informations ci-dessous.
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="flex-1 overflow-hidden">
-                <ScrollArea className="h-full pr-6">
+              <form onSubmit={handleSubmit} ref={formRef} className="flex-1 overflow-y-auto pr-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4">
                     <div className="grid gap-2">
                       <Label htmlFor="name">Nom</Label>
@@ -206,11 +208,10 @@ export default function CoachesPage() {
                         )}
                     </div>
                   </div>
-                </ScrollArea>
-                <DialogFooter className="pt-4 border-t">
-                  <Button type="submit">Sauvegarder</Button>
-                </DialogFooter>
               </form>
+              <DialogFooter className="pt-4 border-t">
+                <Button onClick={() => formRef.current?.requestSubmit()}>Sauvegarder</Button>
+              </DialogFooter>
           </DialogContent>
         </Dialog>
 
@@ -276,3 +277,5 @@ export default function CoachesPage() {
     </div>
   );
 }
+
+    

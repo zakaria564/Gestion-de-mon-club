@@ -38,6 +38,7 @@ export default function CoachDetailPage() {
   }, [id, coaches]);
   
   const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null);
+  const formRef = React.useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (coach) {
@@ -221,8 +222,7 @@ export default function CoachDetailPage() {
                 Remplissez les informations ci-dessous.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="flex-1 overflow-hidden">
-              <ScrollArea className="h-full pr-6">
+            <form onSubmit={handleSubmit} ref={formRef} className="flex-1 overflow-y-auto pr-6">
                 {selectedCoach && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4">
                     <div className="grid gap-2">
@@ -299,13 +299,14 @@ export default function CoachDetailPage() {
                     </div>
                   </div>
                 )}
-              </ScrollArea>
-              <DialogFooter className="pt-4 border-t">
-                <Button type="submit">Sauvegarder</Button>
-              </DialogFooter>
             </form>
+            <DialogFooter className="pt-4 border-t">
+                <Button onClick={() => formRef.current?.requestSubmit()}>Sauvegarder</Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
     </div>
   );
 }
+
+    
