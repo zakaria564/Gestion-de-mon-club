@@ -12,9 +12,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarTrigger,
-  SidebarInset,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
@@ -24,7 +21,6 @@ import {
   Trophy,
   Banknote,
   Settings,
-  PanelLeft,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { ClubLogo } from "./club-logo";
@@ -50,6 +46,12 @@ const navItems = [
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const isAuthPage = ['/login', '/signup', '/forgot-password'].includes(pathname);
+
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
+
 
   return (
     <SidebarProvider>
@@ -106,12 +108,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <DropdownMenuItem>Facturation</DropdownMenuItem>
                 <DropdownMenuItem>Paramètres</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Se déconnecter</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/login">Se déconnecter</Link>
+                </DropdownMenuItem>
               </DropdownMenuContent>
           </DropdownMenu>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>{children}</SidebarInset>
+      <main className="flex-1">{children}</main>
     </SidebarProvider>
   );
 }

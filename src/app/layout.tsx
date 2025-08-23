@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AppLayout } from '@/components/app-layout';
 import { Toaster } from "@/components/ui/toaster";
+import { SidebarInset } from '@/components/ui/sidebar';
 
 export const metadata: Metadata = {
   title: 'Gestion de mon club',
@@ -22,7 +23,9 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AppLayout>
-          {children}
+          <SidebarInset>
+            {children}
+          </SidebarInset>
         </AppLayout>
         <Toaster />
       </body>
