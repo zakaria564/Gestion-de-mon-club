@@ -136,6 +136,16 @@ export default function FinancesPage() {
     }
   };
 
+  const availablePlayers = useMemo(() => {
+    const paidPlayerNames = new Set(playerPayments.map(p => p.member));
+    return players.filter(player => !paidPlayerNames.has(player.name));
+  }, [players, playerPayments]);
+
+  const availableCoaches = useMemo(() => {
+    const paidCoachNames = new Set(coachSalaries.map(s => s.member));
+    return coaches.filter(coach => !paidCoachNames.has(coach.name));
+  }, [coaches, coachSalaries]);
+
   const loading = financialLoading || playersLoading || coachesLoading;
 
   return (
@@ -165,7 +175,7 @@ export default function FinancesPage() {
                           <SelectValue placeholder="Sélectionner un joueur" />
                         </SelectTrigger>
                         <SelectContent>
-                          {players.map(player => <SelectItem key={player.id} value={player.name}>{player.name}</SelectItem>)}
+                          {availablePlayers.map(player => <SelectItem key={player.id} value={player.name}>{player.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
@@ -273,7 +283,7 @@ export default function FinancesPage() {
                           <SelectValue placeholder="Sélectionner un entraîneur" />
                         </SelectTrigger>
                         <SelectContent>
-                          {coaches.map(coach => <SelectItem key={coach.id} value={coach.name}>{coach.name}</SelectItem>)}
+                          {availableCoaches.map(coach => <SelectItem key={coach.id} value={coach.name}>{coach.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
