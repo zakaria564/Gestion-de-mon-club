@@ -1,4 +1,3 @@
-
 import {
   Card,
   CardContent,
@@ -10,7 +9,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { playerPayments, coachSalaries, playerPaymentsOverview, coachSalariesOverview } from "@/lib/data";
 import { Banknote, Users, UserCheck } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+import Link from "next/link";
+
 
 export default function FinancesPage() {
   const getBadgeVariant = (status: string) => {
@@ -61,30 +61,16 @@ export default function FinancesPage() {
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
           {playerPayments.map((payment) => (
-            <Card key={payment.id} className="flex flex-col justify-between">
-              <CardHeader className="flex-row items-center justify-between">
-                <CardTitle className="text-lg">{payment.member}</CardTitle>
-                <Badge variant={getBadgeVariant(payment.status) as any}>
-                    {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                </Badge>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Payé:</span>
-                    <span className="font-semibold">{payment.paidAmount.toFixed(2)} DH</span>
-                  </div>
-                  <Progress value={(payment.paidAmount / payment.totalAmount) * 100} />
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Restant:</span>
-                    <span className="font-semibold">{payment.remainingAmount.toFixed(2)} DH</span>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="text-xs text-muted-foreground">
-                Échéance: {payment.dueDate}
-              </CardFooter>
-            </Card>
+             <Link href={`/players/${payment.id}`} key={payment.id}>
+                <Card className="hover:shadow-lg transition-shadow">
+                    <CardHeader className="flex-row items-center justify-between">
+                        <CardTitle className="text-lg">{payment.member}</CardTitle>
+                        <Badge variant={getBadgeVariant(payment.status) as any}>
+                            {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                        </Badge>
+                    </CardHeader>
+                </Card>
+            </Link>
           ))}
         </div>
       </div>
@@ -122,30 +108,16 @@ export default function FinancesPage() {
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
           {coachSalaries.map((payment) => (
-             <Card key={payment.id} className="flex flex-col justify-between">
-              <CardHeader className="flex-row items-center justify-between">
-                <CardTitle className="text-lg">{payment.member}</CardTitle>
-                <Badge variant={getBadgeVariant(payment.status) as any}>
-                    {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                </Badge>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Payé:</span>
-                    <span className="font-semibold">{payment.paidAmount.toFixed(2)} DH</span>
-                  </div>
-                  <Progress value={(payment.paidAmount / payment.totalAmount) * 100} />
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Restant:</span>
-                    <span className="font-semibold">{payment.remainingAmount.toFixed(2)} DH</span>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="text-xs text-muted-foreground">
-                Échéance: {payment.dueDate}
-              </CardFooter>
-            </Card>
+            <Link href={`/coaches/${payment.id}`} key={payment.id}>
+                <Card className="hover:shadow-lg transition-shadow">
+                    <CardHeader className="flex-row items-center justify-between">
+                        <CardTitle className="text-lg">{payment.member}</CardTitle>
+                        <Badge variant={getBadgeVariant(payment.status) as any}>
+                            {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                        </Badge>
+                    </CardHeader>
+                </Card>
+            </Link>
           ))}
         </div>
       </div>
