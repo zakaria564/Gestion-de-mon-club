@@ -4,6 +4,8 @@ import { AppLayout } from '@/components/app-layout';
 import { Toaster } from "@/components/ui/toaster";
 import { SidebarInset } from '@/components/ui/sidebar';
 import { FinancialProvider } from '@/context/financial-context';
+import { PlayersProvider } from '@/context/players-context';
+import { CoachesProvider } from '@/context/coaches-context';
 
 export const metadata: Metadata = {
   title: 'Gestion de mon club',
@@ -24,11 +26,15 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FinancialProvider>
-          <AppLayout>
-            <SidebarInset>
-              {children}
-            </SidebarInset>
-          </AppLayout>
+          <PlayersProvider>
+            <CoachesProvider>
+              <AppLayout>
+                <SidebarInset>
+                  {children}
+                </SidebarInset>
+              </AppLayout>
+            </CoachesProvider>
+          </PlayersProvider>
         </FinancialProvider>
         <Toaster />
       </body>

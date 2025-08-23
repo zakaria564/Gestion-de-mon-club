@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useContext } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { coaches as initialCoaches, Coach } from "@/lib/data";
+import { Coach } from "@/lib/data";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import {
   Dialog,
@@ -22,7 +22,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { CoachesContext } from "@/context/coaches-context";
 
 
 const emptyCoach: Omit<Coach, 'id'> = {
@@ -47,7 +47,14 @@ const emptyCoach: Omit<Coach, 'id'> = {
 };
 
 export default function CoachesPage() {
-  const [coaches, setCoaches] = useState(initialCoaches);
+  const context = useContext(CoachesContext);
+  
+  if (!context) {
+    throw new Error("CoachesPage must be used within a CoachesProvider");
+  }
+
+  const { coaches, addCoach, updateCoach, deleteCoach } = context;
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id'> | Coach>(emptyCoach);
@@ -96,16 +103,15 @@ export default function CoachesPage() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isEditing && 'id' in selectedCoach) {
-        setCoaches(coaches.map(c => c.id === selectedCoach.id ? selectedCoach as Coach : c));
+        updateCoach(selectedCoach as Coach);
     } else {
-        const newId = coaches.length > 0 ? Math.max(...coaches.map(c => c.id)) + 1 : 1;
-        setCoaches([...coaches, { id: newId, ...selectedCoach as Omit<Coach, 'id'> }]);
+        addCoach(selectedCoach as Omit<Coach, 'id'>);
     }
     setDialogOpen(false);
   };
   
   const handleDeleteCoach = (coachId: number) => {
-    setCoaches(coaches.filter(c => c.id !== coachId));
+    deleteCoach(coachId);
   }
 
   return (

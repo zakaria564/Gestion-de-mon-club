@@ -1,8 +1,8 @@
 
 "use client"
 
-import { useMemo, useState } from 'react';
-import { players as initialPlayers, Player } from "@/lib/data";
+import { useMemo, useState, useContext } from 'react';
+import { Player } from "@/lib/data";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,14 +15,21 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PlayersContext } from '@/context/players-context';
 
 export default function PlayerDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   
-  // Note: In a real app, you'd fetch this from a global state/context or an API
-  const [players, setPlayers] = useState(initialPlayers);
+  const context = useContext(PlayersContext);
+  
+  if (!context) {
+    throw new Error("PlayerDetailPage must be used within a PlayersProvider");
+  }
+
+  const { players, updatePlayer, deletePlayer } = context;
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   
@@ -32,14 +39,21 @@ export default function PlayerDetailPage() {
 
   const [selectedPlayer, setSelectedPlayer] = useState<Omit<Player, 'id'> | Player | null>(player || null);
 
-  if (!player || !selectedPlayer) {
-    // This will redirect to a 404 page if the player is not found after deletion
+  if (!player) {
     notFound();
   }
 
+  // Update selectedPlayer when player data changes
+  if (player && selectedPlayer && 'id' in selectedPlayer && player.id !== selectedPlayer.id) {
+    setSelectedPlayer(player);
+  } else if (player && !selectedPlayer) {
+    setSelectedPlayer(player)
+  }
+
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value, type } = e.target;
-    setSelectedPlayer(prev => prev ? ({ ...prev, [id]: type === 'number' ? parseInt(value, 10) : value }) : null);
+    setSelectedPlayer(prev => prev ? ({ ...prev, [id]: type === 'number' ? parseInt(value, 10) || 0 : value }) : null);
   };
   
   const handleSelectChange = (name: keyof Player, value: string) => {
@@ -55,19 +69,13 @@ export default function PlayerDetailPage() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isEditing && selectedPlayer && 'id' in selectedPlayer) {
-        // This update is local. In a real app, this would be an API call and likely update a global state.
-        const updatedPlayers = players.map(p => p.id === selectedPlayer.id ? selectedPlayer as Player : p)
-        setPlayers(updatedPlayers);
-        // Here you might want to update the initialPlayers array if you want persistence across navigation
-        // For now, this only affects the current page's state.
+        updatePlayer(selectedPlayer as Player);
     }
     setDialogOpen(false);
   };
   
   const handleDeletePlayer = () => {
-    // This is a local deletion. In a real app, this would be an API call.
-    setPlayers(players.filter(p => p.id !== player.id));
-    // After deletion, redirect back to the players list
+    deletePlayer(player.id);
     router.push('/players');
   }
 

@@ -13,7 +13,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { players as initialPlayers, Player } from "@/lib/data";
+import { Player } from "@/lib/data";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import {
   Dialog,
@@ -32,8 +32,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { PlayersContext } from "@/context/players-context";
 
 
 const emptyPlayer: Omit<Player, 'id'> = {
@@ -52,7 +53,14 @@ const emptyPlayer: Omit<Player, 'id'> = {
 };
 
 export default function PlayersPage() {
-    const [players, setPlayers] = useState(initialPlayers);
+    const context = useContext(PlayersContext);
+    
+    if (!context) {
+      throw new Error("PlayersPage must be used within a PlayersProvider");
+    }
+
+    const { players, addPlayer, updatePlayer, deletePlayer } = context;
+
     const [dialogOpen, setDialogOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [selectedPlayer, setSelectedPlayer] = useState<Omit<Player, 'id'> | Player>(emptyPlayer);
@@ -82,7 +90,7 @@ export default function PlayersPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value, type } = e.target;
-    setSelectedPlayer(prev => ({ ...prev, [id]: type === 'number' ? parseInt(value, 10) : value }));
+    setSelectedPlayer(prev => ({ ...prev, [id]: type === 'number' ? parseInt(value, 10) || 0 : value }));
   };
   
   const handleSelectChange = (name: keyof Player, value: string) => {
@@ -103,16 +111,15 @@ export default function PlayersPage() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isEditing && 'id' in selectedPlayer) {
-        setPlayers(players.map(p => p.id === selectedPlayer.id ? selectedPlayer as Player : p));
+        updatePlayer(selectedPlayer as Player);
     } else {
-        const newId = players.length > 0 ? Math.max(...players.map(p => p.id)) + 1 : 1;
-        setPlayers([...players, { id: newId, ...selectedPlayer as Omit<Player, 'id'> }]);
+        addPlayer(selectedPlayer as Omit<Player, 'id'>);
     }
     setDialogOpen(false);
   };
   
   const handleDeletePlayer = (playerId: number) => {
-    setPlayers(players.filter(p => p.id !== playerId));
+    deletePlayer(playerId);
   }
   
   return (

@@ -1,8 +1,8 @@
 
 "use client"
 
-import { useMemo, useState } from 'react';
-import { coaches as initialCoaches, Coach } from "@/lib/data";
+import { useMemo, useState, useContext } from 'react';
+import { Coach } from "@/lib/data";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,14 +15,21 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CoachesContext } from '@/context/coaches-context';
 
 export default function CoachDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   
-  // Note: In a real app, this would be fetched from a global state/context or an API
-  const [coaches, setCoaches] = useState(initialCoaches);
+  const context = useContext(CoachesContext);
+  
+  if (!context) {
+    throw new Error("CoachDetailPage must be used within a CoachesProvider");
+  }
+
+  const { coaches, updateCoach, deleteCoach } = context;
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -32,9 +39,17 @@ export default function CoachDetailPage() {
   
   const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id'> | Coach | null>(coach || null);
 
-  if (!coach || !selectedCoach) {
+  if (!coach) {
     notFound();
   }
+
+  // Update selectedCoach when coach data changes
+  if (coach && selectedCoach && 'id' in selectedCoach && coach.id !== selectedCoach.id) {
+    setSelectedCoach(coach);
+  } else if (coach && !selectedCoach) {
+    setSelectedCoach(coach);
+  }
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -54,14 +69,13 @@ export default function CoachDetailPage() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isEditing && selectedCoach && 'id' in selectedCoach) {
-        const updatedCoaches = coaches.map(c => c.id === (selectedCoach as Coach).id ? selectedCoach as Coach : c);
-        setCoaches(updatedCoaches);
+        updateCoach(selectedCoach as Coach);
     }
     setDialogOpen(false);
   };
   
   const handleDeleteCoach = () => {
-    setCoaches(coaches.filter(c => c.id !== coach.id));
+    deleteCoach(coach.id);
     router.push('/coaches');
   }
 
@@ -238,5 +252,3 @@ export default function CoachDetailPage() {
     </div>
   );
 }
-
-    
