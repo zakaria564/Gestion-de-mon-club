@@ -41,7 +41,7 @@ export default function FinancesPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{financialOverview.totalDue.toFixed(2)}€</div>
+            <div className="text-2xl font-bold">{financialOverview.totalDue.toFixed(2)} DH</div>
           </CardContent>
         </Card>
         <Card>
@@ -50,7 +50,7 @@ export default function FinancesPage() {
             <Banknote className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{financialOverview.paymentsMade.toFixed(2)}€</div>
+            <div className="text-2xl font-bold">{financialOverview.paymentsMade.toFixed(2)} DH</div>
           </CardContent>
         </Card>
         <Card>
@@ -59,7 +59,7 @@ export default function FinancesPage() {
             <Landmark className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{financialOverview.paymentsRemaining.toFixed(2)}€</div>
+            <div className="text-2xl font-bold">{financialOverview.paymentsRemaining.toFixed(2)} DH</div>
           </CardContent>
         </Card>
       </div>

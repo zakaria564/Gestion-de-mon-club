@@ -34,10 +34,10 @@ export const results = [
 ];
 
 export const finances = [
-  { id: 1, member: 'Jean Dupont', amount: '150€', status: 'Payé', dueDate: '2024-09-01' },
-  { id: 2, member: 'Marie Curie', amount: '150€', status: 'En attente', dueDate: '2024-09-01' },
-  { id: 3, member: 'Pierre Martin', amount: '75€', status: 'Payé', dueDate: '2024-09-01' },
-  { id: 4, member: 'Lucas Hernandez', amount: '150€', status: 'En retard', dueDate: '2024-09-01' },
+  { id: 1, member: 'Jean Dupont', amount: '1500 DH', status: 'Payé', dueDate: '2024-09-01' },
+  { id: 2, member: 'Marie Curie', amount: '1500 DH', status: 'En attente', dueDate: '2024-09-01' },
+  { id: 3, member: 'Pierre Martin', amount: '750 DH', status: 'Payé', dueDate: '2024-09-01' },
+  { id: 4, member: 'Lucas Hernandez', amount: '1500 DH', status: 'En retard', dueDate: '2024-09-01' },
 ];
 
 export const financialOverview = {
