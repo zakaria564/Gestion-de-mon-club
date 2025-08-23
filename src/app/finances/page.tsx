@@ -61,7 +61,7 @@ export default function FinancesPage() {
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
           {playerPayments.map((payment) => (
-             <Link href={`/players/${payment.id}`} key={payment.id}>
+             <Link href={`/finances/players/${payment.id}`} key={payment.id}>
                 <Card className="hover:shadow-lg transition-shadow">
                     <CardHeader className="flex-row items-center justify-between">
                         <CardTitle className="text-lg">{payment.member}</CardTitle>
@@ -108,7 +108,7 @@ export default function FinancesPage() {
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
           {coachSalaries.map((payment) => (
-            <Link href={`/coaches/${payment.id}`} key={payment.id}>
+            <Link href={`/finances/coaches/${payment.id}`} key={payment.id}>
                 <Card className="hover:shadow-lg transition-shadow">
                     <CardHeader className="flex-row items-center justify-between">
                         <CardTitle className="text-lg">{payment.member}</CardTitle>
