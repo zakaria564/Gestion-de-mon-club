@@ -1,25 +1,68 @@
 
 "use client"
 
-import { useMemo } from 'react';
-import { coaches } from "@/lib/data";
-import { notFound, useParams } from "next/navigation";
+import { useMemo, useState } from 'react';
+import { coaches as initialCoaches, Coach } from "@/lib/data";
+import { notFound, useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Mail, Phone, UserCircle, Award, Users, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function CoachDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  
+  // Note: In a real app, this would be fetched from a global state/context or an API
+  const [coaches, setCoaches] = useState(initialCoaches);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
   const coach = useMemo(() => {
     return coaches.find((c) => c.id.toString() === id);
-  }, [id]);
+  }, [id, coaches]);
+  
+  const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id'> | Coach | null>(coach || null);
 
-  if (!coach) {
+  if (!coach || !selectedCoach) {
     notFound();
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setSelectedCoach(prev => prev ? ({ ...prev, [id]: value }) : null);
+  };
+
+  const handleSelectChange = (name: keyof Coach, value: string) => {
+    setSelectedCoach(prev => prev ? ({ ...prev, [name]: value }) : null);
+  };
+  
+  const handleOpenDialog = () => {
+      setIsEditing(true);
+      setSelectedCoach(coach);
+      setDialogOpen(true);
+  }
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isEditing && selectedCoach && 'id' in selectedCoach) {
+        const updatedCoaches = coaches.map(c => c.id === (selectedCoach as Coach).id ? selectedCoach as Coach : c);
+        setCoaches(updatedCoaches);
+    }
+    setDialogOpen(false);
+  };
+  
+  const handleDeleteCoach = () => {
+    setCoaches(coaches.filter(c => c.id !== coach.id));
+    router.push('/coaches');
   }
 
   const getBadgeVariant = (status: string) => {
@@ -86,14 +129,114 @@ export default function CoachDetailPage() {
             </div>
         </CardContent>
          <CardFooter className="justify-end gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleOpenDialog}>
                 <Edit className="mr-2 h-4 w-4" /> Modifier
             </Button>
-            <Button variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-            </Button>
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="destructive">
+                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Cette action ne peut pas être annulée. Cela supprimera définitivement l'entraîneur.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteCoach}>Supprimer</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </CardFooter>
       </Card>
+      
+       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="sm:max-w-2xl">
+            <form onSubmit={handleSubmit}>
+              <DialogHeader>
+                <DialogTitle>Modifier un entraîneur</DialogTitle>
+                <DialogDescription>
+                  Remplissez les informations ci-dessous.
+                </DialogDescription>
+              </DialogHeader>
+              {selectedCoach && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Nom</Label>
+                  <Input id="name" placeholder="Alain Prost" value={selectedCoach.name} onChange={handleInputChange} required />
+                </div>
+                 <div className="grid gap-2">
+                  <Label htmlFor="category">Catégorie entraînée</Label>
+                  <Select onValueChange={(value) => handleSelectChange('category', value)} value={selectedCoach.category} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner une catégorie" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Sénior">Sénior</SelectItem>
+                      <SelectItem value="U23">U23</SelectItem>
+                      <SelectItem value="U19">U19</SelectItem>
+                      <SelectItem value="U18">U18</SelectItem>
+                      <SelectItem value="U17">U17</SelectItem>
+                      <SelectItem value="U16">U16</SelectItem>
+                      <SelectItem value="U15">U15</SelectItem>
+                      <SelectItem value="U13">U13</SelectItem>
+                      <SelectItem value="U11">U11</SelectItem>
+                      <SelectItem value="U9">U9</SelectItem>
+                      <SelectItem value="U7">U7</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="specialization">Spécialisation</Label>
+                  <Select onValueChange={(value) => handleSelectChange('specialization', value)} value={selectedCoach.specialization} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner une spécialité" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Entraîneur Principal">Entraîneur Principal</SelectItem>
+                      <SelectItem value="Entraîneur Adjoint">Entraîneur Adjoint</SelectItem>
+                      <SelectItem value="Entraîneur des Gardiens">Entraîneur des Gardiens</SelectItem>
+                      <SelectItem value="Préparateur Physique">Préparateur Physique</SelectItem>
+                      <SelectItem value="Entraîneur Jeunes">Entraîneur Jeunes</SelectItem>
+                      <SelectItem value="Analyste Vidéo">Analyste Vidéo</SelectItem>
+                      <SelectItem value="Entraîneur Féminines">Entraîneur Féminines</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="status">Statut</Label>
+                  <Select onValueChange={(value) => handleSelectChange('status', value)} value={selectedCoach.status} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner un statut" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Actif">Actif</SelectItem>
+                      <SelectItem value="Inactif">Inactif</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="contact">Email</Label>
+                  <Input id="contact" placeholder="email@exemple.com" value={selectedCoach.contact} onChange={handleInputChange} required />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="phone">Téléphone</Label>
+                  <Input id="phone" placeholder="0612345678" value={selectedCoach.phone} onChange={handleInputChange} required />
+                </div>
+              </div>
+              )}
+              <DialogFooter>
+                <Button type="submit">Sauvegarder</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
     </div>
   );
 }
+
+    

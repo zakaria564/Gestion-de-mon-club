@@ -1,26 +1,74 @@
 
 "use client"
 
-import { useMemo } from 'react';
-import { players } from "@/lib/data";
-import { notFound, useParams } from "next/navigation";
+import { useMemo, useState } from 'react';
+import { players as initialPlayers, Player } from "@/lib/data";
+import { notFound, useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Cake, Mail, Phone, UserCheck, UserCircle, MapPin, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function PlayerDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  
+  // Note: In a real app, you'd fetch this from a global state/context or an API
+  const [players, setPlayers] = useState(initialPlayers);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  
   const player = useMemo(() => {
     return players.find((p) => p.id.toString() === id);
-  }, [id]);
+  }, [id, players]);
 
+  const [selectedPlayer, setSelectedPlayer] = useState<Omit<Player, 'id'> | Player | null>(player || null);
 
-  if (!player) {
+  if (!player || !selectedPlayer) {
+    // This will redirect to a 404 page if the player is not found after deletion
     notFound();
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value, type } = e.target;
+    setSelectedPlayer(prev => prev ? ({ ...prev, [id]: type === 'number' ? parseInt(value, 10) : value }) : null);
+  };
+  
+  const handleSelectChange = (name: keyof Player, value: string) => {
+    setSelectedPlayer(prev => prev ? ({ ...prev, [name]: value }) : null);
+  };
+
+  const handleOpenDialog = () => {
+      setIsEditing(true);
+      setSelectedPlayer(player);
+      setDialogOpen(true);
+  };
+  
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isEditing && selectedPlayer && 'id' in selectedPlayer) {
+        // This update is local. In a real app, this would be an API call and likely update a global state.
+        const updatedPlayers = players.map(p => p.id === selectedPlayer.id ? selectedPlayer as Player : p)
+        setPlayers(updatedPlayers);
+        // Here you might want to update the initialPlayers array if you want persistence across navigation
+        // For now, this only affects the current page's state.
+    }
+    setDialogOpen(false);
+  };
+  
+  const handleDeletePlayer = () => {
+    // This is a local deletion. In a real app, this would be an API call.
+    setPlayers(players.filter(p => p.id !== player.id));
+    // After deletion, redirect back to the players list
+    router.push('/players');
   }
 
   const getBadgeVariant = (status: string) => {
@@ -101,14 +149,158 @@ export default function PlayerDetailPage() {
             </div>
         </CardContent>
          <CardFooter className="justify-end gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleOpenDialog}>
                 <Edit className="mr-2 h-4 w-4" /> Modifier
             </Button>
-            <Button variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-            </Button>
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="destructive">
+                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Cette action ne peut pas être annulée. Cela supprimera définitivement le joueur.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeletePlayer}>Supprimer</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </CardFooter>
       </Card>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="sm:max-w-4xl">
+            <form onSubmit={handleSubmit}>
+              <DialogHeader>
+                <DialogTitle>Modifier un joueur</DialogTitle>
+                <DialogDescription>
+                  Remplissez les informations ci-dessous.
+                </DialogDescription>
+              </DialogHeader>
+              {selectedPlayer && (
+              <div className="grid md:grid-cols-2 gap-6 py-4">
+                <div className="space-y-4">
+                    <h4 className="font-medium text-lg">Informations Personnelles</h4>
+                    <div className="grid gap-2">
+                        <Label htmlFor="name">Nom complet</Label>
+                        <Input id="name" placeholder="Jean Dupont" value={selectedPlayer.name} onChange={handleInputChange} required />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="birthDate">Date de naissance</Label>
+                        <Input id="birthDate" type="date" value={selectedPlayer.birthDate} onChange={handleInputChange} required />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="address">Adresse</Label>
+                        <Input id="address" placeholder="123 Rue de Paris" value={selectedPlayer.address} onChange={handleInputChange} required />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="photo">Photo URL</Label>
+                        <Input id="photo" placeholder="https://placehold.co/40x40.png" value={selectedPlayer.photo} onChange={handleInputChange} />
+                    </div>
+                </div>
+                <div className="space-y-4">
+                    <h4 className="font-medium text-lg">Informations Sportives</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="poste">Poste</Label>
+                            <Select onValueChange={(value) => handleSelectChange('poste', value)} value={selectedPlayer.poste} required>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Gardien">Gardien</SelectItem>
+                                    <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
+                                    <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
+                                    <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
+                                    <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
+                                    <SelectItem value="Milieu Central">Milieu Central</SelectItem>
+                                    <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
+                                    <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
+                                    <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
+                                    <SelectItem value="Avant-centre">Avant-centre</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="status">Statut</Label>
+                            <Select onValueChange={(value) => handleSelectChange('status', value)} value={selectedPlayer.status} required>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Actif">Actif</SelectItem>
+                                    <SelectItem value="Blessé">Blessé</SelectItem>
+                                    <SelectItem value="Suspendu">Suspendu</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="category">Catégorie</Label>
+                            <Select onValueChange={(value) => handleSelectChange('category', value)} value={selectedPlayer.category} required>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Sénior">Sénior</SelectItem>
+                                    <SelectItem value="U23">U23</SelectItem>
+                                    <SelectItem value="U19">U19</SelectItem>
+                                    <SelectItem value="U18">U18</SelectItem>
+                                    <SelectItem value="U17">U17</SelectItem>
+                                    <SelectItem value="U16">U16</SelectItem>
+                                    <SelectItem value="U15">U15</SelectItem>
+                                    <SelectItem value="U13">U13</SelectItem>
+                                    <SelectItem value="U11">U11</SelectItem>
+                                    <SelectItem value="U9">U9</SelectItem>
+                                    <SelectItem value="U7">U7</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="jerseyNumber">Numéro de maillot</Label>
+                            <Input id="jerseyNumber" type="number" placeholder="10" value={selectedPlayer.jerseyNumber || ''} onChange={handleInputChange} required />
+                        </div>
+                    </div>
+                </div>
+                <div className="space-y-4">
+                    <h4 className="font-medium text-lg">Contact</h4>
+                    <div className="grid gap-2">
+                        <Label htmlFor="phone">Téléphone</Label>
+                        <Input id="phone" placeholder="0612345678" value={selectedPlayer.phone} onChange={handleInputChange} required />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" type="email" placeholder="jean@exemple.com" value={selectedPlayer.email} onChange={handleInputChange} required />
+                    </div>
+                </div>
+                 <div className="space-y-4">
+                    <h4 className="font-medium text-lg">Tuteur Légal</h4>
+                    <div className="grid gap-2">
+                        <Label htmlFor="tutorName">Nom du tuteur</Label>
+                        <Input id="tutorName" placeholder="Jacques Dupont" value={selectedPlayer.tutorName} onChange={handleInputChange} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="tutorPhone">Téléphone du tuteur</Label>
+                        <Input id="tutorPhone" placeholder="0611223344" value={selectedPlayer.tutorPhone} onChange={handleInputChange} />
+                    </div>
+                </div>
+              </div>
+              )}
+              <DialogFooter>
+                <Button type="submit">Sauvegarder</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
     </div>
   );
 }
+
+    
