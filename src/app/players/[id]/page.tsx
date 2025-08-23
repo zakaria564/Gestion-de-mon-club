@@ -4,11 +4,12 @@
 import { useMemo } from 'react';
 import { players } from "@/lib/data";
 import { notFound, useParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cake, Mail, Phone, UserCheck, UserCircle, MapPin } from "lucide-react";
+import { ArrowLeft, Cake, Mail, Phone, UserCheck, UserCircle, MapPin, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { Button } from '@/components/ui/button';
 
 export default function PlayerDetailPage() {
   const params = useParams();
@@ -99,6 +100,14 @@ export default function PlayerDetailPage() {
                 </div>
             </div>
         </CardContent>
+         <CardFooter className="justify-end gap-2">
+            <Button variant="outline">
+                <Edit className="mr-2 h-4 w-4" /> Modifier
+            </Button>
+            <Button variant="destructive">
+                <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+            </Button>
+        </CardFooter>
       </Card>
     </div>
   );
