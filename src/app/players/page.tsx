@@ -54,11 +54,12 @@ export default function PlayersPage() {
               <TableRow>
                 <TableHead>Photo</TableHead>
                 <TableHead>Nom</TableHead>
-                <TableHead>Âge</TableHead>
+                <TableHead>Date de naissance</TableHead>
                 <TableHead>Poste</TableHead>
                 <TableHead>Statut</TableHead>
                 <TableHead>Téléphone</TableHead>
                 <TableHead>Email</TableHead>
+                <TableHead>Adresse</TableHead>
                 <TableHead>Tuteur Légal</TableHead>
                 <TableHead>Téléphone Tuteur</TableHead>
               </TableRow>
@@ -73,13 +74,14 @@ export default function PlayersPage() {
                     </Avatar>
                   </TableCell>
                   <TableCell className="font-medium">{player.name}</TableCell>
-                  <TableCell>{player.age}</TableCell>
+                  <TableCell>{player.birthDate}</TableCell>
                   <TableCell>{player.poste}</TableCell>
                   <TableCell>
                     <Badge variant={getBadgeVariant(player.status) as any}>{player.status}</Badge>
                   </TableCell>
                   <TableCell>{player.phone}</TableCell>
                   <TableCell>{player.email}</TableCell>
+                  <TableCell>{player.address}</TableCell>
                   <TableCell>{player.tutorName}</TableCell>
                   <TableCell>{player.tutorPhone}</TableCell>
                 </TableRow>

@@ -6,11 +6,11 @@ export const clubStats = {
 };
 
 export const players = [
-  { id: 1, name: 'Jean Dupont', age: 24, poste: 'Attaquant', status: 'Actif', phone: '0601020304', email: 'jean.d@email.com', tutorName: 'Jacques Dupont', tutorPhone: '0611223344', photo: 'https://placehold.co/40x40.png' },
-  { id: 2, name: 'Marie Curie', age: 22, poste: 'Défenseur', status: 'Actif', phone: '0602030405', email: 'marie.c@email.com', tutorName: 'Pierre Curie', tutorPhone: '0622334455', photo: 'https://placehold.co/40x40.png' },
-  { id: 3, name: 'Pierre Martin', age: 28, poste: 'Milieu', status: 'Blessé', phone: '0603040506', email: 'pierre.m@email.com', tutorName: 'N/A', tutorPhone: 'N/A', photo: 'https://placehold.co/40x40.png' },
-  { id: 4, name: 'Lucas Hernandez', age: 21, poste: 'Gardien', status: 'Actif', phone: '0604050607', email: 'lucas.h@email.com', tutorName: 'Jean Hernandez', tutorPhone: '0644556677', photo: 'https://placehold.co/40x40.png' },
-  { id: 5, name: 'Chloé Dubois', age: 25, poste: 'Attaquant', status: 'Suspendu', phone: '0605060708', email: 'chloe.d@email.com', tutorName: 'N/A', tutorPhone: 'N/A', photo: 'https://placehold.co/40x40.png' },
+  { id: 1, name: 'Jean Dupont', birthDate: '2000-01-15', address: '123 Rue de Paris, 75001 Paris', poste: 'Attaquant', status: 'Actif', phone: '0601020304', email: 'jean.d@email.com', tutorName: 'Jacques Dupont', tutorPhone: '0611223344', photo: 'https://placehold.co/40x40.png' },
+  { id: 2, name: 'Marie Curie', birthDate: '2002-03-20', address: '456 Avenue de Lyon, 69002 Lyon', poste: 'Défenseur', status: 'Actif', phone: '0602030405', email: 'marie.c@email.com', tutorName: 'Pierre Curie', tutorPhone: '0622334455', photo: 'https://placehold.co/40x40.png' },
+  { id: 3, name: 'Pierre Martin', birthDate: '1996-07-10', address: '789 Boulevard de Marseille, 13008 Marseille', poste: 'Milieu', status: 'Blessé', phone: '0603040506', email: 'pierre.m@email.com', tutorName: 'N/A', tutorPhone: 'N/A', photo: 'https://placehold.co/40x40.png' },
+  { id: 4, name: 'Lucas Hernandez', birthDate: '2003-11-05', address: '101 Chemin de la Gloire, 31000 Toulouse', poste: 'Gardien', status: 'Actif', phone: '0604050607', email: 'lucas.h@email.com', tutorName: 'Jean Hernandez', tutorPhone: '0644556677', photo: 'https://placehold.co/40x40.png' },
+  { id: 5, name: 'Chloé Dubois', birthDate: '1999-09-25', address: '212 Rue de la Liberté, 44000 Nantes', poste: 'Attaquant', status: 'Suspendu', phone: '0605060708', email: 'chloe.d@email.com', tutorName: 'N/A', tutorPhone: 'N/A', photo: 'https://placehold.co/40x40.png' },
 ];
 
 
