@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { coachSalaries } from "@/lib/data";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Banknote, Calendar, CheckCircle, Clock, XCircle, UserCheck, PlusCircle } from "lucide-react";
@@ -23,8 +23,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 
-export default function CoachPaymentDetailPage({ params }: { params: { id: string } }) {
-  const payment = coachSalaries.find((p) => p.id.toString() === params.id);
+export default function CoachPaymentDetailPage() {
+  const params = useParams();
+  const payment = useMemo(() => {
+    const id = Array.isArray(params.id) ? params.id[0] : params.id;
+    return coachSalaries.find((p) => p.id.toString() === id);
+  }, [params.id]);
+
   const [open, setOpen] = useState(false);
 
   if (!payment) {

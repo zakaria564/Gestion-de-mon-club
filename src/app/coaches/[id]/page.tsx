@@ -1,5 +1,9 @@
+
+"use client"
+
+import { useMemo } from 'react';
 import { coaches } from "@/lib/data";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -7,8 +11,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Mail, Phone, UserCircle, Award, Users } from "lucide-react";
 import Link from "next/link";
 
-export default function CoachDetailPage({ params }: { params: { id: string } }) {
-  const coach = coaches.find((c) => c.id.toString() === params.id);
+export default function CoachDetailPage() {
+  const params = useParams();
+  const coach = useMemo(() => {
+    const id = Array.isArray(params.id) ? params.id[0] : params.id;
+    return coaches.find((c) => c.id.toString() === id);
+  }, [params.id]);
 
   if (!coach) {
     notFound();
