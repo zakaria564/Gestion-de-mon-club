@@ -43,13 +43,6 @@ export const clubStats = {
   notifications: 2,
 };
 
-export const players: Player[] = [];
-export const coaches: Coach[] = [];
-export const calendarEvents: CalendarEvent[] = [];
-
-
-export const upcomingEvents = [];
-
 export const results = [
   { id: 1, opponent: 'FC Bordeaux', date: '2024-08-01', score: '3-1', scorers: ['J. Dupont (2)', 'P. Martin'], notes: 'Belle victoire, bonne performance défensive.' },
   { id: 2, opponent: 'Paris SG', date: '2024-07-25', score: '0-2', scorers: [], notes: 'Match difficile contre une équipe solide.' },
