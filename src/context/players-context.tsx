@@ -23,20 +23,15 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const getPlayersCollectionRef = useCallback(() => {
-    if (!user) return null;
-    return collection(db, "users", user.uid, "players");
-  }, [user]);
-
   const fetchPlayers = useCallback(async () => {
-    const collectionRef = getPlayersCollectionRef();
-    if (!collectionRef) {
+    if (!user) {
       setPlayers([]);
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
+      const collectionRef = collection(db, "users", user.uid, "players");
       const snapshot = await getDocs(collectionRef);
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Player));
       setPlayers(data);
@@ -45,7 +40,7 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [getPlayersCollectionRef]);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -57,9 +52,9 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
   }, [user, fetchPlayers]);
 
   const addPlayer = async (playerData: Omit<Player, 'id' | 'uid'>) => {
-    const collectionRef = getPlayersCollectionRef();
-    if (!collectionRef || !user) return;
+    if (!user) return;
     try {
+      const collectionRef = collection(db, "users", user.uid, "players");
       const newPlayerData = { ...playerData, uid: user.uid };
       await addDoc(collectionRef, newPlayerData);
       fetchPlayers();
@@ -69,10 +64,9 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updatePlayer = async (playerData: Player) => {
-    const collectionRef = getPlayersCollectionRef();
-    if (!collectionRef) return;
+    if (!user) return;
     try {
-      const playerDoc = doc(collectionRef, playerData.id);
+      const playerDoc = doc(db, "users", user.uid, "players", playerData.id);
       const { id, ...dataToUpdate } = playerData;
       await updateDoc(playerDoc, dataToUpdate);
       fetchPlayers();
@@ -82,10 +76,9 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deletePlayer = async (id: string) => {
-    const collectionRef = getPlayersCollectionRef();
-    if (!collectionRef) return;
+    if (!user) return;
     try {
-      const playerDoc = doc(collectionRef, id);
+      const playerDoc = doc(db, "users", user.uid, "players", id);
       await deleteDoc(playerDoc);
       fetchPlayers();
     } catch (err) {

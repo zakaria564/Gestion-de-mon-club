@@ -24,20 +24,15 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const getEventsCollectionRef = useCallback(() => {
-    if (!user) return null;
-    return collection(db, "users", user.uid, "calendarEvents");
-  }, [user]);
-
   const fetchEvents = useCallback(async () => {
-    const collectionRef = getEventsCollectionRef();
-    if (!collectionRef) {
+    if (!user) {
       setCalendarEvents([]);
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
+      const collectionRef = collection(db, "users", user.uid, "calendarEvents");
       const snapshot = await getDocs(collectionRef);
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as CalendarEvent));
       setCalendarEvents(data);
@@ -46,7 +41,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [getEventsCollectionRef]);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -58,9 +53,9 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
   }, [user, fetchEvents]);
 
   const addEvent = async (eventData: NewCalendarEvent) => {
-    const collectionRef = getEventsCollectionRef();
-    if (!collectionRef || !user) return;
+    if (!user) return;
     try {
+      const collectionRef = collection(db, "users", user.uid, "calendarEvents");
       const newEventData = { ...eventData, uid: user.uid };
       await addDoc(collectionRef, newEventData);
       fetchEvents();
@@ -70,10 +65,9 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateEvent = async (eventData: CalendarEvent) => {
-    const collectionRef = getEventsCollectionRef();
-    if (!collectionRef) return;
+    if (!user) return;
     try {
-      const eventDoc = doc(collectionRef, eventData.id);
+      const eventDoc = doc(db, "users", user.uid, "calendarEvents", eventData.id);
       const { id, ...dataToUpdate } = eventData;
       await updateDoc(eventDoc, dataToUpdate);
       fetchEvents();
@@ -83,10 +77,9 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteEvent = async (id: string) => {
-    const collectionRef = getEventsCollectionRef();
-    if (!collectionRef) return;
+    if (!user) return;
     try {
-      const eventDoc = doc(collectionRef, id);
+      const eventDoc = doc(db, "users", user.uid, "calendarEvents", id);
       await deleteDoc(eventDoc);
       fetchEvents();
     } catch (err) {

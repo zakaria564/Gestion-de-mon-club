@@ -23,20 +23,15 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const getCoachesCollectionRef = useCallback(() => {
-    if (!user) return null;
-    return collection(db, "users", user.uid, "coaches");
-  }, [user]);
-
   const fetchCoaches = useCallback(async () => {
-    const collectionRef = getCoachesCollectionRef();
-    if (!collectionRef) {
-      setCoaches([]);
-      setLoading(false);
-      return;
+    if (!user) {
+        setCoaches([]);
+        setLoading(false);
+        return;
     }
     setLoading(true);
     try {
+      const collectionRef = collection(db, "users", user.uid, "coaches");
       const snapshot = await getDocs(collectionRef);
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Coach));
       setCoaches(data);
@@ -45,7 +40,7 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [getCoachesCollectionRef]);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -57,9 +52,9 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
   }, [user, fetchCoaches]);
 
   const addCoach = async (coachData: Omit<Coach, 'id' | 'uid'>) => {
-    const collectionRef = getCoachesCollectionRef();
-    if (!collectionRef || !user) return;
+    if (!user) return;
     try {
+      const collectionRef = collection(db, "users", user.uid, "coaches");
       const newCoachData = { ...coachData, uid: user.uid };
       await addDoc(collectionRef, newCoachData);
       fetchCoaches();
@@ -69,10 +64,9 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateCoach = async (coachData: Coach) => {
-    const collectionRef = getCoachesCollectionRef();
-    if (!collectionRef) return;
+    if (!user) return;
     try {
-      const coachDoc = doc(collectionRef, coachData.id);
+      const coachDoc = doc(db, "users", user.uid, "coaches", coachData.id);
       const { id, ...dataToUpdate } = coachData;
       await updateDoc(coachDoc, dataToUpdate);
       fetchCoaches();
@@ -82,10 +76,9 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteCoach = async (id: string) => {
-    const collectionRef = getCoachesCollectionRef();
-    if (!collectionRef) return;
+    if (!user) return;
     try {
-      const coachDoc = doc(collectionRef, id);
+      const coachDoc = doc(db, "users", user.uid, "coaches", id);
       await deleteDoc(coachDoc);
       fetchCoaches();
     } catch (err) {
