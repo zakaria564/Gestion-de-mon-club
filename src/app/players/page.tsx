@@ -34,6 +34,7 @@ import {
 import { useContext, useState } from "react";
 import { PlayersContext } from "@/context/players-context";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
 
 const emptyPlayer: Omit<Player, 'id'> = {
@@ -53,6 +54,7 @@ const emptyPlayer: Omit<Player, 'id'> = {
 
 export default function PlayersPage() {
     const context = useContext(PlayersContext);
+    const { toast } = useToast();
     
     if (!context) {
       throw new Error("PlayersPage must be used within a PlayersProvider");
@@ -87,8 +89,8 @@ export default function PlayersPage() {
   }, {} as Record<string, typeof players>);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value, type } = e.target;
-    setSelectedPlayer(prev => ({ ...prev, [id]: type === 'number' ? parseInt(value, 10) || 0 : value }));
+    const { id, value } = e.target;
+    setSelectedPlayer(prev => ({ ...prev, [id]: value }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,7 +115,17 @@ export default function PlayersPage() {
   
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await addPlayer(selectedPlayer);
+    const jerseyNumber = parseInt(String(selectedPlayer.jerseyNumber), 10);
+    if (isNaN(jerseyNumber) || jerseyNumber <= 0) {
+      toast({
+        variant: "destructive",
+        title: "Erreur de validation",
+        description: "Veuillez entrer un numéro de maillot valide.",
+      });
+      return;
+    }
+    
+    await addPlayer({ ...selectedPlayer, jerseyNumber });
     setDialogOpen(false);
   };
   
@@ -318,5 +330,3 @@ export default function PlayersPage() {
     </div>
   );
 }
-
-    

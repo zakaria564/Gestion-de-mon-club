@@ -258,7 +258,7 @@ export default function CoachesPage() {
                             </div>
                             </div>
                         </CardHeader>
-                        <CardContent className="p-4 pt-0">
+                        <CardContent className="p-4 pt-0 flex-grow">
                             <div className="flex justify-between items-center">
                                 <Badge variant="outline" className="text-xs">{coach.category}</Badge>
                                 <Badge variant={getBadgeVariant(coach.status) as any} className="text-xs">{coach.status}</Badge>
@@ -273,5 +273,3 @@ export default function CoachesPage() {
     </div>
   );
 }
-
-    
