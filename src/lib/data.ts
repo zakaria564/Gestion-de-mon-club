@@ -1,5 +1,31 @@
 
 
+export type Player = {
+  id: number;
+  name: string;
+  birthDate: string;
+  address: string;
+  poste: string;
+  status: 'Actif' | 'Blessé' | 'Suspendu';
+  phone: string;
+  email: string;
+  tutorName: string;
+  tutorPhone: string;
+  photo: string;
+  jerseyNumber: number;
+  category: string;
+}
+
+export type Coach = {
+  id: number;
+  name: string;
+  specialization: string;
+  status: 'Actif' | 'Inactif';
+  contact: string;
+  category: string;
+  phone: string;
+}
+
 export const clubStats = {
   totalPlayers: 45,
   totalCoaches: 5,
@@ -7,7 +33,7 @@ export const clubStats = {
   notifications: 2,
 };
 
-export const players = [
+export const players: Player[] = [
   { id: 1, name: 'Jean Dupont', birthDate: '2000-01-15', address: '123 Rue de Paris, 75001 Paris', poste: 'Attaquant', status: 'Actif', phone: '0601020304', email: 'jean.d@email.com', tutorName: 'Jacques Dupont', tutorPhone: '0611223344', photo: 'https://placehold.co/40x40.png', jerseyNumber: 10, category: 'Sénior' },
   { id: 2, name: 'Marie Curie', birthDate: '2002-03-20', address: '456 Avenue de Lyon, 69002 Lyon', poste: 'Défenseur', status: 'Actif', phone: '0602030405', email: 'marie.c@email.com', tutorName: 'Pierre Curie', tutorPhone: '0622334455', photo: 'https://placehold.co/40x40.png', jerseyNumber: 4, category: 'Sénior' },
   { id: 3, name: 'Pierre Martin', birthDate: '1996-07-10', address: '789 Boulevard de Marseille, 13008 Marseille', poste: 'Milieu', status: 'Blessé', phone: '0603040506', email: 'pierre.m@email.com', tutorName: 'N/A', tutorPhone: 'N/A', photo: 'https://placehold.co/40x40.png', jerseyNumber: 8, category: 'Sénior' },
@@ -16,16 +42,16 @@ export const players = [
 ];
 
 
-export const coaches = [
+export const coaches: Coach[] = [
   { id: 1, name: 'Alain Prost', specialization: 'Équipe principale', status: 'Actif', contact: 'alain.p@email.com', category: 'Sénior', phone: '0612345678' },
   { id: 2, name: 'Sophie Marceau', specialization: 'Équipe jeune', status: 'Actif', contact: 'sophie.m@email.com', category: 'U19', phone: '0623456789' },
   { id: 3, name: 'Gérard Depardieu', specialization: 'Entraînement des gardiens', status: 'Actif', contact: 'gerard.d@email.com', category: 'Sénior', phone: '0634567890' },
 ];
 
 export const calendarEvents = [
-  { id: 1, opponent: 'FC Lyon', date: '2024-08-15', time: '18:00', location: 'Stade Local', type: 'Match' },
-  { id: 2, opponent: '', date: '2024-08-17', time: '10:00', location: 'Terrain d\'entraînement', type: 'Entraînement' },
-  { id: 3, opponent: 'AS Marseille', date: '2024-08-22', time: '20:00', location: 'Stade Vélodrome', type: 'Match' },
+  { id: 1, opponent: 'FC Lyon', date: '2024-08-15T18:00:00.000Z', time: '18:00', location: 'Stade Local', type: 'Match' },
+  { id: 2, opponent: '', date: '2024-08-17T10:00:00.000Z', time: '10:00', location: 'Terrain d\'entraînement', type: 'Entraînement' },
+  { id: 3, opponent: 'AS Marseille', date: '2024-08-22T20:00:00.000Z', time: '20:00', location: 'Stade Vélodrome', type: 'Match' },
 ];
 
 export const upcomingEvents = calendarEvents.slice(0, 2);

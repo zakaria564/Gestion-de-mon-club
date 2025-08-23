@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { coaches as initialCoaches } from "@/lib/data";
+import { coaches as initialCoaches, Coach } from "@/lib/data";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import {
   Dialog,
@@ -34,13 +34,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
+
+const emptyCoach: Omit<Coach, 'id'> = {
+    name: '',
+    specialization: '',
+    status: 'Actif',
+    contact: '',
+    category: '',
+    phone: ''
+};
 
 export default function CoachesPage() {
   const [coaches, setCoaches] = useState(initialCoaches);
-  const [open, setOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id'> | Coach>(emptyCoach);
 
-    const getBadgeVariant = (status: string) => {
+  const getBadgeVariant = (status: string) => {
     switch (status) {
       case 'Actif':
         return 'default';
@@ -60,27 +72,58 @@ export default function CoachesPage() {
     return acc;
   }, {} as Record<string, typeof coaches>);
 
-  const handleAddCoach = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    // Logique pour ajouter un entraîneur
-    console.log("Nouvel entraîneur ajouté");
-    setOpen(false);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setSelectedCoach(prev => ({ ...prev, [id]: value }));
   };
+
+  const handleSelectChange = (name: keyof Coach, value: string) => {
+    setSelectedCoach(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleOpenDialog = (coach?: Coach) => {
+    if (coach) {
+        setIsEditing(true);
+        setSelectedCoach(coach);
+    } else {
+        setIsEditing(false);
+        setSelectedCoach(emptyCoach);
+    }
+    setDialogOpen(true);
+  }
+
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isEditing && 'id' in selectedCoach) {
+        setCoaches(coaches.map(c => c.id === selectedCoach.id ? selectedCoach as Coach : c));
+    } else {
+        const newId = coaches.length > 0 ? Math.max(...coaches.map(c => c.id)) + 1 : 1;
+        setCoaches([...coaches, { id: newId, ...selectedCoach as Omit<Coach, 'id'> }]);
+    }
+    setDialogOpen(false);
+  };
+  
+  const handleDeleteCoach = (coachId: number) => {
+    setCoaches(coaches.filter(c => c.id !== coachId));
+  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Gestion des Entraîneurs</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un entraîneur
-            </Button>
-          </DialogTrigger>
+        
+        <Button onClick={() => handleOpenDialog()}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un entraîneur
+        </Button>
+        
+      </div>
+
+       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="sm:max-w-2xl">
-            <form onSubmit={handleAddCoach}>
+            <form onSubmit={handleSubmit}>
               <DialogHeader>
-                <DialogTitle>Ajouter un nouvel entraîneur</DialogTitle>
+                <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un entraîneur</DialogTitle>
                 <DialogDescription>
                   Remplissez les informations ci-dessous.
                 </DialogDescription>
@@ -88,11 +131,11 @@ export default function CoachesPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Nom</Label>
-                  <Input id="name" placeholder="Alain Prost" />
+                  <Input id="name" placeholder="Alain Prost" value={selectedCoach.name} onChange={handleInputChange} required />
                 </div>
                  <div className="grid gap-2">
                   <Label htmlFor="category">Catégorie entraînée</Label>
-                  <Select>
+                  <Select onValueChange={(value) => handleSelectChange('category', value)} value={selectedCoach.category} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner une catégorie" />
                     </SelectTrigger>
@@ -113,40 +156,40 @@ export default function CoachesPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="specialization">Spécialisation</Label>
-                  <Select>
+                  <Select onValueChange={(value) => handleSelectChange('specialization', value)} value={selectedCoach.specialization} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner une spécialité" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="principal">Entraîneur Principal</SelectItem>
-                      <SelectItem value="adjoint">Entraîneur Adjoint</SelectItem>
-                      <SelectItem value="gardiens">Entraîneur des Gardiens</SelectItem>
-                      <SelectItem value="physique">Préparateur Physique</SelectItem>
-                      <SelectItem value="jeunes">Entraîneur Jeunes</SelectItem>
-                      <SelectItem value="analyste">Analyste Vidéo</SelectItem>
-                      <SelectItem value="feminines">Entraîneur Féminines</SelectItem>
+                      <SelectItem value="Entraîneur Principal">Entraîneur Principal</SelectItem>
+                      <SelectItem value="Entraîneur Adjoint">Entraîneur Adjoint</SelectItem>
+                      <SelectItem value="Entraîneur des Gardiens">Entraîneur des Gardiens</SelectItem>
+                      <SelectItem value="Préparateur Physique">Préparateur Physique</SelectItem>
+                      <SelectItem value="Entraîneur Jeunes">Entraîneur Jeunes</SelectItem>
+                      <SelectItem value="Analyste Vidéo">Analyste Vidéo</SelectItem>
+                      <SelectItem value="Entraîneur Féminines">Entraîneur Féminines</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="status">Statut</Label>
-                  <Select>
+                  <Select onValueChange={(value) => handleSelectChange('status', value)} value={selectedCoach.status} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner un statut" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="actif">Actif</SelectItem>
-                      <SelectItem value="inactif">Inactif</SelectItem>
+                      <SelectItem value="Actif">Actif</SelectItem>
+                      <SelectItem value="Inactif">Inactif</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="contact">Email</Label>
-                  <Input id="contact" placeholder="email@exemple.com" />
+                  <Input id="contact" placeholder="email@exemple.com" value={selectedCoach.contact} onChange={handleInputChange} required />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="phone">Téléphone</Label>
-                  <Input id="phone" placeholder="0612345678" />
+                  <Input id="phone" placeholder="0612345678" value={selectedCoach.phone} onChange={handleInputChange} required />
                 </div>
               </div>
               <DialogFooter>
@@ -155,7 +198,6 @@ export default function CoachesPage() {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
 
        {Object.entries(groupedCoaches).map(([category, coachesInCategory]) => (
         <div key={category} className="space-y-4">
@@ -185,14 +227,30 @@ export default function CoachesPage() {
                     </Link>
                     <CardFooter className="p-4 pt-0 mt-auto border-t border-border pt-4">
                         <div className="flex w-full justify-end gap-2">
-                            <Button variant="outline" size="icon" className="h-8 w-8">
+                             <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleOpenDialog(coach)}>
                                 <Edit className="h-4 w-4" />
                                 <span className="sr-only">Modifier</span>
                             </Button>
-                            <Button variant="destructive" size="icon" className="h-8 w-8">
-                                <Trash2 className="h-4 w-4" />
-                                <span className="sr-only">Supprimer</span>
-                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" size="icon" className="h-8 w-8">
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">Supprimer</span>
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                    <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Cette action ne peut pas être annulée. Cela supprimera définitivement l'entraîneur.
+                                    </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteCoach(coach.id)}>Supprimer</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                         </div>
                     </CardFooter>
                 </Card>
