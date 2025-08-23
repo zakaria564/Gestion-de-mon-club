@@ -10,7 +10,7 @@ import type { Player } from "@/lib/data";
 interface PlayersContextType {
   players: Player[];
   loading: boolean;
-  addPlayer: (player: Omit<Player, 'id'>) => Promise<void>;
+  addPlayer: (player: Omit<Player, 'id' | 'uid'>) => Promise<void>;
   updatePlayer: (player: Player) => Promise<void>;
   deletePlayer: (id: string) => Promise<void>;
   getPlayerById: (id: string) => Player | undefined;
@@ -51,7 +51,7 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, fetchPlayers]);
 
-  const addPlayer = async (playerData: Omit<Player, 'id'>) => {
+  const addPlayer = async (playerData: Omit<Player, 'id' | 'uid'>) => {
     if (!user) return;
     try {
       const collectionRef = collection(db, "users", user.uid, "players");

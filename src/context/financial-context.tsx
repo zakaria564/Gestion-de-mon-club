@@ -29,21 +29,8 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
   const [coachSalaries, setCoachSalaries] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const getPlayerPaymentsCollectionRef = useCallback(() => {
-    if (!user) return null;
-    return collection(db, "users", user.uid, "playerPayments");
-  }, [user]);
-  
-  const getCoachSalariesCollectionRef = useCallback(() => {
-    if (!user) return null;
-    return collection(db, "users", user.uid, "coachSalaries");
-  }, [user]);
-
   const fetchPayments = useCallback(async () => {
-    const playerPaymentsRef = getPlayerPaymentsCollectionRef();
-    const coachSalariesRef = getCoachSalariesCollectionRef();
-    
-    if (!playerPaymentsRef || !coachSalariesRef) {
+    if (!user) {
       setPlayerPayments([]);
       setCoachSalaries([]);
       setLoading(false);
@@ -52,6 +39,9 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
 
     setLoading(true);
     try {
+      const playerPaymentsRef = collection(db, "users", user.uid, "playerPayments");
+      const coachSalariesRef = collection(db, "users", user.uid, "coachSalaries");
+
       const [playerSnapshot, coachSnapshot] = await Promise.all([
         getDocs(playerPaymentsRef),
         getDocs(coachSalariesRef)
@@ -65,7 +55,7 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [getPlayerPaymentsCollectionRef, getCoachSalariesCollectionRef]);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
