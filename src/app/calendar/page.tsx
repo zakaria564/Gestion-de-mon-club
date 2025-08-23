@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { fr } from 'date-fns/locale';
 
 export default function CalendarPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -109,6 +110,7 @@ export default function CalendarPage() {
             selected={date}
             onSelect={setDate}
             className="w-full"
+            locale={fr}
             components={{
               DayContent: ({ date, ...props }) => {
                 const dayEvents = eventsByDate[date.toDateString()];
@@ -157,7 +159,7 @@ export default function CalendarPage() {
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold">{event.type === 'Match' ? `vs ${event.opponent}` : 'Session d\'entraînement'}</p>
-                    <p className="text-sm text-muted-foreground">{event.date} à {event.time}</p>
+                    <p className="text-sm text-muted-foreground">{new Date(event.date).toLocaleDateString('fr-FR')} à {event.time}</p>
                     <p className="text-sm text-muted-foreground">{event.location}</p>
                   </div>
                 </div>
