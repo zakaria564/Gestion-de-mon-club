@@ -36,6 +36,7 @@ export default function CoachPaymentDetailPage() {
   const { coachSalaries, loading, updateCoachSalary } = context;
   
   const payment = useMemo(() => {
+    if (!id || !coachSalaries) return null;
     return coachSalaries.find((p) => p.id === id);
   }, [id, coachSalaries]);
   

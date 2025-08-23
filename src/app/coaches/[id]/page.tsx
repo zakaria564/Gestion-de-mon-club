@@ -35,6 +35,7 @@ export default function CoachDetailPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const coach = useMemo(() => {
+    if (!id || !coaches) return null;
     return coaches.find((c) => c.id === id);
   }, [id, coaches]);
   

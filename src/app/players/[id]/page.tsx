@@ -38,6 +38,7 @@ export default function PlayerDetailPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const player = useMemo(() => {
+    if (!id || !players) return null;
     return players.find((p) => p.id === id);
   }, [id, players]);
 

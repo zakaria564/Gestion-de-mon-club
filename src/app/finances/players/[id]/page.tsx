@@ -36,6 +36,7 @@ export default function PlayerPaymentDetailPage() {
   const { playerPayments, loading, updatePlayerPayment } = context;
 
   const payment = useMemo(() => {
+    if (!id || !playerPayments) return null;
     return playerPayments.find((p) => p.id === id);
   }, [id, playerPayments]);
 
