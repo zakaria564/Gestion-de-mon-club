@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { players, coaches } from "@/lib/data";
 import { Banknote, Users, UserCheck, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -33,23 +32,33 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FinancialContext } from "@/context/financial-context";
+import { PlayersContext } from "@/context/players-context";
+import { CoachesContext } from "@/context/coaches-context";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 export default function FinancesPage() {
-  const context = useContext(FinancialContext);
+  const financialContext = useContext(FinancialContext);
+  const playersContext = useContext(PlayersContext);
+  const coachesContext = useContext(CoachesContext);
 
-  if (!context) {
-    throw new Error("FinancesPage must be used within a FinancialProvider");
+  if (!financialContext || !playersContext || !coachesContext) {
+    throw new Error("FinancesPage must be used within all required providers");
   }
 
   const { 
     playerPayments, 
-    coachSalaries, 
+    coachSalaries,
+    loading: financialLoading,
     addPlayerPayment, 
     addCoachSalary,
     playerPaymentsOverview,
     coachSalariesOverview
-  } = context;
+  } = financialContext;
+
+  const { players, loading: playersLoading } = playersContext;
+  const { coaches, loading: coachesLoading } = coachesContext;
+
 
   const [playerPaymentOpen, setPlayerPaymentOpen] = useState(false);
   const [coachSalaryOpen, setCoachSalaryOpen] = useState(false);
@@ -93,16 +102,14 @@ export default function FinancesPage() {
     }
   };
 
-  const handleAddPlayerPayment = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleAddPlayerPayment = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const totalAmount = parseFloat(newPlayerPaymentData.totalAmount);
     const paidAmount = parseFloat(newPlayerPaymentData.paidAmount);
-    const selectedPlayer = players.find(p => p.name === newPlayerPaymentData.member);
 
-    if (selectedPlayer && !isNaN(totalAmount) && !isNaN(paidAmount) && newPlayerPaymentData.dueDate) {
-        addPlayerPayment({
-            id: Date.now(),
-            member: selectedPlayer.name,
+    if (newPlayerPaymentData.member && !isNaN(totalAmount) && !isNaN(paidAmount) && newPlayerPaymentData.dueDate) {
+        await addPlayerPayment({
+            member: newPlayerPaymentData.member,
             totalAmount,
             initialPaidAmount: paidAmount,
             dueDate: newPlayerPaymentData.dueDate,
@@ -112,16 +119,14 @@ export default function FinancesPage() {
     }
   };
 
-  const handleAddCoachSalary = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleAddCoachSalary = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const totalAmount = parseFloat(newCoachSalaryData.totalAmount);
     const paidAmount = parseFloat(newCoachSalaryData.paidAmount);
-    const selectedCoach = coaches.find(c => c.name === newCoachSalaryData.member);
 
-     if (selectedCoach && !isNaN(totalAmount) && !isNaN(paidAmount) && newCoachSalaryData.dueDate) {
-        addCoachSalary({
-            id: Date.now(),
-            member: selectedCoach.name,
+     if (newCoachSalaryData.member && !isNaN(totalAmount) && !isNaN(paidAmount) && newCoachSalaryData.dueDate) {
+        await addCoachSalary({
+            member: newCoachSalaryData.member,
             totalAmount,
             initialPaidAmount: paidAmount,
             dueDate: newCoachSalaryData.dueDate,
@@ -131,6 +136,7 @@ export default function FinancesPage() {
     }
   };
 
+  const loading = financialLoading || playersLoading || coachesLoading;
 
   return (
     <div className="flex-1 space-y-8 p-4 md:p-8 pt-6">
@@ -194,7 +200,7 @@ export default function FinancesPage() {
               <Banknote className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{playerPaymentsOverview.totalDue.toFixed(2)} DH</div>
+              {loading ? <Skeleton className="h-8 w-3/4" /> : <div className="text-2xl font-bold">{playerPaymentsOverview.totalDue.toFixed(2)} DH</div>}
             </CardContent>
           </Card>
           <Card>
@@ -203,7 +209,7 @@ export default function FinancesPage() {
               <Banknote className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{playerPaymentsOverview.paymentsMade.toFixed(2)} DH</div>
+              {loading ? <Skeleton className="h-8 w-3/4" /> : <div className="text-2xl font-bold">{playerPaymentsOverview.paymentsMade.toFixed(2)} DH</div>}
             </CardContent>
           </Card>
           <Card>
@@ -212,13 +218,23 @@ export default function FinancesPage() {
               <Banknote className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{playerPaymentsOverview.paymentsRemaining.toFixed(2)} DH</div>
+              {loading ? <Skeleton className="h-8 w-3/4" /> : <div className="text-2xl font-bold">{playerPaymentsOverview.paymentsRemaining.toFixed(2)} DH</div>}
             </CardContent>
           </Card>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
-          {playerPayments.map((payment) => (
-             <Link href={`/finances/players/${payment.id}`} key={payment.id}>
+          {loading ? (
+             Array.from({length: 4}).map((_, index) => (
+                <Card key={index}>
+                    <CardHeader className="flex-row items-center justify-between">
+                        <Skeleton className="h-6 w-3/5" />
+                        <Skeleton className="h-6 w-1/4" />
+                    </CardHeader>
+                </Card>
+            ))
+          ) : (
+            playerPayments.map((payment) => (
+            <Link href={`/finances/players/${payment.id}`} key={payment.id}>
                 <Card className="hover:shadow-lg transition-shadow">
                     <CardHeader className="flex-row items-center justify-between">
                         <CardTitle className="text-lg">{payment.member}</CardTitle>
@@ -228,7 +244,7 @@ export default function FinancesPage() {
                     </CardHeader>
                 </Card>
             </Link>
-          ))}
+          )))}
         </div>
       </div>
 
@@ -292,7 +308,7 @@ export default function FinancesPage() {
               <Banknote className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{coachSalariesOverview.totalDue.toFixed(2)} DH</div>
+              {loading ? <Skeleton className="h-8 w-3/4" /> : <div className="text-2xl font-bold">{coachSalariesOverview.totalDue.toFixed(2)} DH</div>}
             </CardContent>
           </Card>
           <Card>
@@ -301,7 +317,7 @@ export default function FinancesPage() {
               <Banknote className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{coachSalariesOverview.paymentsMade.toFixed(2)} DH</div>
+             {loading ? <Skeleton className="h-8 w-3/4" /> : <div className="text-2xl font-bold">{coachSalariesOverview.paymentsMade.toFixed(2)} DH</div>}
             </CardContent>
           </Card>
           <Card>
@@ -310,12 +326,22 @@ export default function FinancesPage() {
               <Banknote className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{coachSalariesOverview.paymentsRemaining.toFixed(2)} DH</div>
+              {loading ? <Skeleton className="h-8 w-3/4" /> : <div className="text-2xl font-bold">{coachSalariesOverview.paymentsRemaining.toFixed(2)} DH</div>}
             </CardContent>
           </Card>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
-          {coachSalaries.map((payment) => (
+          {loading ? (
+             Array.from({length: 3}).map((_, index) => (
+                <Card key={index}>
+                    <CardHeader className="flex-row items-center justify-between">
+                        <Skeleton className="h-6 w-3/5" />
+                        <Skeleton className="h-6 w-1/4" />
+                    </CardHeader>
+                </Card>
+            ))
+          ) : (
+            coachSalaries.map((payment) => (
             <Link href={`/finances/coaches/${payment.id}`} key={payment.id}>
                 <Card className="hover:shadow-lg transition-shadow">
                     <CardHeader className="flex-row items-center justify-between">
@@ -326,11 +352,9 @@ export default function FinancesPage() {
                     </CardHeader>
                 </Card>
             </Link>
-          ))}
+          )))}
         </div>
       </div>
     </div>
   );
 }
-
-    

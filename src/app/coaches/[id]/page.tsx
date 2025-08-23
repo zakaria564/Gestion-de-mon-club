@@ -2,7 +2,7 @@
 "use client"
 
 import { useMemo, useState, useContext, useEffect } from 'react';
-import { type Coach } from "@/lib/data";
+import { Coach } from "@/lib/data";
 import { notFound, useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CoachesContext } from '@/context/coaches-context';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CoachDetailPage() {
   const params = useParams();
@@ -28,13 +29,13 @@ export default function CoachDetailPage() {
     throw new Error("CoachDetailPage must be used within a CoachesProvider");
   }
 
-  const { coaches, updateCoach, deleteCoach } = context;
+  const { coaches, loading, updateCoach, deleteCoach } = context;
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const coach = useMemo(() => {
-    return coaches.find((c) => c.id.toString() === id);
+    return coaches.find((c) => c.id === id);
   }, [id, coaches]);
   
   const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id'> | Coach | null>(null);
@@ -46,8 +47,42 @@ export default function CoachDetailPage() {
   }, [coach]);
 
 
+  if (loading) {
+    return (
+       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <Skeleton className="h-8 w-48" />
+        <Card>
+          <CardHeader className="flex flex-col md:flex-row md:items-start gap-6">
+            <Skeleton className="h-32 w-32 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-8 w-1/2" />
+              <Skeleton className="h-6 w-1/3" />
+              <div className="flex flex-wrap gap-2 mt-4">
+                <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="grid md:grid-cols-2 gap-6 pt-6">
+              <div className="space-y-4">
+                  <Skeleton className="h-6 w-1/4" />
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-5 w-3/4" />
+              </div>
+              <div className="space-y-4">
+                  <Skeleton className="h-6 w-1/4" />
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-5 w-3/4" />
+              </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   if (!coach) {
-    notFound();
+    return notFound();
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,16 +111,16 @@ export default function CoachDetailPage() {
       setDialogOpen(true);
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isEditing && selectedCoach && 'id' in selectedCoach) {
-        updateCoach(selectedCoach as Coach);
+        await updateCoach(selectedCoach as Coach);
     }
     setDialogOpen(false);
   };
   
-  const handleDeleteCoach = () => {
-    deleteCoach(coach.id);
+  const handleDeleteCoach = async () => {
+    await deleteCoach(coach.id);
     router.push('/coaches');
   }
 
@@ -272,5 +307,3 @@ export default function CoachDetailPage() {
     </div>
   );
 }
-
-    

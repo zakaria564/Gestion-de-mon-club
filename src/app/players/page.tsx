@@ -8,13 +8,12 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Player } from "@/lib/data";
-import { PlusCircle, Edit, Trash2 } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -33,8 +32,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useContext, useState } from "react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { PlayersContext } from "@/context/players-context";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 const emptyPlayer: Omit<Player, 'id'> = {
@@ -59,7 +58,7 @@ export default function PlayersPage() {
       throw new Error("PlayersPage must be used within a PlayersProvider");
     }
 
-    const { players, addPlayer, updatePlayer, deletePlayer } = context;
+    const { players, loading, addPlayer, updatePlayer, deletePlayer } = context;
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -119,19 +118,15 @@ export default function PlayersPage() {
     setDialogOpen(true);
   };
   
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isEditing && 'id' in selectedPlayer) {
-        updatePlayer(selectedPlayer as Player);
+        await updatePlayer(selectedPlayer as Player);
     } else {
-        addPlayer(selectedPlayer as Omit<Player, 'id'>);
+        await addPlayer(selectedPlayer as Omit<Player, 'id'>);
     }
     setDialogOpen(false);
   };
-  
-  const handleDeletePlayer = (playerId: number) => {
-    deletePlayer(playerId);
-  }
   
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -272,7 +267,35 @@ export default function PlayersPage() {
           </DialogContent>
         </Dialog>
       
-      {Object.entries(groupedPlayers).map(([category, playersInCategory]) => (
+      {loading ? (
+        Array.from({ length: 2 }).map((_, index) => (
+          <div key={index} className="space-y-4">
+            <Skeleton className="h-8 w-32 mt-6" />
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, cardIndex) => (
+                <Card key={cardIndex}>
+                  <CardHeader className="p-4">
+                    <div className="flex items-center gap-4">
+                      <Skeleton className="h-16 w-16 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-4 w-1/2" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="flex justify-between items-center">
+                      <Skeleton className="h-5 w-1/4" />
+                      <Skeleton className="h-5 w-1/4" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ))
+      ) : (
+      Object.entries(groupedPlayers).map(([category, playersInCategory]) => (
         <div key={category} className="space-y-4">
             <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -302,7 +325,7 @@ export default function PlayersPage() {
             ))}
             </div>
         </div>
-      ))}
+      )))}
     </div>
   );
 }

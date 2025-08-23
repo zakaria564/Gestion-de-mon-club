@@ -2,7 +2,7 @@
 "use client"
 
 import { useMemo, useState, useContext, useEffect } from 'react';
-import { type Player } from "@/lib/data";
+import { Player } from "@/lib/data";
 import { notFound, useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PlayersContext } from '@/context/players-context';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PlayerDetailPage() {
   const params = useParams();
@@ -28,13 +29,13 @@ export default function PlayerDetailPage() {
     throw new Error("PlayerDetailPage must be used within a PlayersProvider");
   }
 
-  const { players, updatePlayer, deletePlayer } = context;
+  const { players, loading, updatePlayer, deletePlayer } = context;
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   
   const player = useMemo(() => {
-    return players.find((p) => p.id.toString() === id);
+    return players.find((p) => p.id === id);
   }, [id, players]);
 
   const [selectedPlayer, setSelectedPlayer] = useState<Omit<Player, 'id'> | Player | null>(null);
@@ -46,8 +47,43 @@ export default function PlayerDetailPage() {
   }, [player]);
 
 
+  if (loading) {
+    return (
+       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <Skeleton className="h-8 w-48" />
+        <Card>
+          <CardHeader className="flex flex-col md:flex-row md:items-start gap-6">
+            <Skeleton className="h-32 w-32 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-8 w-1/2" />
+              <Skeleton className="h-6 w-1/3" />
+              <div className="flex flex-wrap gap-2 mt-4">
+                <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="h-6 w-24 rounded-full" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="grid md:grid-cols-2 gap-6 pt-6">
+              <div className="space-y-4">
+                  <Skeleton className="h-6 w-1/4" />
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-5 w-3/4" />
+              </div>
+              <div className="space-y-4">
+                  <Skeleton className="h-6 w-1/4" />
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-5 w-3/4" />
+              </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   if (!player) {
-    notFound();
+    return notFound();
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,16 +112,16 @@ export default function PlayerDetailPage() {
       setDialogOpen(true);
   };
   
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isEditing && selectedPlayer && 'id' in selectedPlayer) {
-        updatePlayer(selectedPlayer as Player);
+        await updatePlayer(selectedPlayer as Player);
     }
     setDialogOpen(false);
   };
   
-  const handleDeletePlayer = () => {
-    deletePlayer(player.id);
+  const handleDeletePlayer = async () => {
+    await deletePlayer(player.id);
     router.push('/players');
   }
 
@@ -326,5 +362,3 @@ export default function PlayerDetailPage() {
     </div>
   );
 }
-
-    

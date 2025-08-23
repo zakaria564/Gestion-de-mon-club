@@ -1,7 +1,7 @@
 
 
 export type Player = {
-  id: number;
+  id: string;
   name: string;
   birthDate: string;
   address: string;
@@ -17,7 +17,7 @@ export type Player = {
 }
 
 export type Coach = {
-  id: number;
+  id: string;
   name: string;
   specialization: string;
   status: 'Actif' | 'Inactif';
@@ -34,20 +34,9 @@ export const clubStats = {
   notifications: 2,
 };
 
-export const players: Player[] = [
-  { id: 1, name: 'Jean Dupont', birthDate: '2000-01-15', address: '123 Rue de Paris, 75001 Paris', poste: 'Attaquant', status: 'Actif', phone: '0601020304', email: 'jean.d@email.com', tutorName: 'Jacques Dupont', tutorPhone: '0611223344', photo: 'https://placehold.co/128x128.png', jerseyNumber: 10, category: 'Sénior' },
-  { id: 2, name: 'Marie Curie', birthDate: '2002-03-20', address: '456 Avenue de Lyon, 69002 Lyon', poste: 'Défenseur', status: 'Actif', phone: '0602030405', email: 'marie.c@email.com', tutorName: 'Pierre Curie', tutorPhone: '0622334455', photo: 'https://placehold.co/128x128.png', jerseyNumber: 4, category: 'Sénior' },
-  { id: 3, name: 'Pierre Martin', birthDate: '1996-07-10', address: '789 Boulevard de Marseille, 13008 Marseille', poste: 'Milieu', status: 'Blessé', phone: '0603040506', email: 'pierre.m@email.com', tutorName: 'N/A', tutorPhone: 'N/A', photo: 'https://placehold.co/128x128.png', jerseyNumber: 8, category: 'Sénior' },
-  { id: 4, name: 'Lucas Hernandez', birthDate: '2003-11-05', address: '101 Chemin de la Gloire, 31000 Toulouse', poste: 'Gardien', status: 'Actif', phone: '0604050607', email: 'lucas.h@email.com', tutorName: 'Jean Hernandez', tutorPhone: '0644556677', photo: 'https://placehold.co/128x128.png', jerseyNumber: 1, category: 'U23' },
-  { id: 5, name: 'Chloé Dubois', birthDate: '1999-09-25', address: '212 Rue de la Liberté, 44000 Nantes', poste: 'Attaquant', status: 'Suspendu', phone: '0605060708', email: 'chloe.d@email.com', tutorName: 'N/A', tutorPhone: 'N/A', photo: 'https://placehold.co/128x128.png', jerseyNumber: 9, category: 'Sénior' },
-];
+export const players: Player[] = [];
+export const coaches: Coach[] = [];
 
-
-export const coaches: Coach[] = [
-  { id: 1, name: 'Alain Prost', specialization: 'Équipe principale', status: 'Actif', contact: 'alain.p@email.com', category: 'Sénior', phone: '0612345678', photo: 'https://placehold.co/128x128.png' },
-  { id: 2, name: 'Sophie Marceau', specialization: 'Équipe jeune', status: 'Actif', contact: 'sophie.m@email.com', category: 'U19', phone: '0623456789', photo: 'https://placehold.co/128x128.png' },
-  { id: 3, name: 'Gérard Depardieu', specialization: 'Entraînement des gardiens', status: 'Actif', contact: 'gerard.d@email.com', category: 'Sénior', phone: '0634567890', photo: 'https://placehold.co/128x128.png' },
-];
 
 export const calendarEvents = [
   { id: 1, opponent: 'FC Lyon', date: '2024-08-15T18:00:00.000Z', time: '18:00', location: 'Stade Local', type: 'Match' },

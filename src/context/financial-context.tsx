@@ -1,48 +1,42 @@
 
 "use client";
 
-import React, { createContext, useState, useMemo, ReactNode } from 'react';
-import { initialPlayerPayments, initialCoachSalaries, type Payment, type NewPayment, type Overview, type Transaction } from '@/lib/financial-data';
+import React, { createContext, useState, useMemo, ReactNode, useEffect, useCallback } from 'react';
+import { Payment, NewPayment, Overview, Transaction } from '@/lib/financial-data';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, addDoc, updateDoc, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 
 interface FinancialContextType {
   playerPayments: Payment[];
   coachSalaries: Payment[];
-  addPlayerPayment: (payment: NewPayment) => void;
-  addCoachSalary: (payment: NewPayment) => void;
-  updatePlayerPayment: (paymentId: number, complementAmount: number) => void;
-  updateCoachSalary: (paymentId: number, complementAmount: number) => void;
+  loading: boolean;
+  addPlayerPayment: (payment: NewPayment) => Promise<void>;
+  addCoachSalary: (payment: NewPayment) => Promise<void>;
+  updatePlayerPayment: (paymentId: string, complementAmount: number) => Promise<void>;
+  updateCoachSalary: (paymentId: string, complementAmount: number) => Promise<void>;
   playerPaymentsOverview: Overview;
   coachSalariesOverview: Overview;
 }
 
 export const FinancialContext = createContext<FinancialContextType | undefined>(undefined);
 
-const processPayments = (payments: (NewPayment | Payment)[]): Payment[] => {
-    return payments.map(p => {
-        const paidAmount = 'transactions' in p 
-            ? p.transactions.reduce((acc, t) => acc + t.amount, 0)
-            : p.initialPaidAmount;
+const paymentFromDoc = (doc: QueryDocumentSnapshot<DocumentData>): Payment => {
+    const data = doc.data();
+    const paidAmount = data.transactions.reduce((acc: number, t: Transaction) => acc + t.amount, 0);
+    const remainingAmount = data.totalAmount - paidAmount;
+    const status = remainingAmount <= 0 ? 'payé' : paidAmount > 0 ? 'partiel' : 'non payé';
 
-        const transactions: Transaction[] = 'transactions' in p 
-            ? p.transactions 
-            : p.initialPaidAmount > 0 
-                ? [{ id: Date.now() + Math.random(), amount: p.initialPaidAmount, date: new Date().toISOString() }]
-                : [];
-
-        const remainingAmount = p.totalAmount - paidAmount;
-        const status = remainingAmount <= 0 ? 'payé' : paidAmount > 0 ? 'partiel' : 'non payé';
-        
-        const basePayment = 'id' in p ? p : { id: Date.now() + Math.random(), member: p.member, totalAmount: p.totalAmount, dueDate: p.dueDate };
-
-        return {
-            ...basePayment,
-            paidAmount,
-            remainingAmount,
-            status,
-            transactions,
-        };
-    });
-};
+    return {
+        id: doc.id,
+        member: data.member,
+        totalAmount: data.totalAmount,
+        paidAmount,
+        remainingAmount,
+        status,
+        dueDate: data.dueDate,
+        transactions: data.transactions,
+    };
+}
 
 const calculateOverview = (payments: Payment[]): Overview => {
     const totalDue = payments.reduce((acc, p) => acc + p.totalAmount, 0);
@@ -52,58 +46,94 @@ const calculateOverview = (payments: Payment[]): Overview => {
 };
 
 export const FinancialProvider = ({ children }: { children: ReactNode }) => {
-  const [playerPaymentsState, setPlayerPaymentsState] = useState<Payment[]>(processPayments(initialPlayerPayments));
-  const [coachSalariesState, setCoachSalariesState] = useState<Payment[]>(processPayments(initialCoachSalaries));
+  const [playerPayments, setPlayerPayments] = useState<Payment[]>([]);
+  const [coachSalaries, setCoachSalaries] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addPlayerPayment = (payment: NewPayment) => {
-    setPlayerPaymentsState(prevState => processPayments([...prevState, payment]));
+  const fetchPayments = useCallback(async () => {
+    try {
+      setLoading(true);
+      const playerPaymentsCol = collection(db, 'playerPayments');
+      const coachSalariesCol = collection(db, 'coachSalaries');
+      
+      const [playerPaymentsSnapshot, coachSalariesSnapshot] = await Promise.all([
+        getDocs(playerPaymentsCol),
+        getDocs(coachSalariesCol)
+      ]);
+
+      setPlayerPayments(playerPaymentsSnapshot.docs.map(paymentFromDoc));
+      setCoachSalaries(coachSalariesSnapshot.docs.map(paymentFromDoc));
+
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPayments();
+  }, [fetchPayments]);
+
+  const addPayment = async (col: 'playerPayments' | 'coachSalaries', payment: NewPayment) => {
+      const { member, totalAmount, initialPaidAmount, dueDate } = payment;
+      const newTransaction: Transaction | undefined = initialPaidAmount > 0 ? {
+          id: Date.now(),
+          amount: initialPaidAmount,
+          date: new Date().toISOString(),
+      } : undefined;
+
+      await addDoc(collection(db, col), {
+          member,
+          totalAmount,
+          dueDate,
+          transactions: newTransaction ? [newTransaction] : []
+      });
+      await fetchPayments();
   };
 
-  const addCoachSalary = (payment: NewPayment) => {
-    setCoachSalariesState(prevState => processPayments([...prevState, payment]));
+  const addPlayerPayment = async (payment: NewPayment) => {
+    await addPayment('playerPayments', payment);
   };
 
-  const updatePlayerPayment = (paymentId: number, complementAmount: number) => {
-    setPlayerPaymentsState(prevState => {
-        const updatedPayments = prevState.map(p => {
-            if (p.id === paymentId) {
-                const newTransaction: Transaction = {
-                    id: Date.now() + Math.random(),
-                    amount: complementAmount,
-                    date: new Date().toISOString(),
-                };
-                return { ...p, transactions: [...p.transactions, newTransaction] };
-            }
-            return p;
-        });
-        return processPayments(updatedPayments);
-    });
+  const addCoachSalary = async (payment: NewPayment) => {
+    await addPayment('coachSalaries', payment);
   };
 
-  const updateCoachSalary = (paymentId: number, complementAmount: number) => {
-    setCoachSalariesState(prevState => {
-        const updatedPayments = prevState.map(p => {
-            if (p.id === paymentId) {
-                 const newTransaction: Transaction = {
-                    id: Date.now() + Math.random(),
-                    amount: complementAmount,
-                    date: new Date().toISOString(),
-                };
-                return { ...p, transactions: [...p.transactions, newTransaction] };
-            }
-            return p;
-        });
-        return processPayments(updatedPayments);
-    });
+  const updatePayment = async (col: 'playerPayments' | 'coachSalaries', paymentId: string, complementAmount: number) => {
+      const payments = col === 'playerPayments' ? playerPayments : coachSalaries;
+      const payment = payments.find(p => p.id === paymentId);
+      if (!payment) return;
+
+      const newTransaction: Transaction = {
+        id: Date.now(),
+        amount: complementAmount,
+        date: new Date().toISOString(),
+      };
+      
+      const paymentRef = doc(db, col, paymentId);
+      await updateDoc(paymentRef, {
+          transactions: [...payment.transactions, newTransaction]
+      });
+      await fetchPayments();
+  }
+
+  const updatePlayerPayment = async (paymentId: string, complementAmount: number) => {
+    await updatePayment('playerPayments', paymentId, complementAmount);
   };
 
-  const playerPaymentsOverview = useMemo(() => calculateOverview(playerPaymentsState), [playerPaymentsState]);
-  const coachSalariesOverview = useMemo(() => calculateOverview(coachSalariesState), [coachSalariesState]);
+  const updateCoachSalary = async (paymentId: string, complementAmount: number) => {
+    await updatePayment('coachSalaries', paymentId, complementAmount);
+  };
+
+  const playerPaymentsOverview = useMemo(() => calculateOverview(playerPayments), [playerPayments]);
+  const coachSalariesOverview = useMemo(() => calculateOverview(coachSalaries), [coachSalaries]);
 
   return (
     <FinancialContext.Provider value={{ 
-        playerPayments: playerPaymentsState, 
-        coachSalaries: coachSalariesState, 
+        playerPayments, 
+        coachSalaries, 
+        loading,
         addPlayerPayment, 
         addCoachSalary,
         updatePlayerPayment,
@@ -115,5 +145,3 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
     </FinancialContext.Provider>
   );
 };
-
-    

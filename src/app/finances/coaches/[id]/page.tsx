@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FinancialContext } from "@/context/financial-context";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CoachPaymentDetailPage() {
   const params = useParams();
@@ -32,10 +33,10 @@ export default function CoachPaymentDetailPage() {
     throw new Error("CoachPaymentDetailPage must be used within a FinancialProvider");
   }
 
-  const { coachSalaries, updateCoachSalary } = context;
+  const { coachSalaries, loading, updateCoachSalary } = context;
   
   const payment = useMemo(() => {
-    return coachSalaries.find((p) => p.id.toString() === id);
+    return coachSalaries.find((p) => p.id === id);
   }, [id, coachSalaries]);
   
   const [open, setOpen] = useState(false);
@@ -53,8 +54,52 @@ export default function CoachPaymentDetailPage() {
     }
   }, [payment]);
 
+  if (loading) {
+     return (
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <Skeleton className="h-8 w-48 mb-4" />
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-1/2" />
+            <Skeleton className="h-6 w-1/3 mt-1" />
+          </CardHeader>
+          <Separator />
+          <CardContent className="pt-6 space-y-6">
+            <div className="grid md:grid-cols-2 gap-x-8 gap-y-6">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+            </div>
+             <div className="mt-8">
+                <Skeleton className="h-7 w-1/3 mb-4" />
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead><Skeleton className="h-5 w-24" /></TableHead>
+                            <TableHead className="text-right"><Skeleton className="h-5 w-24" /></TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow>
+                            <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                            <TableCell className="text-right"><Skeleton className="h-5 w-20" /></TableCell>
+                        </TableRow>
+                         <TableRow>
+                            <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                            <TableCell className="text-right"><Skeleton className="h-5 w-20" /></TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!payment) {
-    notFound();
+    return notFound();
   }
 
   const getBadgeVariant = (status: string) => {
@@ -83,12 +128,12 @@ export default function CoachPaymentDetailPage() {
     }
   }
 
-  const handleAddComplement = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleAddComplement = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const amount = parseFloat(complementAmount);
     if (!amount || amount <= 0 || !payment) return;
 
-    updateCoachSalary(payment.id, amount);
+    await updateCoachSalary(payment.id, amount);
     
     setComplementAmount('');
     setOpen(false);
@@ -185,7 +230,7 @@ export default function CoachPaymentDetailPage() {
                       <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
                           <Label htmlFor="complementAmount">Montant du complément (DH)</Label>
-                          <Input id="complementAmount" type="number" placeholder={payment.remainingAmount.toFixed(2)} value={complementAmount} onChange={(e) => setComplementAmount(e.target.value)} max={payment.remainingAmount} min="0.01" step="0.01" />
+                          <Input id="complementAmount" type="number" placeholder={payment.remainingAmount.toFixed(2)} value={complementAmount} onChange={(e) => setComplementAmount(e.target.value)} max={payment.remainingAmount.toString()} min="0.01" step="0.01" />
                         </div>
                       </div>
                       <DialogFooter>
@@ -200,5 +245,3 @@ export default function CoachPaymentDetailPage() {
     </div>
   );
 }
-
-    

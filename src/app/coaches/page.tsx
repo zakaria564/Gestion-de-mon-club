@@ -9,12 +9,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Coach } from "@/lib/data";
-import { PlusCircle, Edit, Trash2 } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -33,8 +32,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { CoachesContext } from "@/context/coaches-context";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 const emptyCoach: Omit<Coach, 'id'> = {
@@ -54,7 +53,7 @@ export default function CoachesPage() {
     throw new Error("CoachesPage must be used within a CoachesProvider");
   }
 
-  const { coaches, addCoach, updateCoach, deleteCoach } = context;
+  const { coaches, loading, addCoach, updateCoach, deleteCoach } = context;
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -112,19 +111,15 @@ export default function CoachesPage() {
   }
 
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isEditing && 'id' in selectedCoach) {
-        updateCoach(selectedCoach as Coach);
+        await updateCoach(selectedCoach as Coach);
     } else {
-        addCoach(selectedCoach as Omit<Coach, 'id'>);
+        await addCoach(selectedCoach as Omit<Coach, 'id'>);
     }
     setDialogOpen(false);
   };
-  
-  const handleDeleteCoach = (coachId: number) => {
-    deleteCoach(coachId);
-  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -227,7 +222,35 @@ export default function CoachesPage() {
           </DialogContent>
         </Dialog>
 
-       {Object.entries(groupedCoaches).map(([category, coachesInCategory]) => (
+       {loading ? (
+        Array.from({ length: 2 }).map((_, index) => (
+          <div key={index} className="space-y-4">
+            <Skeleton className="h-8 w-32 mt-6" />
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, cardIndex) => (
+                <Card key={cardIndex}>
+                  <CardHeader className="p-4">
+                    <div className="flex items-center gap-4">
+                      <Skeleton className="h-16 w-16 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-4 w-1/2" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="flex justify-between items-center">
+                      <Skeleton className="h-5 w-1/4" />
+                      <Skeleton className="h-5 w-1/4" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ))
+       ) : (
+       Object.entries(groupedCoaches).map(([category, coachesInCategory]) => (
         <div key={category} className="space-y-4">
             <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -257,7 +280,7 @@ export default function CoachesPage() {
             ))}
             </div>
         </div>
-      ))}
+      )))}
     </div>
   );
 }
