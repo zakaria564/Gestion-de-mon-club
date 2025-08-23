@@ -169,6 +169,12 @@ export default function PlayersPage() {
                     <div className="grid gap-2">
                         <Label htmlFor="photo">Photo</Label>
                         <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
+                        { 'photo' in selectedPlayer && selectedPlayer.photo && (
+                          <Avatar className="h-20 w-20 mt-2">
+                            <AvatarImage src={selectedPlayer.photo as string} alt="Aperçu" />
+                            <AvatarFallback>??</AvatarFallback>
+                          </Avatar>
+                        )}
                     </div>
                 </div>
                 <div className="space-y-4">

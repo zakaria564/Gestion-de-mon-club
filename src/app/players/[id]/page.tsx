@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useMemo, useState, useContext } from 'react';
+import { useMemo, useState, useContext, useEffect } from 'react';
 import { Player } from "@/lib/data";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -37,19 +37,18 @@ export default function PlayerDetailPage() {
     return players.find((p) => p.id.toString() === id);
   }, [id, players]);
 
-  const [selectedPlayer, setSelectedPlayer] = useState<Omit<Player, 'id'> | Player | null>(player || null);
+  const [selectedPlayer, setSelectedPlayer] = useState<Omit<Player, 'id'> | Player | null>(null);
+
+  useEffect(() => {
+    if (player) {
+      setSelectedPlayer(player);
+    }
+  }, [player]);
+
 
   if (!player) {
     notFound();
   }
-
-  // Update selectedPlayer when player data changes
-  if (player && selectedPlayer && 'id' in selectedPlayer && player.id !== selectedPlayer.id) {
-    setSelectedPlayer(player);
-  } else if (player && !selectedPlayer) {
-    setSelectedPlayer(player)
-  }
-
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value, type } = e.target;
@@ -221,6 +220,12 @@ export default function PlayerDetailPage() {
                     <div className="grid gap-2">
                         <Label htmlFor="photo">Photo</Label>
                         <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
+                        { 'photo' in selectedPlayer && selectedPlayer.photo && (
+                          <Avatar className="h-20 w-20 mt-2">
+                            <AvatarImage src={selectedPlayer.photo as string} alt="Aperçu" />
+                            <AvatarFallback>??</AvatarFallback>
+                          </Avatar>
+                        )}
                     </div>
                 </div>
                 <div className="space-y-4">
