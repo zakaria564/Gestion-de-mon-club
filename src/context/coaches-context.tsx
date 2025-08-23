@@ -80,9 +80,9 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
 
   const addCoach = async (coach: CoachWithoutId) => {
     if (!user) return;
-    const coachesCollectionRef = collection(db, 'users', user.uid, 'coaches');
-
+    
     try {
+        const coachesCollectionRef = collection(db, 'users', user.uid, 'coaches');
         const docRef = await addDoc(coachesCollectionRef, { ...coach, photo: '' });
 
         if (coach.photo) {
@@ -98,9 +98,9 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
 
   const updateCoach = async (updatedCoach: Coach) => {
     if (!user) return;
-    const coachesCollectionRef = collection(db, 'users', user.uid, 'coaches');
     
     try {
+        const coachesCollectionRef = collection(db, 'users', user.uid, 'coaches');
         const coachRef = doc(coachesCollectionRef, updatedCoach.id);
         let photoURL = updatedCoach.photo;
 
@@ -130,9 +130,9 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
 
   const deleteCoach = async (coachId: string) => {
      if (!user) return;
-     const coachesCollectionRef = collection(db, 'users', user.uid, 'coaches');
 
      try {
+      const coachesCollectionRef = collection(db, 'users', user.uid, 'coaches');
       const coachRef = doc(coachesCollectionRef, coachId);
        const coachToDelete = coaches.find(c => c.id === coachId);
       if (coachToDelete && coachToDelete.photo && coachToDelete.photo.includes('firebasestorage')) {

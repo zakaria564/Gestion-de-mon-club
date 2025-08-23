@@ -23,11 +23,9 @@ import { ClubLogo } from '@/components/club-logo';
 
 function Providers({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const pathname = usePathname();
-  const isAuthPage = ['/login', '/signup', '/forgot-password'].includes(pathname);
-
+  
+  // Affiche un écran de chargement global pendant que Firebase vérifie l'authentification
   if (loading) {
-    // Affiche un écran de chargement global pendant que Firebase vérifie l'authentification
     return (
        <div className="flex h-screen w-full items-center justify-center bg-background">
             <ClubLogo className="size-12 animate-pulse" />
@@ -35,29 +33,28 @@ function Providers({ children }: { children: React.ReactNode }) {
     );
   }
   
-  // Si c'est une page d'authentification ou si l'utilisateur n'est pas connecté,
-  // on affiche la page directement, sans les fournisseurs de données.
-  if (isAuthPage || !user) {
-    return <>{children}</>;
+  // Si l'utilisateur est connecté, on enveloppe l'application avec tous les fournisseurs de données.
+  if (user) {
+    return (
+      <FinancialProvider>
+        <PlayersProvider>
+          <CoachesProvider>
+            <CalendarProvider>
+               <AppLayout>
+                <SidebarInset>
+                  {children}
+                </SidebarInset>
+              </AppLayout>
+            </CalendarProvider>
+          </CoachesProvider>
+        </PlayersProvider>
+      </FinancialProvider>
+    )
   }
 
-  // Si l'utilisateur est connecté et que ce n'est pas une page d'authentification,
-  // on enveloppe l'application avec tous les fournisseurs de données.
-  return (
-    <FinancialProvider>
-      <PlayersProvider>
-        <CoachesProvider>
-          <CalendarProvider>
-             <AppLayout>
-              <SidebarInset>
-                {children}
-              </SidebarInset>
-            </AppLayout>
-          </CalendarProvider>
-        </CoachesProvider>
-      </PlayersProvider>
-    </FinancialProvider>
-  )
+  // Si l'utilisateur n'est pas connecté et que le chargement est terminé,
+  // on affiche les enfants (qui seront redirigés par ProtectedRoute si nécessaire).
+  return <>{children}</>;
 }
 
 export default function RootLayout({

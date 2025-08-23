@@ -96,9 +96,9 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
 
   const updateEvent = async (updatedEvent: CalendarEvent) => {
     if (!user) return;
-    const eventsCollectionRef = collection(db, 'users', user.uid, 'calendarEvents');
-
+    
     try {
+      const eventsCollectionRef = collection(db, 'users', user.uid, 'calendarEvents');
       const eventRef = doc(eventsCollectionRef, updatedEvent.id);
       
       const dateToStore = updatedEvent.date.includes('T') ? updatedEvent.date : parse(updatedEvent.date, 'yyyy-MM-dd', new Date()).toISOString();
@@ -116,9 +116,9 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
 
   const deleteEvent = async (eventId: string) => {
      if (!user) return;
-     const eventsCollectionRef = collection(db, 'users', user.uid, 'calendarEvents');
 
      try {
+      const eventsCollectionRef = collection(db, 'users', user.uid, 'calendarEvents');
       const eventRef = doc(eventsCollectionRef, eventId);
       await deleteDoc(eventRef);
       await fetchEvents(user);

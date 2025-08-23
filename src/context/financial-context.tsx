@@ -113,10 +113,12 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addPlayerPayment = async (payment: NewPayment) => {
+    if (!user) return;
     await addPayment('playerPayments', payment);
   };
 
   const addCoachSalary = async (payment: NewPayment) => {
+    if (!user) return;
     await addPayment('coachSalaries', payment);
   };
 
@@ -141,10 +143,12 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const updatePlayerPayment = async (paymentId: string, complementAmount: number) => {
+    if (!user) return;
     await updatePayment('playerPayments', playerPayments, paymentId, complementAmount);
   };
 
   const updateCoachSalary = async (paymentId: string, complementAmount: number) => {
+    if (!user) return;
     await updatePayment('coachSalaries', coachSalaries, paymentId, complementAmount);
   };
 

@@ -84,9 +84,9 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
 
   const addPlayer = async (player: PlayerWithoutId) => {
     if (!user) return;
-    const playersCollectionRef = collection(db, 'users', user.uid, 'players');
 
     try {
+      const playersCollectionRef = collection(db, 'users', user.uid, 'players');
       const docRef = await addDoc(playersCollectionRef, { ...player, photo: '' });
 
       if (player.photo) {
@@ -102,9 +102,9 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
 
   const updatePlayer = async (updatedPlayer: Player) => {
     if (!user) return;
-    const playersCollectionRef = collection(db, 'users', user.uid, 'players');
 
     try {
+        const playersCollectionRef = collection(db, 'users', user.uid, 'players');
         const playerRef = doc(playersCollectionRef, updatedPlayer.id);
         let photoURL = updatedPlayer.photo;
 
@@ -134,8 +134,9 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
 
   const deletePlayer = async (playerId: string) => {
     if (!user) return;
-    const playersCollectionRef = collection(db, 'users', user.uid, 'players');
+    
     try {
+      const playersCollectionRef = collection(db, 'users', user.uid, 'players');
       const playerRef = doc(playersCollectionRef, playerId);
       const playerToDelete = players.find(p => p.id === playerId);
       if (playerToDelete && playerToDelete.photo && playerToDelete.photo.includes('firebasestorage')) {
