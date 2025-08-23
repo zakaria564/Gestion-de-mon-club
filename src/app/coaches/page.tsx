@@ -79,6 +79,7 @@ export default function CoachesPage() {
                     <SelectItem value="physique">Préparateur Physique</SelectItem>
                     <SelectItem value="jeunes">Entraîneur Jeunes</SelectItem>
                     <SelectItem value="analyste">Analyste Vidéo</SelectItem>
+                    <SelectItem value="feminines">Entraîneur Féminines</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
