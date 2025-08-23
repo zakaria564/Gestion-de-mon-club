@@ -4,7 +4,7 @@
 import { useMemo, useState, useContext, useEffect } from 'react';
 import React from 'react';
 import { Player } from "@/lib/data";
-import { notFound, useRouter, useSearchParams } from "next/navigation";
+import { notFound, useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -21,8 +21,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function PlayerDetailPage() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get('id');
+  const params = useParams();
+  const id = params.id as string;
   const router = useRouter();
   
   const context = useContext(PlayersContext);
@@ -364,5 +364,7 @@ export default function PlayerDetailPage() {
     </div>
   );
 }
+
+    
 
     

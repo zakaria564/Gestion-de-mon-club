@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useContext, useEffect } from "react";
-import { notFound, useSearchParams } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Banknote, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, User, PlusCircle, History } from "lucide-react";
@@ -25,8 +25,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PlayerPaymentDetailPage() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get('id');
+  const params = useParams();
+  const id = params.id as string;
   const context = useContext(FinancialContext);
   
   if (!context) {
@@ -259,5 +259,7 @@ export default function PlayerPaymentDetailPage() {
     </div>
   );
 }
+
+    
 
     

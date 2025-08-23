@@ -3,7 +3,7 @@
 
 import { useMemo, useState, useContext, useEffect } from 'react';
 import { Coach } from "@/lib/data";
-import { notFound, useRouter, useSearchParams } from "next/navigation";
+import { notFound, useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -20,8 +20,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function CoachDetailPage() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get('id');
+  const params = useParams();
+  const id = params.id as string;
   const router = useRouter();
   
   const context = useContext(CoachesContext);
@@ -308,5 +308,7 @@ export default function CoachDetailPage() {
     </div>
   );
 }
+
+    
 
     
