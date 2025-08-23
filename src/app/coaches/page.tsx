@@ -253,34 +253,6 @@ export default function CoachesPage() {
                             </div>
                         </CardContent>
                     </Link>
-                    <CardFooter className="p-4 pt-0 mt-auto border-t border-border pt-4">
-                        <div className="flex w-full justify-end gap-2">
-                             <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleOpenDialog(coach)}>
-                                <Edit className="h-4 w-4" />
-                                <span className="sr-only">Modifier</span>
-                            </Button>
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" size="icon" className="h-8 w-8">
-                                        <Trash2 className="h-4 w-4" />
-                                        <span className="sr-only">Supprimer</span>
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                    <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        Cette action ne peut pas être annulée. Cela supprimera définitivement l'entraîneur.
-                                    </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDeleteCoach(coach.id)}>Supprimer</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        </div>
-                    </CardFooter>
                 </Card>
             ))}
             </div>
