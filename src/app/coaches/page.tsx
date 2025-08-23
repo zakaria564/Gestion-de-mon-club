@@ -59,6 +59,13 @@ export default function CoachesPage() {
     return acc;
   }, {} as Record<string, typeof coaches>);
 
+  const handleAddCoach = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Logique pour ajouter un entraîneur
+    console.log("Nouvel entraîneur ajouté");
+    setOpen(false);
+  };
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -70,79 +77,81 @@ export default function CoachesPage() {
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Ajouter un nouvel entraîneur</DialogTitle>
-              <DialogDescription>
-                Remplissez les informations ci-dessous.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Nom</Label>
-                <Input id="name" placeholder="Alain Prost" />
+            <form onSubmit={handleAddCoach}>
+              <DialogHeader>
+                <DialogTitle>Ajouter un nouvel entraîneur</DialogTitle>
+                <DialogDescription>
+                  Remplissez les informations ci-dessous.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Nom</Label>
+                  <Input id="name" placeholder="Alain Prost" />
+                </div>
+                 <div className="grid gap-2">
+                  <Label htmlFor="category">Catégorie entraînée</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner une catégorie" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Sénior">Sénior</SelectItem>
+                      <SelectItem value="U23">U23</SelectItem>
+                      <SelectItem value="U19">U19</SelectItem>
+                      <SelectItem value="U18">U18</SelectItem>
+                      <SelectItem value="U17">U17</SelectItem>
+                      <SelectItem value="U16">U16</SelectItem>
+                      <SelectItem value="U15">U15</SelectItem>
+                      <SelectItem value="U13">U13</SelectItem>
+                      <SelectItem value="U11">U11</SelectItem>
+                      <SelectItem value="U9">U9</SelectItem>
+                      <SelectItem value="U7">U7</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="specialization">Spécialisation</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner une spécialité" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="principal">Entraîneur Principal</SelectItem>
+                      <SelectItem value="adjoint">Entraîneur Adjoint</SelectItem>
+                      <SelectItem value="gardiens">Entraîneur des Gardiens</SelectItem>
+                      <SelectItem value="physique">Préparateur Physique</SelectItem>
+                      <SelectItem value="jeunes">Entraîneur Jeunes</SelectItem>
+                      <SelectItem value="analyste">Analyste Vidéo</SelectItem>
+                      <SelectItem value="feminines">Entraîneur Féminines</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="status">Statut</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner un statut" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="actif">Actif</SelectItem>
+                      <SelectItem value="inactif">Inactif</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="contact">Email</Label>
+                  <Input id="contact" placeholder="email@exemple.com" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="phone">Téléphone</Label>
+                  <Input id="phone" placeholder="0612345678" />
+                </div>
               </div>
-               <div className="grid gap-2">
-                <Label htmlFor="category">Catégorie entraînée</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner une catégorie" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Sénior">Sénior</SelectItem>
-                    <SelectItem value="U23">U23</SelectItem>
-                    <SelectItem value="U19">U19</SelectItem>
-                    <SelectItem value="U18">U18</SelectItem>
-                    <SelectItem value="U17">U17</SelectItem>
-                    <SelectItem value="U16">U16</SelectItem>
-                    <SelectItem value="U15">U15</SelectItem>
-                    <SelectItem value="U13">U13</SelectItem>
-                    <SelectItem value="U11">U11</SelectItem>
-                    <SelectItem value="U9">U9</SelectItem>
-                    <SelectItem value="U7">U7</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="specialization">Spécialisation</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner une spécialité" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="principal">Entraîneur Principal</SelectItem>
-                    <SelectItem value="adjoint">Entraîneur Adjoint</SelectItem>
-                    <SelectItem value="gardiens">Entraîneur des Gardiens</SelectItem>
-                    <SelectItem value="physique">Préparateur Physique</SelectItem>
-                    <SelectItem value="jeunes">Entraîneur Jeunes</SelectItem>
-                    <SelectItem value="analyste">Analyste Vidéo</SelectItem>
-                    <SelectItem value="feminines">Entraîneur Féminines</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="status">Statut</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un statut" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="actif">Actif</SelectItem>
-                    <SelectItem value="inactif">Inactif</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="contact">Email</Label>
-                <Input id="contact" placeholder="email@exemple.com" />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="phone">Téléphone</Label>
-                <Input id="phone" placeholder="0612345678" />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit">Sauvegarder</Button>
-            </DialogFooter>
+              <DialogFooter>
+                <Button type="submit">Sauvegarder</Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>

@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { playerPayments } from "@/lib/data";
-import { notFound, useParams } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Banknote, Calendar, CheckCircle, Clock, XCircle, User, PlusCircle } from "lucide-react";
@@ -23,13 +23,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 
-export default function PlayerPaymentDetailPage() {
-  const params = useParams();
-  const payment = useMemo(() => {
-    const id = Array.isArray(params.id) ? params.id[0] : params.id;
-    return playerPayments.find((p) => p.id.toString() === id);
-  }, [params.id]);
-
+export default function PlayerPaymentDetailPage({ params }: { params: { id: string } }) {
+  const payment = playerPayments.find((p) => p.id.toString() === params.id);
   const [open, setOpen] = useState(false);
 
   if (!payment) {
@@ -61,6 +56,13 @@ export default function PlayerPaymentDetailPage() {
             return null;
     }
   }
+
+  const handleAddComplement = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Logique pour ajouter un complément
+    console.log("Complément ajouté");
+    setOpen(false);
+  };
 
   const canAddComplement = payment.status === 'partiel' || payment.status === 'non payé';
 
@@ -122,21 +124,23 @@ export default function PlayerPaymentDetailPage() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Ajouter un paiement complémentaire</DialogTitle>
-                      <DialogDescription>
-                        Le montant restant à payer est de {payment.remainingAmount.toFixed(2)} DH.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="complementAmount">Montant du complément (DH)</Label>
-                        <Input id="complementAmount" type="number" placeholder={payment.remainingAmount.toFixed(2)} />
+                    <form onSubmit={handleAddComplement}>
+                      <DialogHeader>
+                        <DialogTitle>Ajouter un paiement complémentaire</DialogTitle>
+                        <DialogDescription>
+                          Le montant restant à payer est de {payment.remainingAmount.toFixed(2)} DH.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="complementAmount">Montant du complément (DH)</Label>
+                          <Input id="complementAmount" type="number" placeholder={payment.remainingAmount.toFixed(2)} />
+                        </div>
                       </div>
-                    </div>
-                    <DialogFooter>
-                      <Button type="submit">Sauvegarder</Button>
-                    </DialogFooter>
+                      <DialogFooter>
+                        <Button type="submit">Sauvegarder</Button>
+                      </DialogFooter>
+                    </form>
                   </DialogContent>
                 </Dialog>
             </CardFooter>

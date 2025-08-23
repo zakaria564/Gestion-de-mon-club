@@ -60,6 +60,13 @@ export default function PlayersPage() {
     acc[category].push(player);
     return acc;
   }, {} as Record<string, typeof players>);
+
+  const handleAddPlayer = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Logique pour ajouter un joueur
+    console.log("Nouveau joueur ajouté");
+    setOpen(false);
+  };
   
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -72,123 +79,125 @@ export default function PlayersPage() {
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-4xl">
-            <DialogHeader>
-              <DialogTitle>Ajouter un nouveau joueur</DialogTitle>
-              <DialogDescription>
-                Remplissez les informations ci-dessous pour ajouter un nouveau joueur.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid md:grid-cols-2 gap-6 py-4">
-              <div className="space-y-4">
-                  <h4 className="font-medium text-lg">Informations Personnelles</h4>
-                  <div className="grid gap-2">
-                      <Label htmlFor="name">Nom complet</Label>
-                      <Input id="name" placeholder="Jean Dupont" />
-                  </div>
-                  <div className="grid gap-2">
-                      <Label htmlFor="birthDate">Date de naissance</Label>
-                      <Input id="birthDate" type="date" />
-                  </div>
-                  <div className="grid gap-2">
-                      <Label htmlFor="address">Adresse</Label>
-                      <Input id="address" placeholder="123 Rue de Paris" />
-                  </div>
-                  <div className="grid gap-2">
-                      <Label htmlFor="photo">Photo</Label>
-                      <Input id="photo" type="file" />
-                  </div>
+            <form onSubmit={handleAddPlayer}>
+              <DialogHeader>
+                <DialogTitle>Ajouter un nouveau joueur</DialogTitle>
+                <DialogDescription>
+                  Remplissez les informations ci-dessous pour ajouter un nouveau joueur.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid md:grid-cols-2 gap-6 py-4">
+                <div className="space-y-4">
+                    <h4 className="font-medium text-lg">Informations Personnelles</h4>
+                    <div className="grid gap-2">
+                        <Label htmlFor="name">Nom complet</Label>
+                        <Input id="name" placeholder="Jean Dupont" />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="birthDate">Date de naissance</Label>
+                        <Input id="birthDate" type="date" />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="address">Adresse</Label>
+                        <Input id="address" placeholder="123 Rue de Paris" />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="photo">Photo</Label>
+                        <Input id="photo" type="file" />
+                    </div>
+                </div>
+                <div className="space-y-4">
+                    <h4 className="font-medium text-lg">Informations Sportives</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="poste">Poste</Label>
+                            <Select>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="gardien">Gardien</SelectItem>
+                                    <SelectItem value="défenseur-central">Défenseur Central</SelectItem>
+                                    <SelectItem value="latéral-droit">Latéral Droit</SelectItem>
+                                    <SelectItem value="latéral-gauche">Latéral Gauche</SelectItem>
+                                    <SelectItem value="milieu-défensif">Milieu Défensif</SelectItem>
+                                    <SelectItem value="milieu-central">Milieu Central</SelectItem>
+                                    <SelectItem value="milieu-offensif">Milieu Offensif</SelectItem>
+                                    <SelectItem value="ailier-droit">Ailier Droit</SelectItem>
+                                    <SelectItem value="ailier-gauche">Ailier Gauche</SelectItem>
+                                    <SelectItem value="avant-centre">Avant-centre</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="status">Statut</Label>
+                            <Select>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="actif">Actif</SelectItem>
+                                    <SelectItem value="blesse">Blessé</SelectItem>
+                                    <SelectItem value="suspendu">Suspendu</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="category">Catégorie</Label>
+                            <Select>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Sénior">Sénior</SelectItem>
+                                    <SelectItem value="U23">U23</SelectItem>
+                                    <SelectItem value="U19">U19</SelectItem>
+                                    <SelectItem value="U18">U18</SelectItem>
+                                    <SelectItem value="U17">U17</SelectItem>
+                                    <SelectItem value="U16">U16</SelectItem>
+                                    <SelectItem value="U15">U15</SelectItem>
+                                    <SelectItem value="U13">U13</SelectItem>
+                                    <SelectItem value="U11">U11</SelectItem>
+                                    <SelectItem value="U9">U9</SelectItem>
+                                    <SelectItem value="U7">U7</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="jerseyNumber">Numéro de maillot</Label>
+                            <Input id="jerseyNumber" type="number" placeholder="10" />
+                        </div>
+                    </div>
+                </div>
+                <div className="space-y-4">
+                    <h4 className="font-medium text-lg">Contact</h4>
+                    <div className="grid gap-2">
+                        <Label htmlFor="phone">Téléphone</Label>
+                        <Input id="phone" placeholder="0612345678" />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" type="email" placeholder="jean@exemple.com" />
+                    </div>
+                </div>
+                 <div className="space-y-4">
+                    <h4 className="font-medium text-lg">Tuteur Légal</h4>
+                    <div className="grid gap-2">
+                        <Label htmlFor="tutorName">Nom du tuteur</Label>
+                        <Input id="tutorName" placeholder="Jacques Dupont" />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="tutorPhone">Téléphone du tuteur</Label>
+                        <Input id="tutorPhone" placeholder="0611223344" />
+                    </div>
+                </div>
               </div>
-              <div className="space-y-4">
-                  <h4 className="font-medium text-lg">Informations Sportives</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                          <Label htmlFor="poste">Poste</Label>
-                          <Select>
-                              <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                  <SelectItem value="gardien">Gardien</SelectItem>
-                                  <SelectItem value="défenseur-central">Défenseur Central</SelectItem>
-                                  <SelectItem value="latéral-droit">Latéral Droit</SelectItem>
-                                  <SelectItem value="latéral-gauche">Latéral Gauche</SelectItem>
-                                  <SelectItem value="milieu-défensif">Milieu Défensif</SelectItem>
-                                  <SelectItem value="milieu-central">Milieu Central</SelectItem>
-                                  <SelectItem value="milieu-offensif">Milieu Offensif</SelectItem>
-                                  <SelectItem value="ailier-droit">Ailier Droit</SelectItem>
-                                  <SelectItem value="ailier-gauche">Ailier Gauche</SelectItem>
-                                  <SelectItem value="avant-centre">Avant-centre</SelectItem>
-                              </SelectContent>
-                          </Select>
-                      </div>
-                      <div className="grid gap-2">
-                          <Label htmlFor="status">Statut</Label>
-                          <Select>
-                              <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                  <SelectItem value="actif">Actif</SelectItem>
-                                  <SelectItem value="blesse">Blessé</SelectItem>
-                                  <SelectItem value="suspendu">Suspendu</SelectItem>
-                              </SelectContent>
-                          </Select>
-                      </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                          <Label htmlFor="category">Catégorie</Label>
-                          <Select>
-                              <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                  <SelectItem value="Sénior">Sénior</SelectItem>
-                                  <SelectItem value="U23">U23</SelectItem>
-                                  <SelectItem value="U19">U19</SelectItem>
-                                  <SelectItem value="U18">U18</SelectItem>
-                                  <SelectItem value="U17">U17</SelectItem>
-                                  <SelectItem value="U16">U16</SelectItem>
-                                  <SelectItem value="U15">U15</SelectItem>
-                                  <SelectItem value="U13">U13</SelectItem>
-                                  <SelectItem value="U11">U11</SelectItem>
-                                  <SelectItem value="U9">U9</SelectItem>
-                                  <SelectItem value="U7">U7</SelectItem>
-                              </SelectContent>
-                          </Select>
-                      </div>
-                      <div className="grid gap-2">
-                          <Label htmlFor="jerseyNumber">Numéro de maillot</Label>
-                          <Input id="jerseyNumber" type="number" placeholder="10" />
-                      </div>
-                  </div>
-              </div>
-              <div className="space-y-4">
-                  <h4 className="font-medium text-lg">Contact</h4>
-                  <div className="grid gap-2">
-                      <Label htmlFor="phone">Téléphone</Label>
-                      <Input id="phone" placeholder="0612345678" />
-                  </div>
-                  <div className="grid gap-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="jean@exemple.com" />
-                  </div>
-              </div>
-               <div className="space-y-4">
-                  <h4 className="font-medium text-lg">Tuteur Légal</h4>
-                  <div className="grid gap-2">
-                      <Label htmlFor="tutorName">Nom du tuteur</Label>
-                      <Input id="tutorName" placeholder="Jacques Dupont" />
-                  </div>
-                  <div className="grid gap-2">
-                      <Label htmlFor="tutorPhone">Téléphone du tuteur</Label>
-                      <Input id="tutorPhone" placeholder="0611223344" />
-                  </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit">Sauvegarder</Button>
-            </DialogFooter>
+              <DialogFooter>
+                <Button type="submit">Sauvegarder</Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>

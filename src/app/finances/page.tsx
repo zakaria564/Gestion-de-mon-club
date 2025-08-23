@@ -70,6 +70,21 @@ export default function FinancesPage() {
     }
   };
 
+  const handleAddPlayerPayment = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Logique pour ajouter un paiement de joueur
+    console.log("Nouveau paiement de joueur ajouté");
+    setPlayerPaymentOpen(false);
+  };
+
+  const handleAddCoachSalary = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Logique pour ajouter un salaire d'entraîneur
+    console.log("Nouveau salaire d'entraîneur ajouté");
+    setCoachSalaryOpen(false);
+  };
+
+
   return (
     <div className="flex-1 space-y-8 p-4 md:p-8 pt-6">
       <div>
@@ -82,40 +97,42 @@ export default function FinancesPage() {
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Ajouter un paiement de joueur</DialogTitle>
-                  <DialogDescription>
-                    Remplissez les informations ci-dessous.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="player">Joueur</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un joueur" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {players.map(player => <SelectItem key={player.id} value={player.id.toString()}>{player.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                <form onSubmit={handleAddPlayerPayment}>
+                  <DialogHeader>
+                    <DialogTitle>Ajouter un paiement de joueur</DialogTitle>
+                    <DialogDescription>
+                      Remplissez les informations ci-dessous.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="player">Joueur</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionner un joueur" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {players.map(player => <SelectItem key={player.id} value={player.id.toString()}>{player.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="totalAmount">Montant total (DH)</Label>
+                      <Input id="totalAmount" type="number" placeholder="1500" />
+                    </div>
+                     <div className="grid gap-2">
+                      <Label htmlFor="paidAmount">Montant payé (DH)</Label>
+                      <Input id="paidAmount" type="number" placeholder="750" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="dueDate">Date d'échéance</Label>
+                      <Input id="dueDate" type="date" />
+                    </div>
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="totalAmount">Montant total (DH)</Label>
-                    <Input id="totalAmount" type="number" placeholder="1500" />
-                  </div>
-                   <div className="grid gap-2">
-                    <Label htmlFor="paidAmount">Montant payé (DH)</Label>
-                    <Input id="paidAmount" type="number" placeholder="750" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="dueDate">Date d'échéance</Label>
-                    <Input id="dueDate" type="date" />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit">Sauvegarder</Button>
-                </DialogFooter>
+                  <DialogFooter>
+                    <Button type="submit">Sauvegarder</Button>
+                  </DialogFooter>
+                </form>
               </DialogContent>
             </Dialog>
         </div>
@@ -174,44 +191,46 @@ export default function FinancesPage() {
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Ajouter un salaire d'entraîneur</DialogTitle>
-                  <DialogDescription>
-                    Remplissez les informations ci-dessous.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="coach">Entraîneur</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un entraîneur" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {coaches.map(coach => <SelectItem key={coach.id} value={coach.id.toString()}>{coach.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                <form onSubmit={handleAddCoachSalary}>
+                  <DialogHeader>
+                    <DialogTitle>Ajouter un salaire d'entraîneur</DialogTitle>
+                    <DialogDescription>
+                      Remplissez les informations ci-dessous.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="coach">Entraîneur</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionner un entraîneur" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {coaches.map(coach => <SelectItem key={coach.id} value={coach.id.toString()}>{coach.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="totalAmount">Salaire Total (DH)</Label>
+                      <Input id="totalAmount" type="number" placeholder="20000" value={newCoachSalary.totalAmount} onChange={handleCoachSalaryChange} />
+                    </div>
+                     <div className="grid gap-2">
+                      <Label htmlFor="paidAmount">Montant payé (DH)</Label>
+                      <Input id="paidAmount" type="number" placeholder="10000" value={newCoachSalary.paidAmount} onChange={handleCoachSalaryChange} />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="remainingAmount">Reste à payer (DH)</Label>
+                      <Input id="remainingAmount" type="number" value={remainingAmount} readOnly className="bg-muted" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="dueDate">Mois de paie</Label>
+                      <Input id="dueDate" type="month" />
+                    </div>
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="totalAmount">Salaire Total (DH)</Label>
-                    <Input id="totalAmount" type="number" placeholder="20000" value={newCoachSalary.totalAmount} onChange={handleCoachSalaryChange} />
-                  </div>
-                   <div className="grid gap-2">
-                    <Label htmlFor="paidAmount">Montant payé (DH)</Label>
-                    <Input id="paidAmount" type="number" placeholder="10000" value={newCoachSalary.paidAmount} onChange={handleCoachSalaryChange} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="remainingAmount">Reste à payer (DH)</Label>
-                    <Input id="remainingAmount" type="number" value={remainingAmount} readOnly className="bg-muted" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="dueDate">Mois de paie</Label>
-                    <Input id="dueDate" type="month" />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit">Sauvegarder</Button>
-                </DialogFooter>
+                  <DialogFooter>
+                    <Button type="submit">Sauvegarder</Button>
+                  </DialogFooter>
+                </form>
               </DialogContent>
             </Dialog>
         </div>
