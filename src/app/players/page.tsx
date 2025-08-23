@@ -25,6 +25,15 @@ export default function PlayersPage() {
         return 'outline';
     }
   };
+
+  const groupedPlayers = players.reduce((acc, player) => {
+    const { category } = player;
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(player);
+    return acc;
+  }, {} as Record<string, typeof players>);
   
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -35,30 +44,35 @@ export default function PlayersPage() {
         </Button>
       </div>
       
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {players.map((player) => (
-          <Link href={`/players/${player.id}`} key={player.id}>
-            <Card className="flex flex-col h-full hover:shadow-lg transition-shadow">
-              <CardHeader className="flex flex-row items-center gap-4 p-4">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={player.photo} alt={player.name} data-ai-hint="player photo" />
-                  <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <CardTitle className="text-lg font-bold">{player.name}</CardTitle>
-                  <CardDescription>{player.poste}</CardDescription>
-                </div>
-              </CardHeader>
-              <CardContent className="p-4 pt-0">
-                  <div className="flex justify-between items-center">
-                      <Badge variant="outline" className="text-sm">{player.category}</Badge>
-                      <Badge variant={getBadgeVariant(player.status) as any} className="text-sm">{player.status}</Badge>
-                  </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-      </div>
+      {Object.entries(groupedPlayers).map(([category, playersInCategory]) => (
+        <div key={category} className="space-y-4">
+            <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {playersInCategory.map((player) => (
+              <Link href={`/players/${player.id}`} key={player.id}>
+                <Card className="flex flex-col h-full hover:shadow-lg transition-shadow">
+                  <CardHeader className="flex flex-row items-center gap-4 p-4">
+                    <Avatar className="h-20 w-20">
+                      <AvatarImage src={player.photo} alt={player.name} data-ai-hint="player photo" />
+                      <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <CardTitle className="text-lg font-bold">{player.name}</CardTitle>
+                      <CardDescription>{player.poste}</CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                      <div className="flex justify-between items-center">
+                          <Badge variant="outline" className="text-sm">{player.category}</Badge>
+                          <Badge variant={getBadgeVariant(player.status) as any} className="text-sm">{player.status}</Badge>
+                      </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+            </div>
+        </div>
+      ))}
     </div>
   );
 }
