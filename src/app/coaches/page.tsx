@@ -9,18 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { coaches as initialCoaches } from "@/lib/data";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, UserCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -39,11 +31,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 export default function CoachesPage() {
   const [coaches, setCoaches] = useState(initialCoaches);
   const [open, setOpen] = useState(false);
+
+    const getBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'Actif':
+        return 'default';
+      case 'Inactif':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
+
+  const groupedCoaches = coaches.reduce((acc, coach) => {
+    const { category } = coach;
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(coach);
+    return acc;
+  }, {} as Record<string, typeof coaches>);
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -132,40 +145,34 @@ export default function CoachesPage() {
           </DialogContent>
         </Dialog>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Liste des Entraîneurs</CardTitle>
-          <CardDescription>
-            Gérez les informations des entraîneurs et du staff technique.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nom</TableHead>
-                <TableHead>Spécialisation</TableHead>
-                <TableHead>Catégorie</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Contact</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {coaches.map((coach) => (
-                <TableRow key={coach.id}>
-                  <TableCell className="font-medium">{coach.name}</TableCell>
-                  <TableCell>{coach.specialization}</TableCell>
-                  <TableCell>{coach.category}</TableCell>
-                  <TableCell>
-                    <Badge>{coach.status}</Badge>
-                  </TableCell>
-                  <TableCell>{coach.contact}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+
+       {Object.entries(groupedCoaches).map(([category, coachesInCategory]) => (
+        <div key={category} className="space-y-4">
+            <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {coachesInCategory.map((coach) => (
+                <Card key={coach.id} className="flex flex-col h-full hover:shadow-lg transition-shadow">
+                  <CardHeader className="flex flex-row items-center gap-4 p-4">
+                    <Avatar className="h-20 w-20">
+                      <AvatarImage src={`https://placehold.co/80x80.png`} alt={coach.name} data-ai-hint="coach photo" />
+                      <AvatarFallback>{coach.name.substring(0, 2)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <CardTitle className="text-lg font-bold">{coach.name}</CardTitle>
+                      <CardDescription>{coach.specialization}</CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                      <div className="flex justify-between items-center">
+                          <Badge variant="outline" className="text-sm">{coach.category}</Badge>
+                          <Badge variant={getBadgeVariant(coach.status) as any} className="text-sm">{coach.status}</Badge>
+                      </div>
+                  </CardContent>
+                </Card>
+            ))}
+            </div>
+        </div>
+      ))}
     </div>
   );
 }
