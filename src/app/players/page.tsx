@@ -54,6 +54,8 @@ export default function PlayersPage() {
               <TableRow>
                 <TableHead>Photo</TableHead>
                 <TableHead>Nom</TableHead>
+                <TableHead>Numéro de maillot</TableHead>
+                <TableHead>Catégorie</TableHead>
                 <TableHead>Date de naissance</TableHead>
                 <TableHead>Poste</TableHead>
                 <TableHead>Statut</TableHead>
@@ -74,6 +76,8 @@ export default function PlayersPage() {
                     </Avatar>
                   </TableCell>
                   <TableCell className="font-medium">{player.name}</TableCell>
+                  <TableCell>{player.jerseyNumber}</TableCell>
+                  <TableCell>{player.category}</TableCell>
                   <TableCell>{player.birthDate}</TableCell>
                   <TableCell>{player.poste}</TableCell>
                   <TableCell>
