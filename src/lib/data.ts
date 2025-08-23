@@ -1,3 +1,4 @@
+
 export const clubStats = {
   totalPlayers: 45,
   totalCoaches: 5,
@@ -15,9 +16,9 @@ export const players = [
 
 
 export const coaches = [
-  { id: 1, name: 'Alain Prost', specialization: 'Équipe principale', status: 'Actif', contact: 'alain.p@email.com' },
-  { id: 2, name: 'Sophie Marceau', specialization: 'Équipe jeune', status: 'Actif', contact: 'sophie.m@email.com' },
-  { id: 3, name: 'Gérard Depardieu', specialization: 'Entraînement des gardiens', status: 'Actif', contact: 'gerard.d@email.com' },
+  { id: 1, name: 'Alain Prost', specialization: 'Équipe principale', status: 'Actif', contact: 'alain.p@email.com', category: 'Sénior', phone: '0612345678' },
+  { id: 2, name: 'Sophie Marceau', specialization: 'Équipe jeune', status: 'Actif', contact: 'sophie.m@email.com', category: 'U19', phone: '0623456789' },
+  { id: 3, name: 'Gérard Depardieu', specialization: 'Entraînement des gardiens', status: 'Actif', contact: 'gerard.d@email.com', category: 'Sénior', phone: '0634567890' },
 ];
 
 export const calendarEvents = [
