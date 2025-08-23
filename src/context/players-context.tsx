@@ -13,6 +13,7 @@ interface PlayersContextType {
   addPlayer: (player: Omit<Player, 'id' | 'uid'>) => Promise<void>;
   updatePlayer: (player: Player) => Promise<void>;
   deletePlayer: (id: string) => Promise<void>;
+  getPlayerById: (id: string) => Player | undefined;
 }
 
 const PlayersContext = createContext<PlayersContextType | undefined>(undefined);
@@ -92,8 +93,12 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const getPlayerById = useCallback((id: string) => {
+    return players.find((player) => player.id === id);
+  }, [players]);
+
   return (
-    <PlayersContext.Provider value={{ players, loading, addPlayer, updatePlayer, deletePlayer }}>
+    <PlayersContext.Provider value={{ players, loading, addPlayer, updatePlayer, deletePlayer, getPlayerById }}>
       {children}
     </PlayersContext.Provider>
   );

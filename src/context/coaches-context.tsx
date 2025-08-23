@@ -13,6 +13,7 @@ interface CoachesContextType {
   addCoach: (coach: Omit<Coach, 'id' | 'uid'>) => Promise<void>;
   updateCoach: (coach: Coach) => Promise<void>;
   deleteCoach: (id: string) => Promise<void>;
+  getCoachById: (id: string) => Coach | undefined;
 }
 
 const CoachesContext = createContext<CoachesContextType | undefined>(undefined);
@@ -91,9 +92,13 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
       console.error("Error deleting coach: ", err);
     }
   };
+  
+  const getCoachById = useCallback((id: string) => {
+    return coaches.find((coach) => coach.id === id);
+  }, [coaches]);
 
   return (
-    <CoachesContext.Provider value={{ coaches, loading, addCoach, updateCoach, deleteCoach }}>
+    <CoachesContext.Provider value={{ coaches, loading, addCoach, updateCoach, deleteCoach, getCoachById }}>
       {children}
     </CoachesContext.Provider>
   );

@@ -28,14 +28,11 @@ export function CoachDetailClient({ id }: { id: string }) {
     throw new Error("CoachDetailClient must be used within a CoachesProvider");
   }
 
-  const { coaches, loading, updateCoach, deleteCoach } = context;
+  const { loading, updateCoach, deleteCoach, getCoachById } = context;
 
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const coach = useMemo(() => {
-    if (!id || !coaches) return null;
-    return coaches.find((c) => c.id === id);
-  }, [id, coaches]);
+  const coach = useMemo(() => getCoachById(id), [id, getCoachById]);
   
   const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null);
 

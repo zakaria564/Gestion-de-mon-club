@@ -31,14 +31,11 @@ export function PlayerDetailClient({ id }: { id: string }) {
     throw new Error("PlayerDetailClient must be used within a PlayersProvider");
   }
 
-  const { players, loading, updatePlayer, deletePlayer } = context;
+  const { loading, updatePlayer, deletePlayer, getPlayerById } = context;
 
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const player = useMemo(() => {
-    if (!id || !players) return null;
-    return players.find((p) => p.id === id);
-  }, [id, players]);
+  const player = useMemo(() => getPlayerById(id), [id, getPlayerById]);
 
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
 

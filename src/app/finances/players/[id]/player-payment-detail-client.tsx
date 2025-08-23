@@ -31,12 +31,9 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
     throw new Error("PlayerPaymentDetailClient must be used within a FinancialProvider");
   }
 
-  const { playerPayments, loading, updatePlayerPayment } = context;
+  const { loading, updatePlayerPayment, getPlayerPaymentById } = context;
 
-  const payment = useMemo(() => {
-    if (!id || !playerPayments) return null;
-    return playerPayments.find((p) => p.id === id);
-  }, [id, playerPayments]);
+  const payment = useMemo(() => getPlayerPaymentById(id), [id, getPlayerPaymentById]);
 
   const [open, setOpen] = useState(false);
   const [complementAmount, setComplementAmount] = useState('');

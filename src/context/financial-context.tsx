@@ -17,6 +17,8 @@ interface FinancialContextType {
   updateCoachSalary: (id: string, newAmount: number) => Promise<void>;
   playerPaymentsOverview: Overview;
   coachSalariesOverview: Overview;
+  getPlayerPaymentById: (id: string) => Payment | undefined;
+  getCoachSalaryById: (id: string) => Payment | undefined;
 }
 
 const FinancialContext = createContext<FinancialContextType | undefined>(undefined);
@@ -161,6 +163,14 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
         return acc;
     }, { totalDue: 0, paymentsMade: 0, paymentsRemaining: 0 });
   };
+  
+  const getPlayerPaymentById = useCallback((id: string) => {
+    return playerPayments.find((p) => p.id === id);
+  }, [playerPayments]);
+
+  const getCoachSalaryById = useCallback((id: string) => {
+    return coachSalaries.find((s) => s.id === id);
+  }, [coachSalaries]);
 
   return (
     <FinancialContext.Provider value={{ 
@@ -172,7 +182,9 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
       updatePlayerPayment,
       updateCoachSalary,
       playerPaymentsOverview: calculateOverview(playerPayments),
-      coachSalariesOverview: calculateOverview(coachSalaries)
+      coachSalariesOverview: calculateOverview(coachSalaries),
+      getPlayerPaymentById,
+      getCoachSalaryById
     }}>
       {children}
     </FinancialContext.Provider>

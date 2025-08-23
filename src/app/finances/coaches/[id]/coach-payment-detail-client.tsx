@@ -31,12 +31,9 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
     throw new Error("CoachPaymentDetailClient must be used within a FinancialProvider");
   }
 
-  const { coachSalaries, loading, updateCoachSalary } = context;
+  const { loading, updateCoachSalary, getCoachSalaryById } = context;
   
-  const payment = useMemo(() => {
-    if (!id || !coachSalaries) return null;
-    return coachSalaries.find((p) => p.id === id);
-  }, [id, coachSalaries]);
+  const payment = useMemo(() => getCoachSalaryById(id), [id, getCoachSalaryById]);
   
   const [open, setOpen] = useState(false);
   const [complementAmount, setComplementAmount] = useState('');
