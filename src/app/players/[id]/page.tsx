@@ -3,7 +3,7 @@
 
 import { useMemo, useState, useContext, useEffect } from 'react';
 import { Player } from "@/lib/data";
-import { notFound, useRouter, useParams } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -18,9 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { PlayersContext } from '@/context/players-context';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function PlayerDetailPage() {
-  const params = useParams();
-  const id = params.id as string;
+export default function PlayerDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const router = useRouter();
   
   const context = useContext(PlayersContext);
