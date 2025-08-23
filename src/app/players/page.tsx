@@ -36,6 +36,7 @@ import React from 'react';
 import { PlayersContext } from "@/context/players-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const emptyPlayer: Omit<Player, 'id'> = {
     name: '',
@@ -141,15 +142,16 @@ export default function PlayersPage() {
       </div>
 
        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
             <DialogHeader>
               <DialogTitle>Ajouter un joueur</DialogTitle>
               <DialogDescription>
                 Remplissez les informations ci-dessous.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit}>
-                <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 py-4 pr-6">
+            <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
+                <ScrollArea className="flex-1 -mr-6 pr-6">
+                <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 py-4 ">
                     <div className="space-y-4">
                         <h4 className="font-medium text-lg">Informations Personnelles</h4>
                         <div className="grid gap-2">
@@ -226,7 +228,7 @@ export default function PlayersPage() {
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="jerseyNumber">Numéro de maillot</Label>
-                                <Input id="jerseyNumber" type="number" placeholder="10" value={selectedPlayer.jerseyNumber > 0 ? selectedPlayer.jerseyNumber : ''} onChange={handleInputChange} required />
+                                <Input id="jerseyNumber" type="number" placeholder="10" value={selectedPlayer.jerseyNumber || ''} onChange={handleInputChange} required />
                             </div>
                         </div>
                     </div>
@@ -263,7 +265,8 @@ export default function PlayersPage() {
                         )}
                     </div>
                 </div>
-                <DialogFooter className="pt-4 border-t">
+                </ScrollArea>
+                <DialogFooter className="pt-4 border-t -mx-6 px-6 bg-background">
                     <Button type="submit">Sauvegarder</Button>
                 </DialogFooter>
             </form>
