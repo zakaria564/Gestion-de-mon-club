@@ -2,7 +2,7 @@
 "use client"
 
 import { useMemo, useState, useContext, useEffect } from 'react';
-import { Coach } from "@/lib/data";
+import { type Coach } from "@/lib/data";
 import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,6 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CoachesContext } from '@/context/coaches-context';
+
+export const dynamic = 'force-dynamic';
 
 export default function CoachDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -271,5 +273,3 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 }
-
-    

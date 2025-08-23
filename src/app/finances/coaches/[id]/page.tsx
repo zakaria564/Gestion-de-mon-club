@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { FinancialContext } from "@/context/financial-context";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
+export const dynamic = 'force-dynamic';
 
 export default function CoachPaymentDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -200,7 +201,3 @@ export default function CoachPaymentDetailPage({ params }: { params: { id: strin
     </div>
   );
 }
-
-    
-
-    
