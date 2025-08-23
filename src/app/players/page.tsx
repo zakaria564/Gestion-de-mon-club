@@ -115,7 +115,9 @@ export default function PlayersPage() {
   
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const jerseyNumber = parseInt(String(selectedPlayer.jerseyNumber), 10);
+    const jerseyNumberValue = (event.target as any).jerseyNumber.value;
+    const jerseyNumber = parseInt(jerseyNumberValue, 10);
+
     if (isNaN(jerseyNumber) || jerseyNumber <= 0) {
       toast({
         variant: "destructive",
@@ -234,7 +236,7 @@ export default function PlayersPage() {
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="jerseyNumber">Numéro de maillot</Label>
-                            <Input id="jerseyNumber" type="number" placeholder="10" value={selectedPlayer.jerseyNumber || ''} onChange={handleInputChange} required />
+                            <Input id="jerseyNumber" type="number" placeholder="10" defaultValue={selectedPlayer.jerseyNumber > 0 ? selectedPlayer.jerseyNumber : ''} required />
                         </div>
                     </div>
                 </div>
@@ -330,3 +332,5 @@ export default function PlayersPage() {
     </div>
   );
 }
+
+    
