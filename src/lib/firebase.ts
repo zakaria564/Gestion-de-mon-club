@@ -18,6 +18,33 @@ const firebaseConfig = {
   appId: "1:1047250842586:web:2d2b9c6a12d776fdb286e3"
 };
 
+
+// #############################################################################
+// #  IMPORTANT: FIREBASE SECURITY RULES                                       #
+// #############################################################################
+// #
+// # Your application will not be able to save or load data until you configure
+// # your Firestore security rules in the Firebase Console.
+// #
+// # 1. Go to the Firebase Console: https://console.firebase.google.com/
+// # 2. Select your project: "gestion-de-mon-club"
+// # 3. Go to "Firestore Database" > "Rules" tab.
+// # 4. Replace the existing rules with:
+// #
+// #    rules_version = '2';
+// #    service cloud.firestore {
+// #      match /databases/{database}/documents {
+// #        match /{document=**} {
+// #          allow read, write: if true;
+// #        }
+// #      }
+// #    }
+// #
+// # 5. Click "Publish".
+// #
+// #############################################################################
+
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
