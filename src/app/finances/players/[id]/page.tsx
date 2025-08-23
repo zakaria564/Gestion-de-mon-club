@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useContext } from "react";
+import { useState, useMemo, useContext, useEffect } from "react";
 import { notFound, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +41,27 @@ export default function PlayerPaymentDetailPage() {
 
   const [open, setOpen] = useState(false);
   const [complementAmount, setComplementAmount] = useState('');
+  const [formattedTransactions, setFormattedTransactions] = useState<{ id: number; date: string; amount: number; }[]>([]);
+
+  useEffect(() => {
+    if (payment) {
+      setFormattedTransactions(
+        payment.transactions.map(tx => ({
+          ...tx,
+          date: new Date(tx.date).toLocaleString(),
+        }))
+      );
+    }
+  }, [payment]);
+
+  const formattedDueDate = useMemo(() => {
+    if (!payment) return '';
+    const date = new Date(payment.dueDate);
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const year = date.getUTCFullYear();
+    return `${day}/${month}/${year}`;
+  }, [payment]);
 
 
   if (!payment) {
@@ -131,11 +152,11 @@ export default function PlayerPaymentDetailPage() {
                  <div className="flex items-center gap-4 text-lg">
                     <CalendarIcon className="h-6 w-6 text-muted-foreground" />
                     <span>Date d'échéance:</span>
-                    <span className="font-bold ml-auto">{new Date(payment.dueDate).toLocaleDateString()}</span>
+                    <span className="font-bold ml-auto">{formattedDueDate}</span>
                 </div>
             </div>
 
-            {payment.transactions.length > 0 && (
+            {formattedTransactions.length > 0 && (
                 <div className="mt-8">
                     <h3 className="text-xl font-bold mb-4 flex items-center"><History className="mr-2 h-6 w-6" />Historique des transactions</h3>
                     <Table>
@@ -146,9 +167,9 @@ export default function PlayerPaymentDetailPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {payment.transactions.map(tx => (
+                            {formattedTransactions.map(tx => (
                                 <TableRow key={tx.id}>
-                                    <TableCell>{new Date(tx.date).toLocaleString()}</TableCell>
+                                    <TableCell>{tx.date}</TableCell>
                                     <TableCell className="text-right font-medium">{tx.amount.toFixed(2)}</TableCell>
                                 </TableRow>
                             ))}

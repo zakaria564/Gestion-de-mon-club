@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useContext } from "react";
+import { useState, useMemo, useContext, useEffect } from "react";
 import { notFound, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +41,18 @@ export default function CoachPaymentDetailPage() {
   
   const [open, setOpen] = useState(false);
   const [complementAmount, setComplementAmount] = useState('');
+  const [formattedTransactions, setFormattedTransactions] = useState<{ id: number; date: string; amount: number; }[]>([]);
+
+  useEffect(() => {
+    if (payment) {
+      setFormattedTransactions(
+        payment.transactions.map(tx => ({
+          ...tx,
+          date: new Date(tx.date).toLocaleString(),
+        }))
+      );
+    }
+  }, [payment]);
 
   if (!payment) {
     notFound();
@@ -133,7 +145,7 @@ export default function CoachPaymentDetailPage() {
                     <span className="font-bold ml-auto">{payment.dueDate}</span>
                 </div>
             </div>
-            {payment.transactions.length > 0 && (
+            {formattedTransactions.length > 0 && (
                 <div className="mt-8">
                     <h3 className="text-xl font-bold mb-4 flex items-center"><History className="mr-2 h-6 w-6" />Historique des transactions</h3>
                     <Table>
@@ -144,9 +156,9 @@ export default function CoachPaymentDetailPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {payment.transactions.map(tx => (
+                            {formattedTransactions.map(tx => (
                                 <TableRow key={tx.id}>
-                                    <TableCell>{new Date(tx.date).toLocaleString()}</TableCell>
+                                    <TableCell>{tx.date}</TableCell>
                                     <TableCell className="text-right font-medium">{tx.amount.toFixed(2)}</TableCell>
                                 </TableRow>
                             ))}
