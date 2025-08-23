@@ -50,7 +50,7 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [coachesCollectionRef]);
+  }, []);
 
   useEffect(() => {
     fetchCoaches();
@@ -67,12 +67,13 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
 
   const addCoach = async (coach: CoachWithoutId) => {
     try {
-        let photoURL = '';
+        const docRef = await addDoc(coachesCollectionRef, { ...coach, photo: '' });
+
         if (coach.photo) {
-            const tempId = doc(collection(db, '_')).id;
-            photoURL = await uploadPhoto(coach.photo, tempId);
+            const photoURL = await uploadPhoto(coach.photo, docRef.id);
+            await updateDoc(docRef, { photo: photoURL });
         }
-        await addDoc(coachesCollectionRef, { ...coach, photo: photoURL });
+        
         await fetchCoaches();
     } catch (error) {
       console.error("Error adding coach: ", error);
