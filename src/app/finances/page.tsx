@@ -1,21 +1,16 @@
+
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { playerPayments, coachSalaries, playerPaymentsOverview, coachSalariesOverview } from "@/lib/data";
 import { Banknote, Users, UserCheck } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 export default function FinancesPage() {
   const getBadgeVariant = (status: string) => {
@@ -64,49 +59,39 @@ export default function FinancesPage() {
             </CardContent>
           </Card>
         </div>
-        <Card className="mt-4">
-          <CardHeader>
-            <CardTitle>Détails des Cotisations</CardTitle>
-            <CardDescription>
-              Suivi des cotisations des joueurs.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Joueur</TableHead>
-                  <TableHead>Montant Total</TableHead>
-                  <TableHead>Avance</TableHead>
-                  <TableHead>Reste à payer</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Date de paiement</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {playerPayments.map((payment) => (
-                  <TableRow key={payment.id}>
-                    <TableCell className="font-medium">{payment.member}</TableCell>
-                    <TableCell>{payment.totalAmount.toFixed(2)} DH</TableCell>
-                    <TableCell>{payment.paidAmount.toFixed(2)} DH</TableCell>
-                    <TableCell>{payment.remainingAmount.toFixed(2)} DH</TableCell>
-                    <TableCell>
-                      <Badge variant={getBadgeVariant(payment.status) as any}>
-                        {payment.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{payment.dueDate}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
+          {playerPayments.map((payment) => (
+            <Card key={payment.id} className="flex flex-col">
+              <CardHeader>
+                <CardTitle>{payment.member}</CardTitle>
+                <CardDescription>Date de paiement: {payment.dueDate}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-grow space-y-4">
+                <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                        <span>Payé</span>
+                        <span className="font-semibold">{payment.paidAmount.toFixed(2)} DH</span>
+                    </div>
+                    <Progress value={(payment.paidAmount / payment.totalAmount) * 100} />
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Total: {payment.totalAmount.toFixed(2)} DH</span>
+                        <span>Restant: {payment.remainingAmount.toFixed(2)} DH</span>
+                    </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                 <Badge variant={getBadgeVariant(payment.status) as any} className="w-full justify-center">
+                    {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                  </Badge>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       </div>
 
-      <div>
+      <div className="mt-12">
         <h2 className="text-3xl font-bold tracking-tight flex items-center"><UserCheck className="mr-2 h-8 w-8 text-primary" /> Entraîneurs (Salaires)</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
+         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Salaire mensuel (en DH)</CardTitle>
@@ -135,45 +120,37 @@ export default function FinancesPage() {
             </CardContent>
           </Card>
         </div>
-        <Card className="mt-4">
-          <CardHeader>
-            <CardTitle>Détails des Salaires</CardTitle>
-            <CardDescription>
-              Suivi des salaires des entraîneurs.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Entraîneur</TableHead>
-                  <TableHead>Montant Total</TableHead>
-                  <TableHead>Avance</TableHead>
-                  <TableHead>Reste à payer</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Date de paiement</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {coachSalaries.map((payment) => (
-                  <TableRow key={payment.id}>
-                    <TableCell className="font-medium">{payment.member}</TableCell>
-                    <TableCell>{payment.totalAmount.toFixed(2)} DH</TableCell>
-                    <TableCell>{payment.paidAmount.toFixed(2)} DH</TableCell>
-                    <TableCell>{payment.remainingAmount.toFixed(2)} DH</TableCell>
-                    <TableCell>
-                      <Badge variant={getBadgeVariant(payment.status) as any}>
-                        {payment.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{payment.dueDate}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
+          {coachSalaries.map((payment) => (
+            <Card key={payment.id} className="flex flex-col">
+              <CardHeader>
+                <CardTitle>{payment.member}</CardTitle>
+                 <CardDescription>Date de paiement: {payment.dueDate}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-grow space-y-4">
+                <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                        <span>Payé</span>
+                        <span className="font-semibold">{payment.paidAmount.toFixed(2)} DH</span>
+                    </div>
+                    <Progress value={(payment.paidAmount / payment.totalAmount) * 100} />
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Total: {payment.totalAmount.toFixed(2)} DH</span>
+                        <span>Restant: {payment.remainingAmount.toFixed(2)} DH</span>
+                    </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                 <Badge variant={getBadgeVariant(payment.status) as any} className="w-full justify-center">
+                    {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                  </Badge>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
+
+    
