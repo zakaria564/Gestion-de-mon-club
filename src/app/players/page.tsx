@@ -109,9 +109,14 @@ export default function PlayersPage() {
                               </SelectTrigger>
                               <SelectContent>
                                   <SelectItem value="gardien">Gardien</SelectItem>
-                                  <SelectItem value="defenseur">Défenseur</SelectItem>
-                                  <SelectItem value="milieu">Milieu</SelectItem>
-                                  <SelectItem value="attaquant">Attaquant</SelectItem>
+                                  <SelectItem value="défenseur-central">Défenseur Central</SelectItem>
+                                  <SelectItem value="latéral-droit">Latéral Droit</SelectItem>
+                                  <SelectItem value="latéral-gauche">Latéral Gauche</SelectItem>
+                                  <SelectItem value="milieu-défensif">Milieu Défensif</SelectItem>
+                                  <SelectItem value="milieu-offensif">Milieu Offensif</SelectItem>
+                                  <SelectItem value="ailier-droit">Ailier Droit</SelectItem>
+                                  <SelectItem value="ailier-gauche">Ailier Gauche</SelectItem>
+                                  <SelectItem value="avant-centre">Avant-centre</SelectItem>
                               </SelectContent>
                           </Select>
                       </div>
