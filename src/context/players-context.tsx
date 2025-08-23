@@ -41,12 +41,12 @@ const playerFromDoc = (doc: QueryDocumentSnapshot<DocumentData>): Player => {
 export const PlayersProvider = ({ children }: { children: ReactNode }) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
+  const playersCollectionRef = collection(db, 'players');
 
   const fetchPlayers = useCallback(async () => {
     try {
       setLoading(true);
-      const playersCollection = collection(db, 'players');
-      const playersSnapshot = await getDocs(playersCollection);
+      const playersSnapshot = await getDocs(playersCollectionRef);
       const playersList = playersSnapshot.docs.map(playerFromDoc);
       setPlayers(playersList);
     } catch (error) {
@@ -54,15 +54,15 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [playersCollectionRef]);
 
   useEffect(() => {
     fetchPlayers();
   }, [fetchPlayers]);
   
   const uploadPhoto = async (photo: string, playerId: string): Promise<string> => {
-      if (photo.startsWith('data:image')) {
-          const storageRef = ref(storage, `players/${playerId}.jpg`);
+      if (photo && photo.startsWith('data:image')) {
+          const storageRef = ref(storage, `players/${playerId}-${Date.now()}.jpg`);
           await uploadString(storageRef, photo, 'data_url');
           return await getDownloadURL(storageRef);
       }
@@ -71,12 +71,13 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
 
   const addPlayer = async (player: PlayerWithoutId) => {
     try {
-      const docRef = await addDoc(collection(db, 'players'), { ...player, photo: '' });
-      let photoURL = player.photo;
+      let photoURL = '';
       if (player.photo) {
-        photoURL = await uploadPhoto(player.photo, docRef.id);
+        // We need a temporary ID for the photo path before the doc exists.
+        const tempId = doc(collection(db, '_')).id;
+        photoURL = await uploadPhoto(player.photo, tempId);
       }
-      await updateDoc(docRef, { photo: photoURL });
+      await addDoc(playersCollectionRef, { ...player, photo: photoURL });
       await fetchPlayers();
     } catch (error) {
       console.error("Error adding player: ", error);
@@ -90,7 +91,9 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
       if (updatedPlayer.photo && updatedPlayer.photo.startsWith('data:image')) {
           photoURL = await uploadPhoto(updatedPlayer.photo, updatedPlayer.id);
       }
-      await updateDoc(playerRef, { ...updatedPlayer, photo: photoURL, id: undefined });
+      // Create a new object for update, removing the id field
+      const { id, ...playerData } = updatedPlayer;
+      await updateDoc(playerRef, { ...playerData, photo: photoURL });
       await fetchPlayers();
     } catch (error) {
       console.error("Error updating player: ", error);

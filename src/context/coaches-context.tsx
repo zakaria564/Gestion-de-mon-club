@@ -37,12 +37,12 @@ const coachFromDoc = (doc: QueryDocumentSnapshot<DocumentData>): Coach => {
 export const CoachesProvider = ({ children }: { children: ReactNode }) => {
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
+  const coachesCollectionRef = collection(db, 'coaches');
 
   const fetchCoaches = useCallback(async () => {
     try {
       setLoading(true);
-      const coachesCollection = collection(db, 'coaches');
-      const coachesSnapshot = await getDocs(coachesCollection);
+      const coachesSnapshot = await getDocs(coachesCollectionRef);
       const coachesList = coachesSnapshot.docs.map(coachFromDoc);
       setCoaches(coachesList);
     } catch (error) {
@@ -50,15 +50,15 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [coachesCollectionRef]);
 
   useEffect(() => {
     fetchCoaches();
   }, [fetchCoaches]);
 
   const uploadPhoto = async (photo: string, coachId: string): Promise<string> => {
-      if (photo.startsWith('data:image')) {
-          const storageRef = ref(storage, `coaches/${coachId}.jpg`);
+      if (photo && photo.startsWith('data:image')) {
+          const storageRef = ref(storage, `coaches/${coachId}-${Date.now()}.jpg`);
           await uploadString(storageRef, photo, 'data_url');
           return await getDownloadURL(storageRef);
       }
@@ -67,12 +67,12 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
 
   const addCoach = async (coach: CoachWithoutId) => {
     try {
-        const docRef = await addDoc(collection(db, 'coaches'), { ...coach, photo: '' });
-        let photoURL = coach.photo;
+        let photoURL = '';
         if (coach.photo) {
-            photoURL = await uploadPhoto(coach.photo, docRef.id);
+            const tempId = doc(collection(db, '_')).id;
+            photoURL = await uploadPhoto(coach.photo, tempId);
         }
-        await updateDoc(docRef, { photo: photoURL });
+        await addDoc(coachesCollectionRef, { ...coach, photo: photoURL });
         await fetchCoaches();
     } catch (error) {
       console.error("Error adding coach: ", error);
@@ -86,7 +86,8 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
         if (updatedCoach.photo && updatedCoach.photo.startsWith('data:image')) {
             photoURL = await uploadPhoto(updatedCoach.photo, updatedCoach.id);
         }
-        await updateDoc(coachRef, { ...updatedCoach, photo: photoURL, id: undefined });
+        const { id, ...coachData } = updatedCoach;
+        await updateDoc(coachRef, { ...coachData, photo: photoURL });
         await fetchCoaches();
     } catch (error) {
         console.error("Error updating coach: ", error);
