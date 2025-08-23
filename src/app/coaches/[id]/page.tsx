@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useMemo, useState, useContext } from 'react';
+import { useMemo, useState, useContext, useEffect } from 'react';
 import { Coach } from "@/lib/data";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -37,23 +37,33 @@ export default function CoachDetailPage() {
     return coaches.find((c) => c.id.toString() === id);
   }, [id, coaches]);
   
-  const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id'> | Coach | null>(coach || null);
+  const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id'> | Coach | null>(null);
+
+  useEffect(() => {
+    if (coach) {
+      setSelectedCoach(coach);
+    }
+  }, [coach]);
+
 
   if (!coach) {
     notFound();
   }
 
-  // Update selectedCoach when coach data changes
-  if (coach && selectedCoach && 'id' in selectedCoach && coach.id !== selectedCoach.id) {
-    setSelectedCoach(coach);
-  } else if (coach && !selectedCoach) {
-    setSelectedCoach(coach);
-  }
-
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setSelectedCoach(prev => prev ? ({ ...prev, [id]: value }) : null);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedCoach(prev => prev ? ({...prev, photo: reader.result as string}) : null);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSelectChange = (name: keyof Coach, value: string) => {
@@ -102,7 +112,7 @@ export default function CoachDetailPage() {
       <Card>
         <CardHeader className="flex flex-col md:flex-row md:items-start gap-6">
           <Avatar className="h-32 w-32 border">
-            <AvatarImage src={`https://placehold.co/128x128.png`} alt={coach.name} data-ai-hint="coach photo"/>
+            <AvatarImage src={coach.photo} alt={coach.name} data-ai-hint="coach photo"/>
             <AvatarFallback className="text-4xl">{coach.name.substring(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
@@ -240,6 +250,16 @@ export default function CoachDetailPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="phone">Téléphone</Label>
                   <Input id="phone" placeholder="0612345678" value={selectedCoach.phone} onChange={handleInputChange} required />
+                </div>
+                 <div className="grid gap-2 md:col-span-2">
+                    <Label htmlFor="photo">Photo</Label>
+                    <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
+                    { 'photo' in selectedCoach && selectedCoach.photo && (
+                      <Avatar className="h-20 w-20 mt-2">
+                        <AvatarImage src={selectedCoach.photo as string} alt="Aperçu" />
+                        <AvatarFallback>??</AvatarFallback>
+                      </Avatar>
+                    )}
                 </div>
               </div>
               )}

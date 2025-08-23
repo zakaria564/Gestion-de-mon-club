@@ -43,7 +43,8 @@ const emptyCoach: Omit<Coach, 'id'> = {
     status: 'Actif',
     contact: '',
     category: '',
-    phone: ''
+    phone: '',
+    photo: '',
 };
 
 export default function CoachesPage() {
@@ -82,6 +83,17 @@ export default function CoachesPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setSelectedCoach(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedCoach(prev => ({...prev, photo: reader.result as string}));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSelectChange = (name: keyof Coach, value: string) => {
@@ -197,6 +209,16 @@ export default function CoachesPage() {
                   <Label htmlFor="phone">Téléphone</Label>
                   <Input id="phone" placeholder="0612345678" value={selectedCoach.phone} onChange={handleInputChange} required />
                 </div>
+                <div className="grid gap-2 md:col-span-2">
+                    <Label htmlFor="photo">Photo</Label>
+                    <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
+                    { 'photo' in selectedCoach && selectedCoach.photo && (
+                      <Avatar className="h-20 w-20 mt-2">
+                        <AvatarImage src={selectedCoach.photo as string} alt="Aperçu" />
+                        <AvatarFallback>??</AvatarFallback>
+                      </Avatar>
+                    )}
+                </div>
               </div>
               <DialogFooter>
                 <Button type="submit">Sauvegarder</Button>
@@ -215,7 +237,7 @@ export default function CoachesPage() {
                         <CardHeader className="p-4">
                             <div className="flex items-center gap-4">
                             <Avatar className="h-16 w-16">
-                                <AvatarImage src={`https://placehold.co/80x80.png`} alt={coach.name} data-ai-hint="coach photo" />
+                                <AvatarImage src={coach.photo} alt={coach.name} data-ai-hint="coach photo" />
                                 <AvatarFallback>{coach.name.substring(0, 2)}</AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
