@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, User } from 'firebase/auth';
 import { app } from '@/lib/firebase';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface AuthContextType {
   user: User | null;
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
@@ -75,14 +75,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     const { user, loading } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
+
+    const isAuthPage = ['/login', '/signup', '/forgot-password'].includes(pathname);
 
     useEffect(() => {
-        if (!loading && !user) {
+        if (!loading && !user && !isAuthPage) {
             router.push('/login');
         }
-    }, [user, loading, router]);
+    }, [user, loading, router, isAuthPage]);
 
-    if (loading || !user) {
+    if (loading || (!user && !isAuthPage)) {
         return null;
     }
 
