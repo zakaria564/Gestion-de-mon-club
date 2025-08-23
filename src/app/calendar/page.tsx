@@ -72,7 +72,7 @@ export default function CalendarPage() {
   };
 
   const eventsByDate = calendarEvents.reduce((acc, event) => {
-    const eventDate = new Date(event.date).toDateString();
+    const eventDate = new Date(event.date + "T00:00:00").toDateString();
     if (!acc[eventDate]) {
       acc[eventDate] = [];
     }
