@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -36,24 +37,26 @@ export default function PlayersPage() {
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {players.map((player) => (
-          <Card key={player.id} className="flex flex-col">
-            <CardHeader className="flex flex-row items-center gap-4 p-4">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={player.photo} alt={player.name} data-ai-hint="player photo" />
-                <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <CardTitle className="text-lg font-bold">{player.name}</CardTitle>
-                <CardDescription>{player.poste}</CardDescription>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-                <div className="flex justify-between items-center">
-                    <Badge variant="outline" className="text-sm">{player.category}</Badge>
-                    <Badge variant={getBadgeVariant(player.status) as any} className="text-sm">{player.status}</Badge>
+          <Link href={`/players/${player.id}`} key={player.id}>
+            <Card className="flex flex-col h-full hover:shadow-lg transition-shadow">
+              <CardHeader className="flex flex-row items-center gap-4 p-4">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage src={player.photo} alt={player.name} data-ai-hint="player photo" />
+                  <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <CardTitle className="text-lg font-bold">{player.name}</CardTitle>
+                  <CardDescription>{player.poste}</CardDescription>
                 </div>
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
+                  <div className="flex justify-between items-center">
+                      <Badge variant="outline" className="text-sm">{player.category}</Badge>
+                      <Badge variant={getBadgeVariant(player.status) as any} className="text-sm">{player.status}</Badge>
+                  </div>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>
