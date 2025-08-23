@@ -51,13 +51,12 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
 
 
   const fetchPlayers = useCallback(async () => {
-    if (!user) {
+    const playersCollectionRef = getPlayersCollectionRef();
+    if (!playersCollectionRef) {
       setPlayers([]);
       setLoading(false);
       return;
     }
-    const playersCollectionRef = getPlayersCollectionRef();
-    if (!playersCollectionRef) return;
 
     try {
       setLoading(true);
@@ -70,11 +69,14 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [getPlayersCollectionRef, user]);
+  }, [getPlayersCollectionRef]);
 
   useEffect(() => {
     if(user) {
       fetchPlayers();
+    } else {
+        setPlayers([]);
+        setLoading(false);
     }
   }, [user, fetchPlayers]);
   

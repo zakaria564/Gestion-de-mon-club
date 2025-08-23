@@ -91,6 +91,10 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if(user) {
       fetchPayments();
+    } else {
+        setPlayerPayments([]);
+        setCoachSalaries([]);
+        setLoading(false);
     }
   }, [user, fetchPayments]);
 

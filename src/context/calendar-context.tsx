@@ -5,7 +5,7 @@ import React, { createContext, useState, ReactNode, useCallback, useEffect, useC
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { useAuth } from './auth-context';
-import { format, parse } from 'date-fns';
+import { format, parse, parseISO } from 'date-fns';
 
 export type CalendarEvent = {
   id: string;
@@ -30,6 +30,7 @@ export const CalendarContext = createContext<CalendarContextType | undefined>(un
 
 const eventFromDoc = (doc: QueryDocumentSnapshot<DocumentData>): CalendarEvent => {
     const data = doc.data();
+    // The date is stored as an ISO string in Firestore, which is what we want.
     return {
         id: doc.id,
         type: data.type,
@@ -51,19 +52,19 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const fetchEvents = useCallback(async () => {
-    if (!user) {
-      setCalendarEvents([]);
-      setLoading(false);
-      return;
-    }
     const eventsCollectionRef = getEventsCollectionRef();
-    if (!eventsCollectionRef) return;
+    if (!eventsCollectionRef) {
+        setCalendarEvents([]);
+        setLoading(false);
+        return;
+    };
     
     try {
       setLoading(true);
       const eventsSnapshot = await getDocs(eventsCollectionRef);
       const eventsList = eventsSnapshot.docs
         .map(eventFromDoc)
+        // Sort by the full ISO date string for correctness
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       setCalendarEvents(eventsList);
     } catch (error) {
@@ -72,11 +73,15 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [getEventsCollectionRef, user]);
+  }, [getEventsCollectionRef]);
 
   useEffect(() => {
     if(user) {
       fetchEvents();
+    } else {
+      // If there is no user, clear the events and stop loading
+      setCalendarEvents([]);
+      setLoading(false);
     }
   }, [user, fetchEvents]);
 
@@ -84,10 +89,14 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
     const eventsCollectionRef = getEventsCollectionRef();
     if (!eventsCollectionRef) return;
     try {
+      // 'event.date' from the form is 'yyyy-MM-dd'
+      // We parse it and then format it to a full ISO 8601 string to store in Firestore
       const eventDate = parse(event.date, 'yyyy-MM-dd', new Date());
+      const dateToStore = eventDate.toISOString();
+      
       await addDoc(eventsCollectionRef, { 
         ...event,
-        date: format(eventDate, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
+        date: dateToStore
       });
       await fetchEvents();
     } catch (error) {
@@ -100,11 +109,16 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
     if (!eventsCollectionRef) return;
     try {
       const eventRef = doc(eventsCollectionRef, updatedEvent.id);
-      const eventDate = parse(updatedEvent.date, 'yyyy-MM-dd', new Date());
+      
+      // The date from the form might be in 'yyyy-MM-dd' format or already an ISO string
+      // To be safe, we parse it and re-format it to ISO standard.
+      const eventDate = parseISO(updatedEvent.date);
+      const dateToStore = updatedEvent.date.includes('T') ? updatedEvent.date : parse(updatedEvent.date, 'yyyy-MM-dd', new Date()).toISOString();
+
       const { id, ...eventData } = updatedEvent;
       await updateDoc(eventRef, {
         ...eventData,
-        date: format(eventDate, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
+        date: dateToStore,
       });
       await fetchEvents();
     } catch (error) {
