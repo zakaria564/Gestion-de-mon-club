@@ -44,7 +44,7 @@ const navItems = [
   { href: "/coaches", label: "Entraîneurs", icon: UserCheck },
   { href: "/calendar", label: "Calendrier", icon: Calendar },
   { href: "/results", label: "Résultats", icon: Trophy },
-  { href: "/finances", label: "Finances", icon: DollarSign },
+  { href: "/finances", label: "Paiements", icon: DollarSign },
   { href: "/settings", label: "Paramètres", icon: Settings },
 ];
 
