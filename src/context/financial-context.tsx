@@ -99,7 +99,7 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
   }, [user, fetchPayments]);
 
   const addPayment = async (collectionRef: CollectionReference<DocumentData> | null, payment: NewPayment) => {
-      if (!collectionRef) return;
+      if (!user || !collectionRef) return;
       const { member, totalAmount, initialPaidAmount, dueDate } = payment;
       const newTransaction: Transaction | undefined = initialPaidAmount > 0 ? {
           id: Date.now(),
@@ -125,7 +125,7 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updatePayment = async (collectionRef: CollectionReference<DocumentData> | null, payments: Payment[], paymentId: string, complementAmount: number) => {
-      if (!collectionRef) return;
+      if (!user || !collectionRef) return;
       const payment = payments.find(p => p.id === paymentId);
       if (!payment) return;
 

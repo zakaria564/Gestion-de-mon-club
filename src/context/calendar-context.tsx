@@ -52,12 +52,13 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const fetchEvents = useCallback(async () => {
-    const eventsCollectionRef = getEventsCollectionRef();
-    if (!eventsCollectionRef) {
+    if (!user) {
         setCalendarEvents([]);
         setLoading(false);
         return;
-    };
+    }
+    const eventsCollectionRef = getEventsCollectionRef();
+    if (!eventsCollectionRef) return;
     
     try {
       setLoading(true);
@@ -73,7 +74,7 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [getEventsCollectionRef]);
+  }, [user, getEventsCollectionRef]);
 
   useEffect(() => {
     if(user) {
@@ -86,6 +87,7 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
   }, [user, fetchEvents]);
 
   const addEvent = async (event: NewCalendarEvent) => {
+    if (!user) return;
     const eventsCollectionRef = getEventsCollectionRef();
     if (!eventsCollectionRef) return;
     try {
@@ -105,6 +107,7 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateEvent = async (updatedEvent: CalendarEvent) => {
+    if (!user) return;
     const eventsCollectionRef = getEventsCollectionRef();
     if (!eventsCollectionRef) return;
     try {
@@ -112,7 +115,6 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
       
       // The date from the form might be in 'yyyy-MM-dd' format or already an ISO string
       // To be safe, we parse it and re-format it to ISO standard.
-      const eventDate = parseISO(updatedEvent.date);
       const dateToStore = updatedEvent.date.includes('T') ? updatedEvent.date : parse(updatedEvent.date, 'yyyy-MM-dd', new Date()).toISOString();
 
       const { id, ...eventData } = updatedEvent;
@@ -127,6 +129,7 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteEvent = async (eventId: string) => {
+     if (!user) return;
      const eventsCollectionRef = getEventsCollectionRef();
      if (!eventsCollectionRef) return;
      try {
