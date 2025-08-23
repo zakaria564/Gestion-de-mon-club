@@ -33,18 +33,38 @@ export const results = [
   { id: 3, opponent: 'OGC Nice', date: '2024-07-18', score: '2-2', scorers: ['J. Dupont', 'M. Curie'], notes: 'Match nul arraché en fin de partie.' },
 ];
 
-export const finances = [
-  { id: 1, member: 'Jean Dupont', amount: '1500 DH', status: 'Payé', dueDate: '2024-09-01' },
-  { id: 2, member: 'Marie Curie', amount: '1500 DH', status: 'En attente', dueDate: '2024-09-01' },
-  { id: 3, member: 'Pierre Martin', amount: '750 DH', status: 'Payé', dueDate: '2024-09-01' },
-  { id: 4, member: 'Lucas Hernandez', amount: '1500 DH', status: 'En retard', dueDate: '2024-09-01' },
+export const playerPayments = [
+  { id: 1, member: 'Jean Dupont', amount: '1500 DH', status: 'payé', dueDate: '2024-09-01' },
+  { id: 2, member: 'Marie Curie', amount: '1500 DH', status: 'non payé', dueDate: '2024-09-01' },
+  { id: 3, member: 'Pierre Martin', amount: '750 DH', status: 'payé', dueDate: '2024-09-01' },
+  { id: 4, member: 'Lucas Hernandez', amount: '1500 DH', status: 'non payé', dueDate: '2024-09-01' },
+  { id: 5, member: 'Chloé Dubois', amount: '1500 DH', status: 'partiel', dueDate: '2024-09-01' },
 ];
 
-export const financialOverview = {
-  totalDue: finances.reduce((acc, p) => acc + parseFloat(p.amount), 0),
-  paymentsMade: finances.filter(p => p.status === 'Payé').reduce((acc, p) => acc + parseFloat(p.amount), 0),
-  paymentsRemaining: finances.filter(p => p.status !== 'Payé').reduce((acc, p) => acc + parseFloat(p.amount), 0),
+const calculateOverview = (payments: { amount: string; status: string }[]) => {
+    const totalDue = payments.reduce((acc, p) => acc + parseFloat(p.amount.replace(' DH', '')), 0);
+    const paymentsMade = payments
+        .filter(p => p.status === 'payé')
+        .reduce((acc, p) => acc + parseFloat(p.amount.replace(' DH', '')), 0);
+    const paymentsPartial = payments
+        .filter(p => p.status === 'partiel')
+        .reduce((acc, p) => acc + (parseFloat(p.amount.replace(' DH', '')) / 2), 0); // Assuming partial is 50%
+    const totalPaid = paymentsMade + paymentsPartial;
+    const paymentsRemaining = totalDue - totalPaid;
+
+    return { totalDue, paymentsMade: totalPaid, paymentsRemaining };
 };
+
+export const playerPaymentsOverview = calculateOverview(playerPayments);
+
+export const coachSalaries = [
+    { id: 1, member: 'Alain Prost', amount: '20000 DH', status: 'payé', dueDate: '2024-08-31' },
+    { id: 2, member: 'Sophie Marceau', amount: '15000 DH', status: 'partiel', dueDate: '2024-08-31' },
+    { id: 3, member: 'Gérard Depardieu', amount: '12000 DH', status: 'non payé', dueDate: '2024-08-31' },
+];
+
+export const coachSalariesOverview = calculateOverview(coachSalaries);
+
 
 export const notifications = [
     { id: 1, message: 'Rappel: Inscriptions pour la nouvelle saison ouvertes.', date: '2024-08-10', priority: 'Moyenne' },
