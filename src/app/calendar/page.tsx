@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { calendarEvents } from "@/lib/data";
+import { calendarEvents as initialCalendarEvents } from "@/lib/data";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
@@ -20,14 +20,54 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { fr } from 'date-fns/locale';
 
+type CalendarEvent = {
+  id: number;
+  type: string;
+  opponent: string;
+  date: string;
+  time: string;
+  location: string;
+};
+
+
 export default function CalendarPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [open, setOpen] = useState(false);
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>(initialCalendarEvents);
+  
+  const [newEvent, setNewEvent] = useState({
+    type: '',
+    opponent: '',
+    date: '',
+    time: '',
+    location: '',
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setNewEvent(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleSelectChange = (value: string) => {
+    setNewEvent(prev => ({ ...prev, type: value }));
+  };
 
   const handleAddEvent = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Logic to add event would go here
-    console.log("Nouvel événement ajouté");
+    
+    const createdEvent: CalendarEvent = {
+        id: calendarEvents.length + 1,
+        opponent: newEvent.opponent,
+        // The date from the form is 'YYYY-MM-DD'. We need to adjust for timezone to avoid off-by-one day errors.
+        date: new Date(newEvent.date + 'T00:00:00').toISOString().split('T')[0],
+        time: newEvent.time,
+        type: newEvent.type,
+        location: newEvent.location,
+    };
+    
+    setCalendarEvents(prev => [...prev, createdEvent]);
+    
+    setNewEvent({ type: '', opponent: '', date: '', time: '', location: '' });
     setOpen(false);
   };
 
@@ -61,39 +101,39 @@ export default function CalendarPage() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="type">Type d'événement</Label>
-                  <Select>
+                  <Select name="type" onValueChange={handleSelectChange} value={newEvent.type}>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner un type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="match-amical">Match Amical</SelectItem>
-                      <SelectItem value="match-championnat">Match de Championnat</SelectItem>
-                      <SelectItem value="match-coupe">Match de Coupe</SelectItem>
-                      <SelectItem value="entrainement-physique">Entraînement Physique</SelectItem>
-                      <SelectItem value="entrainement-technique">Entraînement Technique</SelectItem>
-                      <SelectItem value="entrainement-tactique">Entraînement Tactique</SelectItem>
-                      <SelectItem value="reunion">Réunion</SelectItem>
-                      <SelectItem value="evenement-special">Événement Spécial</SelectItem>
+                      <SelectItem value="Match Amical">Match Amical</SelectItem>
+                      <SelectItem value="Match Championnat">Match de Championnat</SelectItem>
+                      <SelectItem value="Match Coupe">Match de Coupe</SelectItem>
+                      <SelectItem value="Entraînement Physique">Entraînement Physique</SelectItem>
+                      <SelectItem value="Entraînement Technique">Entraînement Technique</SelectItem>
+                      <SelectItem value="Entraînement Tactique">Entraînement Tactique</SelectItem>
+                      <SelectItem value="Réunion">Réunion</SelectItem>
+                      <SelectItem value="Événement Spécial">Événement Spécial</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="opponent">Adversaire (si match)</Label>
-                  <Input id="opponent" placeholder="Nom de l'équipe adverse" />
+                  <Input id="opponent" placeholder="Nom de l'équipe adverse" value={newEvent.opponent} onChange={handleInputChange} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="date">Date</Label>
-                    <Input id="date" type="date" />
+                    <Input id="date" type="date" value={newEvent.date} onChange={handleInputChange} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="time">Heure</Label>
-                    <Input id="time" type="time" />
+                    <Input id="time" type="time" value={newEvent.time} onChange={handleInputChange}/>
                   </div>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="location">Lieu</Label>
-                  <Input id="location" placeholder="Stade ou lieu" />
+                  <Input id="location" placeholder="Stade ou lieu" value={newEvent.location} onChange={handleInputChange}/>
                 </div>
               </div>
               <DialogFooter>
@@ -120,7 +160,7 @@ export default function CalendarPage() {
                     {dayEvents && (
                       <div className="absolute bottom-1 flex space-x-1">
                         {dayEvents.map(event => (
-                          <div key={event.id} className={`h-1.5 w-1.5 rounded-full ${event.type === 'Match' ? 'bg-primary' : 'bg-secondary-foreground'}`} />
+                          <div key={event.id} className={`h-1.5 w-1.5 rounded-full ${event.type.toLowerCase().includes('match') ? 'bg-primary' : 'bg-secondary-foreground'}`} />
                         ))}
                       </div>
                     )}
@@ -155,11 +195,11 @@ export default function CalendarPage() {
               {eventsByDate[date.toDateString()].map((event) => (
                 <div key={event.id} className="p-4 rounded-md border flex items-start gap-4">
                   <div className="flex-shrink-0">
-                    <Badge variant={event.type === 'Match' ? 'default' : 'secondary'}>{event.type}</Badge>
+                    <Badge variant={event.type.toLowerCase().includes('match') ? 'default' : 'secondary'}>{event.type}</Badge>
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold">{event.type === 'Match' ? `vs ${event.opponent}` : 'Session d\'entraînement'}</p>
-                    <p className="text-sm text-muted-foreground">{new Date(event.date).toLocaleDateString('fr-FR')} à {event.time}</p>
+                    <p className="font-semibold">{event.type.toLowerCase().includes('match') ? `vs ${event.opponent}` : event.type}</p>
+                    <p className="text-sm text-muted-foreground">{new Date(event.date + "T00:00:00").toLocaleDateString('fr-FR')} à {event.time}</p>
                     <p className="text-sm text-muted-foreground">{event.location}</p>
                   </div>
                 </div>
