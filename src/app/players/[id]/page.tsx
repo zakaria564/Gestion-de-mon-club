@@ -56,6 +56,17 @@ export default function PlayerDetailPage() {
     setSelectedPlayer(prev => prev ? ({ ...prev, [id]: type === 'number' ? parseInt(value, 10) || 0 : value }) : null);
   };
   
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedPlayer(prev => prev ? ({...prev, photo: reader.result as string}) : null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSelectChange = (name: keyof Player, value: string) => {
     setSelectedPlayer(prev => prev ? ({ ...prev, [name]: value }) : null);
   };
@@ -208,8 +219,8 @@ export default function PlayerDetailPage() {
                         <Input id="address" placeholder="123 Rue de Paris" value={selectedPlayer.address} onChange={handleInputChange} required />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="photo">Photo URL</Label>
-                        <Input id="photo" placeholder="https://placehold.co/40x40.png" value={selectedPlayer.photo} onChange={handleInputChange} />
+                        <Label htmlFor="photo">Photo</Label>
+                        <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
                     </div>
                 </div>
                 <div className="space-y-4">
