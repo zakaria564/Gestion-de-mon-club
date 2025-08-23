@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -149,7 +150,7 @@ export default function PlayersPage() {
                 Remplissez les informations ci-dessous.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+            <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
                 <ScrollArea className="flex-1 pr-6 -mr-6">
                     <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 py-4">
                         <div className="space-y-4">
