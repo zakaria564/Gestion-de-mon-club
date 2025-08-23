@@ -222,9 +222,9 @@ export default function CoachDetailPage() {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="flex-1 overflow-hidden">
-              <ScrollArea className="h-full">
+              <ScrollArea className="h-full pr-6">
                 {selectedCoach && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 pr-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4">
                     <div className="grid gap-2">
                       <Label htmlFor="name">Nom</Label>
                       <Input id="name" placeholder="Alain Prost" value={selectedCoach.name} onChange={handleInputChange} required />
@@ -309,7 +309,3 @@ export default function CoachDetailPage() {
     </div>
   );
 }
-
-    
-
-    

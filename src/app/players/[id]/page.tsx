@@ -237,9 +237,9 @@ export default function PlayerDetailPage() {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="flex-1 overflow-hidden">
-             <ScrollArea className="h-full">
+             <ScrollArea className="h-full pr-6">
               {selectedPlayer && (
-              <div className="grid py-4 gap-6 md:grid-cols-2 pr-6">
+              <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 py-4">
                 <div className="space-y-4">
                     <h4 className="font-medium text-lg">Informations Personnelles</h4>
                     <div className="grid gap-2">
@@ -253,16 +253,6 @@ export default function PlayerDetailPage() {
                     <div className="grid gap-2">
                         <Label htmlFor="address">Adresse</Label>
                         <Input id="address" placeholder="123 Rue de Paris" value={selectedPlayer.address} onChange={handleInputChange} required />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="photo">Photo</Label>
-                        <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
-                        { selectedPlayer.photo && (
-                          <Avatar className="h-20 w-20 mt-2">
-                            <AvatarImage src={selectedPlayer.photo as string} alt="Aperçu" />
-                            <AvatarFallback>??</AvatarFallback>
-                          </Avatar>
-                        )}
                     </div>
                 </div>
                 <div className="space-y-4">
@@ -352,6 +342,16 @@ export default function PlayerDetailPage() {
                         <Input id="tutorPhone" placeholder="0611223344" value={selectedPlayer.tutorPhone} onChange={handleInputChange} />
                     </div>
                 </div>
+                 <div className="grid gap-2 md:col-span-2">
+                    <Label htmlFor="photo">Photo</Label>
+                    <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
+                    { selectedPlayer.photo && (
+                        <Avatar className="h-20 w-20 mt-2">
+                        <AvatarImage src={selectedPlayer.photo as string} alt="Aperçu" />
+                        <AvatarFallback>??</AvatarFallback>
+                        </Avatar>
+                    )}
+                </div>
               </div>
               )}
               </ScrollArea>
@@ -364,7 +364,3 @@ export default function PlayerDetailPage() {
     </div>
   );
 }
-
-    
-
-    
