@@ -36,8 +36,6 @@ import React from 'react';
 import { PlayersContext } from "@/context/players-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
 
 const emptyPlayer: Omit<Player, 'id'> = {
     name: '',
@@ -143,14 +141,14 @@ export default function PlayersPage() {
       </div>
 
        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
+          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Ajouter un joueur</DialogTitle>
               <DialogDescription>
                 Remplissez les informations ci-dessous.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
+            <form onSubmit={handleSubmit}>
                 <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 py-4 pr-6">
                     <div className="space-y-4">
                         <h4 className="font-medium text-lg">Informations Personnelles</h4>
@@ -334,3 +332,5 @@ export default function PlayersPage() {
     </div>
   );
 }
+
+    

@@ -18,7 +18,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PlayersContext } from '@/context/players-context';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function PlayerDetailPage() {
   const { id } = useParams();
@@ -230,14 +229,14 @@ export default function PlayerDetailPage() {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
+          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Modifier un joueur</DialogTitle>
               <DialogDescription>
                 Remplissez les informations ci-dessous.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
+            <form onSubmit={handleSubmit}>
               {selectedPlayer && (
               <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 py-4 pr-6">
                   <div className="space-y-4">
@@ -363,3 +362,5 @@ export default function PlayerDetailPage() {
     </div>
   );
 }
+
+    

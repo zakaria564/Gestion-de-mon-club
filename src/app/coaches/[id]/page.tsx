@@ -17,7 +17,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CoachesContext } from '@/context/coaches-context';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function CoachDetailPage() {
   const { id } = useParams();
@@ -214,14 +213,14 @@ export default function CoachDetailPage() {
       </Card>
       
        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Modifier un entraîneur</DialogTitle>
               <DialogDescription>
                 Remplissez les informations ci-dessous.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
+            <form onSubmit={handleSubmit}>
                 {selectedCoach && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4 pr-6">
                     <div className="grid gap-2">
@@ -307,3 +306,5 @@ export default function CoachDetailPage() {
     </div>
   );
 }
+
+    

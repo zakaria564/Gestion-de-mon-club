@@ -35,8 +35,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CoachesContext } from "@/context/coaches-context";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
 
 const emptyCoach: Omit<Coach, 'id'> = {
     name: '',
@@ -125,14 +123,14 @@ export default function CoachesPage() {
       </div>
 
        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Ajouter un entraîneur</DialogTitle>
                 <DialogDescription>
                   Remplissez les informations ci-dessous.
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
+              <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4 pr-6">
                   <div className="grid gap-2">
                     <Label htmlFor="name">Nom</Label>
@@ -276,3 +274,5 @@ export default function CoachesPage() {
     </div>
   );
 }
+
+    
