@@ -1,11 +1,12 @@
 
 "use client";
 
-import React, { createContext, useState, ReactNode, useCallback, useEffect } from 'react';
+import React, { createContext, useState, ReactNode, useCallback, useEffect, useContext } from 'react';
 import { Coach } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
+import { useAuth } from './auth-context';
 
 type CoachWithoutId = Omit<Coach, 'id'>;
 
@@ -35,11 +36,22 @@ const coachFromDoc = (doc: QueryDocumentSnapshot<DocumentData>): Coach => {
 
 
 export const CoachesProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
-  const coachesCollectionRef = collection(db, 'coaches');
+  
+  const getCoachesCollectionRef = useCallback(() => {
+    if (!user) return null;
+    return collection(db, 'users', user.uid, 'coaches');
+  }, [user]);
 
   const fetchCoaches = useCallback(async () => {
+    const coachesCollectionRef = getCoachesCollectionRef();
+    if (!coachesCollectionRef) {
+      setCoaches([]);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const coachesSnapshot = await getDocs(coachesCollectionRef);
@@ -47,18 +59,19 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
       setCoaches(coachesList);
     } catch (error) {
       console.error("Error fetching coaches: ", error);
+      setCoaches([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getCoachesCollectionRef]);
 
   useEffect(() => {
     fetchCoaches();
   }, [fetchCoaches]);
 
   const uploadPhoto = async (photo: string, coachId: string): Promise<string> => {
-      if (photo && photo.startsWith('data:image')) {
-          const storageRef = ref(storage, `coaches/${coachId}-${Date.now()}`);
+      if (user && photo && photo.startsWith('data:image')) {
+          const storageRef = ref(storage, `users/${user.uid}/coaches/${coachId}-${Date.now()}`);
           await uploadString(storageRef, photo, 'data_url');
           return await getDownloadURL(storageRef);
       }
@@ -66,6 +79,8 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const addCoach = async (coach: CoachWithoutId) => {
+    const coachesCollectionRef = getCoachesCollectionRef();
+    if (!coachesCollectionRef) return;
     try {
         const docRef = await addDoc(coachesCollectionRef, { ...coach, photo: '' });
 
@@ -81,14 +96,16 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateCoach = async (updatedCoach: Coach) => {
+    const coachesCollectionRef = getCoachesCollectionRef();
+    if (!coachesCollectionRef || !user) return;
     try {
-        const coachRef = doc(db, 'coaches', updatedCoach.id);
+        const coachRef = doc(coachesCollectionRef, updatedCoach.id);
         let photoURL = updatedCoach.photo;
 
         const coachToUpdate = coaches.find(c => c.id === updatedCoach.id);
 
         if (updatedCoach.photo && updatedCoach.photo.startsWith('data:image')) {
-             if (coachToUpdate && coachToUpdate.photo) {
+             if (coachToUpdate && coachToUpdate.photo && coachToUpdate.photo.includes('firebasestorage')) {
                 try {
                     const oldPhotoRef = ref(storage, coachToUpdate.photo);
                     await deleteObject(oldPhotoRef);
@@ -110,10 +127,12 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteCoach = async (coachId: string) => {
+     const coachesCollectionRef = getCoachesCollectionRef();
+     if (!coachesCollectionRef) return;
      try {
-      const coachRef = doc(db, 'coaches', coachId);
+      const coachRef = doc(coachesCollectionRef, coachId);
        const coachToDelete = coaches.find(c => c.id === coachId);
-      if (coachToDelete && coachToDelete.photo) {
+      if (coachToDelete && coachToDelete.photo && coachToDelete.photo.includes('firebasestorage')) {
           try {
             const photoRef = ref(storage, coachToDelete.photo);
             await deleteObject(photoRef)

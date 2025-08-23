@@ -1,11 +1,12 @@
 
 "use client";
 
-import React, { createContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import React, { createContext, useState, ReactNode, useEffect, useCallback, useContext } from 'react';
 import { Player } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
+import { useAuth } from './auth-context';
 
 type PlayerWithoutId = Omit<Player, 'id'>;
 
@@ -39,11 +40,23 @@ const playerFromDoc = (doc: QueryDocumentSnapshot<DocumentData>): Player => {
 };
 
 export const PlayersProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
-  const playersCollectionRef = collection(db, 'players');
+  
+  const getPlayersCollectionRef = useCallback(() => {
+    if (!user) return null;
+    return collection(db, 'users', user.uid, 'players');
+  }, [user]);
+
 
   const fetchPlayers = useCallback(async () => {
+    const playersCollectionRef = getPlayersCollectionRef();
+    if (!playersCollectionRef) {
+        setPlayers([]);
+        setLoading(false);
+        return;
+    }
     try {
       setLoading(true);
       const playersSnapshot = await getDocs(playersCollectionRef);
@@ -51,18 +64,19 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
       setPlayers(playersList);
     } catch (error) {
       console.error("Error fetching players: ", error);
+      setPlayers([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getPlayersCollectionRef]);
 
   useEffect(() => {
     fetchPlayers();
   }, [fetchPlayers]);
   
   const uploadPhoto = async (photo: string, playerId: string): Promise<string> => {
-      if (photo && photo.startsWith('data:image')) {
-          const storageRef = ref(storage, `players/${playerId}-${Date.now()}`);
+      if (user && photo && photo.startsWith('data:image')) {
+          const storageRef = ref(storage, `users/${user.uid}/players/${playerId}-${Date.now()}`);
           await uploadString(storageRef, photo, 'data_url');
           return await getDownloadURL(storageRef);
       }
@@ -70,6 +84,8 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const addPlayer = async (player: PlayerWithoutId) => {
+    const playersCollectionRef = getPlayersCollectionRef();
+    if (!playersCollectionRef) return;
     try {
       const docRef = await addDoc(playersCollectionRef, { ...player, photo: '' });
 
@@ -85,14 +101,16 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updatePlayer = async (updatedPlayer: Player) => {
+    const playersCollectionRef = getPlayersCollectionRef();
+    if (!playersCollectionRef || !user) return;
     try {
-        const playerRef = doc(db, 'players', updatedPlayer.id);
+        const playerRef = doc(playersCollectionRef, updatedPlayer.id);
         let photoURL = updatedPlayer.photo;
 
         const playerToUpdate = players.find(p => p.id === updatedPlayer.id);
 
         if (updatedPlayer.photo && updatedPlayer.photo.startsWith('data:image')) {
-            if (playerToUpdate && playerToUpdate.photo) {
+            if (playerToUpdate && playerToUpdate.photo && playerToUpdate.photo.includes('firebasestorage')) {
                 try {
                     const oldPhotoRef = ref(storage, playerToUpdate.photo);
                     await deleteObject(oldPhotoRef);
@@ -114,10 +132,12 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deletePlayer = async (playerId: string) => {
+    const playersCollectionRef = getPlayersCollectionRef();
+    if (!playersCollectionRef) return;
     try {
-      const playerRef = doc(db, 'players', playerId);
+      const playerRef = doc(playersCollectionRef, playerId);
       const playerToDelete = players.find(p => p.id === playerId);
-      if (playerToDelete && playerToDelete.photo) {
+      if (playerToDelete && playerToDelete.photo && playerToDelete.photo.includes('firebasestorage')) {
           try {
             const photoRef = ref(storage, playerToDelete.photo);
             await deleteObject(photoRef)
