@@ -75,8 +75,10 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
   }, [getEventsCollectionRef, user]);
 
   useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+    if(user) {
+      fetchEvents();
+    }
+  }, [user, fetchEvents]);
 
   const addEvent = async (event: NewCalendarEvent) => {
     const eventsCollectionRef = getEventsCollectionRef();

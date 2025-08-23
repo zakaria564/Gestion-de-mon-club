@@ -58,7 +58,7 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const fetchPayments = useCallback(async () => {
-    if (!user) { // Don't fetch if user is not logged in
+    if (!user) {
       setPlayerPayments([]);
       setCoachSalaries([]);
       setLoading(false);
@@ -89,8 +89,10 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
   }, [getCollectionRef, user]);
 
   useEffect(() => {
-    fetchPayments();
-  }, [fetchPayments]);
+    if(user) {
+      fetchPayments();
+    }
+  }, [user, fetchPayments]);
 
   const addPayment = async (collectionRef: CollectionReference<DocumentData> | null, payment: NewPayment) => {
       if (!collectionRef) return;

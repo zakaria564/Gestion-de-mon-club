@@ -51,7 +51,7 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
 
 
   const fetchPlayers = useCallback(async () => {
-    if (!user) { // Don't fetch if user is not logged in
+    if (!user) {
       setPlayers([]);
       setLoading(false);
       return;
@@ -73,8 +73,10 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
   }, [getPlayersCollectionRef, user]);
 
   useEffect(() => {
-    fetchPlayers();
-  }, [fetchPlayers]);
+    if(user) {
+      fetchPlayers();
+    }
+  }, [user, fetchPlayers]);
   
   const uploadPhoto = async (photo: string, playerId: string): Promise<string> => {
       if (user && photo && photo.startsWith('data:image')) {
