@@ -3,6 +3,7 @@ import './globals.css';
 import { AppLayout } from '@/components/app-layout';
 import { Toaster } from "@/components/ui/toaster";
 import { SidebarInset } from '@/components/ui/sidebar';
+import { FinancialProvider } from '@/context/financial-context';
 
 export const metadata: Metadata = {
   title: 'Gestion de mon club',
@@ -22,11 +23,13 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <AppLayout>
-          <SidebarInset>
-            {children}
-          </SidebarInset>
-        </AppLayout>
+        <FinancialProvider>
+          <AppLayout>
+            <SidebarInset>
+              {children}
+            </SidebarInset>
+          </AppLayout>
+        </FinancialProvider>
         <Toaster />
       </body>
     </html>

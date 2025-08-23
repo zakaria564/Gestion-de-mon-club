@@ -1,8 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
-import { playerPayments as initialPlayerPayments } from "@/lib/data";
+import { useState, useMemo, useContext } from "react";
 import { notFound, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,13 +20,20 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FinancialContext } from "@/context/financial-context";
 
 
 export default function PlayerPaymentDetailPage() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const context = useContext(FinancialContext);
   
-  const [playerPayments, setPlayerPayments] = useState(initialPlayerPayments);
+  if (!context) {
+    throw new Error("PlayerPaymentDetailPage must be used within a FinancialProvider");
+  }
+
+  const { playerPayments, updatePlayerPayment } = context;
+
   const payment = useMemo(() => {
     return playerPayments.find((p) => p.id.toString() === id);
   }, [id, playerPayments]);
@@ -71,19 +77,7 @@ export default function PlayerPaymentDetailPage() {
     const amount = parseFloat(complementAmount);
     if (!amount || amount <= 0 || !payment) return;
 
-    const newPaidAmount = payment.paidAmount + amount;
-    const newRemainingAmount = payment.totalAmount - newPaidAmount;
-
-    const updatedPayment = {
-      ...payment,
-      paidAmount: newPaidAmount,
-      remainingAmount: newRemainingAmount,
-      status: newRemainingAmount <= 0 ? 'payé' : 'partiel',
-    };
-
-    setPlayerPayments(prevPayments => 
-        prevPayments.map(p => p.id === payment.id ? updatedPayment : p)
-    );
+    updatePlayerPayment(payment.id, amount);
     
     setComplementAmount('');
     setOpen(false);

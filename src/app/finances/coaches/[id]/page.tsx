@@ -1,8 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
-import { coachSalaries as initialCoachSalaries } from "@/lib/data";
+import { useState, useMemo, useContext } from "react";
 import { notFound, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,13 +20,20 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FinancialContext } from "@/context/financial-context";
 
 
 export default function CoachPaymentDetailPage() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const context = useContext(FinancialContext);
   
-  const [coachSalaries, setCoachSalaries] = useState(initialCoachSalaries);
+  if (!context) {
+    throw new Error("CoachPaymentDetailPage must be used within a FinancialProvider");
+  }
+
+  const { coachSalaries, updateCoachSalary } = context;
+  
   const payment = useMemo(() => {
     return coachSalaries.find((p) => p.id.toString() === id);
   }, [id, coachSalaries]);
@@ -70,19 +76,7 @@ export default function CoachPaymentDetailPage() {
     const amount = parseFloat(complementAmount);
     if (!amount || amount <= 0 || !payment) return;
 
-    const newPaidAmount = payment.paidAmount + amount;
-    const newRemainingAmount = payment.totalAmount - newPaidAmount;
-
-    const updatedPayment = {
-      ...payment,
-      paidAmount: newPaidAmount,
-      remainingAmount: newRemainingAmount,
-      status: newRemainingAmount <= 0 ? 'payé' : 'partiel',
-    };
-
-    setCoachSalaries(prevSalaries => 
-        prevSalaries.map(p => p.id === payment.id ? updatedPayment : p)
-    );
+    updateCoachSalary(payment.id, amount);
     
     setComplementAmount('');
     setOpen(false);

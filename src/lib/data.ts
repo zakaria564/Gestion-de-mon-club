@@ -1,4 +1,5 @@
 
+
 export const clubStats = {
   totalPlayers: 45,
   totalCoaches: 5,
@@ -34,52 +35,6 @@ export const results = [
   { id: 2, opponent: 'Paris SG', date: '2024-07-25', score: '0-2', scorers: [], notes: 'Match difficile contre une équipe solide.' },
   { id: 3, opponent: 'OGC Nice', date: '2024-07-18', score: '2-2', scorers: ['J. Dupont', 'M. Curie'], notes: 'Match nul arraché en fin de partie.' },
 ];
-
-type Payment = {
-    id: number;
-    member: string;
-    totalAmount: number;
-    paidAmount: number;
-    remainingAmount: number;
-    status: 'payé' | 'non payé' | 'partiel';
-    dueDate: string;
-};
-
-const rawPlayerPayments = [
-  { id: 1, member: 'Jean Dupont', totalAmount: 1500, paidAmount: 1500, status: 'payé', dueDate: '2024-09-01' },
-  { id: 2, member: 'Marie Curie', totalAmount: 1500, paidAmount: 0, status: 'non payé', dueDate: '2024-09-01' },
-  { id: 3, member: 'Pierre Martin', totalAmount: 1500, paidAmount: 750, status: 'partiel', dueDate: '2024-09-01' },
-  { id: 4, member: 'Lucas Hernandez', totalAmount: 1500, paidAmount: 0, status: 'non payé', dueDate: '2024-09-01' },
-  { id: 5, member: 'Chloé Dubois', totalAmount: 1500, paidAmount: 750, status: 'partiel', dueDate: '2024-09-01' },
-];
-
-export const playerPayments: Payment[] = rawPlayerPayments.map(p => ({
-    ...p,
-    remainingAmount: p.totalAmount - p.paidAmount,
-}));
-
-const rawCoachSalaries = [
-    { id: 1, member: 'Alain Prost', totalAmount: 20000, paidAmount: 20000, status: 'payé', dueDate: '2024-08-31' },
-    { id: 2, member: 'Sophie Marceau', totalAmount: 15000, paidAmount: 7500, status: 'partiel', dueDate: '2024-08-31' },
-    { id: 3, member: 'Gérard Depardieu', totalAmount: 12000, paidAmount: 0, status: 'non payé', dueDate: '2024-08-31' },
-];
-
-export const coachSalaries: Payment[] = rawCoachSalaries.map(p => ({
-    ...p,
-    remainingAmount: p.totalAmount - p.paidAmount,
-}));
-
-
-const calculateOverview = (payments: Payment[]) => {
-    const totalDue = payments.reduce((acc, p) => acc + p.totalAmount, 0);
-    const paymentsMade = payments.reduce((acc, p) => acc + p.paidAmount, 0);
-    const paymentsRemaining = totalDue - paymentsMade;
-    return { totalDue, paymentsMade, paymentsRemaining };
-};
-
-export const playerPaymentsOverview = calculateOverview(playerPayments);
-export const coachSalariesOverview = calculateOverview(coachSalaries);
-
 
 export const notifications = [
     { id: 1, message: 'Rappel: Inscriptions pour la nouvelle saison ouvertes.', date: '2024-08-10', priority: 'Moyenne' },

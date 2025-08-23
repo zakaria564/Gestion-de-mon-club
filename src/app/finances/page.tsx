@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useContext } from "react";
 import {
   Card,
   CardContent,
@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { playerPayments as initialPlayerPayments, coachSalaries as initialCoachSalaries, playerPaymentsOverview, coachSalariesOverview, players, coaches } from "@/lib/data";
+import { players, coaches } from "@/lib/data";
 import { Banknote, Users, UserCheck, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -32,30 +32,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FinancialContext } from "@/context/financial-context";
 
 
 export default function FinancesPage() {
-  const [playerPayments, setPlayerPayments] = useState(initialPlayerPayments);
-  const [coachSalaries, setCoachSalaries] = useState(initialCoachSalaries);
+  const context = useContext(FinancialContext);
+
+  if (!context) {
+    throw new Error("FinancesPage must be used within a FinancialProvider");
+  }
+
+  const { 
+    playerPayments, 
+    coachSalaries, 
+    addPlayerPayment, 
+    addCoachSalary,
+    playerPaymentsOverview,
+    coachSalariesOverview
+  } = context;
+
   const [playerPaymentOpen, setPlayerPaymentOpen] = useState(false);
   const [coachSalaryOpen, setCoachSalaryOpen] = useState(false);
 
-  const [newCoachSalary, setNewCoachSalary] = useState({
+  const [newPlayerPaymentData, setNewPlayerPaymentData] = useState({
+    member: '',
     totalAmount: '',
     paidAmount: '',
+    dueDate: '',
   });
 
-  const remainingAmount = useMemo(() => {
-    const total = parseFloat(newCoachSalary.totalAmount) || 0;
-    const paid = parseFloat(newCoachSalary.paidAmount) || 0;
+  const [newCoachSalaryData, setNewCoachSalaryData] = useState({
+    member: '',
+    totalAmount: '',
+    paidAmount: '',
+    dueDate: '',
+  });
+
+  const coachRemainingAmount = useMemo(() => {
+    const total = parseFloat(newCoachSalaryData.totalAmount) || 0;
+    const paid = parseFloat(newCoachSalaryData.paidAmount) || 0;
     return (total - paid).toFixed(2);
-  }, [newCoachSalary.totalAmount, newCoachSalary.paidAmount]);
+  }, [newCoachSalaryData.totalAmount, newCoachSalaryData.paidAmount]);
 
-  const handleCoachSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setNewCoachSalary(prev => ({ ...prev, [id]: value }));
-  };
-
+  const playerRemainingAmount = useMemo(() => {
+    const total = parseFloat(newPlayerPaymentData.totalAmount) || 0;
+    const paid = parseFloat(newPlayerPaymentData.paidAmount) || 0;
+    return (total - paid).toFixed(2);
+  }, [newPlayerPaymentData.totalAmount, newPlayerPaymentData.paidAmount]);
 
   const getBadgeVariant = (status: string) => {
     switch (status) {
@@ -72,16 +95,40 @@ export default function FinancesPage() {
 
   const handleAddPlayerPayment = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Logique pour ajouter un paiement de joueur
-    console.log("Nouveau paiement de joueur ajouté");
-    setPlayerPaymentOpen(false);
+    const totalAmount = parseFloat(newPlayerPaymentData.totalAmount);
+    const paidAmount = parseFloat(newPlayerPaymentData.paidAmount);
+    const selectedPlayer = players.find(p => p.name === newPlayerPaymentData.member);
+
+    if (selectedPlayer && !isNaN(totalAmount) && !isNaN(paidAmount) && newPlayerPaymentData.dueDate) {
+        addPlayerPayment({
+            id: Date.now(),
+            member: selectedPlayer.name,
+            totalAmount,
+            paidAmount,
+            dueDate: newPlayerPaymentData.dueDate,
+        });
+        setPlayerPaymentOpen(false);
+        setNewPlayerPaymentData({ member: '', totalAmount: '', paidAmount: '', dueDate: '' });
+    }
   };
 
   const handleAddCoachSalary = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Logique pour ajouter un salaire d'entraîneur
-    console.log("Nouveau salaire d'entraîneur ajouté");
-    setCoachSalaryOpen(false);
+    const totalAmount = parseFloat(newCoachSalaryData.totalAmount);
+    const paidAmount = parseFloat(newCoachSalaryData.paidAmount);
+    const selectedCoach = coaches.find(c => c.name === newCoachSalaryData.member);
+
+     if (selectedCoach && !isNaN(totalAmount) && !isNaN(paidAmount) && newCoachSalaryData.dueDate) {
+        addCoachSalary({
+            id: Date.now(),
+            member: selectedCoach.name,
+            totalAmount,
+            paidAmount,
+            dueDate: newCoachSalaryData.dueDate,
+        });
+        setCoachSalaryOpen(false);
+        setNewCoachSalaryData({ member: '', totalAmount: '', paidAmount: '', dueDate: '' });
+    }
   };
 
 
@@ -107,26 +154,30 @@ export default function FinancesPage() {
                   <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
                       <Label htmlFor="player">Joueur</Label>
-                      <Select>
+                      <Select onValueChange={(value) => setNewPlayerPaymentData(p => ({...p, member: value}))} value={newPlayerPaymentData.member}>
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionner un joueur" />
                         </SelectTrigger>
                         <SelectContent>
-                          {players.map(player => <SelectItem key={player.id} value={player.id.toString()}>{player.name}</SelectItem>)}
+                          {players.map(player => <SelectItem key={player.id} value={player.name}>{player.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="totalAmount">Montant total (DH)</Label>
-                      <Input id="totalAmount" type="number" placeholder="1500" />
+                      <Input id="totalAmount" type="number" placeholder="1500" value={newPlayerPaymentData.totalAmount} onChange={(e) => setNewPlayerPaymentData(p => ({...p, totalAmount: e.target.value}))}/>
                     </div>
                      <div className="grid gap-2">
                       <Label htmlFor="paidAmount">Montant payé (DH)</Label>
-                      <Input id="paidAmount" type="number" placeholder="750" />
+                      <Input id="paidAmount" type="number" placeholder="750" value={newPlayerPaymentData.paidAmount} onChange={(e) => setNewPlayerPaymentData(p => ({...p, paidAmount: e.target.value}))}/>
+                    </div>
+                     <div className="grid gap-2">
+                      <Label htmlFor="playerRemainingAmount">Reste à payer (DH)</Label>
+                      <Input id="playerRemainingAmount" type="number" value={playerRemainingAmount} readOnly className="bg-muted" />
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="dueDate">Date d'échéance</Label>
-                      <Input id="dueDate" type="date" />
+                      <Input id="dueDate" type="date" value={newPlayerPaymentData.dueDate} onChange={(e) => setNewPlayerPaymentData(p => ({...p, dueDate: e.target.value}))} />
                     </div>
                   </div>
                   <DialogFooter>
@@ -201,30 +252,30 @@ export default function FinancesPage() {
                   <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
                       <Label htmlFor="coach">Entraîneur</Label>
-                      <Select>
+                      <Select onValueChange={(value) => setNewCoachSalaryData(p => ({...p, member: value}))} value={newCoachSalaryData.member}>
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionner un entraîneur" />
                         </SelectTrigger>
                         <SelectContent>
-                          {coaches.map(coach => <SelectItem key={coach.id} value={coach.id.toString()}>{coach.name}</SelectItem>)}
+                          {coaches.map(coach => <SelectItem key={coach.id} value={coach.name}>{coach.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="totalAmount">Salaire Total (DH)</Label>
-                      <Input id="totalAmount" type="number" placeholder="20000" value={newCoachSalary.totalAmount} onChange={handleCoachSalaryChange} />
+                      <Input id="totalAmount" type="number" placeholder="20000" value={newCoachSalaryData.totalAmount} onChange={(e) => setNewCoachSalaryData(p => ({...p, totalAmount: e.target.value}))} />
                     </div>
                      <div className="grid gap-2">
                       <Label htmlFor="paidAmount">Montant payé (DH)</Label>
-                      <Input id="paidAmount" type="number" placeholder="10000" value={newCoachSalary.paidAmount} onChange={handleCoachSalaryChange} />
+                      <Input id="paidAmount" type="number" placeholder="10000" value={newCoachSalaryData.paidAmount} onChange={(e) => setNewCoachSalaryData(p => ({...p, paidAmount: e.target.value}))} />
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="remainingAmount">Reste à payer (DH)</Label>
-                      <Input id="remainingAmount" type="number" value={remainingAmount} readOnly className="bg-muted" />
+                      <Input id="remainingAmount" type="number" value={coachRemainingAmount} readOnly className="bg-muted" />
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="dueDate">Mois de paie</Label>
-                      <Input id="dueDate" type="month" />
+                      <Input id="dueDate" type="month" value={newCoachSalaryData.dueDate} onChange={(e) => setNewCoachSalaryData(p => ({...p, dueDate: e.target.value}))} />
                     </div>
                   </div>
                   <DialogFooter>
