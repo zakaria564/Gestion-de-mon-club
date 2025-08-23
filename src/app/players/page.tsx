@@ -55,9 +55,12 @@ export default function PlayersPage() {
                 <TableHead>Photo</TableHead>
                 <TableHead>Nom</TableHead>
                 <TableHead>Âge</TableHead>
-                <TableHead>Position</TableHead>
+                <TableHead>Poste</TableHead>
                 <TableHead>Statut</TableHead>
-                <TableHead>Contact</TableHead>
+                <TableHead>Téléphone</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Tuteur Légal</TableHead>
+                <TableHead>Téléphone Tuteur</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -71,11 +74,14 @@ export default function PlayersPage() {
                   </TableCell>
                   <TableCell className="font-medium">{player.name}</TableCell>
                   <TableCell>{player.age}</TableCell>
-                  <TableCell>{player.position}</TableCell>
+                  <TableCell>{player.poste}</TableCell>
                   <TableCell>
                     <Badge variant={getBadgeVariant(player.status) as any}>{player.status}</Badge>
                   </TableCell>
-                  <TableCell>{player.contact}</TableCell>
+                  <TableCell>{player.phone}</TableCell>
+                  <TableCell>{player.email}</TableCell>
+                  <TableCell>{player.tutorName}</TableCell>
+                  <TableCell>{player.tutorPhone}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

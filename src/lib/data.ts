@@ -6,12 +6,13 @@ export const clubStats = {
 };
 
 export const players = [
-  { id: 1, name: 'Jean Dupont', age: 24, position: 'Attaquant', status: 'Actif', contact: 'jean.d@email.com', photo: 'https://placehold.co/40x40.png' },
-  { id: 2, name: 'Marie Curie', age: 22, position: 'Défenseur', status: 'Actif', contact: 'marie.c@email.com', photo: 'https://placehold.co/40x40.png' },
-  { id: 3, name: 'Pierre Martin', age: 28, position: 'Milieu', status: 'Blessé', contact: 'pierre.m@email.com', photo: 'https://placehold.co/40x40.png' },
-  { id: 4, name: 'Lucas Hernandez', age: 21, position: 'Gardien', status: 'Actif', contact: 'lucas.h@email.com', photo: 'https://placehold.co/40x40.png' },
-  { id: 5, name: 'Chloé Dubois', age: 25, position: 'Attaquant', status: 'Suspendu', contact: 'chloe.d@email.com', photo: 'https://placehold.co/40x40.png' },
+  { id: 1, name: 'Jean Dupont', age: 24, poste: 'Attaquant', status: 'Actif', phone: '0601020304', email: 'jean.d@email.com', tutorName: 'Jacques Dupont', tutorPhone: '0611223344', photo: 'https://placehold.co/40x40.png' },
+  { id: 2, name: 'Marie Curie', age: 22, poste: 'Défenseur', status: 'Actif', phone: '0602030405', email: 'marie.c@email.com', tutorName: 'Pierre Curie', tutorPhone: '0622334455', photo: 'https://placehold.co/40x40.png' },
+  { id: 3, name: 'Pierre Martin', age: 28, poste: 'Milieu', status: 'Blessé', phone: '0603040506', email: 'pierre.m@email.com', tutorName: 'N/A', tutorPhone: 'N/A', photo: 'https://placehold.co/40x40.png' },
+  { id: 4, name: 'Lucas Hernandez', age: 21, poste: 'Gardien', status: 'Actif', phone: '0604050607', email: 'lucas.h@email.com', tutorName: 'Jean Hernandez', tutorPhone: '0644556677', photo: 'https://placehold.co/40x40.png' },
+  { id: 5, name: 'Chloé Dubois', age: 25, poste: 'Attaquant', status: 'Suspendu', phone: '0605060708', email: 'chloe.d@email.com', tutorName: 'N/A', tutorPhone: 'N/A', photo: 'https://placehold.co/40x40.png' },
 ];
+
 
 export const coaches = [
   { id: 1, name: 'Alain Prost', specialization: 'Équipe principale', status: 'Actif', contact: 'alain.p@email.com' },
