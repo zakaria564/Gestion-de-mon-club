@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -31,7 +31,7 @@ export default function CalendarPage() {
 
   const { calendarEvents, loading, addEvent, updateEvent, deleteEvent } = context;
 
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
@@ -46,6 +46,10 @@ export default function CalendarPage() {
 
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+
+  useEffect(() => {
+    setDate(new Date());
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -123,7 +127,7 @@ export default function CalendarPage() {
   const selectedDateString = date ? format(date, 'yyyy-MM-dd') : undefined;
   const eventsForSelectedDate = selectedDateString ? eventsByDate[selectedDateString] : undefined;
 
-  if (loading) {
+  if (loading || !date) {
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">

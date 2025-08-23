@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { useFinancialContext } from "@/context/financial-context";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format, parseISO } from 'date-fns';
 
 export function PlayerPaymentDetailClient({ id }: { id: string }) {
   const context = useFinancialContext();
@@ -51,12 +52,14 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
   }, [payment]);
 
   const formattedDueDate = useMemo(() => {
-    if (!payment) return '';
-    const date = new Date(payment.dueDate);
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Month is 0-indexed
-    const year = date.getUTCFullYear();
-    return `${day}/${month}/${year}`;
+    if (!payment?.dueDate) return '';
+    try {
+      // Assuming dueDate is in 'YYYY-MM-DD' or ISO format
+      return format(parseISO(payment.dueDate), 'dd/MM/yyyy');
+    } catch (error) {
+      console.error("Error formatting due date:", error);
+      return payment.dueDate; // fallback to original string
+    }
   }, [payment]);
 
 

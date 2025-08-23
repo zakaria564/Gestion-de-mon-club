@@ -20,6 +20,7 @@ import { usePlayersContext } from '@/context/players-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { format, parseISO } from 'date-fns';
 
 export function PlayerDetailClient({ id }: { id: string }) {
   const router = useRouter();
@@ -41,7 +42,10 @@ export function PlayerDetailClient({ id }: { id: string }) {
 
   useEffect(() => {
     if (player) {
-      setSelectedPlayer(player);
+      setSelectedPlayer({
+        ...player,
+        birthDate: player.birthDate ? format(parseISO(player.birthDate), 'yyyy-MM-dd') : ''
+      });
     }
   }, [player]);
 
@@ -149,6 +153,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
         return 'outline';
     }
   };
+  
+  const formattedBirthDate = player.birthDate ? format(parseISO(player.birthDate), 'dd/MM/yyyy') : 'N/A';
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -184,7 +190,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                 </div>
                 <div className="flex items-center gap-4">
                     <Cake className="h-5 w-5 text-muted-foreground" />
-                    <span>{player.birthDate}</span>
+                    <span>{formattedBirthDate}</span>
                 </div>
                 <div className="flex items-center gap-4">
                     <MapPin className="h-5 w-5 text-muted-foreground" />
