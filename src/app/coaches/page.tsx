@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -12,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { coaches as initialCoaches } from "@/lib/data";
-import { PlusCircle, UserCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -151,7 +152,8 @@ export default function CoachesPage() {
             <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {coachesInCategory.map((coach) => (
-                <Card key={coach.id} className="flex flex-col h-full hover:shadow-lg transition-shadow">
+              <Link href={`/coaches/${coach.id}`} key={coach.id}>
+                <Card className="flex flex-col h-full hover:shadow-lg transition-shadow">
                   <CardHeader className="flex flex-row items-center gap-4 p-4">
                     <Avatar className="h-20 w-20">
                       <AvatarImage src={`https://placehold.co/80x80.png`} alt={coach.name} data-ai-hint="coach photo" />
@@ -169,6 +171,7 @@ export default function CoachesPage() {
                       </div>
                   </CardContent>
                 </Card>
+              </Link>
             ))}
             </div>
         </div>
