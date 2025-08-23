@@ -27,6 +27,15 @@ export type Coach = {
   photo: string;
 }
 
+export type CalendarEvent = {
+  id: string;
+  type: string;
+  opponent: string;
+  date: string;
+  time: string;
+  location: string;
+};
+
 export const clubStats = {
   totalPlayers: 45,
   totalCoaches: 5,
@@ -36,13 +45,8 @@ export const clubStats = {
 
 export const players: Player[] = [];
 export const coaches: Coach[] = [];
+export const calendarEvents: CalendarEvent[] = [];
 
-
-export const calendarEvents = [
-  { id: 1, opponent: 'FC Lyon', date: '2024-08-15T18:00:00.000Z', time: '18:00', location: 'Stade Local', type: 'Match' },
-  { id: 2, opponent: '', date: '2024-08-17T10:00:00.000Z', time: '10:00', location: 'Terrain d\'entraînement', type: 'Entraînement' },
-  { id: 3, opponent: 'AS Marseille', date: '2024-08-22T20:00:00.000Z', time: '20:00', location: 'Stade Vélodrome', type: 'Match' },
-];
 
 export const upcomingEvents = calendarEvents.slice(0, 2);
 

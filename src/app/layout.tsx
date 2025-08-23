@@ -7,6 +7,7 @@ import { FinancialProvider } from '@/context/financial-context';
 import { PlayersProvider } from '@/context/players-context';
 import { CoachesProvider } from '@/context/coaches-context';
 import { AuthProvider } from '@/context/auth-context';
+import { CalendarProvider } from '@/context/calendar-context';
 
 export const metadata: Metadata = {
   title: 'Gestion de mon club',
@@ -30,11 +31,13 @@ export default function RootLayout({
           <FinancialProvider>
             <PlayersProvider>
               <CoachesProvider>
-                <AppLayout>
-                  <SidebarInset>
-                    {children}
-                  </SidebarInset>
-                </AppLayout>
+                <CalendarProvider>
+                  <AppLayout>
+                    <SidebarInset>
+                      {children}
+                    </SidebarInset>
+                  </AppLayout>
+                </CalendarProvider>
               </CoachesProvider>
             </PlayersProvider>
           </FinancialProvider>

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import {
   Card,
   CardContent,
@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { calendarEvents as initialCalendarEvents } from "@/lib/data";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Edit, PlusCircle, Trash2 } from 'lucide-react';
@@ -20,25 +19,24 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { fr } from 'date-fns/locale';
 import { format, parse, parseISO } from 'date-fns';
-
-type CalendarEvent = {
-  id: number;
-  type: string;
-  opponent: string;
-  date: string;
-  time: string;
-  location: string;
-};
-
+import { CalendarContext, CalendarEvent, NewCalendarEvent } from '@/context/calendar-context';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CalendarPage() {
+  const context = useContext(CalendarContext);
+
+  if (!context) {
+    throw new Error("CalendarPage must be used within a CalendarProvider");
+  }
+
+  const { calendarEvents, loading, addEvent, updateEvent, deleteEvent } = context;
+
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [open, setOpen] = useState(false);
-  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>(initialCalendarEvents);
   const [isEditing, setIsEditing] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   
-  const [newEvent, setNewEvent] = useState({
+  const [newEvent, setNewEvent] = useState<NewCalendarEvent>({
     type: '',
     opponent: '',
     date: '',
@@ -58,29 +56,17 @@ export default function CalendarPage() {
     setNewEvent(prev => ({ ...prev, type: value }));
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
     if (isEditing && editingEvent) {
-       const eventDate = parse(newEvent.date, 'yyyy-MM-dd', new Date());
-       const updatedEvent: CalendarEvent = {
-        ...editingEvent,
+       await updateEvent({
+        id: editingEvent.id,
         ...newEvent,
-        date: format(eventDate, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
-       };
-       setCalendarEvents(prev => prev.map(e => e.id === editingEvent.id ? updatedEvent : e).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+       });
 
     } else {
-      const eventDate = parse(newEvent.date, 'yyyy-MM-dd', new Date());
-      const createdEvent: CalendarEvent = {
-          id: calendarEvents.length > 0 ? Math.max(...calendarEvents.map(e => e.id)) + 1 : 1,
-          opponent: newEvent.opponent,
-          date: format(eventDate, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
-          time: newEvent.time,
-          type: newEvent.type,
-          location: newEvent.location,
-      };
-      setCalendarEvents(prev => [...prev, createdEvent].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+      await addEvent(newEvent);
     }
     
     resetForm();
@@ -119,12 +105,11 @@ export default function CalendarPage() {
     setOpen(true);
   }
 
-  const handleDeleteEvent = (eventId: number) => {
-    setCalendarEvents(prev => prev.filter(e => e.id !== eventId));
+  const handleDeleteEvent = async (eventId: string) => {
+    await deleteEvent(eventId);
     setDetailsOpen(false);
     setSelectedEvent(null);
   }
-
 
   const eventsByDate = calendarEvents.reduce((acc, event) => {
     const eventDate = format(parseISO(event.date), 'yyyy-MM-dd');
@@ -137,6 +122,36 @@ export default function CalendarPage() {
 
   const selectedDateString = date ? format(date, 'yyyy-MM-dd') : undefined;
   const eventsForSelectedDate = selectedDateString ? eventsByDate[selectedDateString] : undefined;
+
+  if (loading) {
+    return (
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="flex items-center justify-between space-y-2">
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-10 w-48" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <Card>
+              <CardContent className="p-0">
+                <Skeleton className="w-full h-[700px]" />
+              </CardContent>
+            </Card>
+          </div>
+          <div className="md:col-span-1">
+             <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-5 w-full" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -315,5 +330,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-
-    
