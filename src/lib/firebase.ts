@@ -5,37 +5,15 @@ import { getStorage } from "firebase/storage";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration - Hardcoded for reliability
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_APP_ID
+  apiKey: "AIzaSyBhwLEcWSSt3G3L9sgGefVW8GKoOgPG_GA",
+  authDomain: "gestion-de-mon-club.firebaseapp.com",
+  projectId: "gestion-de-mon-club",
+  storageBucket: "gestion-de-mon-club.firebasestorage.app",
+  messagingSenderId: "1047250842586",
+  appId: "1:1047250842586:web:2d2b9c6a12d776fdb286e3"
 };
-
-// Validate the Firebase configuration
-const missingConfigKeys = Object.entries(firebaseConfig)
-  .filter(([key, value]) => !value)
-  .map(([key]) => key);
-
-if (missingConfigKeys.length > 0) {
-  const errorMessage = `
-    ****************************************************************************************
-    * FIREBASE CONFIGURATION ERROR                                                         *
-    * ------------------------------------------------------------------------------------ *
-    * The following Firebase environment variables are missing:                            *
-    *   - ${missingConfigKeys.join("\n    - ")}                                                     *
-    *                                                                                      *
-    * Please make sure you have a .env.local file in the root of your project with all the *
-    * required NEXT_PUBLIC_* variables.                                                    *
-    * The application will not work correctly until this is resolved.                      *
-    ****************************************************************************************
-  `;
-  console.error(errorMessage);
-}
-
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
