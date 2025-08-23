@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { finances, financialOverview } from "@/lib/data";
-import { DollarSign, Banknote, Landmark } from "lucide-react";
+import { Banknote, Landmark } from "lucide-react";
 
 export default function FinancesPage() {
   const getBadgeVariant = (status: string) => {
@@ -38,7 +38,7 @@ export default function FinancesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Dû</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <Banknote className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{financialOverview.totalDue.toFixed(2)} DH</div>
