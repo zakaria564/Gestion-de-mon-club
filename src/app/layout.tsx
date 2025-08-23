@@ -12,6 +12,7 @@ import { AppLayout } from "@/components/app-layout";
 import { Toaster } from "@/components/ui/toaster";
 import { usePathname } from "next/navigation";
 import "./globals.css";
+import { ClubLogo } from "@/components/club-logo";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -19,7 +20,7 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-function Providers({ children }: { children: React.ReactNode }) {
+function AppProviders({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const pathname = usePathname();
   const isAuthPage = ["/login", "/signup", "/forgot-password"].includes(pathname);
@@ -27,20 +28,20 @@ function Providers({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
-        <p>Chargement...</p>
+        <ClubLogo className="size-12 animate-pulse" />
       </div>
     );
   }
 
-  if (!user && !isAuthPage) {
-    return null; // A ProtectedRoute will handle the redirect
-  }
-  
-  if (!user && isAuthPage) {
-    return <>{children}</>;
-  }
-
-  if(user) {
+  if (user) {
+    if (isAuthPage) {
+       // Redirect to home if user is logged in and tries to access auth pages
+       // This can be handled by a dedicated component or hook in a real app
+       if (typeof window !== 'undefined') {
+          window.location.href = '/';
+       }
+       return null;
+    }
     return (
       <PlayersProvider>
         <CoachesProvider>
@@ -54,7 +55,16 @@ function Providers({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return null;
+  if (!user && !isAuthPage) {
+     // Redirect to login if user is not logged in and not on an auth page
+     if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+     }
+     return null;
+  }
+  
+  // User is not logged in and on an auth page
+  return <>{children}</>;
 }
 
 export default function RootLayout({
@@ -66,7 +76,7 @@ export default function RootLayout({
     <html lang="fr" className={inter.variable}>
       <body>
         <AuthProvider>
-          <Providers>{children}</Providers>
+          <AppProviders>{children}</AppProviders>
         </AuthProvider>
         <Toaster />
       </body>
