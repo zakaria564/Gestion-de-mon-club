@@ -26,13 +26,13 @@ const processPayments = (payments: (NewPayment | Payment)[]): Payment[] => {
         const transactions: Transaction[] = 'transactions' in p 
             ? p.transactions 
             : p.initialPaidAmount > 0 
-                ? [{ id: Date.now(), amount: p.initialPaidAmount, date: new Date().toISOString() }]
+                ? [{ id: Date.now() + Math.random(), amount: p.initialPaidAmount, date: new Date().toISOString() }]
                 : [];
 
         const remainingAmount = p.totalAmount - paidAmount;
         const status = remainingAmount <= 0 ? 'payé' : paidAmount > 0 ? 'partiel' : 'non payé';
         
-        const basePayment = 'transactions' in p ? p : { id: p.id, member: p.member, totalAmount: p.totalAmount, dueDate: p.dueDate };
+        const basePayment = 'id' in p ? p : { id: Date.now() + Math.random(), member: p.member, totalAmount: p.totalAmount, dueDate: p.dueDate };
 
         return {
             ...basePayment,
@@ -68,7 +68,7 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
         const updatedPayments = prevState.map(p => {
             if (p.id === paymentId) {
                 const newTransaction: Transaction = {
-                    id: Date.now(),
+                    id: Date.now() + Math.random(),
                     amount: complementAmount,
                     date: new Date().toISOString(),
                 };
@@ -85,7 +85,7 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
         const updatedPayments = prevState.map(p => {
             if (p.id === paymentId) {
                  const newTransaction: Transaction = {
-                    id: Date.now(),
+                    id: Date.now() + Math.random(),
                     amount: complementAmount,
                     date: new Date().toISOString(),
                 };
@@ -115,3 +115,5 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
     </FinancialContext.Provider>
   );
 };
+
+    
