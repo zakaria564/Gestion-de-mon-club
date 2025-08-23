@@ -6,6 +6,7 @@ import { SidebarInset } from '@/components/ui/sidebar';
 import { FinancialProvider } from '@/context/financial-context';
 import { PlayersProvider } from '@/context/players-context';
 import { CoachesProvider } from '@/context/coaches-context';
+import { AuthProvider } from '@/context/auth-context';
 
 export const metadata: Metadata = {
   title: 'Gestion de mon club',
@@ -25,17 +26,19 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <FinancialProvider>
-          <PlayersProvider>
-            <CoachesProvider>
-              <AppLayout>
-                <SidebarInset>
-                  {children}
-                </SidebarInset>
-              </AppLayout>
-            </CoachesProvider>
-          </PlayersProvider>
-        </FinancialProvider>
+        <AuthProvider>
+          <FinancialProvider>
+            <PlayersProvider>
+              <CoachesProvider>
+                <AppLayout>
+                  <SidebarInset>
+                    {children}
+                  </SidebarInset>
+                </AppLayout>
+              </CoachesProvider>
+            </PlayersProvider>
+          </FinancialProvider>
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

@@ -1,9 +1,8 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration - Hardcoded for reliability
 // IMPORTANT: For this application to work, you must configure your Firestore
@@ -13,7 +12,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBhwLEcWSSt3G3L9sgGefVW8GKoOgPG_GA",
   authDomain: "gestion-de-mon-club.firebaseapp.com",
   projectId: "gestion-de-mon-club",
-  storageBucket: "gestion-de-mon-club.firebasestorage.app",
+  storageBucket: "gestion-de-mon-club.appspot.com",
   messagingSenderId: "1047250842586",
   appId: "1:1047250842586:web:2d2b9c6a12d776fdb286e3"
 };
@@ -37,7 +36,7 @@ const firebaseConfig = {
 // #    service cloud.firestore {
 // #      match /databases/{database}/documents {
 // #        match /{document=**} {
-// #          allow read, write: if true;
+// #          allow read, write: if request.auth != null;
 // #        }
 // #      }
 // #    }
@@ -53,7 +52,7 @@ const firebaseConfig = {
 // #    service firebase.storage {
 // #      match /b/{bucket}/o {
 // #        match /{allPaths=**} {
-// #          allow read, write: if true;
+// #          allow read, write: if request.auth != null;
 // #        }
 // #      }
 // #    }
@@ -64,6 +63,8 @@ const firebaseConfig = {
 
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+export const auth = getAuth(app);
+export { app };
