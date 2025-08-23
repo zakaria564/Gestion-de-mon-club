@@ -244,27 +244,29 @@ export default function CoachesPage() {
             <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {coachesInCategory.map((coach) => (
-                <Link key={coach.id} href={`/coaches/${coach.id}`} className="flex flex-col h-full flex-grow">
-                    <Card className="flex flex-col w-full hover:shadow-lg transition-shadow h-full">
-                        <CardHeader className="p-4">
-                            <div className="flex items-center gap-4">
-                            <Avatar className="h-16 w-16">
-                                <AvatarImage src={coach.photo} alt={coach.name} data-ai-hint="coach photo" />
-                                <AvatarFallback>{coach.name.substring(0, 2)}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                                <CardTitle className="text-base font-bold">{coach.name}</CardTitle>
-                                <CardDescription>{coach.specialization}</CardDescription>
-                            </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
-                            <div className="flex justify-between items-center">
-                                <Badge variant="outline" className="text-xs">{coach.category}</Badge>
-                                <Badge variant={getBadgeVariant(coach.status) as any} className="text-xs">{coach.status}</Badge>
-                            </div>
-                        </CardContent>
-                    </Card>
+                <Link key={coach.id} href={`/coaches/${coach.id}`} passHref legacyBehavior>
+                    <a className="flex flex-col h-full flex-grow">
+                        <Card className="flex flex-col w-full hover:shadow-lg transition-shadow h-full">
+                            <CardHeader className="p-4">
+                                <div className="flex items-center gap-4">
+                                <Avatar className="h-16 w-16">
+                                    <AvatarImage src={coach.photo} alt={coach.name} data-ai-hint="coach photo" />
+                                    <AvatarFallback>{coach.name.substring(0, 2)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                    <CardTitle className="text-base font-bold">{coach.name}</CardTitle>
+                                    <CardDescription>{coach.specialization}</CardDescription>
+                                </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
+                                <div className="flex justify-between items-center">
+                                    <Badge variant="outline" className="text-xs">{coach.category}</Badge>
+                                    <Badge variant={getBadgeVariant(coach.status) as any} className="text-xs">{coach.status}</Badge>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </a>
                 </Link>
             ))}
             </div>
@@ -273,3 +275,5 @@ export default function CoachesPage() {
     </div>
   );
 }
+
+    
