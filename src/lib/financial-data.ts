@@ -7,6 +7,7 @@ export type Transaction = {
 
 export type Payment = {
     id: string;
+    uid: string;
     member: string;
     totalAmount: number;
     paidAmount: number;

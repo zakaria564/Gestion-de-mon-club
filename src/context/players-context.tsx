@@ -48,8 +48,13 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
   }, [getPlayersCollection]);
 
   useEffect(() => {
-    fetchPlayers();
-  }, [fetchPlayers]);
+    if (user) {
+      fetchPlayers();
+    } else {
+      setPlayers([]);
+      setLoading(false);
+    }
+  }, [user, fetchPlayers]);
 
   const addPlayer = async (playerData: Omit<Player, 'id' | 'uid'>) => {
     const collectionRef = getPlayersCollection();
@@ -64,10 +69,9 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updatePlayer = async (playerData: Player) => {
-    const collectionRef = getPlayersCollection();
-    if (!collectionRef) return;
+    if (!user) return;
     try {
-      const playerDoc = doc(collectionRef, playerData.id);
+      const playerDoc = doc(db, "users", user.uid, "players", playerData.id);
       const { id, ...dataToUpdate } = playerData;
       await updateDoc(playerDoc, dataToUpdate);
       fetchPlayers();
@@ -77,10 +81,9 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deletePlayer = async (id: string) => {
-    const collectionRef = getPlayersCollection();
-    if (!collectionRef) return;
+    if (!user) return;
     try {
-      const playerDoc = doc(collectionRef, id);
+      const playerDoc = doc(db, "users", user.uid, "players", id);
       await deleteDoc(playerDoc);
       fetchPlayers();
     } catch (err) {

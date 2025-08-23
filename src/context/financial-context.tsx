@@ -68,8 +68,14 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
   }, [getPlayerPaymentsCollection, getCoachSalariesCollection]);
 
   useEffect(() => {
-    fetchPayments();
-  }, [fetchPayments]);
+    if (user) {
+      fetchPayments();
+    } else {
+      setPlayerPayments([]);
+      setCoachSalaries([]);
+      setLoading(false);
+    }
+  }, [user, fetchPayments]);
 
   const calculateStatus = (total: number, paid: number): 'payé' | 'non payé' | 'partiel' => {
     if (paid >= total) return 'payé';
@@ -78,7 +84,7 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addPayment = async (collectionRef: ReturnType<typeof getPlayerPaymentsCollection> | ReturnType<typeof getCoachSalariesCollection>, paymentData: NewPayment) => {
-    if (!collectionRef) return;
+    if (!collectionRef || !user) return;
     try {
       const { member, totalAmount, initialPaidAmount, dueDate } = paymentData;
       const status = calculateStatus(totalAmount, initialPaidAmount);
@@ -89,7 +95,7 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
         date: new Date().toISOString()
       };
 
-      const newPayment: Omit<Payment, 'id'> = {
+      const newPayment: Omit<Payment, 'id' | 'uid'> = {
         member,
         totalAmount,
         paidAmount: initialPaidAmount,
@@ -99,7 +105,7 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
         transactions: initialPaidAmount > 0 ? [newTransaction] : []
       };
 
-      await addDoc(collectionRef, newPayment);
+      await addDoc(collectionRef, { ...newPayment, uid: user.uid });
       fetchPayments();
     } catch (err) {
       console.error(`Error adding payment: `, err);

@@ -49,8 +49,13 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
   }, [getCalendarCollection]);
 
   useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+    if (user) {
+      fetchEvents();
+    } else {
+      setCalendarEvents([]);
+      setLoading(false);
+    }
+  }, [user, fetchEvents]);
 
   const addEvent = async (eventData: NewCalendarEvent) => {
     const collectionRef = getCalendarCollection();
@@ -65,10 +70,9 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateEvent = async (eventData: CalendarEvent) => {
-    const collectionRef = getCalendarCollection();
-    if (!collectionRef) return;
+    if (!user) return;
     try {
-      const eventDoc = doc(collectionRef, eventData.id);
+      const eventDoc = doc(db, "users", user.uid, "calendarEvents", eventData.id);
       const { id, ...dataToUpdate } = eventData;
       await updateDoc(eventDoc, dataToUpdate);
       fetchEvents();
@@ -78,10 +82,9 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteEvent = async (id: string) => {
-    const collectionRef = getCalendarCollection();
-    if (!collectionRef) return;
+    if (!user) return;
     try {
-      const eventDoc = doc(collectionRef, id);
+      const eventDoc = doc(db, "users", user.uid, "calendarEvents", id);
       await deleteDoc(eventDoc);
       fetchEvents();
     } catch (err) {

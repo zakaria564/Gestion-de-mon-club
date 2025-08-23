@@ -48,8 +48,13 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
   }, [getCoachesCollection]);
 
   useEffect(() => {
-    fetchCoaches();
-  }, [fetchCoaches]);
+    if (user) {
+      fetchCoaches();
+    } else {
+      setCoaches([]);
+      setLoading(false);
+    }
+  }, [user, fetchCoaches]);
 
   const addCoach = async (coachData: Omit<Coach, 'id' | 'uid'>) => {
     const collectionRef = getCoachesCollection();
@@ -64,10 +69,9 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateCoach = async (coachData: Coach) => {
-    const collectionRef = getCoachesCollection();
-    if (!collectionRef) return;
+    if (!user) return;
     try {
-      const coachDoc = doc(collectionRef, coachData.id);
+      const coachDoc = doc(db, "users", user.uid, "coaches", coachData.id);
       const { id, ...dataToUpdate } = coachData;
       await updateDoc(coachDoc, dataToUpdate);
       fetchCoaches();
@@ -77,10 +81,9 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteCoach = async (id: string) => {
-    const collectionRef = getCoachesCollection();
-    if (!collectionRef) return;
+    if (!user) return;
     try {
-      const coachDoc = doc(collectionRef, id);
+      const coachDoc = doc(db, "users", user.uid, "coaches", id);
       await deleteDoc(coachDoc);
       fetchCoaches();
     } catch (err) {
