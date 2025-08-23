@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useContext, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { notFound, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,14 +20,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FinancialContext } from "@/context/financial-context";
+import { useFinancialContext } from "@/context/financial-context";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CoachPaymentDetailPage() {
   const params = useParams();
   const id = params.id as string;
-  const context = useContext(FinancialContext);
+  const context = useFinancialContext();
   
   if (!context) {
     throw new Error("CoachPaymentDetailPage must be used within a FinancialProvider");
@@ -247,5 +247,3 @@ export default function CoachPaymentDetailPage() {
     </div>
   );
 }
-
-    

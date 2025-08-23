@@ -1,20 +1,11 @@
 
 "use client";
 
-import React, { createContext, useState, ReactNode, useCallback, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
-import { useAuth } from './auth-context';
-import { parse } from 'date-fns';
-
-export type CalendarEvent = {
-  id: string;
-  type: string;
-  opponent: string;
-  date: string; // Stored as ISO string
-  time: string;
-  location: string;
-};
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { useAuth } from "./auth-context";
+import type { CalendarEvent } from "@/lib/data";
 
 export type NewCalendarEvent = Omit<CalendarEvent, 'id'>;
 
@@ -23,107 +14,82 @@ interface CalendarContextType {
   loading: boolean;
   addEvent: (event: NewCalendarEvent) => Promise<void>;
   updateEvent: (event: CalendarEvent) => Promise<void>;
-  deleteEvent: (eventId: string) => Promise<void>;
+  deleteEvent: (id: string) => Promise<void>;
 }
 
-export const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
+const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
-const eventFromDoc = (doc: QueryDocumentSnapshot<DocumentData>): CalendarEvent => {
-    const data = doc.data();
-    return {
-        id: doc.id,
-        type: data.type,
-        opponent: data.opponent,
-        date: data.date,
-        time: data.time,
-        location: data.location,
-    };
-};
-
-export const CalendarProvider = ({ children }: { children: ReactNode }) => {
+export function CalendarProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  const fetchEvents = useCallback(async (currentUser) => {
-    if (!currentUser) {
+
+  const getEventsCollectionRef = useCallback(() => {
+    if (!user) return null;
+    return collection(db, "users", user.uid, "calendarEvents");
+  }, [user]);
+
+  const fetchEvents = useCallback(async () => {
+    const collectionRef = getEventsCollectionRef();
+    if (!collectionRef) {
       setCalendarEvents([]);
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      const eventsCollectionRef = collection(db, 'users', currentUser.uid, 'calendarEvents');
-      const eventsSnapshot = await getDocs(eventsCollectionRef);
-      const eventsList = eventsSnapshot.docs
-        .map(eventFromDoc)
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      setCalendarEvents(eventsList);
-    } catch (error) {
-      console.error("Error fetching calendar events: ", error);
-      setCalendarEvents([]);
+      const snapshot = await getDocs(collectionRef);
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as CalendarEvent));
+      setCalendarEvents(data);
+    } catch (err) {
+      console.error("Error fetching calendar events: ", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getEventsCollectionRef]);
 
   useEffect(() => {
     if (user) {
-      fetchEvents(user);
+      fetchEvents();
     } else {
       setCalendarEvents([]);
       setLoading(false);
     }
   }, [user, fetchEvents]);
 
-  const addEvent = async (event: NewCalendarEvent) => {
-    if (!user) return;
-    const eventsCollectionRef = collection(db, 'users', user.uid, 'calendarEvents');
-
+  const addEvent = async (eventData: NewCalendarEvent) => {
+    const collectionRef = getEventsCollectionRef();
+    if (!collectionRef) return;
     try {
-      const eventDate = parse(event.date, 'yyyy-MM-dd', new Date());
-      const dateToStore = eventDate.toISOString();
-      
-      await addDoc(eventsCollectionRef, { 
-        ...event,
-        date: dateToStore
-      });
-      await fetchEvents(user);
-    } catch (error) {
-      console.error("Error adding event: ", error);
+      await addDoc(collectionRef, eventData);
+      fetchEvents();
+    } catch (err) {
+      console.error("Error adding event: ", err);
     }
   };
 
-  const updateEvent = async (updatedEvent: CalendarEvent) => {
-    if (!user) return;
-    
+  const updateEvent = async (eventData: CalendarEvent) => {
+    const collectionRef = getEventsCollectionRef();
+    if (!collectionRef) return;
     try {
-      const eventsCollectionRef = collection(db, 'users', user.uid, 'calendarEvents');
-      const eventRef = doc(eventsCollectionRef, updatedEvent.id);
-      
-      const dateToStore = updatedEvent.date.includes('T') ? updatedEvent.date : parse(updatedEvent.date, 'yyyy-MM-dd', new Date()).toISOString();
-
-      const { id, ...eventData } = updatedEvent;
-      await updateDoc(eventRef, {
-        ...eventData,
-        date: dateToStore,
-      });
-      await fetchEvents(user);
-    } catch (error) {
-      console.error("Error updating event: ", error);
+      const eventDoc = doc(collectionRef, eventData.id);
+      const { id, ...dataToUpdate } = eventData;
+      await updateDoc(eventDoc, dataToUpdate);
+      fetchEvents();
+    } catch (err) {
+      console.error("Error updating event: ", err);
     }
   };
 
-  const deleteEvent = async (eventId: string) => {
-     if (!user) return;
-
-     try {
-      const eventsCollectionRef = collection(db, 'users', user.uid, 'calendarEvents');
-      const eventRef = doc(eventsCollectionRef, eventId);
-      await deleteDoc(eventRef);
-      await fetchEvents(user);
-    } catch (error) {
-      console.error("Error deleting event: ", error);
+  const deleteEvent = async (id: string) => {
+    const collectionRef = getEventsCollectionRef();
+    if (!collectionRef) return;
+    try {
+      const eventDoc = doc(collectionRef, id);
+      await deleteDoc(eventDoc);
+      fetchEvents();
+    } catch (err) {
+      console.error("Error deleting event: ", err);
     }
   };
 
@@ -132,4 +98,12 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </CalendarContext.Provider>
   );
+}
+
+export const useCalendarContext = () => {
+    const context = useContext(CalendarContext);
+    if (context === undefined) {
+        throw new Error("useCalendarContext must be used within a CalendarProvider");
+    }
+    return context;
 };

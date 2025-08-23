@@ -20,18 +20,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { notifications } from "@/lib/data";
 import { Users, UserCheck, Calendar, Bell } from "lucide-react";
-import { PlayersContext } from "@/context/players-context";
-import { CoachesContext } from "@/context/coaches-context";
-import { CalendarContext, CalendarEvent } from "@/context/calendar-context";
+import { usePlayersContext } from "@/context/players-context";
+import { useCoachesContext } from "@/context/coaches-context";
+import { useCalendarContext, CalendarEvent } from "@/context/calendar-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
 type FormattedEvent = CalendarEvent & { formattedDate: string };
 
 export default function Dashboard() {
-  const playersContext = useContext(PlayersContext);
-  const coachesContext = useContext(CoachesContext);
-  const calendarContext = useContext(CalendarContext);
+  const playersContext = usePlayersContext();
+  const coachesContext = useCoachesContext();
+  const calendarContext = useCalendarContext();
 
   const [formattedUpcomingEvents, setFormattedUpcomingEvents] = useState<FormattedEvent[]>([]);
 

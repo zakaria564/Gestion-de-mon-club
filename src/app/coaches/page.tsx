@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useContext } from "react";
+import { useState } from "react";
 import React from 'react';
 import Link from "next/link";
 import {
@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CoachesContext } from "@/context/coaches-context";
+import { useCoachesContext } from "@/context/coaches-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const emptyCoach: Omit<Coach, 'id'> = {
@@ -47,7 +47,7 @@ const emptyCoach: Omit<Coach, 'id'> = {
 };
 
 export default function CoachesPage() {
-  const context = useContext(CoachesContext);
+  const context = useCoachesContext();
   
   if (!context) {
     throw new Error("CoachesPage must be used within a CoachesProvider");
@@ -274,5 +274,3 @@ export default function CoachesPage() {
     </div>
   );
 }
-
-    

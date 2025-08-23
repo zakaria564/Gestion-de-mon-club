@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useContext } from "react";
+import { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -31,16 +31,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FinancialContext } from "@/context/financial-context";
-import { PlayersContext } from "@/context/players-context";
-import { CoachesContext } from "@/context/coaches-context";
+import { useFinancialContext } from "@/context/financial-context";
+import { usePlayersContext } from "@/context/players-context";
+import { useCoachesContext } from "@/context/coaches-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
 
 export default function FinancesPage() {
-  const financialContext = useContext(FinancialContext);
-  const playersContext = useContext(PlayersContext);
-  const coachesContext = useContext(CoachesContext);
+  const financialContext = useFinancialContext();
+  const playersContext = usePlayersContext();
+  const coachesContext = useCoachesContext();
 
   if (!financialContext || !playersContext || !coachesContext) {
     throw new Error("FinancesPage must be used within all required providers");

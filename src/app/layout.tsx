@@ -1,82 +1,72 @@
 
 "use client";
 
-import type { Metadata } from 'next';
-import './globals.css';
-import { AppLayout } from '@/components/app-layout';
+import * as React from "react";
+import { Inter } from "next/font/google";
+import { AuthProvider, useAuth } from "@/context/auth-context";
+import { PlayersProvider } from "@/context/players-context";
+import { CoachesProvider } from "@/context/coaches-context";
+import { CalendarProvider } from "@/context/calendar-context";
+import { FinancialProvider } from "@/context/financial-context";
+import { AppLayout } from "@/components/app-layout";
 import { Toaster } from "@/components/ui/toaster";
-import { SidebarInset } from '@/components/ui/sidebar';
-import { FinancialProvider } from '@/context/financial-context';
-import { PlayersProvider } from '@/context/players-context';
-import { CoachesProvider } from '@/context/coaches-context';
-import { AuthProvider, useAuth } from '@/context/auth-context';
-import { CalendarProvider } from '@/context/calendar-context';
-import React from 'react';
-import { usePathname } from 'next/navigation';
-import { ClubLogo } from '@/components/club-logo';
+import { usePathname } from "next/navigation";
+import "./globals.css";
 
-// We can't export metadata from a client component, but we can have this here.
-// export const metadata: Metadata = {
-//   title: 'Gestion de mon club',
-//   description: 'Une application pour gérer votre club de sport.',
-// };
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 function Providers({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  
-  // Affiche un écran de chargement global pendant que Firebase vérifie l'authentification
+  const pathname = usePathname();
+  const isAuthPage = ["/login", "/signup", "/forgot-password"].includes(pathname);
+
   if (loading) {
     return (
-       <div className="flex h-screen w-full items-center justify-center bg-background">
-            <ClubLogo className="size-12 animate-pulse" />
-        </div>
+      <div className="flex h-screen w-full items-center justify-center">
+        <p>Chargement...</p>
+      </div>
     );
   }
+
+  if (!user && !isAuthPage) {
+    return null; // A ProtectedRoute will handle the redirect
+  }
   
-  // Si l'utilisateur est connecté, on enveloppe l'application avec tous les fournisseurs de données.
-  if (user) {
-    return (
-      <FinancialProvider>
-        <PlayersProvider>
-          <CoachesProvider>
-            <CalendarProvider>
-               <AppLayout>
-                <SidebarInset>
-                  {children}
-                </SidebarInset>
-              </AppLayout>
-            </CalendarProvider>
-          </CoachesProvider>
-        </PlayersProvider>
-      </FinancialProvider>
-    )
+  if (!user && isAuthPage) {
+    return <>{children}</>;
   }
 
-  // Si l'utilisateur n'est pas connecté et que le chargement est terminé,
-  // on affiche les enfants (qui seront redirigés par ProtectedRoute si nécessaire).
-  return <>{children}</>;
+  if(user) {
+    return (
+      <PlayersProvider>
+        <CoachesProvider>
+          <CalendarProvider>
+            <FinancialProvider>
+              <AppLayout>{children}</AppLayout>
+            </FinancialProvider>
+          </CalendarProvider>
+        </CoachesProvider>
+      </PlayersProvider>
+    );
+  }
+
+  return null;
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  const pathname = usePathname();
-  const isAuthPage = ['/login', '/signup', '/forgot-password'].includes(pathname);
-
+}) {
   return (
-    <html lang="fr">
-      <head>
-        <title>Gestion de mon club</title>
-        <meta name="description" content="Une application pour gérer votre club de sport." />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
+    <html lang="fr" className={inter.variable}>
+      <body>
         <AuthProvider>
-          { isAuthPage ? children : <Providers>{children}</Providers> }
+          <Providers>{children}</Providers>
         </AuthProvider>
         <Toaster />
       </body>

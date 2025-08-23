@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CoachesContext } from '@/context/coaches-context';
+import { useCoachesContext } from '@/context/coaches-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -24,7 +24,7 @@ export default function CoachDetailPage() {
   const id = params.id as string;
   const router = useRouter();
   
-  const context = useContext(CoachesContext);
+  const context = useCoachesContext();
   
   if (!context) {
     throw new Error("CoachDetailPage must be used within a CoachesProvider");
@@ -310,5 +310,3 @@ export default function CoachDetailPage() {
     </div>
   );
 }
-
-    

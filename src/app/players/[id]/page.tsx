@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PlayersContext } from '@/context/players-context';
+import { usePlayersContext } from '@/context/players-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -27,7 +27,7 @@ export default function PlayerDetailPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const context = useContext(PlayersContext);
+  const context = usePlayersContext();
 
   if (!context) {
     throw new Error("PlayerDetailPage must be used within a PlayersProvider");

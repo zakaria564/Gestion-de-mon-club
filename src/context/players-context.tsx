@@ -1,158 +1,93 @@
 
 "use client";
 
-import React, { createContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import { Player } from '@/lib/data';
-import { db, storage } from '@/lib/firebase';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
-import { useAuth } from './auth-context';
-
-type PlayerWithoutId = Omit<Player, 'id'>;
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
+import { useAuth } from "./auth-context";
+import type { Player } from "@/lib/data";
 
 interface PlayersContextType {
   players: Player[];
   loading: boolean;
-  addPlayer: (player: PlayerWithoutId) => Promise<void>;
+  addPlayer: (player: Omit<Player, 'id'>) => Promise<void>;
   updatePlayer: (player: Player) => Promise<void>;
-  deletePlayer: (playerId: string) => Promise<void>;
+  deletePlayer: (id: string) => Promise<void>;
 }
 
-export const PlayersContext = createContext<PlayersContextType | undefined>(undefined);
+const PlayersContext = createContext<PlayersContextType | undefined>(undefined);
 
-const playerFromDoc = (doc: QueryDocumentSnapshot<DocumentData>): Player => {
-    const data = doc.data();
-    return {
-        id: doc.id,
-        name: data.name,
-        birthDate: data.birthDate,
-        address: data.address,
-        poste: data.poste,
-        status: data.status,
-        phone: data.phone,
-        email: data.email,
-        tutorName: data.tutorName,
-        tutorPhone: data.tutorPhone,
-        photo: data.photo,
-        jerseyNumber: data.jerseyNumber,
-        category: data.category
-    };
-};
-
-export const PlayersProvider = ({ children }: { children: ReactNode }) => {
+export function PlayersProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  const fetchPlayers = useCallback(async (currentUser) => {
-    if (!currentUser) {
-        setPlayers([]);
-        setLoading(false);
-        return;
+
+  const getPlayersCollectionRef = useCallback(() => {
+    if (!user) return null;
+    return collection(db, "users", user.uid, "players");
+  }, [user]);
+
+  const fetchPlayers = useCallback(async () => {
+    const collectionRef = getPlayersCollectionRef();
+    if (!collectionRef) {
+      setPlayers([]);
+      setLoading(false);
+      return;
     }
     setLoading(true);
     try {
-      const playersCollectionRef = collection(db, 'users', currentUser.uid, 'players');
-      const playersSnapshot = await getDocs(playersCollectionRef);
-      const playersList = playersSnapshot.docs.map(playerFromDoc);
-      setPlayers(playersList);
-    } catch (error) {
-      console.error("Error fetching players: ", error);
-      setPlayers([]);
+      const snapshot = await getDocs(collectionRef);
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Player));
+      setPlayers(data);
+    } catch (err) {
+      console.error("Error fetching players: ", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getPlayersCollectionRef]);
 
   useEffect(() => {
     if (user) {
-      fetchPlayers(user);
+      fetchPlayers();
     } else {
       setPlayers([]);
       setLoading(false);
     }
   }, [user, fetchPlayers]);
-  
-  const uploadPhoto = async (photo: string, playerId: string): Promise<string> => {
-      if (user && photo && photo.startsWith('data:image')) {
-          const storageRef = ref(storage, `users/${user.uid}/players/${playerId}-${Date.now()}`);
-          await uploadString(storageRef, photo, 'data_url');
-          return await getDownloadURL(storageRef);
-      }
-      return photo;
-  }
 
-  const addPlayer = async (player: PlayerWithoutId) => {
-    if (!user) return;
-
+  const addPlayer = async (playerData: Omit<Player, 'id'>) => {
+    const collectionRef = getPlayersCollectionRef();
+    if (!collectionRef) return;
     try {
-      const playersCollectionRef = collection(db, 'users', user.uid, 'players');
-      const docRef = await addDoc(playersCollectionRef, { ...player, photo: '' });
-
-      if (player.photo) {
-        const photoURL = await uploadPhoto(player.photo, docRef.id);
-        await updateDoc(docRef, { photo: photoURL });
-      }
-
-      await fetchPlayers(user);
-    } catch (error) {
-      console.error("Error adding player: ", error);
+      await addDoc(collectionRef, playerData);
+      fetchPlayers();
+    } catch (err) {
+      console.error("Error adding player: ", err);
     }
   };
 
-  const updatePlayer = async (updatedPlayer: Player) => {
-    if (!user) return;
-
+  const updatePlayer = async (playerData: Player) => {
+    const collectionRef = getPlayersCollectionRef();
+    if (!collectionRef) return;
     try {
-        const playersCollectionRef = collection(db, 'users', user.uid, 'players');
-        const playerRef = doc(playersCollectionRef, updatedPlayer.id);
-        let photoURL = updatedPlayer.photo;
-
-        const playerToUpdate = players.find(p => p.id === updatedPlayer.id);
-
-        if (updatedPlayer.photo && updatedPlayer.photo.startsWith('data:image')) {
-            if (playerToUpdate && playerToUpdate.photo && playerToUpdate.photo.includes('firebasestorage')) {
-                try {
-                    const oldPhotoRef = ref(storage, playerToUpdate.photo);
-                    await deleteObject(oldPhotoRef);
-                } catch (error: any) {
-                    if (error.code !== 'storage/object-not-found') {
-                        console.error("Could not delete old photo, continuing update...", error);
-                    }
-                }
-            }
-            photoURL = await uploadPhoto(updatedPlayer.photo, updatedPlayer.id);
-        }
-
-        const { id, ...playerData } = updatedPlayer;
-        await updateDoc(playerRef, { ...playerData, photo: photoURL });
-        await fetchPlayers(user);
-    } catch (error) {
-        console.error("Error updating player: ", error);
+      const playerDoc = doc(collectionRef, playerData.id);
+      const { id, ...dataToUpdate } = playerData;
+      await updateDoc(playerDoc, dataToUpdate);
+      fetchPlayers();
+    } catch (err) {
+      console.error("Error updating player: ", err);
     }
   };
 
-  const deletePlayer = async (playerId: string) => {
-    if (!user) return;
-    
+  const deletePlayer = async (id: string) => {
+    const collectionRef = getPlayersCollectionRef();
+    if (!collectionRef) return;
     try {
-      const playersCollectionRef = collection(db, 'users', user.uid, 'players');
-      const playerRef = doc(playersCollectionRef, playerId);
-      const playerToDelete = players.find(p => p.id === playerId);
-      if (playerToDelete && playerToDelete.photo && playerToDelete.photo.includes('firebasestorage')) {
-          try {
-            const photoRef = ref(storage, playerToDelete.photo);
-            await deleteObject(photoRef)
-          } catch(error: any) {
-             if (error.code !== 'storage/object-not-found') {
-                 console.error("Error deleting photo:", error);
-             }
-          }
-      }
-      await deleteDoc(playerRef);
-      await fetchPlayers(user);
-    } catch (error) {
-      console.error("Error deleting player: ", error);
+      const playerDoc = doc(collectionRef, id);
+      await deleteDoc(playerDoc);
+      fetchPlayers();
+    } catch (err) {
+      console.error("Error deleting player: ", err);
     }
   };
 
@@ -161,4 +96,12 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </PlayersContext.Provider>
   );
+}
+
+export const usePlayersContext = () => {
+    const context = useContext(PlayersContext);
+    if (context === undefined) {
+        throw new Error("usePlayersContext must be used within a PlayersProvider");
+    }
+    return context;
 };

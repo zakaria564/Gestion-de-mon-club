@@ -31,9 +31,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import React from 'react';
-import { PlayersContext } from "@/context/players-context";
+import { usePlayersContext } from "@/context/players-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -54,7 +54,7 @@ const emptyPlayer: Omit<Player, 'id'> = {
 };
 
 export default function PlayersPage() {
-    const context = useContext(PlayersContext);
+    const context = usePlayersContext();
     const { toast } = useToast();
     
     if (!context) {
@@ -336,5 +336,3 @@ export default function PlayersPage() {
     </div>
   );
 }
-
-    

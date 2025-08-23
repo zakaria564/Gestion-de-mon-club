@@ -1,11 +1,11 @@
 
 "use client";
 
-import React, { createContext, useState, useMemo, ReactNode, useEffect, useCallback } from 'react';
-import { Payment, NewPayment, Overview, Transaction } from '@/lib/financial-data';
-import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, updateDoc, doc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
-import { useAuth } from './auth-context';
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, addDoc, updateDoc, doc, runTransaction } from "firebase/firestore";
+import { useAuth } from "./auth-context";
+import type { Payment, NewPayment, Transaction, Overview } from "@/lib/financial-data";
 
 interface FinancialContextType {
   playerPayments: Payment[];
@@ -13,161 +13,176 @@ interface FinancialContextType {
   loading: boolean;
   addPlayerPayment: (payment: NewPayment) => Promise<void>;
   addCoachSalary: (payment: NewPayment) => Promise<void>;
-  updatePlayerPayment: (paymentId: string, complementAmount: number) => Promise<void>;
-  updateCoachSalary: (paymentId: string, complementAmount: number) => Promise<void>;
+  updatePlayerPayment: (id: string, newAmount: number) => Promise<void>;
+  updateCoachSalary: (id: string, newAmount: number) => Promise<void>;
   playerPaymentsOverview: Overview;
   coachSalariesOverview: Overview;
 }
 
-export const FinancialContext = createContext<FinancialContextType | undefined>(undefined);
+const FinancialContext = createContext<FinancialContextType | undefined>(undefined);
 
-const paymentFromDoc = (doc: QueryDocumentSnapshot<DocumentData>): Payment => {
-    const data = doc.data();
-    const paidAmount = data.transactions.reduce((acc: number, t: Transaction) => acc + t.amount, 0);
-    const remainingAmount = data.totalAmount - paidAmount;
-    const status = remainingAmount <= 0 ? 'payé' : paidAmount > 0 ? 'partiel' : 'non payé';
-
-    return {
-        id: doc.id,
-        member: data.member,
-        totalAmount: data.totalAmount,
-        paidAmount,
-        remainingAmount,
-        status,
-        dueDate: data.dueDate,
-        transactions: data.transactions,
-    };
-}
-
-const calculateOverview = (payments: Payment[]): Overview => {
-    const totalDue = payments.reduce((acc, p) => acc + p.totalAmount, 0);
-    const paymentsMade = payments.reduce((acc, p) => acc + p.paidAmount, 0);
-    const paymentsRemaining = totalDue - paymentsMade;
-    return { totalDue, paymentsMade, paymentsRemaining };
-};
-
-export const FinancialProvider = ({ children }: { children: ReactNode }) => {
+export function FinancialProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [playerPayments, setPlayerPayments] = useState<Payment[]>([]);
   const [coachSalaries, setCoachSalaries] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchPayments = useCallback(async (currentUser) => {
-    if (!currentUser) {
+  const getPlayerPaymentsCollectionRef = useCallback(() => {
+    if (!user) return null;
+    return collection(db, "users", user.uid, "playerPayments");
+  }, [user]);
+  
+  const getCoachSalariesCollectionRef = useCallback(() => {
+    if (!user) return null;
+    return collection(db, "users", user.uid, "coachSalaries");
+  }, [user]);
+
+  const fetchPayments = useCallback(async () => {
+    const playerPaymentsRef = getPlayerPaymentsCollectionRef();
+    const coachSalariesRef = getCoachSalariesCollectionRef();
+    
+    if (!playerPaymentsRef || !coachSalariesRef) {
       setPlayerPayments([]);
       setCoachSalaries([]);
       setLoading(false);
       return;
     }
-    
+
     setLoading(true);
     try {
-      const playerPaymentsCol = collection(db, 'users', currentUser.uid, 'playerPayments');
-      const coachSalariesCol = collection(db, 'users', currentUser.uid, 'coachSalaries');
-
-      const [playerPaymentsSnapshot, coachSalariesSnapshot] = await Promise.all([
-        getDocs(playerPaymentsCol),
-        getDocs(coachSalariesCol)
+      const [playerSnapshot, coachSnapshot] = await Promise.all([
+        getDocs(playerPaymentsRef),
+        getDocs(coachSalariesRef)
       ]);
-
-      setPlayerPayments(playerPaymentsSnapshot.docs.map(paymentFromDoc));
-      setCoachSalaries(coachSalariesSnapshot.docs.map(paymentFromDoc));
-
-    } catch (error) {
-      console.error("Error fetching payments:", error);
-      setPlayerPayments([]);
-      setCoachSalaries([]);
+      const playerData = playerSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Payment));
+      const coachData = coachSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Payment));
+      setPlayerPayments(playerData);
+      setCoachSalaries(coachData);
+    } catch (err) {
+      console.error("Error fetching payments:", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getPlayerPaymentsCollectionRef, getCoachSalariesCollectionRef]);
 
   useEffect(() => {
     if (user) {
-      fetchPayments(user);
+      fetchPayments();
     } else {
-        setPlayerPayments([]);
-        setCoachSalaries([]);
-        setLoading(false);
+      setPlayerPayments([]);
+      setCoachSalaries([]);
+      setLoading(false);
     }
   }, [user, fetchPayments]);
 
-  const addPayment = async (collectionName: 'playerPayments' | 'coachSalaries', payment: NewPayment) => {
-      if (!user) return;
-      const collectionRef = collection(db, 'users', user.uid, collectionName);
+  const calculateStatus = (total: number, paid: number): 'payé' | 'non payé' | 'partiel' => {
+    if (paid >= total) return 'payé';
+    if (paid === 0) return 'non payé';
+    return 'partiel';
+  };
+
+  const addPayment = async (collectionName: 'playerPayments' | 'coachSalaries', paymentData: NewPayment) => {
+    if (!user) return;
+    const collectionRef = collection(db, "users", user.uid, collectionName);
+    try {
+      const { member, totalAmount, initialPaidAmount, dueDate } = paymentData;
+      const status = calculateStatus(totalAmount, initialPaidAmount);
       
-      const { member, totalAmount, initialPaidAmount, dueDate } = payment;
-      const newTransaction: Transaction | undefined = initialPaidAmount > 0 ? {
-          id: Date.now(),
-          amount: initialPaidAmount,
-          date: new Date().toISOString(),
-      } : undefined;
-
-      await addDoc(collectionRef, {
-          member,
-          totalAmount,
-          dueDate,
-          transactions: newTransaction ? [newTransaction] : []
-      });
-      await fetchPayments(user);
-  };
-
-  const addPlayerPayment = async (payment: NewPayment) => {
-    if (!user) return;
-    await addPayment('playerPayments', payment);
-  };
-
-  const addCoachSalary = async (payment: NewPayment) => {
-    if (!user) return;
-    await addPayment('coachSalaries', payment);
-  };
-
-  const updatePayment = async (collectionName: 'playerPayments' | 'coachSalaries', payments: Payment[], paymentId: string, complementAmount: number) => {
-      if (!user) return;
-      const collectionRef = collection(db, 'users', user.uid, collectionName);
-
-      const payment = payments.find(p => p.id === paymentId);
-      if (!payment) return;
-
       const newTransaction: Transaction = {
         id: Date.now(),
-        amount: complementAmount,
-        date: new Date().toISOString(),
+        amount: initialPaidAmount,
+        date: new Date().toISOString()
       };
-      
-      const paymentRef = doc(collectionRef, paymentId);
-      await updateDoc(paymentRef, {
-          transactions: [...payment.transactions, newTransaction]
-      });
-      await fetchPayments(user);
-  }
 
-  const updatePlayerPayment = async (paymentId: string, complementAmount: number) => {
-    if (!user) return;
-    await updatePayment('playerPayments', playerPayments, paymentId, complementAmount);
+      const newPayment: Omit<Payment, 'id'> = {
+        member,
+        totalAmount,
+        paidAmount: initialPaidAmount,
+        remainingAmount: totalAmount - initialPaidAmount,
+        status,
+        dueDate,
+        transactions: initialPaidAmount > 0 ? [newTransaction] : []
+      };
+
+      await addDoc(collectionRef, newPayment);
+      fetchPayments();
+    } catch (err) {
+      console.error(`Error adding ${collectionName}: `, err);
+    }
   };
 
-  const updateCoachSalary = async (paymentId: string, complementAmount: number) => {
-    if (!user) return;
-    await updatePayment('coachSalaries', coachSalaries, paymentId, complementAmount);
+  const updatePayment = async (collectionName: 'playerPayments' | 'coachSalaries', id: string, newAmount: number) => {
+      if (!user) return;
+      const docRef = doc(db, "users", user.uid, collectionName, id);
+
+      try {
+        await runTransaction(db, async (transaction) => {
+            const paymentDoc = await transaction.get(docRef);
+            if (!paymentDoc.exists()) {
+                throw "Document does not exist!";
+            }
+
+            const oldData = paymentDoc.data() as Payment;
+            const newPaidAmount = oldData.paidAmount + newAmount;
+            const newRemainingAmount = oldData.totalAmount - newPaidAmount;
+            const newStatus = calculateStatus(oldData.totalAmount, newPaidAmount);
+
+            const newTransaction: Transaction = {
+                id: Date.now(),
+                amount: newAmount,
+                date: new Date().toISOString(),
+            };
+
+            const updatedTransactions = [...oldData.transactions, newTransaction];
+
+            transaction.update(docRef, { 
+                paidAmount: newPaidAmount,
+                remainingAmount: newRemainingAmount,
+                status: newStatus,
+                transactions: updatedTransactions
+            });
+        });
+        fetchPayments();
+    } catch (err) {
+        console.error(`Error updating ${collectionName}:`, err);
+    }
   };
 
-  const playerPaymentsOverview = useMemo(() => calculateOverview(playerPayments), [playerPayments]);
-  const coachSalariesOverview = useMemo(() => calculateOverview(coachSalaries), [coachSalaries]);
+  const addPlayerPayment = (payment: NewPayment) => addPayment('playerPayments', payment);
+  const addCoachSalary = (payment: NewPayment) => addPayment('coachSalaries', payment);
+  const updatePlayerPayment = (id: string, newAmount: number) => updatePayment('playerPayments', id, newAmount);
+  const updateCoachSalary = (id: string, newAmount: number) => updatePayment('coachSalaries', id, newAmount);
+
+  const calculateOverview = (payments: Payment[]): Overview => {
+    return payments.reduce((acc, p) => {
+        acc.totalDue += p.totalAmount;
+        acc.paymentsMade += p.paidAmount;
+        acc.paymentsRemaining += p.remainingAmount;
+        return acc;
+    }, { totalDue: 0, paymentsMade: 0, paymentsRemaining: 0 });
+  };
 
   return (
     <FinancialContext.Provider value={{ 
-        playerPayments, 
-        coachSalaries, 
-        loading,
-        addPlayerPayment, 
-        addCoachSalary,
-        updatePlayerPayment,
-        updateCoachSalary,
-        playerPaymentsOverview,
-        coachSalariesOverview
+      playerPayments, 
+      coachSalaries, 
+      loading, 
+      addPlayerPayment, 
+      addCoachSalary,
+      updatePlayerPayment,
+      updateCoachSalary,
+      playerPaymentsOverview: calculateOverview(playerPayments),
+      coachSalariesOverview: calculateOverview(coachSalaries)
     }}>
       {children}
     </FinancialContext.Provider>
   );
+}
+
+export const useFinancialContext = () => {
+    const context = useContext(FinancialContext);
+    if (context === undefined) {
+        throw new Error("useFinancialContext must be used within a FinancialProvider");
+    }
+    return context;
 };

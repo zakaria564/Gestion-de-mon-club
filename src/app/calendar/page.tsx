@@ -19,11 +19,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { fr } from 'date-fns/locale';
 import { format, parse, parseISO } from 'date-fns';
-import { CalendarContext, CalendarEvent, NewCalendarEvent } from '@/context/calendar-context';
+import { CalendarEvent, NewCalendarEvent, useCalendarContext } from '@/context/calendar-context';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CalendarPage() {
-  const context = useContext(CalendarContext);
+  const context = useCalendarContext();
 
   if (!context) {
     throw new Error("CalendarPage must be used within a CalendarProvider");
