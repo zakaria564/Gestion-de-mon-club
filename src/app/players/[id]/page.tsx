@@ -3,7 +3,7 @@
 
 import { useMemo, useState, useContext, useEffect } from 'react';
 import { Player } from "@/lib/data";
-import { notFound, useParams, useRouter } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -17,8 +17,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PlayersContext } from '@/context/players-context';
 
-export default function PlayerDetailPage() {
-  const { id } = useParams() as { id: string };
+export default function PlayerDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const router = useRouter();
   
   const context = useContext(PlayersContext);
@@ -325,3 +325,5 @@ export default function PlayerDetailPage() {
     </div>
   );
 }
+
+    
