@@ -87,7 +87,7 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
     try {
       const playerRef = doc(db, 'players', updatedPlayer.id);
       let photoURL = updatedPlayer.photo;
-      if (updatedPlayer.photo) {
+      if (updatedPlayer.photo && updatedPlayer.photo.startsWith('data:image')) {
           photoURL = await uploadPhoto(updatedPlayer.photo, updatedPlayer.id);
       }
       await updateDoc(playerRef, { ...updatedPlayer, photo: photoURL, id: undefined });
@@ -102,12 +102,14 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
       const playerRef = doc(db, 'players', playerId);
       const playerToDelete = players.find(p => p.id === playerId);
       if (playerToDelete && playerToDelete.photo) {
-          const photoRef = ref(storage, playerToDelete.photo);
-          await deleteObject(photoRef).catch(error => {
+          try {
+            const photoRef = ref(storage, playerToDelete.photo);
+            await deleteObject(photoRef)
+          } catch(error: any) {
              if (error.code !== 'storage/object-not-found') {
                  console.error("Error deleting photo:", error);
              }
-          });
+          }
       }
       await deleteDoc(playerRef);
       await fetchPlayers();

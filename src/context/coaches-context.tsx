@@ -83,7 +83,7 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
     try {
         const coachRef = doc(db, 'coaches', updatedCoach.id);
         let photoURL = updatedCoach.photo;
-        if (updatedCoach.photo) {
+        if (updatedCoach.photo && updatedCoach.photo.startsWith('data:image')) {
             photoURL = await uploadPhoto(updatedCoach.photo, updatedCoach.id);
         }
         await updateDoc(coachRef, { ...updatedCoach, photo: photoURL, id: undefined });
@@ -98,12 +98,14 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
       const coachRef = doc(db, 'coaches', coachId);
        const coachToDelete = coaches.find(c => c.id === coachId);
       if (coachToDelete && coachToDelete.photo) {
-          const photoRef = ref(storage, coachToDelete.photo);
-          await deleteObject(photoRef).catch(error => {
+          try {
+            const photoRef = ref(storage, coachToDelete.photo);
+            await deleteObject(photoRef)
+          } catch(error: any) {
              if (error.code !== 'storage/object-not-found') {
                  console.error("Error deleting photo:", error);
              }
-          });
+          }
       }
       await deleteDoc(coachRef);
       await fetchCoaches();

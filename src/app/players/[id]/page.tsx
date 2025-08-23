@@ -3,7 +3,7 @@
 
 import { useMemo, useState, useContext, useEffect } from 'react';
 import { Player } from "@/lib/data";
-import { notFound, useRouter } from "next/navigation";
+import { notFound, useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -188,7 +188,7 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
                 </div>
             </div>
             <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Tuteur Légal</h3>
+                <h3 className="font-semibold text-lg">Tuteur Légal</h3>
                  <div className="flex items-center gap-4">
                     <UserCheck className="h-5 w-5 text-muted-foreground" />
                     <span>{player.tutorName}</span>
@@ -201,12 +201,12 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
         </CardContent>
          <CardFooter className="justify-end gap-2">
             <Button variant="outline" onClick={handleOpenDialog}>
-                <Edit className="mr-2 h-4 w-4" /> Modifier
+                <Edit className="h-4 w-4 mr-2" /> Modifier
             </Button>
             <AlertDialog>
                 <AlertDialogTrigger asChild>
                     <Button variant="destructive">
-                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                        <Trash2 className="h-4 w-4 mr-2" /> Supprimer
                     </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -235,7 +235,7 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
                 </DialogDescription>
               </DialogHeader>
               {selectedPlayer && (
-              <div className="grid md:grid-cols-2 gap-6 py-4">
+              <div className="grid py-4 gap-6 md:grid-cols-2">
                 <div className="space-y-4">
                     <h4 className="font-medium text-lg">Informations Personnelles</h4>
                     <div className="grid gap-2">

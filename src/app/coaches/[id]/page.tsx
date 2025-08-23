@@ -3,7 +3,7 @@
 
 import { useMemo, useState, useContext, useEffect } from 'react';
 import { Coach } from "@/lib/data";
-import { notFound, useRouter } from "next/navigation";
+import { notFound, useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -158,7 +158,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
         </CardHeader>
         <CardContent className="grid md:grid-cols-2 gap-6 pt-6">
             <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Informations</h3>
+                <h3 className="font-semibold text-lg">Informations</h3>
                 <div className="flex items-center gap-4">
                     <UserCircle className="h-5 w-5 text-muted-foreground" />
                     <span>{coach.name}</span>
@@ -173,7 +173,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                 </div>
             </div>
             <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Contact</h3>
+                <h3 className="font-semibold text-lg">Contact</h3>
                  <div className="flex items-center gap-4">
                     <Mail className="h-5 w-5 text-muted-foreground" />
                     <a href={`mailto:${coach.contact}`} className="hover:underline">{coach.contact}</a>
@@ -186,12 +186,12 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
         </CardContent>
          <CardFooter className="justify-end gap-2">
             <Button variant="outline" onClick={handleOpenDialog}>
-                <Edit className="mr-2 h-4 w-4" /> Modifier
+                <Edit className="h-4 w-4 mr-2" /> Modifier
             </Button>
             <AlertDialog>
                 <AlertDialogTrigger asChild>
                     <Button variant="destructive">
-                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                        <Trash2 className="h-4 w-4 mr-2" /> Supprimer
                     </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
