@@ -56,8 +56,14 @@ export default function CalendarPage() {
                       <SelectValue placeholder="Sélectionner un type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="match">Match</SelectItem>
-                      <SelectItem value="entrainement">Entraînement</SelectItem>
+                      <SelectItem value="match-amical">Match Amical</SelectItem>
+                      <SelectItem value="match-championnat">Match de Championnat</SelectItem>
+                      <SelectItem value="match-coupe">Match de Coupe</SelectItem>
+                      <SelectItem value="entrainement-physique">Entraînement Physique</SelectItem>
+                      <SelectItem value="entrainement-technique">Entraînement Technique</SelectItem>
+                      <SelectItem value="entrainement-tactique">Entraînement Tactique</SelectItem>
+                      <SelectItem value="reunion">Réunion</SelectItem>
+                      <SelectItem value="evenement-special">Événement Spécial</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -120,6 +126,7 @@ export default function CalendarPage() {
                             <div key={event.id} className="p-4 rounded-md border flex items-start gap-4">
                                 <div className="flex-shrink-0">
                                     <Badge variant={event.type === 'Match' ? 'default' : 'secondary'}>{event.type}</Badge>
+
                                 </div>
                                 <div className="flex-1">
                                     <p className="font-semibold">{event.type === 'Match' ? `vs ${event.opponent}` : 'Session d\'entraînement'}</p>
