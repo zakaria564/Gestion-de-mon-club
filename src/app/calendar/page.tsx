@@ -44,6 +44,9 @@ export default function CalendarPage() {
     location: '',
   });
 
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setNewEvent(prev => ({ ...prev, [id]: value }));
@@ -73,6 +76,11 @@ export default function CalendarPage() {
     
     setNewEvent({ type: '', opponent: '', date: '', time: '', location: '' });
     setOpen(false);
+  };
+
+  const handleEventClick = (event: CalendarEvent) => {
+    setSelectedEvent(event);
+    setDetailsOpen(true);
   };
 
   const eventsByDate = calendarEvents.reduce((acc, event) => {
@@ -162,7 +170,7 @@ export default function CalendarPage() {
                 className="w-full"
                 locale={fr}
                 components={{
-                  DayContent: ({ date: dayDate, ...props }) => {
+                  DayContent: ({ date: dayDate }) => {
                     const dayEvents = eventsByDate[format(dayDate, 'yyyy-MM-dd')];
                     return (
                       <div className="relative h-full w-full flex flex-col items-center justify-center">
@@ -205,7 +213,7 @@ export default function CalendarPage() {
               <CardContent>
                 <div className="space-y-4">
                   {eventsForSelectedDate.map((event) => (
-                    <div key={event.id} className="p-4 rounded-md border flex items-start gap-4">
+                    <div key={event.id} onClick={() => handleEventClick(event)} className="p-4 rounded-md border flex items-start gap-4 cursor-pointer hover:bg-muted/50">
                       <div className="flex-shrink-0">
                         <Badge variant={event.type.toLowerCase().includes('match') ? 'default' : 'secondary'}>{event.type}</Badge>
                       </div>
@@ -232,6 +240,25 @@ export default function CalendarPage() {
             )}
         </div>
       </div>
+
+       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selectedEvent?.type}</DialogTitle>
+            <DialogDescription>
+              {selectedEvent?.type.toLowerCase().includes('match') && selectedEvent.opponent ? `vs ${selectedEvent.opponent}` : 'Détails de l\'événement'}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedEvent && (
+            <div className="grid gap-4 py-4">
+                <p><strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString('fr-FR')}</p>
+                <p><strong>Heure:</strong> {selectedEvent.time}</p>
+                <p><strong>Lieu:</strong> {selectedEvent.location}</p>
+                {selectedEvent.opponent && <p><strong>Adversaire:</strong> {selectedEvent.opponent}</p>}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
