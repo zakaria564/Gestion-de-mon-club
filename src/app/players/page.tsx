@@ -146,7 +146,9 @@ export default function PlayersPage() {
                                   <SelectItem value="Sénior">Sénior</SelectItem>
                                   <SelectItem value="U23">U23</SelectItem>
                                   <SelectItem value="U19">U19</SelectItem>
+                                  <SelectItem value="U18">U18</SelectItem>
                                   <SelectItem value="U17">U17</SelectItem>
+                                  <SelectItem value="U16">U16</SelectItem>
                                   <SelectItem value="U15">U15</SelectItem>
                                   <SelectItem value="U13">U13</SelectItem>
                                   <SelectItem value="U11">U11</SelectItem>
