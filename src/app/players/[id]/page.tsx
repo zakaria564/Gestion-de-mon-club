@@ -7,16 +7,15 @@ import { notFound, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Cake, Mail, Phone, Shield, User, UserCheck, UserCircle, MapPin } from "lucide-react";
+import { ArrowLeft, Cake, Mail, Phone, UserCheck, UserCircle, MapPin } from "lucide-react";
 import Link from "next/link";
 
 export default function PlayerDetailPage() {
   const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const player = useMemo(() => {
-    const id = Array.isArray(params.id) ? params.id[0] : params.id;
     return players.find((p) => p.id.toString() === id);
-  }, [params.id]);
+  }, [id]);
 
 
   if (!player) {

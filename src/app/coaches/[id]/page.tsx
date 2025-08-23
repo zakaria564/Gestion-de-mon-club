@@ -7,16 +7,15 @@ import { notFound, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ArrowLeft, Mail, Phone, UserCircle, Award, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function CoachDetailPage() {
   const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const coach = useMemo(() => {
-    const id = Array.isArray(params.id) ? params.id[0] : params.id;
     return coaches.find((c) => c.id.toString() === id);
-  }, [params.id]);
+  }, [id]);
 
   if (!coach) {
     notFound();
