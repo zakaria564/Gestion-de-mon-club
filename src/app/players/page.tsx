@@ -35,6 +35,7 @@ import { useContext, useState } from "react";
 import { PlayersContext } from "@/context/players-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 
 const emptyPlayer: Omit<Player, 'id'> = {
@@ -141,131 +142,133 @@ export default function PlayersPage() {
       </div>
 
        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-4xl">
-            <form onSubmit={handleSubmit}>
-              <DialogHeader>
-                <DialogTitle>Ajouter un joueur</DialogTitle>
-                <DialogDescription>
-                  Remplissez les informations ci-dessous.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid md:grid-cols-2 gap-6 py-4">
-                <div className="space-y-4">
-                    <h4 className="font-medium text-lg">Informations Personnelles</h4>
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Nom complet</Label>
-                        <Input id="name" placeholder="Jean Dupont" value={selectedPlayer.name} onChange={handleInputChange} required />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="birthDate">Date de naissance</Label>
-                        <Input id="birthDate" type="date" value={selectedPlayer.birthDate} onChange={handleInputChange} required />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="address">Adresse</Label>
-                        <Input id="address" placeholder="123 Rue de Paris" value={selectedPlayer.address} onChange={handleInputChange} required />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="photo">Photo</Label>
-                        <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
-                        { selectedPlayer.photo && (
-                          <Avatar className="h-20 w-20 mt-2">
-                            <AvatarImage src={selectedPlayer.photo as string} alt="Aperçu" />
-                            <AvatarFallback>??</AvatarFallback>
-                          </Avatar>
-                        )}
-                    </div>
-                </div>
-                <div className="space-y-4">
-                    <h4 className="font-medium text-lg">Informations Sportives</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="poste">Poste</Label>
-                            <Select onValueChange={(value) => handleSelectChange('poste', value)} value={selectedPlayer.poste} required>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Gardien">Gardien</SelectItem>
-                                    <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
-                                    <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
-                                    <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
-                                    <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
-                                    <SelectItem value="Milieu Central">Milieu Central</SelectItem>
-                                    <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
-                                    <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
-                                    <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
-                                    <SelectItem value="Avant-centre">Avant-centre</SelectItem>
-                                </SelectContent>
-                            </Select>
+          <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
+            <DialogHeader>
+              <DialogTitle>Ajouter un joueur</DialogTitle>
+              <DialogDescription>
+                Remplissez les informations ci-dessous.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="flex-1 overflow-hidden">
+                <ScrollArea className="h-full">
+                    <div className="grid md:grid-cols-2 gap-6 py-4 pr-6">
+                        <div className="space-y-4">
+                            <h4 className="font-medium text-lg">Informations Personnelles</h4>
+                            <div className="grid gap-2">
+                                <Label htmlFor="name">Nom complet</Label>
+                                <Input id="name" placeholder="Jean Dupont" value={selectedPlayer.name} onChange={handleInputChange} required />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="birthDate">Date de naissance</Label>
+                                <Input id="birthDate" type="date" value={selectedPlayer.birthDate} onChange={handleInputChange} required />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="address">Adresse</Label>
+                                <Input id="address" placeholder="123 Rue de Paris" value={selectedPlayer.address} onChange={handleInputChange} required />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="photo">Photo</Label>
+                                <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
+                                { selectedPlayer.photo && (
+                                <Avatar className="h-20 w-20 mt-2">
+                                    <AvatarImage src={selectedPlayer.photo as string} alt="Aperçu" />
+                                    <AvatarFallback>??</AvatarFallback>
+                                </Avatar>
+                                )}
+                            </div>
                         </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="status">Statut</Label>
-                            <Select onValueChange={(value) => handleSelectChange('status', value)} value={selectedPlayer.status} required>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Actif">Actif</SelectItem>
-                                    <SelectItem value="Blessé">Blessé</SelectItem>
-                                    <SelectItem value="Suspendu">Suspendu</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <div className="space-y-4">
+                            <h4 className="font-medium text-lg">Informations Sportives</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="poste">Poste</Label>
+                                    <Select onValueChange={(value) => handleSelectChange('poste', value)} value={selectedPlayer.poste} required>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Sélectionner" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Gardien">Gardien</SelectItem>
+                                            <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
+                                            <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
+                                            <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
+                                            <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
+                                            <SelectItem value="Milieu Central">Milieu Central</SelectItem>
+                                            <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
+                                            <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
+                                            <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
+                                            <SelectItem value="Avant-centre">Avant-centre</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="status">Statut</Label>
+                                    <Select onValueChange={(value) => handleSelectChange('status', value)} value={selectedPlayer.status} required>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Sélectionner" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Actif">Actif</SelectItem>
+                                            <SelectItem value="Blessé">Blessé</SelectItem>
+                                            <SelectItem value="Suspendu">Suspendu</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="category">Catégorie</Label>
+                                    <Select onValueChange={(value) => handleSelectChange('category', value)} value={selectedPlayer.category} required>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Sélectionner" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Sénior">Sénior</SelectItem>
+                                            <SelectItem value="U23">U23</SelectItem>
+                                            <SelectItem value="U19">U19</SelectItem>
+                                            <SelectItem value="U18">U18</SelectItem>
+                                            <SelectItem value="U17">U17</SelectItem>
+                                            <SelectItem value="U16">U16</SelectItem>
+                                            <SelectItem value="U15">U15</SelectItem>
+                                            <SelectItem value="U13">U13</SelectItem>
+                                            <SelectItem value="U11">U11</SelectItem>
+                                            <SelectItem value="U9">U9</SelectItem>
+                                            <SelectItem value="U7">U7</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="jerseyNumber">Numéro de maillot</Label>
+                                    <Input id="jerseyNumber" type="number" placeholder="10" value={selectedPlayer.jerseyNumber > 0 ? selectedPlayer.jerseyNumber : ''} onChange={handleInputChange} required />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <h4 className="font-medium text-lg">Contact</h4>
+                            <div className="grid gap-2">
+                                <Label htmlFor="phone">Téléphone</Label>
+                                <Input id="phone" placeholder="0612345678" value={selectedPlayer.phone} onChange={handleInputChange} required />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input id="email" type="email" placeholder="jean@exemple.com" value={selectedPlayer.email} onChange={handleInputChange} required />
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <h4 className="font-medium text-lg">Tuteur Légal</h4>
+                            <div className="grid gap-2">
+                                <Label htmlFor="tutorName">Nom du tuteur</Label>
+                                <Input id="tutorName" placeholder="Jacques Dupont" value={selectedPlayer.tutorName} onChange={handleInputChange} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="tutorPhone">Téléphone du tuteur</Label>
+                                <Input id="tutorPhone" placeholder="0611223344" value={selectedPlayer.tutorPhone} onChange={handleInputChange} />
+                            </div>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="category">Catégorie</Label>
-                            <Select onValueChange={(value) => handleSelectChange('category', value)} value={selectedPlayer.category} required>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Sénior">Sénior</SelectItem>
-                                    <SelectItem value="U23">U23</SelectItem>
-                                    <SelectItem value="U19">U19</SelectItem>
-                                    <SelectItem value="U18">U18</SelectItem>
-                                    <SelectItem value="U17">U17</SelectItem>
-                                    <SelectItem value="U16">U16</SelectItem>
-                                    <SelectItem value="U15">U15</SelectItem>
-                                    <SelectItem value="U13">U13</SelectItem>
-                                    <SelectItem value="U11">U11</SelectItem>
-                                    <SelectItem value="U9">U9</SelectItem>
-                                    <SelectItem value="U7">U7</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="jerseyNumber">Numéro de maillot</Label>
-                            <Input id="jerseyNumber" type="number" placeholder="10" value={selectedPlayer.jerseyNumber > 0 ? selectedPlayer.jerseyNumber : ''} onChange={handleInputChange} required />
-                        </div>
-                    </div>
-                </div>
-                <div className="space-y-4">
-                    <h4 className="font-medium text-lg">Contact</h4>
-                    <div className="grid gap-2">
-                        <Label htmlFor="phone">Téléphone</Label>
-                        <Input id="phone" placeholder="0612345678" value={selectedPlayer.phone} onChange={handleInputChange} required />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" placeholder="jean@exemple.com" value={selectedPlayer.email} onChange={handleInputChange} required />
-                    </div>
-                </div>
-                 <div className="space-y-4">
-                    <h4 className="font-medium text-lg">Tuteur Légal</h4>
-                    <div className="grid gap-2">
-                        <Label htmlFor="tutorName">Nom du tuteur</Label>
-                        <Input id="tutorName" placeholder="Jacques Dupont" value={selectedPlayer.tutorName} onChange={handleInputChange} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="tutorPhone">Téléphone du tuteur</Label>
-                        <Input id="tutorPhone" placeholder="0611223344" value={selectedPlayer.tutorPhone} onChange={handleInputChange} />
-                    </div>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit">Sauvegarder</Button>
-              </DialogFooter>
+                </ScrollArea>
+                <DialogFooter className="pt-4 border-t">
+                    <Button type="submit">Sauvegarder</Button>
+                </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
@@ -303,7 +306,7 @@ export default function PlayersPage() {
             <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {playersInCategory.map((player) => (
-                <Link key={player.id} href={`/players/${player.id}`} className="flex flex-col h-full flex-grow">
+                <Link key={player.id} href={`/players/${player.id}`} className="flex flex-col h-full">
                     <Card className="flex flex-col w-full hover:shadow-lg transition-shadow h-full">
                         <CardHeader className="p-4">
                             <div className="flex items-center gap-4">

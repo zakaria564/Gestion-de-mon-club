@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PlayersContext } from '@/context/players-context';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function PlayerDetailPage() {
   const { id } = useParams();
@@ -228,16 +229,17 @@ export default function PlayerDetailPage() {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-4xl">
-            <form onSubmit={handleSubmit}>
-              <DialogHeader>
-                <DialogTitle>Modifier un joueur</DialogTitle>
-                <DialogDescription>
-                  Remplissez les informations ci-dessous.
-                </DialogDescription>
-              </DialogHeader>
+          <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
+            <DialogHeader>
+              <DialogTitle>Modifier un joueur</DialogTitle>
+              <DialogDescription>
+                Remplissez les informations ci-dessous.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="flex-1 overflow-hidden">
+             <ScrollArea className="h-full">
               {selectedPlayer && (
-              <div className="grid py-4 gap-6 md:grid-cols-2">
+              <div className="grid py-4 gap-6 md:grid-cols-2 pr-6">
                 <div className="space-y-4">
                     <h4 className="font-medium text-lg">Informations Personnelles</h4>
                     <div className="grid gap-2">
@@ -352,7 +354,8 @@ export default function PlayerDetailPage() {
                 </div>
               </div>
               )}
-              <DialogFooter>
+              </ScrollArea>
+              <DialogFooter className="pt-4 border-t">
                 <Button type="submit">Sauvegarder</Button>
               </DialogFooter>
             </form>
