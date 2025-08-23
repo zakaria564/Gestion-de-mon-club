@@ -51,13 +51,12 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
 
 
   const fetchPlayers = useCallback(async () => {
-    if (!user) {
-      setPlayers([]);
-      setLoading(false);
-      return;
-    }
     const playersCollectionRef = getPlayersCollectionRef();
-    if (!playersCollectionRef) return;
+    if (!playersCollectionRef) {
+        setPlayers([]);
+        setLoading(false);
+        return;
+    }
 
     try {
       setLoading(true);
@@ -70,7 +69,7 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [user, getPlayersCollectionRef]);
+  }, [getPlayersCollectionRef]);
 
   useEffect(() => {
     if(user) {
@@ -91,9 +90,9 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const addPlayer = async (player: PlayerWithoutId) => {
-    if (!user) return;
     const playersCollectionRef = getPlayersCollectionRef();
     if (!playersCollectionRef) return;
+
     try {
       const docRef = await addDoc(playersCollectionRef, { ...player, photo: '' });
 
@@ -109,7 +108,6 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updatePlayer = async (updatedPlayer: Player) => {
-    if (!user) return;
     const playersCollectionRef = getPlayersCollectionRef();
     if (!playersCollectionRef) return;
     try {
@@ -141,7 +139,6 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deletePlayer = async (playerId: string) => {
-    if (!user) return;
     const playersCollectionRef = getPlayersCollectionRef();
     if (!playersCollectionRef) return;
     try {

@@ -67,7 +67,10 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
     const playerPaymentsCol = getCollectionRef('playerPayments');
     const coachSalariesCol = getCollectionRef('coachSalaries');
 
-    if (!playerPaymentsCol || !coachSalariesCol) return;
+    if (!playerPaymentsCol || !coachSalariesCol) {
+        setLoading(false);
+        return;
+    }
 
     try {
       setLoading(true);
@@ -99,7 +102,7 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
   }, [user, fetchPayments]);
 
   const addPayment = async (collectionRef: CollectionReference<DocumentData> | null, payment: NewPayment) => {
-      if (!user || !collectionRef) return;
+      if (!collectionRef) return;
       const { member, totalAmount, initialPaidAmount, dueDate } = payment;
       const newTransaction: Transaction | undefined = initialPaidAmount > 0 ? {
           id: Date.now(),
@@ -125,7 +128,7 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updatePayment = async (collectionRef: CollectionReference<DocumentData> | null, payments: Payment[], paymentId: string, complementAmount: number) => {
-      if (!user || !collectionRef) return;
+      if (!collectionRef) return;
       const payment = payments.find(p => p.id === paymentId);
       if (!payment) return;
 
