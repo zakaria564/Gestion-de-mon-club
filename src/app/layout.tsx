@@ -13,6 +13,7 @@ import { AuthProvider, useAuth } from '@/context/auth-context';
 import { CalendarProvider } from '@/context/calendar-context';
 import React from 'react';
 import { usePathname } from 'next/navigation';
+import { ClubLogo } from '@/components/club-logo';
 
 // We can't export metadata from a client component, but we can have this here.
 // export const metadata: Metadata = {
@@ -26,19 +27,32 @@ function Providers({ children }: { children: React.ReactNode }) {
   const isAuthPage = ['/login', '/signup', '/forgot-password'].includes(pathname);
 
   if (loading) {
-    return null; // or a loading spinner
+    // Affiche un écran de chargement global pendant que Firebase vérifie l'authentification
+    return (
+       <div className="flex h-screen w-full items-center justify-center bg-background">
+            <ClubLogo className="size-12 animate-pulse" />
+        </div>
+    );
   }
-
+  
+  // Si c'est une page d'authentification ou si l'utilisateur n'est pas connecté,
+  // on affiche la page directement, sans les fournisseurs de données.
   if (isAuthPage || !user) {
     return <>{children}</>;
   }
 
+  // Si l'utilisateur est connecté et que ce n'est pas une page d'authentification,
+  // on enveloppe l'application avec tous les fournisseurs de données.
   return (
     <FinancialProvider>
       <PlayersProvider>
         <CoachesProvider>
           <CalendarProvider>
-            {children}
+             <AppLayout>
+              <SidebarInset>
+                {children}
+              </SidebarInset>
+            </AppLayout>
           </CalendarProvider>
         </CoachesProvider>
       </PlayersProvider>
@@ -51,6 +65,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isAuthPage = ['/login', '/signup', '/forgot-password'].includes(pathname);
+
   return (
     <html lang="fr">
       <head>
@@ -62,13 +79,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          <Providers>
-            <AppLayout>
-              <SidebarInset>
-                {children}
-              </SidebarInset>
-            </AppLayout>
-          </Providers>
+          { isAuthPage ? children : <Providers>{children}</Providers> }
         </AuthProvider>
         <Toaster />
       </body>

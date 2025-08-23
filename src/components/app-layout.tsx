@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -51,7 +52,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, logOut, loading } = useAuth();
   const { toast } = useToast();
-  const isAuthPage = ['/login', '/signup', '/forgot-password'].includes(pathname);
 
   const handleLogout = async () => {
     try {
@@ -64,10 +64,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         description: error.message,
       });
     }
-  }
-
-  if (isAuthPage) {
-    return <>{children}</>;
   }
 
   if (loading) {
