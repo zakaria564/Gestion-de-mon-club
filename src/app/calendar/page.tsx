@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { fr } from 'date-fns/locale';
+import { format, parseISO } from 'date-fns';
 
 type CalendarEvent = {
   id: number;
@@ -58,27 +59,29 @@ export default function CalendarPage() {
     const createdEvent: CalendarEvent = {
         id: calendarEvents.length + 1,
         opponent: newEvent.opponent,
-        // The date from the form is 'YYYY-MM-DD'. We need to adjust for timezone to avoid off-by-one day errors.
-        date: new Date(newEvent.date + 'T00:00:00').toISOString().split('T')[0],
+        date: newEvent.date,
         time: newEvent.time,
         type: newEvent.type,
         location: newEvent.location,
     };
     
-    setCalendarEvents(prev => [...prev, createdEvent]);
+    setCalendarEvents(prev => [...prev, createdEvent].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
     
     setNewEvent({ type: '', opponent: '', date: '', time: '', location: '' });
     setOpen(false);
   };
 
   const eventsByDate = calendarEvents.reduce((acc, event) => {
-    const eventDate = new Date(event.date + "T00:00:00").toDateString();
+    const eventDate = format(parseISO(event.date), 'yyyy-MM-dd');
     if (!acc[eventDate]) {
       acc[eventDate] = [];
     }
     acc[eventDate].push(event);
     return acc;
   }, {} as Record<string, typeof calendarEvents>);
+
+  const selectedDateString = date ? format(date, 'yyyy-MM-dd') : undefined;
+  const eventsForSelectedDate = selectedDateString ? eventsByDate[selectedDateString] : undefined;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -101,7 +104,7 @@ export default function CalendarPage() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="type">Type d'événement</Label>
-                  <Select name="type" onValueChange={handleSelectChange} value={newEvent.type}>
+                  <Select name="type" onValueChange={handleSelectChange} value={newEvent.type} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner un type" />
                     </SelectTrigger>
@@ -124,16 +127,16 @@ export default function CalendarPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="date">Date</Label>
-                    <Input id="date" type="date" value={newEvent.date} onChange={handleInputChange} />
+                    <Input id="date" type="date" value={newEvent.date} onChange={handleInputChange} required/>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="time">Heure</Label>
-                    <Input id="time" type="time" value={newEvent.time} onChange={handleInputChange}/>
+                    <Input id="time" type="time" value={newEvent.time} onChange={handleInputChange} required/>
                   </div>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="location">Lieu</Label>
-                  <Input id="location" placeholder="Stade ou lieu" value={newEvent.location} onChange={handleInputChange}/>
+                  <Input id="location" placeholder="Stade ou lieu" value={newEvent.location} onChange={handleInputChange} required/>
                 </div>
               </div>
               <DialogFooter>
@@ -152,11 +155,11 @@ export default function CalendarPage() {
             className="w-full"
             locale={fr}
             components={{
-              DayContent: ({ date, ...props }) => {
-                const dayEvents = eventsByDate[date.toDateString()];
+              DayContent: ({ date: dayDate, ...props }) => {
+                const dayEvents = eventsByDate[format(dayDate, 'yyyy-MM-dd')];
                 return (
                   <div className="relative h-full w-full flex flex-col items-center justify-center">
-                    <span>{date.getDate()}</span>
+                    <span>{dayDate.getDate()}</span>
                     {dayEvents && (
                       <div className="absolute bottom-1 flex space-x-1">
                         {dayEvents.map(event => (
@@ -185,14 +188,14 @@ export default function CalendarPage() {
         </CardContent>
       </Card>
 
-      {date && eventsByDate[date.toDateString()] && (
+      {date && eventsForSelectedDate && (
         <Card className="mt-4">
           <CardHeader>
             <CardTitle>Événements du {date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {eventsByDate[date.toDateString()].map((event) => (
+              {eventsForSelectedDate.map((event) => (
                 <div key={event.id} className="p-4 rounded-md border flex items-start gap-4">
                   <div className="flex-shrink-0">
                     <Badge variant={event.type.toLowerCase().includes('match') ? 'default' : 'secondary'}>{event.type}</Badge>
