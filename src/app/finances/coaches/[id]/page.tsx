@@ -1,14 +1,31 @@
 
+"use client";
+
+import { useState } from "react";
 import { coachSalaries } from "@/lib/data";
 import { notFound } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Banknote, Calendar, CheckCircle, Clock, XCircle, UserCheck } from "lucide-react";
+import { ArrowLeft, Banknote, Calendar, CheckCircle, Clock, XCircle, UserCheck, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
 
 export default function CoachPaymentDetailPage({ params }: { params: { id: string } }) {
   const payment = coachSalaries.find((p) => p.id.toString() === params.id);
+  const [open, setOpen] = useState(false);
 
   if (!payment) {
     notFound();
@@ -39,6 +56,8 @@ export default function CoachPaymentDetailPage({ params }: { params: { id: strin
             return null;
     }
   }
+
+  const canAddComplement = payment.status === 'partiel' || payment.status === 'non payé';
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -89,6 +108,34 @@ export default function CoachPaymentDetailPage({ params }: { params: { id: strin
                 </div>
             </div>
         </CardContent>
+         {canAddComplement && (
+            <CardFooter className="justify-end">
+                <Dialog open={open} onOpenChange={setOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un complément
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Ajouter un paiement complémentaire</DialogTitle>
+                      <DialogDescription>
+                        Le montant restant à payer est de {payment.remainingAmount.toFixed(2)} DH.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="complementAmount">Montant du complément (DH)</Label>
+                        <Input id="complementAmount" type="number" placeholder={payment.remainingAmount.toFixed(2)} />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button type="submit">Sauvegarder</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+            </CardFooter>
+        )}
       </Card>
     </div>
   );
