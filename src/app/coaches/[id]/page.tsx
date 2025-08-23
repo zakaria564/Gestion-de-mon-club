@@ -17,8 +17,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CoachesContext } from '@/context/coaches-context';
 
-export const dynamic = 'force-dynamic';
-
 export default function CoachDetailPage() {
   const params = useParams();
   const id = params.id as string;
