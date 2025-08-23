@@ -58,15 +58,16 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const fetchPayments = useCallback(async () => {
+    if (!user) { // Don't fetch if user is not logged in
+      setPlayerPayments([]);
+      setCoachSalaries([]);
+      setLoading(false);
+      return;
+    }
     const playerPaymentsCol = getCollectionRef('playerPayments');
     const coachSalariesCol = getCollectionRef('coachSalaries');
 
-    if (!playerPaymentsCol || !coachSalariesCol) {
-        setPlayerPayments([]);
-        setCoachSalaries([]);
-        setLoading(false);
-        return;
-    }
+    if (!playerPaymentsCol || !coachSalariesCol) return;
 
     try {
       setLoading(true);
@@ -85,7 +86,7 @@ export const FinancialProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [getCollectionRef]);
+  }, [getCollectionRef, user]);
 
   useEffect(() => {
     fetchPayments();

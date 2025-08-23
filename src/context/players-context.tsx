@@ -51,12 +51,14 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
 
 
   const fetchPlayers = useCallback(async () => {
-    const playersCollectionRef = getPlayersCollectionRef();
-    if (!playersCollectionRef) {
-        setPlayers([]);
-        setLoading(false);
-        return;
+    if (!user) { // Don't fetch if user is not logged in
+      setPlayers([]);
+      setLoading(false);
+      return;
     }
+    const playersCollectionRef = getPlayersCollectionRef();
+    if (!playersCollectionRef) return;
+
     try {
       setLoading(true);
       const playersSnapshot = await getDocs(playersCollectionRef);
@@ -68,7 +70,7 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [getPlayersCollectionRef]);
+  }, [getPlayersCollectionRef, user]);
 
   useEffect(() => {
     fetchPlayers();

@@ -46,12 +46,14 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const fetchCoaches = useCallback(async () => {
-    const coachesCollectionRef = getCoachesCollectionRef();
-    if (!coachesCollectionRef) {
+    if (!user) { // Don't fetch if user is not logged in
       setCoaches([]);
       setLoading(false);
       return;
     }
+    const coachesCollectionRef = getCoachesCollectionRef();
+    if (!coachesCollectionRef) return;
+    
     try {
       setLoading(true);
       const coachesSnapshot = await getDocs(coachesCollectionRef);
@@ -63,7 +65,7 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [getCoachesCollectionRef]);
+  }, [getCoachesCollectionRef, user]);
 
   useEffect(() => {
     fetchCoaches();
