@@ -68,7 +68,19 @@ export default function CoachesPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="specialization">Spécialisation</Label>
-                <Input id="specialization" placeholder="Équipe principale" />
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner une spécialité" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="principal">Entraîneur Principal</SelectItem>
+                    <SelectItem value="adjoint">Entraîneur Adjoint</SelectItem>
+                    <SelectItem value="gardiens">Entraîneur des Gardiens</SelectItem>
+                    <SelectItem value="physique">Préparateur Physique</SelectItem>
+                    <SelectItem value="jeunes">Entraîneur Jeunes</SelectItem>
+                    <SelectItem value="analyste">Analyste Vidéo</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="status">Statut</Label>
