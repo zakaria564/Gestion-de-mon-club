@@ -205,7 +205,7 @@ export default function CoachesPage() {
                       )}
                   </div>
                 </div>
-                <DialogFooter className="pt-4 border-t sticky bottom-0 bg-background">
+                <DialogFooter className="pt-4 border-t">
                   <Button type="submit">Sauvegarder</Button>
                 </DialogFooter>
               </form>
