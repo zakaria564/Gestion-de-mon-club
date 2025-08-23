@@ -215,16 +215,17 @@ export default function CoachDetailPage() {
       </Card>
       
        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
             <DialogHeader>
               <DialogTitle>Modifier un entraîneur</DialogTitle>
               <DialogDescription>
                 Remplissez les informations ci-dessous.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
+              <ScrollArea className="flex-1 -mr-6 pr-6">
                 {selectedCoach && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4 pr-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4">
                     <div className="grid gap-2">
                       <Label htmlFor="name">Nom</Label>
                       <Input id="name" placeholder="Alain Prost" value={selectedCoach.name} onChange={handleInputChange} required />
@@ -299,16 +300,15 @@ export default function CoachDetailPage() {
                     </div>
                   </div>
                 )}
-                <DialogFooter className="pt-4 border-t">
-                    <Button type="submit">Sauvegarder</Button>
-                </DialogFooter>
+              </ScrollArea>
+              <DialogFooter className="pt-4 border-t -mx-6 px-6 bg-background">
+                  <Button type="submit">Sauvegarder</Button>
+              </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
     </div>
   );
 }
-
-    
 
     
