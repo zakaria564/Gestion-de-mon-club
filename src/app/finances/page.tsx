@@ -61,28 +61,28 @@ export default function FinancesPage() {
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
           {playerPayments.map((payment) => (
-            <Card key={payment.id} className="flex flex-col">
-              <CardHeader>
-                <CardTitle>{payment.member}</CardTitle>
-                <CardDescription>Date de paiement: {payment.dueDate}</CardDescription>
+            <Card key={payment.id} className="flex flex-col justify-between">
+              <CardHeader className="flex-row items-center justify-between">
+                <CardTitle className="text-lg">{payment.member}</CardTitle>
+                <Badge variant={getBadgeVariant(payment.status) as any}>
+                    {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                </Badge>
               </CardHeader>
-              <CardContent className="flex-grow space-y-4">
+              <CardContent>
                 <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                        <span>Payé</span>
-                        <span className="font-semibold">{payment.paidAmount.toFixed(2)} DH</span>
-                    </div>
-                    <Progress value={(payment.paidAmount / payment.totalAmount) * 100} />
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>Total: {payment.totalAmount.toFixed(2)} DH</span>
-                        <span>Restant: {payment.remainingAmount.toFixed(2)} DH</span>
-                    </div>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Payé:</span>
+                    <span className="font-semibold">{payment.paidAmount.toFixed(2)} DH</span>
+                  </div>
+                  <Progress value={(payment.paidAmount / payment.totalAmount) * 100} />
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Restant:</span>
+                    <span className="font-semibold">{payment.remainingAmount.toFixed(2)} DH</span>
+                  </div>
                 </div>
               </CardContent>
-              <CardFooter>
-                 <Badge variant={getBadgeVariant(payment.status) as any} className="w-full justify-center">
-                    {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                  </Badge>
+              <CardFooter className="text-xs text-muted-foreground">
+                Échéance: {payment.dueDate}
               </CardFooter>
             </Card>
           ))}
@@ -122,28 +122,28 @@ export default function FinancesPage() {
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
           {coachSalaries.map((payment) => (
-            <Card key={payment.id} className="flex flex-col">
-              <CardHeader>
-                <CardTitle>{payment.member}</CardTitle>
-                 <CardDescription>Date de paiement: {payment.dueDate}</CardDescription>
+             <Card key={payment.id} className="flex flex-col justify-between">
+              <CardHeader className="flex-row items-center justify-between">
+                <CardTitle className="text-lg">{payment.member}</CardTitle>
+                <Badge variant={getBadgeVariant(payment.status) as any}>
+                    {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                </Badge>
               </CardHeader>
-              <CardContent className="flex-grow space-y-4">
+              <CardContent>
                 <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                        <span>Payé</span>
-                        <span className="font-semibold">{payment.paidAmount.toFixed(2)} DH</span>
-                    </div>
-                    <Progress value={(payment.paidAmount / payment.totalAmount) * 100} />
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>Total: {payment.totalAmount.toFixed(2)} DH</span>
-                        <span>Restant: {payment.remainingAmount.toFixed(2)} DH</span>
-                    </div>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Payé:</span>
+                    <span className="font-semibold">{payment.paidAmount.toFixed(2)} DH</span>
+                  </div>
+                  <Progress value={(payment.paidAmount / payment.totalAmount) * 100} />
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Restant:</span>
+                    <span className="font-semibold">{payment.remainingAmount.toFixed(2)} DH</span>
+                  </div>
                 </div>
               </CardContent>
-              <CardFooter>
-                 <Badge variant={getBadgeVariant(payment.status) as any} className="w-full justify-center">
-                    {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                  </Badge>
+              <CardFooter className="text-xs text-muted-foreground">
+                Échéance: {payment.dueDate}
               </CardFooter>
             </Card>
           ))}
@@ -152,5 +152,3 @@ export default function FinancesPage() {
     </div>
   );
 }
-
-    
