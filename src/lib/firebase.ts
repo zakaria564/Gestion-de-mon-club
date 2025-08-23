@@ -24,7 +24,9 @@ const firebaseConfig = {
 // #############################################################################
 // #
 // # Your application will not be able to save or load data until you configure
-// # your Firestore security rules in the Firebase Console.
+// # your Firebase security rules in the Firebase Console.
+// #
+// # ----------------   1. FIRESTORE DATABASE RULES   ----------------
 // #
 // # 1. Go to the Firebase Console: https://console.firebase.google.com/
 // # 2. Select your project: "gestion-de-mon-club"
@@ -41,6 +43,22 @@ const firebaseConfig = {
 // #    }
 // #
 // # 5. Click "Publish".
+// #
+// # ----------------   2. STORAGE RULES (For Images)   ----------------
+// #
+// # 1. In the Firebase Console, go to "Storage" > "Rules" tab.
+// # 2. Replace the existing rules with:
+// #
+// #    rules_version = '2';
+// #    service firebase.storage {
+// #      match /b/{bucket}/o {
+// #        match /{allPaths=**} {
+// #          allow read, write: if true;
+// #        }
+// #      }
+// #    }
+// #
+// # 3. Click "Publish".
 // #
 // #############################################################################
 
