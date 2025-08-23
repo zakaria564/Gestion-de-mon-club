@@ -147,7 +147,9 @@ export default function FinancesPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Entraîneur</TableHead>
-                  <TableHead>Montant</TableHead>
+                  <TableHead>Montant Total</TableHead>
+                  <TableHead>Avance</TableHead>
+                  <TableHead>Reste à payer</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead>Date de paiement</TableHead>
                 </TableRow>
@@ -156,7 +158,9 @@ export default function FinancesPage() {
                 {coachSalaries.map((payment) => (
                   <TableRow key={payment.id}>
                     <TableCell className="font-medium">{payment.member}</TableCell>
-                    <TableCell>{payment.amount}</TableCell>
+                    <TableCell>{payment.totalAmount.toFixed(2)} DH</TableCell>
+                    <TableCell>{payment.paidAmount.toFixed(2)} DH</TableCell>
+                    <TableCell>{payment.remainingAmount.toFixed(2)} DH</TableCell>
                     <TableCell>
                       <Badge variant={getBadgeVariant(payment.status) as any}>
                         {payment.status}

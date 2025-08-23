@@ -35,7 +35,7 @@ export const results = [
   { id: 3, opponent: 'OGC Nice', date: '2024-07-18', score: '2-2', scorers: ['J. Dupont', 'M. Curie'], notes: 'Match nul arraché en fin de partie.' },
 ];
 
-type PlayerPayment = {
+type Payment = {
     id: number;
     member: string;
     totalAmount: number;
@@ -53,43 +53,32 @@ const rawPlayerPayments = [
   { id: 5, member: 'Chloé Dubois', totalAmount: 1500, paidAmount: 750, status: 'partiel', dueDate: '2024-09-01' },
 ];
 
-export const playerPayments: PlayerPayment[] = rawPlayerPayments.map(p => ({
+export const playerPayments: Payment[] = rawPlayerPayments.map(p => ({
+    ...p,
+    remainingAmount: p.totalAmount - p.paidAmount,
+}));
+
+const rawCoachSalaries = [
+    { id: 1, member: 'Alain Prost', totalAmount: 20000, paidAmount: 20000, status: 'payé', dueDate: '2024-08-31' },
+    { id: 2, member: 'Sophie Marceau', totalAmount: 15000, paidAmount: 7500, status: 'partiel', dueDate: '2024-08-31' },
+    { id: 3, member: 'Gérard Depardieu', totalAmount: 12000, paidAmount: 0, status: 'non payé', dueDate: '2024-08-31' },
+];
+
+export const coachSalaries: Payment[] = rawCoachSalaries.map(p => ({
     ...p,
     remainingAmount: p.totalAmount - p.paidAmount,
 }));
 
 
-const calculateOverview = (payments: { amount: string; status: string }[] | PlayerPayment[], isPlayer: boolean) => {
-    if (isPlayer) {
-        const playerPayments = payments as PlayerPayment[];
-        const totalDue = playerPayments.reduce((acc, p) => acc + p.totalAmount, 0);
-        const paymentsMade = playerPayments.reduce((acc, p) => acc + p.paidAmount, 0);
-        const paymentsRemaining = totalDue - paymentsMade;
-        return { totalDue, paymentsMade, paymentsRemaining };
-    } else {
-        const coachPayments = payments as { amount: string; status: string }[];
-        const totalDue = coachPayments.reduce((acc, p) => acc + parseFloat(p.amount.replace(' DH', '')), 0);
-        const paymentsMade = coachPayments
-            .filter(p => p.status === 'payé')
-            .reduce((acc, p) => acc + parseFloat(p.amount.replace(' DH', '')), 0);
-        const paymentsPartial = coachPayments
-            .filter(p => p.status === 'partiel')
-            .reduce((acc, p) => acc + (parseFloat(p.amount.replace(' DH', '')) / 2), 0); // Assuming partial is 50%
-        const totalPaid = paymentsMade + paymentsPartial;
-        const paymentsRemaining = totalDue - totalPaid;
-        return { totalDue, paymentsMade: totalPaid, paymentsRemaining };
-    }
+const calculateOverview = (payments: Payment[]) => {
+    const totalDue = payments.reduce((acc, p) => acc + p.totalAmount, 0);
+    const paymentsMade = payments.reduce((acc, p) => acc + p.paidAmount, 0);
+    const paymentsRemaining = totalDue - paymentsMade;
+    return { totalDue, paymentsMade, paymentsRemaining };
 };
 
-export const playerPaymentsOverview = calculateOverview(playerPayments, true);
-
-export const coachSalaries = [
-    { id: 1, member: 'Alain Prost', amount: '20000 DH', status: 'payé', dueDate: '2024-08-31' },
-    { id: 2, member: 'Sophie Marceau', amount: '15000 DH', status: 'partiel', dueDate: '2024-08-31' },
-    { id: 3, member: 'Gérard Depardieu', amount: '12000 DH', status: 'non payé', dueDate: '2024-08-31' },
-];
-
-export const coachSalariesOverview = calculateOverview(coachSalaries, false);
+export const playerPaymentsOverview = calculateOverview(playerPayments);
+export const coachSalariesOverview = calculateOverview(coachSalaries);
 
 
 export const notifications = [
