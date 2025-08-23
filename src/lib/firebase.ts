@@ -6,6 +6,9 @@ import { getStorage } from "firebase/storage";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration - Hardcoded for reliability
+// IMPORTANT: For this application to work, you must configure your Firestore
+// security rules in the Firebase Console to allow read and write operations.
+// By default, all access is denied.
 const firebaseConfig = {
   apiKey: "AIzaSyBhwLEcWSSt3G3L9sgGefVW8GKoOgPG_GA",
   authDomain: "gestion-de-mon-club.firebaseapp.com",
