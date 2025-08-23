@@ -18,8 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CoachesContext } from '@/context/coaches-context';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function CoachDetailPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function CoachDetailPage() {
+  const { id } = useParams();
   const router = useRouter();
   
   const context = useContext(CoachesContext);
@@ -117,8 +117,10 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
   };
   
   const handleDeleteCoach = async () => {
-    await deleteCoach(coach.id);
-    router.push('/coaches');
+    if (typeof id === 'string') {
+        await deleteCoach(id);
+        router.push('/coaches');
+    }
   }
 
   const getBadgeVariant = (status: string) => {
@@ -304,5 +306,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 }
+
+    
 
     

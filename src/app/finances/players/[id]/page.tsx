@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useContext, useEffect } from "react";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Banknote, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, User, PlusCircle, History } from "lucide-react";
@@ -24,8 +24,8 @@ import { FinancialContext } from "@/context/financial-context";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function PlayerPaymentDetailPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function PlayerPaymentDetailPage() {
+  const { id } = useParams();
   const context = useContext(FinancialContext);
   
   if (!context) {
@@ -142,7 +142,9 @@ export default function PlayerPaymentDetailPage({ params }: { params: { id: stri
     const amount = parseFloat(complementAmount);
     if (!amount || amount <= 0 || !payment) return;
 
-    await updatePlayerPayment(payment.id, amount);
+    if (typeof id === 'string') {
+        await updatePlayerPayment(id, amount);
+    }
     
     setComplementAmount('');
     setOpen(false);
@@ -256,3 +258,5 @@ export default function PlayerPaymentDetailPage({ params }: { params: { id: stri
     </div>
   );
 }
+
+    
