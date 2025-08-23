@@ -18,12 +18,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PlayersContext } from '@/context/players-context';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
 
 export default function PlayerDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const router = useRouter();
+  const { toast } = useToast();
   
   const context = useContext(PlayersContext);
   
@@ -114,9 +115,21 @@ export default function PlayerDetailPage() {
   
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (selectedPlayer) {
-        await updatePlayer(selectedPlayer);
+    if (!selectedPlayer) return;
+
+    const jerseyNumberValue = (event.target as any).jerseyNumber.value;
+    const jerseyNumber = parseInt(jerseyNumberValue, 10);
+
+    if (isNaN(jerseyNumber) || jerseyNumber <= 0) {
+      toast({
+        variant: "destructive",
+        title: "Erreur de validation",
+        description: "Veuillez entrer un numéro de maillot valide.",
+      });
+      return;
     }
+    
+    await updatePlayer({ ...selectedPlayer, jerseyNumber });
     setDialogOpen(false);
   };
   
@@ -364,7 +377,3 @@ export default function PlayerDetailPage() {
     </div>
   );
 }
-
-    
-
-    
