@@ -40,7 +40,7 @@ const emptyPlayer: Omit<Player, 'id'> = {
     name: '',
     birthDate: '',
     address: '',
-    poste: '',
+    poste: 'Milieu Central',
     status: 'Actif',
     phone: '',
     email: '',
@@ -48,7 +48,7 @@ const emptyPlayer: Omit<Player, 'id'> = {
     tutorPhone: '',
     photo: '',
     jerseyNumber: 0,
-    category: ''
+    category: 'Sénior'
 };
 
 export default function PlayersPage() {
@@ -58,11 +58,10 @@ export default function PlayersPage() {
       throw new Error("PlayersPage must be used within a PlayersProvider");
     }
 
-    const { players, loading, addPlayer, updatePlayer, deletePlayer } = context;
+    const { players, loading, addPlayer } = context;
 
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [selectedPlayer, setSelectedPlayer] = useState<Omit<Player, 'id'> | Player>(emptyPlayer);
+    const [selectedPlayer, setSelectedPlayer] = useState<Omit<Player, 'id'>>(emptyPlayer);
 
 
   const getBadgeVariant = (status: string) => {
@@ -103,28 +102,18 @@ export default function PlayersPage() {
     }
   };
   
-  const handleSelectChange = (name: keyof Player, value: string) => {
+  const handleSelectChange = (name: keyof Omit<Player, 'id'>, value: string) => {
     setSelectedPlayer(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleOpenDialog = (player?: Player) => {
-    if (player) {
-        setIsEditing(true);
-        setSelectedPlayer(player);
-    } else {
-        setIsEditing(false);
-        setSelectedPlayer(emptyPlayer);
-    }
+  const handleOpenDialog = () => {
+    setSelectedPlayer(emptyPlayer);
     setDialogOpen(true);
   };
   
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isEditing && 'id' in selectedPlayer) {
-        await updatePlayer(selectedPlayer as Player);
-    } else {
-        await addPlayer(selectedPlayer as Omit<Player, 'id'>);
-    }
+    await addPlayer(selectedPlayer);
     setDialogOpen(false);
   };
   
@@ -132,7 +121,7 @@ export default function PlayersPage() {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Gestion des Joueurs</h2>
-        <Button onClick={() => handleOpenDialog()}>
+        <Button onClick={handleOpenDialog}>
             <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un joueur
         </Button>
       </div>
@@ -141,7 +130,7 @@ export default function PlayersPage() {
           <DialogContent className="sm:max-w-4xl">
             <form onSubmit={handleSubmit}>
               <DialogHeader>
-                <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un joueur</DialogTitle>
+                <DialogTitle>Ajouter un joueur</DialogTitle>
                 <DialogDescription>
                   Remplissez les informations ci-dessous.
                 </DialogDescription>
@@ -164,7 +153,7 @@ export default function PlayersPage() {
                     <div className="grid gap-2">
                         <Label htmlFor="photo">Photo</Label>
                         <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
-                        { 'photo' in selectedPlayer && selectedPlayer.photo && (
+                        { selectedPlayer.photo && (
                           <Avatar className="h-20 w-20 mt-2">
                             <AvatarImage src={selectedPlayer.photo as string} alt="Aperçu" />
                             <AvatarFallback>??</AvatarFallback>

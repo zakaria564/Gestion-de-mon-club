@@ -31,13 +31,12 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
   const { coaches, loading, updateCoach, deleteCoach } = context;
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
 
   const coach = useMemo(() => {
     return coaches.find((c) => c.id === id);
   }, [id, coaches]);
   
-  const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id'> | Coach | null>(null);
+  const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null);
 
   useEffect(() => {
     if (coach) {
@@ -105,15 +104,14 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
   };
   
   const handleOpenDialog = () => {
-      setIsEditing(true);
       setSelectedCoach(coach);
       setDialogOpen(true);
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isEditing && selectedCoach && 'id' in selectedCoach) {
-        await updateCoach(selectedCoach as Coach);
+    if (selectedCoach) {
+        await updateCoach(selectedCoach);
     }
     setDialogOpen(false);
   };
@@ -288,7 +286,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                  <div className="grid gap-2 md:col-span-2">
                     <Label htmlFor="photo">Photo</Label>
                     <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
-                    { 'photo' in selectedCoach && selectedCoach.photo && (
+                    { selectedCoach.photo && (
                       <Avatar className="h-20 w-20 mt-2">
                         <AvatarImage src={selectedCoach.photo as string} alt="Aperçu" />
                         <AvatarFallback>??</AvatarFallback>

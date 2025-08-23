@@ -38,10 +38,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const emptyCoach: Omit<Coach, 'id'> = {
     name: '',
-    specialization: '',
+    specialization: 'Entraîneur Principal',
     status: 'Actif',
     contact: '',
-    category: '',
+    category: 'Sénior',
     phone: '',
     photo: '',
 };
@@ -53,11 +53,10 @@ export default function CoachesPage() {
     throw new Error("CoachesPage must be used within a CoachesProvider");
   }
 
-  const { coaches, loading, addCoach, updateCoach, deleteCoach } = context;
+  const { coaches, loading, addCoach } = context;
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id'> | Coach>(emptyCoach);
+  const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id'>>(emptyCoach);
 
   const getBadgeVariant = (status: string) => {
     switch (status) {
@@ -95,29 +94,19 @@ export default function CoachesPage() {
     }
   };
 
-  const handleSelectChange = (name: keyof Coach, value: string) => {
+  const handleSelectChange = (name: keyof Omit<Coach, 'id'>, value: string) => {
     setSelectedCoach(prev => ({ ...prev, [name]: value }));
   };
   
-  const handleOpenDialog = (coach?: Coach) => {
-    if (coach) {
-        setIsEditing(true);
-        setSelectedCoach(coach);
-    } else {
-        setIsEditing(false);
-        setSelectedCoach(emptyCoach);
-    }
+  const handleOpenDialog = () => {
+    setSelectedCoach(emptyCoach);
     setDialogOpen(true);
   }
 
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isEditing && 'id' in selectedCoach) {
-        await updateCoach(selectedCoach as Coach);
-    } else {
-        await addCoach(selectedCoach as Omit<Coach, 'id'>);
-    }
+    await addCoach(selectedCoach);
     setDialogOpen(false);
   };
 
@@ -126,7 +115,7 @@ export default function CoachesPage() {
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Gestion des Entraîneurs</h2>
         
-        <Button onClick={() => handleOpenDialog()}>
+        <Button onClick={handleOpenDialog}>
             <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un entraîneur
         </Button>
         
@@ -136,7 +125,7 @@ export default function CoachesPage() {
           <DialogContent className="sm:max-w-2xl">
             <form onSubmit={handleSubmit}>
               <DialogHeader>
-                <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un entraîneur</DialogTitle>
+                <DialogTitle>Ajouter un entraîneur</DialogTitle>
                 <DialogDescription>
                   Remplissez les informations ci-dessous.
                 </DialogDescription>
@@ -207,7 +196,7 @@ export default function CoachesPage() {
                 <div className="grid gap-2 md:col-span-2">
                     <Label htmlFor="photo">Photo</Label>
                     <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
-                    { 'photo' in selectedCoach && selectedCoach.photo && (
+                    { selectedCoach.photo && (
                       <Avatar className="h-20 w-20 mt-2">
                         <AvatarImage src={selectedCoach.photo as string} alt="Aperçu" />
                         <AvatarFallback>??</AvatarFallback>

@@ -31,13 +31,12 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
   const { players, loading, updatePlayer, deletePlayer } = context;
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   
   const player = useMemo(() => {
     return players.find((p) => p.id === id);
   }, [id, players]);
 
-  const [selectedPlayer, setSelectedPlayer] = useState<Omit<Player, 'id'> | Player | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
 
   useEffect(() => {
     if (player) {
@@ -106,15 +105,14 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
   };
 
   const handleOpenDialog = () => {
-      setIsEditing(true);
       setSelectedPlayer(player);
       setDialogOpen(true);
   };
   
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isEditing && selectedPlayer && 'id' in selectedPlayer) {
-        await updatePlayer(selectedPlayer as Player);
+    if (selectedPlayer) {
+        await updatePlayer(selectedPlayer);
     }
     setDialogOpen(false);
   };
@@ -255,7 +253,7 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
                     <div className="grid gap-2">
                         <Label htmlFor="photo">Photo</Label>
                         <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
-                        { 'photo' in selectedPlayer && selectedPlayer.photo && (
+                        { selectedPlayer.photo && (
                           <Avatar className="h-20 w-20 mt-2">
                             <AvatarImage src={selectedPlayer.photo as string} alt="Aperçu" />
                             <AvatarFallback>??</AvatarFallback>
