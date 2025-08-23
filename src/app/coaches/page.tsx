@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useContext } from "react";
@@ -59,7 +58,6 @@ export default function CoachesPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id'>>(emptyCoach);
-  const formRef = React.useRef<HTMLFormElement>(null);
 
 
   const getBadgeVariant = (status: string) => {
@@ -133,85 +131,87 @@ export default function CoachesPage() {
                   Remplissez les informations ci-dessous.
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleSubmit} ref={formRef} className="flex-1 overflow-y-auto pr-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="name">Nom</Label>
-                      <Input id="name" placeholder="Alain Prost" value={selectedCoach.name} onChange={handleInputChange} required />
+              <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+                  <ScrollArea className="flex-1 pr-6 -mr-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="name">Nom</Label>
+                        <Input id="name" placeholder="Alain Prost" value={selectedCoach.name} onChange={handleInputChange} required />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="category">Catégorie entraînée</Label>
+                        <Select onValueChange={(value) => handleSelectChange('category', value)} value={selectedCoach.category} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner une catégorie" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Sénior">Sénior</SelectItem>
+                            <SelectItem value="U23">U23</SelectItem>
+                            <SelectItem value="U19">U19</SelectItem>
+                            <SelectItem value="U18">U18</SelectItem>
+                            <SelectItem value="U17">U17</SelectItem>
+                            <SelectItem value="U16">U16</SelectItem>
+                            <SelectItem value="U15">U15</SelectItem>
+                            <SelectItem value="U13">U13</SelectItem>
+                            <SelectItem value="U11">U11</SelectItem>
+                            <SelectItem value="U9">U9</SelectItem>
+                            <SelectItem value="U7">U7</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="specialization">Spécialisation</Label>
+                        <Select onValueChange={(value) => handleSelectChange('specialization', value)} value={selectedCoach.specialization} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner une spécialité" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Entraîneur Principal">Entraîneur Principal</SelectItem>
+                            <SelectItem value="Entraîneur Adjoint">Entraîneur Adjoint</SelectItem>
+                            <SelectItem value="Entraîneur des Gardiens">Entraîneur des Gardiens</SelectItem>
+                            <SelectItem value="Préparateur Physique">Préparateur Physique</SelectItem>
+                            <SelectItem value="Entraîneur Jeunes">Entraîneur Jeunes</SelectItem>
+                            <SelectItem value="Analyste Vidéo">Analyste Vidéo</SelectItem>
+                            <SelectItem value="Entraîneur Féminines">Entraîneur Féminines</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="status">Statut</Label>
+                        <Select onValueChange={(value) => handleSelectChange('status', value)} value={selectedCoach.status} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner un statut" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Actif">Actif</SelectItem>
+                            <SelectItem value="Inactif">Inactif</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="contact">Email</Label>
+                        <Input id="contact" placeholder="email@exemple.com" value={selectedCoach.contact} onChange={handleInputChange} required />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="phone">Téléphone</Label>
+                        <Input id="phone" placeholder="0612345678" value={selectedCoach.phone} onChange={handleInputChange} required />
+                      </div>
+                      <div className="grid gap-2 md:col-span-2">
+                          <Label htmlFor="photo">Photo</Label>
+                          <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
+                          { selectedCoach.photo && (
+                            <Avatar className="h-20 w-20 mt-2">
+                              <AvatarImage src={selectedCoach.photo as string} alt="Aperçu" />
+                              <AvatarFallback>??</AvatarFallback>
+                            </Avatar>
+                          )}
+                      </div>
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="category">Catégorie entraînée</Label>
-                      <Select onValueChange={(value) => handleSelectChange('category', value)} value={selectedCoach.category} required>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner une catégorie" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Sénior">Sénior</SelectItem>
-                          <SelectItem value="U23">U23</SelectItem>
-                          <SelectItem value="U19">U19</SelectItem>
-                          <SelectItem value="U18">U18</SelectItem>
-                          <SelectItem value="U17">U17</SelectItem>
-                          <SelectItem value="U16">U16</SelectItem>
-                          <SelectItem value="U15">U15</SelectItem>
-                          <SelectItem value="U13">U13</SelectItem>
-                          <SelectItem value="U11">U11</SelectItem>
-                          <SelectItem value="U9">U9</SelectItem>
-                          <SelectItem value="U7">U7</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="specialization">Spécialisation</Label>
-                      <Select onValueChange={(value) => handleSelectChange('specialization', value)} value={selectedCoach.specialization} required>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner une spécialité" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Entraîneur Principal">Entraîneur Principal</SelectItem>
-                          <SelectItem value="Entraîneur Adjoint">Entraîneur Adjoint</SelectItem>
-                          <SelectItem value="Entraîneur des Gardiens">Entraîneur des Gardiens</SelectItem>
-                          <SelectItem value="Préparateur Physique">Préparateur Physique</SelectItem>
-                          <SelectItem value="Entraîneur Jeunes">Entraîneur Jeunes</SelectItem>
-                          <SelectItem value="Analyste Vidéo">Analyste Vidéo</SelectItem>
-                          <SelectItem value="Entraîneur Féminines">Entraîneur Féminines</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="status">Statut</Label>
-                      <Select onValueChange={(value) => handleSelectChange('status', value)} value={selectedCoach.status} required>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner un statut" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Actif">Actif</SelectItem>
-                          <SelectItem value="Inactif">Inactif</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="contact">Email</Label>
-                      <Input id="contact" placeholder="email@exemple.com" value={selectedCoach.contact} onChange={handleInputChange} required />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="phone">Téléphone</Label>
-                      <Input id="phone" placeholder="0612345678" value={selectedCoach.phone} onChange={handleInputChange} required />
-                    </div>
-                    <div className="grid gap-2 md:col-span-2">
-                        <Label htmlFor="photo">Photo</Label>
-                        <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
-                        { selectedCoach.photo && (
-                          <Avatar className="h-20 w-20 mt-2">
-                            <AvatarImage src={selectedCoach.photo as string} alt="Aperçu" />
-                            <AvatarFallback>??</AvatarFallback>
-                          </Avatar>
-                        )}
-                    </div>
-                  </div>
+                  </ScrollArea>
+                <DialogFooter className="pt-4 border-t">
+                  <Button type="submit">Sauvegarder</Button>
+                </DialogFooter>
               </form>
-              <DialogFooter className="pt-4 border-t">
-                <Button onClick={() => formRef.current?.requestSubmit()}>Sauvegarder</Button>
-              </DialogFooter>
           </DialogContent>
         </Dialog>
 
@@ -277,5 +277,3 @@ export default function CoachesPage() {
     </div>
   );
 }
-
-    
