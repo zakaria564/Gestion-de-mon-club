@@ -62,7 +62,7 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
   
   const uploadPhoto = async (photo: string, playerId: string): Promise<string> => {
       if (photo && photo.startsWith('data:image')) {
-          const storageRef = ref(storage, `players/${playerId}-${Date.now()}.jpg`);
+          const storageRef = ref(storage, `players/${playerId}-${Date.now()}`);
           await uploadString(storageRef, photo, 'data_url');
           return await getDownloadURL(storageRef);
       }
@@ -71,18 +71,14 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
 
   const addPlayer = async (player: PlayerWithoutId) => {
     try {
-      // 1. Create the document first without the photo URL
       const docRef = await addDoc(playersCollectionRef, { ...player, photo: '' });
 
-      // 2. If there's a photo, upload it using the new document's ID
       if (player.photo) {
         const photoURL = await uploadPhoto(player.photo, docRef.id);
-        
-        // 3. Update the document with the photo URL
         await updateDoc(docRef, { photo: photoURL });
       }
 
-      await fetchPlayers(); // Refresh data
+      await fetchPlayers();
     } catch (error) {
       console.error("Error adding player: ", error);
     }
@@ -90,19 +86,30 @@ export const PlayersProvider = ({ children }: { children: ReactNode }) => {
 
   const updatePlayer = async (updatedPlayer: Player) => {
     try {
-      const playerRef = doc(db, 'players', updatedPlayer.id);
-      let photoURL = updatedPlayer.photo;
+        const playerRef = doc(db, 'players', updatedPlayer.id);
+        let photoURL = updatedPlayer.photo;
 
-      // If a new photo is being uploaded (it's a data URL)
-      if (updatedPlayer.photo && updatedPlayer.photo.startsWith('data:image')) {
-          photoURL = await uploadPhoto(updatedPlayer.photo, updatedPlayer.id);
-      }
+        const playerToUpdate = players.find(p => p.id === updatedPlayer.id);
 
-      const { id, ...playerData } = updatedPlayer;
-      await updateDoc(playerRef, { ...playerData, photo: photoURL });
-      await fetchPlayers();
+        if (updatedPlayer.photo && updatedPlayer.photo.startsWith('data:image')) {
+            if (playerToUpdate && playerToUpdate.photo) {
+                try {
+                    const oldPhotoRef = ref(storage, playerToUpdate.photo);
+                    await deleteObject(oldPhotoRef);
+                } catch (error: any) {
+                    if (error.code !== 'storage/object-not-found') {
+                        console.error("Could not delete old photo, continuing update...", error);
+                    }
+                }
+            }
+            photoURL = await uploadPhoto(updatedPlayer.photo, updatedPlayer.id);
+        }
+
+        const { id, ...playerData } = updatedPlayer;
+        await updateDoc(playerRef, { ...playerData, photo: photoURL });
+        await fetchPlayers();
     } catch (error) {
-      console.error("Error updating player: ", error);
+        console.error("Error updating player: ", error);
     }
   };
 

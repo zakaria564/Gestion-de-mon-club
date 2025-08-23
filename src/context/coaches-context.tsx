@@ -58,7 +58,7 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
 
   const uploadPhoto = async (photo: string, coachId: string): Promise<string> => {
       if (photo && photo.startsWith('data:image')) {
-          const storageRef = ref(storage, `coaches/${coachId}-${Date.now()}.jpg`);
+          const storageRef = ref(storage, `coaches/${coachId}-${Date.now()}`);
           await uploadString(storageRef, photo, 'data_url');
           return await getDownloadURL(storageRef);
       }
@@ -84,9 +84,23 @@ export const CoachesProvider = ({ children }: { children: ReactNode }) => {
     try {
         const coachRef = doc(db, 'coaches', updatedCoach.id);
         let photoURL = updatedCoach.photo;
+
+        const coachToUpdate = coaches.find(c => c.id === updatedCoach.id);
+
         if (updatedCoach.photo && updatedCoach.photo.startsWith('data:image')) {
+             if (coachToUpdate && coachToUpdate.photo) {
+                try {
+                    const oldPhotoRef = ref(storage, coachToUpdate.photo);
+                    await deleteObject(oldPhotoRef);
+                } catch (error: any) {
+                    if (error.code !== 'storage/object-not-found') {
+                        console.error("Could not delete old photo, continuing update...", error);
+                    }
+                }
+            }
             photoURL = await uploadPhoto(updatedCoach.photo, updatedCoach.id);
         }
+
         const { id, ...coachData } = updatedCoach;
         await updateDoc(coachRef, { ...coachData, photo: photoURL });
         await fetchCoaches();
