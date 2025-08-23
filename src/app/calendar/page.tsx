@@ -13,7 +13,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { calendarEvents as initialCalendarEvents } from "@/lib/data";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { Edit, PlusCircle, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -35,6 +35,8 @@ export default function CalendarPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [open, setOpen] = useState(false);
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>(initialCalendarEvents);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   
   const [newEvent, setNewEvent] = useState({
     type: '',
@@ -56,32 +58,73 @@ export default function CalendarPage() {
     setNewEvent(prev => ({ ...prev, type: value }));
   };
 
-  const handleAddEvent = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
-    // Using parse from date-fns to avoid timezone issues.
-    const eventDate = parse(newEvent.date, 'yyyy-MM-dd', new Date());
-
-    const createdEvent: CalendarEvent = {
-        id: calendarEvents.length + 1,
-        opponent: newEvent.opponent,
-        // format back to ISO string for consistency
+    if (isEditing && editingEvent) {
+       const eventDate = parse(newEvent.date, 'yyyy-MM-dd', new Date());
+       const updatedEvent: CalendarEvent = {
+        ...editingEvent,
+        ...newEvent,
         date: format(eventDate, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
-        time: newEvent.time,
-        type: newEvent.type,
-        location: newEvent.location,
-    };
+       };
+       setCalendarEvents(prev => prev.map(e => e.id === editingEvent.id ? updatedEvent : e).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+
+    } else {
+      const eventDate = parse(newEvent.date, 'yyyy-MM-dd', new Date());
+      const createdEvent: CalendarEvent = {
+          id: calendarEvents.length > 0 ? Math.max(...calendarEvents.map(e => e.id)) + 1 : 1,
+          opponent: newEvent.opponent,
+          date: format(eventDate, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
+          time: newEvent.time,
+          type: newEvent.type,
+          location: newEvent.location,
+      };
+      setCalendarEvents(prev => [...prev, createdEvent].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+    }
     
-    setCalendarEvents(prev => [...prev, createdEvent].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
-    
+    resetForm();
+  };
+
+  const resetForm = () => {
     setNewEvent({ type: '', opponent: '', date: '', time: '', location: '' });
     setOpen(false);
-  };
+    setIsEditing(false);
+    setEditingEvent(null);
+  }
 
   const handleEventClick = (event: CalendarEvent) => {
     setSelectedEvent(event);
     setDetailsOpen(true);
   };
+  
+  const openAddDialog = () => {
+    setIsEditing(false);
+    setEditingEvent(null);
+    setNewEvent({ type: '', opponent: '', date: '', time: '', location: '' });
+    setOpen(true);
+  }
+
+  const openEditDialog = (event: CalendarEvent) => {
+    setDetailsOpen(false);
+    setIsEditing(true);
+    setEditingEvent(event);
+    setNewEvent({
+      type: event.type,
+      opponent: event.opponent,
+      date: format(parseISO(event.date), 'yyyy-MM-dd'),
+      time: event.time,
+      location: event.location,
+    });
+    setOpen(true);
+  }
+
+  const handleDeleteEvent = (eventId: number) => {
+    setCalendarEvents(prev => prev.filter(e => e.id !== eventId));
+    setDetailsOpen(false);
+    setSelectedEvent(null);
+  }
+
 
   const eventsByDate = calendarEvents.reduce((acc, event) => {
     const eventDate = format(parseISO(event.date), 'yyyy-MM-dd');
@@ -99,16 +142,16 @@ export default function CalendarPage() {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Calendrier</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); else setOpen(true);}}>
           <DialogTrigger asChild>
-            <Button>
+            <Button onClick={openAddDialog}>
               <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un événement
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
-            <form onSubmit={handleAddEvent}>
+            <form onSubmit={handleSubmit}>
               <DialogHeader>
-                <DialogTitle>Ajouter un nouvel événement</DialogTitle>
+                <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un événement</DialogTitle>
                 <DialogDescription>
                   Remplissez les détails ci-dessous.
                 </DialogDescription>
@@ -250,12 +293,22 @@ export default function CalendarPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedEvent && (
-            <div className="grid gap-4 py-4">
-                <p><strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString('fr-FR')}</p>
-                <p><strong>Heure:</strong> {selectedEvent.time}</p>
-                <p><strong>Lieu:</strong> {selectedEvent.location}</p>
-                {selectedEvent.opponent && <p><strong>Adversaire:</strong> {selectedEvent.opponent}</p>}
-            </div>
+            <>
+              <div className="grid gap-4 py-4">
+                  <p><strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString('fr-FR')}</p>
+                  <p><strong>Heure:</strong> {selectedEvent.time}</p>
+                  <p><strong>Lieu:</strong> {selectedEvent.location}</p>
+                  {selectedEvent.opponent && <p><strong>Adversaire:</strong> {selectedEvent.opponent}</p>}
+              </div>
+              <DialogFooter className="justify-end gap-2">
+                  <Button variant="outline" onClick={() => openEditDialog(selectedEvent)}>
+                      <Edit className="mr-2 h-4 w-4" /> Modifier
+                  </Button>
+                  <Button variant="destructive" onClick={() => handleDeleteEvent(selectedEvent.id)}>
+                       <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                  </Button>
+              </DialogFooter>
+            </>
           )}
         </DialogContent>
       </Dialog>
