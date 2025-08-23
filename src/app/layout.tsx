@@ -10,7 +10,7 @@ import { CalendarProvider } from "@/context/calendar-context";
 import { FinancialProvider } from "@/context/financial-context";
 import { AppLayout } from "@/components/app-layout";
 import { Toaster } from "@/components/ui/toaster";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import "./globals.css";
 import { ClubLogo } from "@/components/club-logo";
 
@@ -23,7 +23,21 @@ const inter = Inter({
 function AppProviders({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const isAuthPage = ["/login", "/signup", "/forgot-password"].includes(pathname);
+
+  React.useEffect(() => {
+    if (loading) return; // Ne rien faire pendant le chargement
+
+    if (user && isAuthPage) {
+      router.push('/');
+    }
+    
+    if (!user && !isAuthPage) {
+      router.push('/login');
+    }
+  }, [user, loading, isAuthPage, pathname, router]);
+
 
   if (loading) {
     return (
@@ -33,15 +47,7 @@ function AppProviders({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (user) {
-    if (isAuthPage) {
-       // Redirect to home if user is logged in and tries to access auth pages
-       // This can be handled by a dedicated component or hook in a real app
-       if (typeof window !== 'undefined') {
-          window.location.href = '/';
-       }
-       return null;
-    }
+  if (user && !isAuthPage) {
     return (
       <PlayersProvider>
         <CoachesProvider>
@@ -54,17 +60,17 @@ function AppProviders({ children }: { children: React.ReactNode }) {
       </PlayersProvider>
     );
   }
-
-  if (!user && !isAuthPage) {
-     // Redirect to login if user is not logged in and not on an auth page
-     if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-     }
-     return null;
-  }
   
-  // User is not logged in and on an auth page
-  return <>{children}</>;
+  if (!user && isAuthPage) {
+    return <>{children}</>;
+  }
+
+  // Fallback pour les cas transitoires (par exemple, pendant que le routeur redirige)
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+        <ClubLogo className="size-12 animate-pulse" />
+    </div>
+  );
 }
 
 export default function RootLayout({
