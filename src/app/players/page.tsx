@@ -89,8 +89,8 @@ export default function PlayersPage() {
   }, {} as Record<string, typeof players>);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setSelectedPlayer(prev => ({ ...prev, [id]: value }));
+    const { id, value, type } = e.target;
+    setSelectedPlayer(prev => ({ ...prev, [id]: type === 'number' ? parseInt(value, 10) || 0 : value }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,7 +236,7 @@ export default function PlayersPage() {
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="jerseyNumber">Numéro de maillot</Label>
-                            <Input id="jerseyNumber" type="number" placeholder="10" defaultValue={selectedPlayer.jerseyNumber > 0 ? selectedPlayer.jerseyNumber : ''} required />
+                            <Input id="jerseyNumber" type="number" placeholder="10" value={selectedPlayer.jerseyNumber > 0 ? selectedPlayer.jerseyNumber : ''} onChange={handleInputChange} required />
                         </div>
                     </div>
                 </div>
@@ -303,8 +303,8 @@ export default function PlayersPage() {
             <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {playersInCategory.map((player) => (
-                <Card key={player.id} className="flex flex-col w-full hover:shadow-lg transition-shadow">
-                    <Link href={`/players/${player.id}`} className="flex flex-col h-full flex-grow">
+                <Link key={player.id} href={`/players/${player.id}`} className="flex flex-col h-full flex-grow">
+                    <Card className="flex flex-col w-full hover:shadow-lg transition-shadow h-full">
                         <CardHeader className="p-4">
                             <div className="flex items-center gap-4">
                             <Avatar className="h-16 w-16">
@@ -317,14 +317,14 @@ export default function PlayersPage() {
                             </div>
                             </div>
                         </CardHeader>
-                        <CardContent className="p-4 pt-0 flex-grow">
+                        <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
                             <div className="flex justify-between items-center">
                                 <Badge variant="outline" className="text-xs">{player.category}</Badge>
                                 <Badge variant={getBadgeVariant(player.status) as any} className="text-xs">{player.status}</Badge>
                             </div>
                         </CardContent>
-                    </Link>
-                </Card>
+                    </Card>
+                </Link>
             ))}
             </div>
         </div>
