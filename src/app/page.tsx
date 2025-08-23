@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -22,14 +22,18 @@ import { notifications } from "@/lib/data";
 import { Users, UserCheck, Calendar, Bell } from "lucide-react";
 import { PlayersContext } from "@/context/players-context";
 import { CoachesContext } from "@/context/coaches-context";
-import { CalendarContext } from "@/context/calendar-context";
+import { CalendarContext, CalendarEvent } from "@/context/calendar-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+
+type FormattedEvent = CalendarEvent & { formattedDate: string };
 
 export default function Dashboard() {
   const playersContext = useContext(PlayersContext);
   const coachesContext = useContext(CoachesContext);
   const calendarContext = useContext(CalendarContext);
+
+  const [formattedUpcomingEvents, setFormattedUpcomingEvents] = useState<FormattedEvent[]>([]);
 
   if (!playersContext || !coachesContext || !calendarContext) {
     throw new Error("Dashboard must be used within all required providers");
@@ -41,9 +45,16 @@ export default function Dashboard() {
   
   const loading = playersLoading || coachesLoading || calendarLoading;
 
-  const upcomingEvents = calendarEvents
-    .filter(event => new Date(event.date) >= new Date())
-    .slice(0, 5);
+  useEffect(() => {
+    const upcoming = calendarEvents
+      .filter(event => new Date(event.date) >= new Date())
+      .slice(0, 5)
+      .map(event => ({
+        ...event,
+        formattedDate: `${format(new Date(event.date), 'dd/MM/yyyy')} @ ${event.time} - ${event.location}`
+      }));
+    setFormattedUpcomingEvents(upcoming);
+  }, [calendarEvents]);
 
 
   if (loading) {
@@ -125,7 +136,7 @@ export default function Dashboard() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{upcomingEvents.length}</div>
+            <div className="text-2xl font-bold">{formattedUpcomingEvents.length}</div>
             <p className="text-xs text-muted-foreground">
               dans les prochains jours
             </p>
@@ -186,7 +197,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
              <div className="space-y-4">
-              {upcomingEvents.map((event) => (
+              {formattedUpcomingEvents.map((event) => (
                 <div key={event.id} className="flex items-center">
                   <Calendar className="h-6 w-6 mr-4 text-primary" />
                   <div className="flex-1">
@@ -194,12 +205,12 @@ export default function Dashboard() {
                       {event.type} {event.opponent && `vs ${event.opponent}`}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                       {format(new Date(event.date), 'dd/MM/yyyy')} @ {event.time} - {event.location}
+                       {event.formattedDate}
                     </p>
                   </div>
                 </div>
               ))}
-               {upcomingEvents.length === 0 && (
+               {formattedUpcomingEvents.length === 0 && (
                 <p className="text-sm text-muted-foreground">Aucun événement à venir.</p>
               )}
             </div>

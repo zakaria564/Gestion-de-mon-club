@@ -200,6 +200,7 @@ export default function PlayersPage() {
                                         <SelectItem value="Actif">Actif</SelectItem>
                                         <SelectItem value="Blessé">Blessé</SelectItem>
                                         <SelectItem value="Suspendu">Suspendu</SelectItem>
+                                        <SelectItem value="Inactif">Inactif</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
