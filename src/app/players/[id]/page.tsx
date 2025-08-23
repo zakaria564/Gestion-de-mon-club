@@ -359,3 +359,5 @@ export default function PlayerDetailPage({ params }: { params: { id: string } })
     </div>
   );
 }
+
+    
