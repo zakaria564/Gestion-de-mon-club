@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -39,6 +39,23 @@ export default function FinancesPage() {
   const [coachSalaries, setCoachSalaries] = useState(initialCoachSalaries);
   const [playerPaymentOpen, setPlayerPaymentOpen] = useState(false);
   const [coachSalaryOpen, setCoachSalaryOpen] = useState(false);
+
+  const [newCoachSalary, setNewCoachSalary] = useState({
+    totalAmount: '',
+    paidAmount: '',
+  });
+
+  const remainingAmount = useMemo(() => {
+    const total = parseFloat(newCoachSalary.totalAmount) || 0;
+    const paid = parseFloat(newCoachSalary.paidAmount) || 0;
+    return (total - paid).toFixed(2);
+  }, [newCoachSalary.totalAmount, newCoachSalary.paidAmount]);
+
+  const handleCoachSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setNewCoachSalary(prev => ({ ...prev, [id]: value }));
+  };
+
 
   const getBadgeVariant = (status: string) => {
     switch (status) {
@@ -177,11 +194,15 @@ export default function FinancesPage() {
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="totalAmount">Salaire Total (DH)</Label>
-                    <Input id="totalAmount" type="number" placeholder="20000" />
+                    <Input id="totalAmount" type="number" placeholder="20000" value={newCoachSalary.totalAmount} onChange={handleCoachSalaryChange} />
                   </div>
                    <div className="grid gap-2">
                     <Label htmlFor="paidAmount">Montant payé (DH)</Label>
-                    <Input id="paidAmount" type="number" placeholder="10000" />
+                    <Input id="paidAmount" type="number" placeholder="10000" value={newCoachSalary.paidAmount} onChange={handleCoachSalaryChange} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="remainingAmount">Reste à payer (DH)</Label>
+                    <Input id="remainingAmount" type="number" value={remainingAmount} readOnly className="bg-muted" />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="dueDate">Mois de paie</Label>
