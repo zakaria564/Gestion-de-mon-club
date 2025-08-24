@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from 'react';
 import { usePlayersContext } from "@/context/players-context";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -49,9 +49,6 @@ const playerSchema = z.object({
   poste: z.string().min(1, "Le poste est requis."),
   notes: z.string().optional(),
   photo: z.string().optional(),
-  // Hardcoded fields for now
-  category: z.string().default('Sénior'),
-  status: z.string().default('Actif'),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -63,8 +60,6 @@ const defaultValues: PlayerFormValues = {
     poste: 'Milieu Central',
     notes: '',
     photo: '',
-    category: 'Sénior',
-    status: 'Actif',
 };
 
 export default function PlayersPage() {
@@ -98,11 +93,17 @@ export default function PlayersPage() {
     };
     
     const onSubmit = async (data: PlayerFormValues) => {
-      await addPlayer(data);
+      const playerData = {
+        ...data,
+        status: 'Actif',
+        category: 'Sénior'
+      }
+      await addPlayer(playerData as any);
       setDialogOpen(false);
+      toast({ title: "Joueur ajouté", description: "Le nouveau joueur a été ajouté avec succès." });
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (!dialogOpen) {
             form.reset(defaultValues);
             setPhotoPreview(null);
@@ -147,32 +148,32 @@ export default function PlayersPage() {
                   
                   <div className="flex-1 overflow-y-auto py-4 px-1 -mx-1 pr-4">
                     <div className="space-y-6">
-                      <FormField
-                        control={form.control}
-                        name="photo"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col items-center gap-4">
-                            <FormLabel htmlFor="photo-upload">
-                              <Avatar className="h-24 w-24 border-2 border-dashed hover:border-primary cursor-pointer">
-                                <AvatarImage src={photoPreview ?? undefined} alt="Aperçu du joueur" data-ai-hint="player photo"/>
-                                <AvatarFallback className="bg-muted">
-                                  <Camera className="h-8 w-8 text-muted-foreground" />
-                                </AvatarFallback>
-                              </Avatar>
-                            </FormLabel>
-                            <FormControl>
-                              <Input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="photo-upload" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                       <FormField
+                          control={form.control}
+                          name="photo"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col items-center gap-4">
+                              <FormLabel htmlFor="photo-upload">
+                                <Avatar className="h-24 w-24 border-2 border-dashed hover:border-primary cursor-pointer">
+                                  <AvatarImage src={photoPreview ?? undefined} alt="Aperçu du joueur" data-ai-hint="player photo"/>
+                                  <AvatarFallback className="bg-muted">
+                                    <Camera className="h-8 w-8 text-muted-foreground" />
+                                  </AvatarFallback>
+                                </Avatar>
+                              </FormLabel>
+                              <FormControl>
+                                <Input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="photo-upload" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         <FormField
                           control={form.control}
                           name="name"
                           render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="md:col-span-2">
                               <FormLabel>Nom complet</FormLabel>
                               <FormControl>
                                 <Input placeholder="ex: Jean Dupont" {...field} required />
@@ -195,23 +196,23 @@ export default function PlayersPage() {
                           )}
                         />
                          <FormField
-                          control={form.control}
-                          name="address"
-                          render={({ field }) => (
-                            <FormItem className="md:col-span-2">
-                              <FormLabel>Adresse</FormLabel>
-                              <FormControl>
-                                <Input placeholder="ex: 123 Rue de la Victoire, 75000 Paris" {...field} required />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                            control={form.control}
+                            name="address"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Adresse</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         <FormField
                           control={form.control}
                           name="poste"
                           render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="md:col-span-2">
                               <FormLabel>Poste</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value} required>
                                 <FormControl>
@@ -270,7 +271,9 @@ export default function PlayersPage() {
         {loading ? (
             Array.from({ length: 2 }).map((_, index) => (
             <div key={index} className="space-y-4">
-                <Skeleton className="h-8 w-32 mt-6" />
+                <h3 className="text-2xl font-bold tracking-tight mt-6">
+                    <Skeleton className="h-8 w-32" />
+                </h3>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: 4 }).map((_, cardIndex) => (
                     <Card key={cardIndex}>

@@ -32,9 +32,6 @@ const playerSchema = z.object({
   poste: z.string().min(1, "Le poste est requis."),
   notes: z.string().optional(),
   photo: z.string().optional(),
-  // Readonly fields
-  category: z.string(),
-  status: z.string(),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -65,10 +62,12 @@ export function PlayerDetailClient({ id }: { id: string }) {
         ? format(parseISO(player.birthDate), 'yyyy-MM-dd') 
         : '';
       form.reset({
-        ...player,
-        status: (player as any).status || 'Actif',
-        category: (player as any).category || 'Sénior',
+        name: player.name,
         birthDate: birthDate,
+        address: player.address,
+        poste: player.poste,
+        notes: player.notes || '',
+        photo: player.photo || '',
       });
       setPhotoPreview(player.photo || null);
     } else if (!dialogOpen) {
@@ -267,74 +266,74 @@ export function PlayerDetailClient({ id }: { id: string }) {
                       )}
                     />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nom complet</FormLabel>
-                            <FormControl>
-                              <Input placeholder="ex: Jean Dupont" {...field} required/>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="birthDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Date de naissance</FormLabel>
-                            <FormControl>
-                              <Input type="date" {...field} required/>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
                        <FormField
-                        control={form.control}
-                        name="address"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel>Adresse</FormLabel>
-                            <FormControl>
-                              <Input placeholder="ex: 123 Rue de la Victoire, 75000 Paris" {...field} required/>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="poste"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Poste</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel>Nom complet</FormLabel>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner un poste" />
-                                </SelectTrigger>
+                                <Input placeholder="ex: Jean Dupont" {...field} required />
                               </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Gardien">Gardien</SelectItem>
-                                <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
-                                <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
-                                <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
-                                <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
-                                <SelectItem value="Milieu Central">Milieu Central</SelectItem>
-                                <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
-                                <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
-                                <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
-                                <SelectItem value="Avant-centre">Avant-centre</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="birthDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Date de naissance</FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} required />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                         <FormField
+                            control={form.control}
+                            name="address"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Adresse</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        <FormField
+                          control={form.control}
+                          name="poste"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel>Poste</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner un poste" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="Gardien">Gardien</SelectItem>
+                                  <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
+                                  <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
+                                  <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
+                                  <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
+                                  <SelectItem value="Milieu Central">Milieu Central</SelectItem>
+                                  <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
+                                  <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
+                                  <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
+                                  <SelectItem value="Avant-centre">Avant-centre</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       <FormField
                         control={form.control}
                         name="notes"

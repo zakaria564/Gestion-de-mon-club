@@ -5,10 +5,10 @@ export type Player = {
   uid: string;
   name: string;
   birthDate: string;
+  address: string;
   poste: string;
   notes: string;
   photo: string;
-  address: string;
 }
 
 export type Coach = {
