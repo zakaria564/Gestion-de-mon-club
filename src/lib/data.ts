@@ -8,15 +8,7 @@ export type Player = {
   poste: string;
   notes: string;
   photo: string;
-  // Fields for backward compatibility & grouping/display
   address: string;
-  status: 'Actif' | 'Blessé' | 'Suspendu' | 'Inactif';
-  phone: string;
-  email: string;
-  tutorName: string;
-  tutorPhone: string;
-  jerseyNumber: number;
-  category: string;
 }
 
 export type Coach = {
@@ -29,9 +21,6 @@ export type Coach = {
   experience: number;
   notes: string;
   photo: string;
-  // Fields for backward compatibility & grouping/display
-  status: 'Actif' | 'Inactif';
-  category: string;
 }
 
 export type CalendarEvent = {

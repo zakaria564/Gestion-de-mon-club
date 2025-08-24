@@ -42,16 +42,16 @@ import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 
-
 const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
   birthDate: z.string().min(1, "La date de naissance est requise."),
+  address: z.string().min(1, "L'adresse est requise."),
   poste: z.string().min(1, "Le poste est requis."),
   notes: z.string().optional(),
   photo: z.string().optional(),
-  // Fields not in the form but required by Player type
-  category: z.string().min(1, "La catégorie est requise."),
-  status: z.string().min(1, "Le statut est requis."),
+  // Hardcoded fields for now
+  category: z.string().default('Sénior'),
+  status: z.string().default('Actif'),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -59,6 +59,7 @@ type PlayerFormValues = z.infer<typeof playerSchema>;
 const defaultValues: PlayerFormValues = {
     name: '',
     birthDate: '',
+    address: '',
     poste: 'Milieu Central',
     notes: '',
     photo: '',
@@ -97,21 +98,10 @@ export default function PlayersPage() {
     };
     
     const onSubmit = async (data: PlayerFormValues) => {
-      // Add default or empty values for fields not in the form but in the Player type
-      const fullPlayerData = {
-        ...data,
-        address: '',
-        phone: '',
-        email: '',
-        tutorName: '',
-        tutorPhone: '',
-        jerseyNumber: 0,
-      };
-      await addPlayer(fullPlayerData);
+      await addPlayer(data);
       setDialogOpen(false);
     };
 
-    // Reset form and preview when dialog closes
     React.useEffect(() => {
         if (!dialogOpen) {
             form.reset(defaultValues);
@@ -129,7 +119,7 @@ export default function PlayersPage() {
     };
 
     const groupedPlayers = players.reduce((acc, player) => {
-      const { category } = player;
+      const category = (player as any).category || 'Sénior';
       if (!acc[category]) {
         acc[category] = [];
       }
@@ -157,105 +147,114 @@ export default function PlayersPage() {
                   
                   <div className="flex-1 overflow-y-auto py-4 px-1 -mx-1 pr-4">
                     <div className="space-y-6">
+                      <FormField
+                        control={form.control}
+                        name="photo"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col items-center gap-4">
+                            <FormLabel htmlFor="photo-upload">
+                              <Avatar className="h-24 w-24 border-2 border-dashed hover:border-primary cursor-pointer">
+                                <AvatarImage src={photoPreview ?? undefined} alt="Aperçu du joueur" data-ai-hint="player photo"/>
+                                <AvatarFallback className="bg-muted">
+                                  <Camera className="h-8 w-8 text-muted-foreground" />
+                                </AvatarFallback>
+                              </Avatar>
+                            </FormLabel>
+                            <FormControl>
+                              <Input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="photo-upload" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         <FormField
                           control={form.control}
-                          name="photo"
+                          name="name"
                           render={({ field }) => (
-                            <FormItem className="flex flex-col items-center gap-4">
-                              <FormLabel htmlFor="photo-upload">
-                                <Avatar className="h-24 w-24 border-2 border-dashed hover:border-primary cursor-pointer">
-                                  <AvatarImage src={photoPreview ?? undefined} alt="Aperçu du joueur" data-ai-hint="player photo"/>
-                                  <AvatarFallback className="bg-muted">
-                                    <Camera className="h-8 w-8 text-muted-foreground" />
-                                  </AvatarFallback>
-                                </Avatar>
-                              </FormLabel>
+                            <FormItem>
+                              <FormLabel>Nom complet</FormLabel>
                               <FormControl>
-                                <Input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="photo-upload" />
+                                <Input placeholder="ex: Jean Dupont" {...field} required />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                          <FormField
-                              control={form.control}
-                              name="name"
-                              render={({ field }) => (
-                                <FormItem className="md:col-span-2">
-                                  <FormLabel>Nom complet</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="ex: Jean Dupont" {...field} required />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                          <FormField
-                            control={form.control}
-                            name="birthDate"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Date de naissance</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name="birthDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Date de naissance</FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} required />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                         <FormField
+                          control={form.control}
+                          name="address"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel>Adresse</FormLabel>
+                              <FormControl>
+                                <Input placeholder="ex: 123 Rue de la Victoire, 75000 Paris" {...field} required />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="poste"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Poste</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value} required>
                                 <FormControl>
-                                  <Input type="date" {...field} required />
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner un poste" />
+                                  </SelectTrigger>
                                 </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="poste"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Poste</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value} required>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Sélectionner un poste" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="Gardien">Gardien</SelectItem>
-                                    <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
-                                    <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
-                                    <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
-                                    <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
-                                    <SelectItem value="Milieu Central">Milieu Central</SelectItem>
-                                    <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
-                                    <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
-                                    <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
-                                    <SelectItem value="Avant-centre">Avant-centre</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="notes"
-                            render={({ field }) => (
-                              <FormItem className="md:col-span-2">
-                                <FormLabel>Notes</FormLabel>
-                                <FormControl>
-                                  <Textarea
-                                    placeholder="Ajouter des notes sur le joueur (style de jeu, comportement, etc.)"
-                                    className="resize-y min-h-[100px]"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                                <SelectContent>
+                                  <SelectItem value="Gardien">Gardien</SelectItem>
+                                  <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
+                                  <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
+                                  <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
+                                  <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
+                                  <SelectItem value="Milieu Central">Milieu Central</SelectItem>
+                                  <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
+                                  <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
+                                  <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
+                                  <SelectItem value="Avant-centre">Avant-centre</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="notes"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel>Notes</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Ajouter des notes sur le joueur (style de jeu, comportement, etc.)"
+                                  className="resize-y min-h-[100px]"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
+                    </div>
                   </div>
                   
                   <DialogFooter className="pt-4 border-t mt-4">
@@ -317,8 +316,8 @@ export default function PlayersPage() {
                             </CardHeader>
                             <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
                                 <div className="flex justify-between items-center">
-                                    <Badge variant="outline" className="text-xs">{player.category}</Badge>
-                                    <Badge variant={getBadgeVariant(player.status) as any} className="text-xs">{player.status}</Badge>
+                                    <Badge variant="outline" className="text-xs">{(player as any).category || 'Sénior'}</Badge>
+                                    <Badge variant={getBadgeVariant((player as any).status || 'Actif') as any} className="text-xs">{(player as any).status || 'Actif'}</Badge>
                                 </div>
                             </CardContent>
                         </Card>

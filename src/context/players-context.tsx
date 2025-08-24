@@ -7,10 +7,12 @@ import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase
 import { useAuth } from "./auth-context";
 import type { Player } from "@/lib/data";
 
+type NewPlayer = Omit<Player, 'id' | 'uid'>;
+
 interface PlayersContextType {
   players: Player[];
   loading: boolean;
-  addPlayer: (player: Omit<Player, 'id' | 'uid'>) => Promise<void>;
+  addPlayer: (player: NewPlayer) => Promise<void>;
   updatePlayer: (player: Player) => Promise<void>;
   deletePlayer: (id: string) => Promise<void>;
   getPlayerById: (id: string) => Player | undefined;
@@ -56,7 +58,7 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, fetchPlayers]);
 
-  const addPlayer = async (playerData: Omit<Player, 'id' | 'uid'>) => {
+  const addPlayer = async (playerData: NewPlayer) => {
     const collectionRef = getPlayersCollection();
     if (!collectionRef || !user) return;
     try {

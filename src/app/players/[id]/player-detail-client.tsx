@@ -8,17 +8,16 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cake, UserCircle, Edit, Trash2, Camera, UserSquare2 } from "lucide-react";
+import { ArrowLeft, Cake, UserCircle, Edit, Trash2, Camera, Home } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { usePlayersContext } from '@/context/players-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, parseISO, isValid } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,11 +28,13 @@ import { Textarea } from '@/components/ui/textarea';
 const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
   birthDate: z.string().min(1, "La date de naissance est requise."),
+  address: z.string().min(1, "L'adresse est requise."),
   poste: z.string().min(1, "Le poste est requis."),
   notes: z.string().optional(),
   photo: z.string().optional(),
-  category: z.string().min(1, "La catégorie est requise."), // Keep category for grouping
-  status: z.string().min(1, "Le statut est requis."), // Keep status for badge
+  // Readonly fields
+  category: z.string(),
+  status: z.string(),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -65,6 +66,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
         : '';
       form.reset({
         ...player,
+        status: (player as any).status || 'Actif',
+        category: (player as any).category || 'Sénior',
         birthDate: birthDate,
       });
       setPhotoPreview(player.photo || null);
@@ -96,6 +99,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                   <Skeleton className="h-6 w-1/4" />
                   <Skeleton className="h-5 w-3/4" />
                   <Skeleton className="h-5 w-3/4" />
+                   <Skeleton className="h-5 w-3/4" />
               </div>
               <div className="space-y-4">
                    <Skeleton className="h-6 w-1/4" />
@@ -127,7 +131,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
   const onSubmit = async (data: PlayerFormValues) => {
     if (!player) return;
     const dataToUpdate = { 
-        ...player, // keep existing fields not in the form
+        ...player,
         ...data, 
         id: player.id,
         uid: player.uid
@@ -153,6 +157,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
   };
   
   const formattedBirthDate = player.birthDate && isValid(parseISO(player.birthDate)) ? format(parseISO(player.birthDate), 'dd/MM/yyyy') : 'N/A';
+  const playerStatus = (player as any).status || 'Actif';
+  const playerCategory = (player as any).category || 'Sénior';
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -173,8 +179,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
             <CardTitle className="text-3xl font-bold">{player.name}</CardTitle>
             <CardDescription className="text-lg text-muted-foreground mt-1">{player.poste}</CardDescription>
             <div className="flex flex-wrap gap-2 mt-4">
-              <Badge variant={getBadgeVariant(player.status) as any}>{player.status}</Badge>
-              <Badge variant="secondary">{player.category}</Badge>
+              <Badge variant={getBadgeVariant(playerStatus) as any}>{playerStatus}</Badge>
+              <Badge variant="secondary">{playerCategory}</Badge>
             </div>
           </div>
         </CardHeader>
@@ -188,6 +194,10 @@ export function PlayerDetailClient({ id }: { id: string }) {
                 <div className="flex items-center gap-4">
                     <Cake className="h-5 w-5 text-muted-foreground" />
                     <span>{formattedBirthDate}</span>
+                </div>
+                <div className="flex items-center gap-4">
+                    <Home className="h-5 w-5 text-muted-foreground" />
+                    <span>{player.address}</span>
                 </div>
             </div>
             {player.notes && (
@@ -241,7 +251,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                       name="photo"
                       render={({ field }) => (
                         <FormItem className="flex flex-col items-center gap-4">
-                          <FormLabel>
+                          <FormLabel htmlFor="photo-upload">
                             <Avatar className="h-24 w-24 border-2 border-dashed hover:border-primary cursor-pointer">
                               <AvatarImage src={photoPreview ?? field.value} alt="Aperçu du joueur" data-ai-hint="player photo" />
                               <AvatarFallback className="bg-muted">
@@ -256,22 +266,20 @@ export function PlayerDetailClient({ id }: { id: string }) {
                         </FormItem>
                       )}
                     />
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                       <FormField
-                          control={form.control}
-                          name="name"
-                          render={({ field }) => (
-                            <FormItem className="md:col-span-2">
-                              <FormLabel>Nom complet</FormLabel>
-                              <FormControl>
-                                <Input placeholder="ex: Jean Dupont" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nom complet</FormLabel>
+                            <FormControl>
+                              <Input placeholder="ex: Jean Dupont" {...field} required/>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       <FormField
                         control={form.control}
                         name="birthDate"
@@ -279,20 +287,32 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           <FormItem>
                             <FormLabel>Date de naissance</FormLabel>
                             <FormControl>
-                              <Input type="date" {...field} />
+                              <Input type="date" {...field} required/>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
+                       <FormField
+                        control={form.control}
+                        name="address"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel>Adresse</FormLabel>
+                            <FormControl>
+                              <Input placeholder="ex: 123 Rue de la Victoire, 75000 Paris" {...field} required/>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       <FormField
                         control={form.control}
                         name="poste"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Poste</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} required>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Sélectionner un poste" />
@@ -315,7 +335,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         control={form.control}
                         name="notes"
