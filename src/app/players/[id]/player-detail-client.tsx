@@ -24,6 +24,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
@@ -230,18 +231,17 @@ export function PlayerDetailClient({ id }: { id: string }) {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh]">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Modifier un joueur</DialogTitle>
+            <DialogDescription>
+              Mettez à jour les informations du joueur ci-dessous.
+            </DialogDescription>
+          </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
-              <DialogHeader>
-                <DialogTitle>Modifier un joueur</DialogTitle>
-                <DialogDescription>
-                  Mettez à jour les informations du joueur ci-dessous.
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="flex-1 overflow-y-auto py-4 px-1 -mx-1 pr-4">
-                <div className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
+                <ScrollArea className="flex-1 pr-6 -mr-6">
+                   <div className="space-y-6 py-4">
                     <FormField
                       control={form.control}
                       name="photo"
@@ -262,7 +262,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                         </FormItem>
                       )}
                     />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                        <FormField
                           control={form.control}
                           name="name"
@@ -350,9 +350,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
                       />
                     </div>
                   </div>
-              </div>
-              
-              <DialogFooter className="pt-4 border-t mt-4">
+              </ScrollArea>
+              <DialogFooter className="pt-4 border-t mt-auto">
                   <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                   <Button type="submit">Mettre à jour</Button>
               </DialogFooter>
