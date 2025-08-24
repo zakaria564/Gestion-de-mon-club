@@ -93,17 +93,14 @@ export function PlayerDetailClient({ id }: { id: string }) {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="grid md:grid-cols-2 gap-6 pt-6">
-              <div className="space-y-4">
-                  <Skeleton className="h-6 w-1/4" />
-                  <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-5 w-3/4" />
-                   <Skeleton className="h-5 w-3/4" />
-              </div>
-              <div className="space-y-4">
-                   <Skeleton className="h-6 w-1/4" />
-                   <Skeleton className="h-5 w-3/4" />
-              </div>
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Informations</h3>
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-5 w-3/4" />
+                 <Skeleton className="h-5 w-3/4" />
+            </div>
+            
           </CardContent>
         </Card>
       </div>
@@ -270,7 +267,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           control={form.control}
                           name="name"
                           render={({ field }) => (
-                            <FormItem className="md:col-span-2">
+                            <FormItem>
                               <FormLabel>Nom complet</FormLabel>
                               <FormControl>
                                 <Input placeholder="ex: Jean Dupont" {...field} required />
@@ -292,11 +289,11 @@ export function PlayerDetailClient({ id }: { id: string }) {
                             </FormItem>
                           )}
                         />
-                         <FormField
+                        <FormField
                             control={form.control}
                             name="address"
                             render={({ field }) => (
-                              <FormItem>
+                              <FormItem className="md:col-span-2">
                                 <FormLabel>Adresse</FormLabel>
                                 <FormControl>
                                   <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />

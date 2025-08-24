@@ -25,7 +25,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -50,9 +49,6 @@ const coachSchema = z.object({
   experience: z.coerce.number().min(0, "L'expérience ne peut être négative."),
   notes: z.string().optional(),
   photo: z.string().optional(),
-  // Fields not in form but required by Coach type
-  status: z.string().min(1, "Le statut est requis."),
-  category: z.string().min(1, "La catégorie est requise."),
 });
 
 type CoachFormValues = z.infer<typeof coachSchema>;
@@ -65,8 +61,6 @@ const defaultValues: CoachFormValues = {
     experience: 0,
     notes: '',
     photo: '',
-    status: 'Actif',
-    category: 'Sénior',
 };
 
 export default function CoachesPage() {
@@ -118,7 +112,7 @@ export default function CoachesPage() {
   };
 
   const groupedCoaches = coaches.reduce((acc, coach) => {
-    const { category } = coach;
+    const { category } = coach as any;
     if (!acc[category]) {
       acc[category] = [];
     }
@@ -127,7 +121,12 @@ export default function CoachesPage() {
   }, {} as Record<string, typeof coaches>);
 
   const onSubmit = async (data: CoachFormValues) => {
-    await addCoach(data);
+     const coachData = {
+        ...data,
+        status: 'Actif',
+        category: 'Sénior'
+      }
+    await addCoach(coachData as any);
     setDialogOpen(false);
   };
 
@@ -179,7 +178,7 @@ export default function CoachesPage() {
                         control={form.control}
                         name="name"
                         render={({ field }) => (
-                          <FormItem className="md:col-span-2">
+                          <FormItem>
                             <FormLabel>Nom complet</FormLabel>
                             <FormControl><Input placeholder="ex: Alain Prost" {...field} required /></FormControl>
                             <FormMessage />
@@ -206,18 +205,7 @@ export default function CoachesPage() {
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name="experience"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Expérience (années)</FormLabel>
-                            <FormControl><Input type="number" placeholder="ex: 5" {...field} required /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
+                       <FormField
                         control={form.control}
                         name="phone"
                         render={({ field }) => (
@@ -235,6 +223,17 @@ export default function CoachesPage() {
                           <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl><Input type="email" placeholder="ex: email@exemple.com" {...field} required /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                        control={form.control}
+                        name="experience"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Expérience (années)</FormLabel>
+                            <FormControl><Input type="number" placeholder="ex: 5" {...field} required /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -319,8 +318,8 @@ export default function CoachesPage() {
                         </CardHeader>
                         <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
                             <div className="flex justify-between items-center">
-                                <Badge variant="outline" className="text-xs">{coach.category}</Badge>
-                                <Badge variant={getBadgeVariant(coach.status) as any} className="text-xs">{coach.status}</Badge>
+                                <Badge variant="outline" className="text-xs">{(coach as any).category}</Badge>
+                                <Badge variant={getBadgeVariant((coach as any).status) as any} className="text-xs">{(coach as any).status}</Badge>
                             </div>
                         </CardContent>
                     </Card>

@@ -7,13 +7,12 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Mail, Phone, UserCircle, Award, Users, Edit, Trash2, Camera } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Award, Users, Edit, Trash2, Camera } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCoachesContext } from '@/context/coaches-context';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -86,12 +85,12 @@ export function CoachDetailClient({ id }: { id: string }) {
           </CardHeader>
           <CardContent className="grid md:grid-cols-2 gap-6 pt-6">
               <div className="space-y-4">
-                  <Skeleton className="h-6 w-1/4" />
+                  <h3 className="font-semibold text-lg">Informations</h3>
                   <Skeleton className="h-5 w-3/4" />
                   <Skeleton className="h-5 w-3/4" />
               </div>
               <div className="space-y-4">
-                  <Skeleton className="h-6 w-1/4" />
+                  <h3 className="font-semibold text-lg">Contact</h3>
                   <Skeleton className="h-5 w-3/4" />
                   <Skeleton className="h-5 w-3/4" />
               </div>
@@ -167,8 +166,8 @@ export function CoachDetailClient({ id }: { id: string }) {
             <CardTitle className="text-3xl font-bold">{coach.name}</CardTitle>
             <CardDescription className="text-lg text-muted-foreground mt-1">{coach.specialization}</CardDescription>
             <div className="flex flex-wrap gap-2 mt-4">
-              <Badge variant={getBadgeVariant(coach.status) as any}>{coach.status}</Badge>
-              <Badge variant="secondary">{coach.category}</Badge>
+              <Badge variant={getBadgeVariant((coach as any).status) as any}>{(coach as any).status}</Badge>
+              <Badge variant="secondary">{(coach as any).category}</Badge>
             </div>
           </div>
         </CardHeader>
@@ -266,7 +265,7 @@ export function CoachDetailClient({ id }: { id: string }) {
                         control={form.control}
                         name="name"
                         render={({ field }) => (
-                          <FormItem className="md:col-span-2">
+                          <FormItem>
                             <FormLabel>Nom complet</FormLabel>
                             <FormControl><Input placeholder="ex: Alain Prost" {...field} required /></FormControl>
                             <FormMessage />
@@ -295,17 +294,6 @@ export function CoachDetailClient({ id }: { id: string }) {
                       />
                       <FormField
                         control={form.control}
-                        name="experience"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Expérience (années)</FormLabel>
-                            <FormControl><Input type="number" placeholder="ex: 5" {...field} required /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
                         name="phone"
                         render={({ field }) => (
                           <FormItem>
@@ -322,6 +310,17 @@ export function CoachDetailClient({ id }: { id: string }) {
                           <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl><Input type="email" placeholder="ex: email@exemple.com" {...field} required /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="experience"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Expérience (années)</FormLabel>
+                            <FormControl><Input type="number" placeholder="ex: 5" {...field} required /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}

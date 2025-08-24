@@ -173,7 +173,7 @@ export default function PlayersPage() {
                           control={form.control}
                           name="name"
                           render={({ field }) => (
-                            <FormItem className="md:col-span-2">
+                            <FormItem>
                               <FormLabel>Nom complet</FormLabel>
                               <FormControl>
                                 <Input placeholder="ex: Jean Dupont" {...field} required />
@@ -195,19 +195,19 @@ export default function PlayersPage() {
                             </FormItem>
                           )}
                         />
-                         <FormField
-                            control={form.control}
-                            name="address"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Adresse</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                        <FormField
+                          control={form.control}
+                          name="address"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel>Adresse</FormLabel>
+                              <FormControl>
+                                <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                         <FormField
                           control={form.control}
                           name="poste"
