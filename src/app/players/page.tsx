@@ -152,9 +152,10 @@ export default function PlayersPage() {
                 <DialogDescription>Remplissez les informations ci-dessous.</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden">
-                    <ScrollArea className="h-[65vh] pr-6 -mr-6">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden flex flex-col h-full">
+                    <ScrollArea className="flex-1 pr-6 -mr-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4">
+
                             <h4 className="font-medium text-lg mb-2 pb-2 border-b md:col-span-2">Informations Personnelles</h4>
                             <FormField control={form.control} name="name" render={({ field }) => (
                                 <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input placeholder="Jean Dupont" {...field} /></FormControl><FormMessage /></FormItem>
@@ -167,7 +168,7 @@ export default function PlayersPage() {
                             )} />
 
                             <h4 className="font-medium text-lg mt-4 mb-2 pb-2 border-b md:col-span-2">Informations Sportives</h4>
-                            <FormField control={form.control} name="category" render={({ field }) => (
+                             <FormField control={form.control} name="category" render={({ field }) => (
                                 <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
                                     <SelectContent><SelectItem value="Sénior">Sénior</SelectItem><SelectItem value="U23">U23</SelectItem><SelectItem value="U19">U19</SelectItem><SelectItem value="U18">U18</SelectItem><SelectItem value="U17">U17</SelectItem><SelectItem value="U16">U16</SelectItem><SelectItem value="U15">U15</SelectItem><SelectItem value="U13">U13</SelectItem><SelectItem value="U11">U11</SelectItem><SelectItem value="U9">U9</SelectItem><SelectItem value="U7">U7</SelectItem></SelectContent>
@@ -185,9 +186,10 @@ export default function PlayersPage() {
                                     <SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="Blessé">Blessé</SelectItem><SelectItem value="Suspendu">Suspendu</SelectItem><SelectItem value="Inactif">Inactif</SelectItem></SelectContent>
                                 </Select><FormMessage /></FormItem>
                             )} />
-                            <FormField control={form.control} name="jerseyNumber" render={({ field }) => (
+                             <FormField control={form.control} name="jerseyNumber" render={({ field }) => (
                                 <FormItem><FormLabel>Numéro de maillot</FormLabel><FormControl><Input type="number" placeholder="10" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
+                           
 
                             <h4 className="font-medium text-lg mt-4 mb-2 pb-2 border-b md:col-span-2">Contact</h4>
                             <FormField control={form.control} name="phone" render={({ field }) => (
@@ -218,13 +220,13 @@ export default function PlayersPage() {
                             </div>
                         </div>
                     </ScrollArea>
-                    <DialogFooter className="pt-4 border-t -mx-6 px-6 bg-background">
+                    <DialogFooter className="pt-4 mt-4 border-t -mx-6 px-6 bg-background">
                         <Button type="submit">Sauvegarder</Button>
                     </DialogFooter>
                 </form>
                 </Form>
             </DialogContent>
-            </Dialog>>
+            </Dialog>
         </div>
 
         {loading ? (

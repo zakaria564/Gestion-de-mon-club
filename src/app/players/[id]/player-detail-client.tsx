@@ -211,17 +211,23 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <span>{player.phone}</span>
                 </div>
             </div>
-            <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Tuteur Légal</h3>
-                 <div className="flex items-center gap-4">
-                    <UserCheck className="h-5 w-5 text-muted-foreground" />
-                    <span>{player.tutorName || 'N/A'}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                    <Phone className="h-5 w-5 text-muted-foreground" />
-                    <span>{player.tutorPhone || 'N/A'}</span>
-                </div>
-            </div>
+            { (player.tutorName || player.tutorPhone) &&
+              <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">Tuteur Légal</h3>
+                  {player.tutorName &&
+                    <div className="flex items-center gap-4">
+                        <UserCheck className="h-5 w-5 text-muted-foreground" />
+                        <span>{player.tutorName}</span>
+                    </div>
+                  }
+                  {player.tutorPhone &&
+                    <div className="flex items-center gap-4">
+                        <Phone className="h-5 w-5 text-muted-foreground" />
+                        <span>{player.tutorPhone}</span>
+                    </div>
+                  }
+              </div>
+            }
         </CardContent>
         <CardFooter className="justify-end gap-2">
             <Button variant="outline" onClick={() => setDialogOpen(true)}>
@@ -256,13 +262,11 @@ export function PlayerDetailClient({ id }: { id: string }) {
               <DialogDescription>Mettez à jour les informations ci-dessous.</DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden">
-                <ScrollArea className="h-[65vh] pr-6 -mr-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden flex flex-col h-full">
+                <ScrollArea className="flex-1 pr-6 -mr-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4">
-                      <div className="md:col-span-2">
-                          <h4 className="font-medium text-lg mb-4 pb-2 border-b">Informations Personnelles</h4>
-                      </div>
-
+                      
+                      <h4 className="font-medium text-lg mb-2 pb-2 border-b md:col-span-2">Informations Personnelles</h4>
                       <FormField control={form.control} name="name" render={({ field }) => (
                           <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
@@ -273,10 +277,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           <FormItem className="md:col-span-2"><FormLabel>Adresse</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
 
-                      <div className="md:col-span-2">
-                          <h4 className="font-medium text-lg mt-6 mb-4 pb-2 border-b">Informations Sportives</h4>
-                      </div>
-
+                      <h4 className="font-medium text-lg mt-4 mb-2 pb-2 border-b md:col-span-2">Informations Sportives</h4>
                       <FormField control={form.control} name="category" render={({ field }) => (
                           <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
@@ -299,10 +300,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           <FormItem><FormLabel>Numéro de maillot</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
 
-                      <div className="md:col-span-2">
-                          <h4 className="font-medium text-lg mt-6 mb-4 pb-2 border-b">Contact</h4>
-                      </div>
-
+                      <h4 className="font-medium text-lg mt-4 mb-2 pb-2 border-b md:col-span-2">Contact</h4>
                       <FormField control={form.control} name="phone" render={({ field }) => (
                           <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
@@ -310,10 +308,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
 
-                      <div className="md:col-span-2">
-                          <h4 className="font-medium text-lg mt-6 mb-4 pb-2 border-b">Tuteur Légal (si mineur)</h4>
-                      </div>
-
+                      <h4 className="font-medium text-lg mt-4 mb-2 pb-2 border-b md:col-span-2">Tuteur Légal (si mineur)</h4>
                       <FormField control={form.control} name="tutorName" render={({ field }) => (
                           <FormItem><FormLabel>Nom du tuteur</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
@@ -321,7 +316,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           <FormItem><FormLabel>Téléphone du tuteur</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
 
-                      <div className="md:col-span-2 pt-4 mt-6 border-t">
+                      <div className="md:col-span-2 pt-4 mt-4 border-t">
                           <FormLabel>Photo</FormLabel>
                           <FormControl><Input type="file" accept="image/*" onChange={handleFileChange} /></FormControl>
                           <FormMessage />
@@ -334,7 +329,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                       </div>
                   </div>
                 </ScrollArea>
-                <DialogFooter className="pt-4 border-t -mx-6 px-6 bg-background">
+                <DialogFooter className="pt-4 mt-4 border-t -mx-6 px-6 bg-background">
                     <Button type="submit">Sauvegarder</Button>
                 </DialogFooter>
               </form>
@@ -344,5 +339,3 @@ export function PlayerDetailClient({ id }: { id: string }) {
     </div>
   );
 }
-
-    
