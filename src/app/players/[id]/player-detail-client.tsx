@@ -109,8 +109,13 @@ export function PlayerDetailClient({ id }: { id: string }) {
   };
 
   const handleOpenDialog = () => {
-      setSelectedPlayer(player);
-      setDialogOpen(true);
+    if (player) {
+        setSelectedPlayer({
+            ...player,
+            birthDate: player.birthDate ? format(parseISO(player.birthDate), 'yyyy-MM-dd') : ''
+        });
+    }
+    setDialogOpen(true);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -254,8 +259,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                 Remplissez les informations ci-dessous.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
-              <ScrollArea className="flex-1 -mr-6 pr-6">
+            <form onSubmit={handleSubmit} className="flex-1 overflow-auto -mr-6 pr-6">
                 {selectedPlayer && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4">
                     <div className="grid gap-2">
@@ -368,10 +372,9 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
                 )}
-              </ScrollArea>
-              <DialogFooter className="pt-4 border-t -mx-6 px-6 bg-background">
+                <DialogFooter className="pt-4 border-t -mr-6 px-6 bg-background sticky bottom-0">
                   <Button type="submit">Sauvegarder</Button>
-              </DialogFooter>
+                </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
