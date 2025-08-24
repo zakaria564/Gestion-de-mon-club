@@ -146,84 +146,83 @@ export default function PlayersPage() {
             <DialogTrigger asChild>
                 <Button><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un joueur</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-4xl max-h-[90vh]">
+            <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col">
                 <DialogHeader>
-                <DialogTitle>Ajouter un joueur</DialogTitle>
-                <DialogDescription>Remplissez les informations ci-dessous.</DialogDescription>
+                    <DialogTitle>Ajouter un joueur</DialogTitle>
+                    <DialogDescription>Remplissez les informations ci-dessous.</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden flex flex-col h-full">
-                    <ScrollArea className="flex-1 pr-6 -mr-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-hidden">
+                        <ScrollArea className="h-full pr-6 -mr-6">
+                            <div className="space-y-4 py-4">
+                                
+                                <h4 className="font-medium text-lg mb-2 pb-2 border-b">Informations Personnelles</h4>
+                                <FormField control={form.control} name="name" render={({ field }) => (
+                                    <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input placeholder="Jean Dupont" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="birthDate" render={({ field }) => (
+                                    <FormItem><FormLabel>Date de naissance</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="address" render={({ field }) => (
+                                    <FormItem><FormLabel>Adresse</FormLabel><FormControl><Input placeholder="123 Rue de Paris" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
 
-                            <h4 className="font-medium text-lg mb-2 pb-2 border-b md:col-span-2">Informations Personnelles</h4>
-                            <FormField control={form.control} name="name" render={({ field }) => (
-                                <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input placeholder="Jean Dupont" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={form.control} name="birthDate" render={({ field }) => (
-                                <FormItem><FormLabel>Date de naissance</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={form.control} name="address" render={({ field }) => (
-                                <FormItem className="md:col-span-2"><FormLabel>Adresse</FormLabel><FormControl><Input placeholder="123 Rue de Paris" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
+                                <h4 className="font-medium text-lg mt-6 mb-2 pb-2 border-b">Informations Sportives</h4>
+                                <FormField control={form.control} name="category" render={({ field }) => (
+                                    <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
+                                        <SelectContent><SelectItem value="Sénior">Sénior</SelectItem><SelectItem value="U23">U23</SelectItem><SelectItem value="U19">U19</SelectItem><SelectItem value="U18">U18</SelectItem><SelectItem value="U17">U17</SelectItem><SelectItem value="U16">U16</SelectItem><SelectItem value="U15">U15</SelectItem><SelectItem value="U13">U13</SelectItem><SelectItem value="U11">U11</SelectItem><SelectItem value="U9">U9</SelectItem><SelectItem value="U7">U7</SelectItem></SelectContent>
+                                    </Select><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="poste" render={({ field }) => (
+                                    <FormItem><FormLabel>Poste</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
+                                        <SelectContent><SelectItem value="Gardien">Gardien</SelectItem><SelectItem value="Défenseur Central">Défenseur Central</SelectItem><SelectItem value="Latéral Droit">Latéral Droit</SelectItem><SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem><SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem><SelectItem value="Milieu Central">Milieu Central</SelectItem><SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem><SelectItem value="Ailier Droit">Ailier Droit</SelectItem><SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem><SelectItem value="Avant-centre">Avant-centre</SelectItem></SelectContent>
+                                    </Select><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="status" render={({ field }) => (
+                                    <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
+                                        <SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="Blessé">Blessé</SelectItem><SelectItem value="Suspendu">Suspendu</SelectItem><SelectItem value="Inactif">Inactif</SelectItem></SelectContent>
+                                    </Select><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="jerseyNumber" render={({ field }) => (
+                                    <FormItem><FormLabel>Numéro de maillot</FormLabel><FormControl><Input type="number" placeholder="10" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
 
-                            <h4 className="font-medium text-lg mt-4 mb-2 pb-2 border-b md:col-span-2">Informations Sportives</h4>
-                             <FormField control={form.control} name="category" render={({ field }) => (
-                                <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
-                                    <SelectContent><SelectItem value="Sénior">Sénior</SelectItem><SelectItem value="U23">U23</SelectItem><SelectItem value="U19">U19</SelectItem><SelectItem value="U18">U18</SelectItem><SelectItem value="U17">U17</SelectItem><SelectItem value="U16">U16</SelectItem><SelectItem value="U15">U15</SelectItem><SelectItem value="U13">U13</SelectItem><SelectItem value="U11">U11</SelectItem><SelectItem value="U9">U9</SelectItem><SelectItem value="U7">U7</SelectItem></SelectContent>
-                                </Select><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={form.control} name="poste" render={({ field }) => (
-                                <FormItem><FormLabel>Poste</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
-                                    <SelectContent><SelectItem value="Gardien">Gardien</SelectItem><SelectItem value="Défenseur Central">Défenseur Central</SelectItem><SelectItem value="Latéral Droit">Latéral Droit</SelectItem><SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem><SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem><SelectItem value="Milieu Central">Milieu Central</SelectItem><SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem><SelectItem value="Ailier Droit">Ailier Droit</SelectItem><SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem><SelectItem value="Avant-centre">Avant-centre</SelectItem></SelectContent>
-                                </Select><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={form.control} name="status" render={({ field }) => (
-                                <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
-                                    <SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="Blessé">Blessé</SelectItem><SelectItem value="Suspendu">Suspendu</SelectItem><SelectItem value="Inactif">Inactif</SelectItem></SelectContent>
-                                </Select><FormMessage /></FormItem>
-                            )} />
-                             <FormField control={form.control} name="jerseyNumber" render={({ field }) => (
-                                <FormItem><FormLabel>Numéro de maillot</FormLabel><FormControl><Input type="number" placeholder="10" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                           
+                                <h4 className="font-medium text-lg mt-6 mb-2 pb-2 border-b">Contact</h4>
+                                <FormField control={form.control} name="phone" render={({ field }) => (
+                                    <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input placeholder="0612345678" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="email" render={({ field }) => (
+                                    <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="jean@exemple.com" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
 
-                            <h4 className="font-medium text-lg mt-4 mb-2 pb-2 border-b md:col-span-2">Contact</h4>
-                            <FormField control={form.control} name="phone" render={({ field }) => (
-                                <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input placeholder="0612345678" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={form.control} name="email" render={({ field }) => (
-                                <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="jean@exemple.com" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
+                                <h4 className="font-medium text-lg mt-6 mb-2 pb-2 border-b">Tuteur Légal (si mineur)</h4>
+                                <FormField control={form.control} name="tutorName" render={({ field }) => (
+                                    <FormItem><FormLabel>Nom du tuteur</FormLabel><FormControl><Input placeholder="Jacques Dupont" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="tutorPhone" render={({ field }) => (
+                                    <FormItem><FormLabel>Téléphone du tuteur</FormLabel><FormControl><Input placeholder="0611223344" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
 
-                            <h4 className="font-medium text-lg mt-4 mb-2 pb-2 border-b md:col-span-2">Tuteur Légal (si mineur)</h4>
-                            <FormField control={form.control} name="tutorName" render={({ field }) => (
-                                <FormItem><FormLabel>Nom du tuteur</FormLabel><FormControl><Input placeholder="Jacques Dupont" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={form.control} name="tutorPhone" render={({ field }) => (
-                                <FormItem><FormLabel>Téléphone du tuteur</FormLabel><FormControl><Input placeholder="0611223344" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-
-                            <div className="md:col-span-2 pt-4 mt-4 border-t">
-                                <FormLabel>Photo</FormLabel>
-                                <FormControl><Input type="file" accept="image/*" onChange={handleFileChange} /></FormControl>
-                                <FormMessage />
-                                {photoPreview && (
-                                    <Avatar className="h-20 w-20 mt-2">
-                                        <AvatarImage src={photoPreview} alt="Aperçu" />
-                                        <AvatarFallback>??</AvatarFallback>
-                                    </Avatar>
-                                )}
+                                <div className="pt-4 mt-4 border-t">
+                                    <FormLabel>Photo</FormLabel>
+                                    <FormControl><Input type="file" accept="image/*" onChange={handleFileChange} /></FormControl>
+                                    <FormMessage />
+                                    {photoPreview && (
+                                        <Avatar className="h-20 w-20 mt-2">
+                                            <AvatarImage src={photoPreview} alt="Aperçu" />
+                                            <AvatarFallback>??</AvatarFallback>
+                                        </Avatar>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    </ScrollArea>
-                    <DialogFooter className="pt-4 mt-4 border-t -mx-6 px-6 bg-background">
-                        <Button type="submit">Sauvegarder</Button>
-                    </DialogFooter>
-                </form>
+                        </ScrollArea>
+                        <DialogFooter className="pt-4 mt-4 border-t -mx-6 px-6 bg-background">
+                            <Button type="submit">Sauvegarder</Button>
+                        </DialogFooter>
+                    </form>
                 </Form>
             </DialogContent>
             </Dialog>
@@ -291,3 +290,5 @@ export default function PlayersPage() {
         </div>
     );
 }
+
+    

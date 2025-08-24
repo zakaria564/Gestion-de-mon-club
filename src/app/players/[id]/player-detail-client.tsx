@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { usePlayersContext } from '@/context/players-context';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -71,6 +70,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
         birthDate: birthDate,
         jerseyNumber: player.jerseyNumber || 0,
       });
+      setPhotoPreview(player.photo || null);
     }
   }, [player, dialogOpen, form]);
 
@@ -256,17 +256,17 @@ export function PlayerDetailClient({ id }: { id: string }) {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh]">
+        <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col">
             <DialogHeader>
               <DialogTitle>Modifier le joueur</DialogTitle>
               <DialogDescription>Mettez à jour les informations ci-dessous.</DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden flex flex-col h-full">
-                <ScrollArea className="flex-1 pr-6 -mr-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4">
-                      
-                      <h4 className="font-medium text-lg mb-2 pb-2 border-b md:col-span-2">Informations Personnelles</h4>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-hidden">
+                <ScrollArea className="h-full pr-6 -mr-6">
+                  <div className="space-y-4 py-4">
+
+                      <h4 className="font-medium text-lg mb-2 pb-2 border-b">Informations Personnelles</h4>
                       <FormField control={form.control} name="name" render={({ field }) => (
                           <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
@@ -274,10 +274,10 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           <FormItem><FormLabel>Date de naissance</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
                       <FormField control={form.control} name="address" render={({ field }) => (
-                          <FormItem className="md:col-span-2"><FormLabel>Adresse</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel>Adresse</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
 
-                      <h4 className="font-medium text-lg mt-4 mb-2 pb-2 border-b md:col-span-2">Informations Sportives</h4>
+                      <h4 className="font-medium text-lg mt-6 mb-2 pb-2 border-b">Informations Sportives</h4>
                       <FormField control={form.control} name="category" render={({ field }) => (
                           <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
@@ -300,7 +300,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           <FormItem><FormLabel>Numéro de maillot</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
 
-                      <h4 className="font-medium text-lg mt-4 mb-2 pb-2 border-b md:col-span-2">Contact</h4>
+                      <h4 className="font-medium text-lg mt-6 mb-2 pb-2 border-b">Contact</h4>
                       <FormField control={form.control} name="phone" render={({ field }) => (
                           <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
@@ -308,7 +308,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
 
-                      <h4 className="font-medium text-lg mt-4 mb-2 pb-2 border-b md:col-span-2">Tuteur Légal (si mineur)</h4>
+                      <h4 className="font-medium text-lg mt-6 mb-2 pb-2 border-b">Tuteur Légal (si mineur)</h4>
                       <FormField control={form.control} name="tutorName" render={({ field }) => (
                           <FormItem><FormLabel>Nom du tuteur</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
@@ -316,7 +316,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           <FormItem><FormLabel>Téléphone du tuteur</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
 
-                      <div className="md:col-span-2 pt-4 mt-4 border-t">
+                      <div className="pt-4 mt-4 border-t">
                           <FormLabel>Photo</FormLabel>
                           <FormControl><Input type="file" accept="image/*" onChange={handleFileChange} /></FormControl>
                           <FormMessage />
@@ -339,3 +339,5 @@ export function PlayerDetailClient({ id }: { id: string }) {
     </div>
   );
 }
+
+    
