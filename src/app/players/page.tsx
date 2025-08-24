@@ -21,9 +21,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -37,8 +37,29 @@ import { usePlayersContext } from "@/context/players-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
-const emptyPlayer: Omit<Player, 'id' | 'uid'> = {
+const playerSchema = z.object({
+  name: z.string().min(1, "Le nom est requis."),
+  birthDate: z.string().min(1, "La date de naissance est requise."),
+  address: z.string().min(1, "L'adresse est requise."),
+  poste: z.string().min(1, "Le poste est requis."),
+  status: z.string().min(1, "Le statut est requis."),
+  phone: z.string().min(1, "Le téléphone est requis."),
+  email: z.string().email("Email invalide."),
+  tutorName: z.string().optional(),
+  tutorPhone: z.string().optional(),
+  photo: z.string().optional(),
+  jerseyNumber: z.coerce.number().positive("Le numéro de maillot doit être positif.").optional().or(z.literal(0)),
+  category: z.string().min(1, "La catégorie est requise."),
+});
+
+type PlayerFormValues = z.infer<typeof playerSchema>;
+
+const defaultValues: Partial<PlayerFormValues> = {
     name: '',
     birthDate: '',
     address: '',
@@ -53,6 +74,7 @@ const emptyPlayer: Omit<Player, 'id' | 'uid'> = {
     category: 'Sénior'
 };
 
+
 export default function PlayersPage() {
     const context = usePlayersContext();
     const { toast } = useToast();
@@ -62,275 +84,208 @@ export default function PlayersPage() {
     }
 
     const { players, loading, addPlayer } = context;
-
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [selectedPlayer, setSelectedPlayer] = useState<Omit<Player, 'id' | 'uid'>>(emptyPlayer);
 
+    const form = useForm<PlayerFormValues>({
+      resolver: zodResolver(playerSchema),
+      defaultValues,
+    });
 
-  const getBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'Actif':
-        return 'default';
-      case 'Blessé':
-        return 'destructive';
-      case 'Suspendu':
-        return 'secondary';
-      default:
-        return 'outline';
-    }
-  };
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
-  const groupedPlayers = players.reduce((acc, player) => {
-    const { category } = player;
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(player);
-    return acc;
-  }, {} as Record<string, typeof players>);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value, type } = e.target;
-    setSelectedPlayer(prev => ({ ...prev, [id]: type === 'number' ? parseInt(value, 10) || 0 : value }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedPlayer(prev => ({...prev, photo: reader.result as string}));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  
-  const handleSelectChange = (name: keyof Omit<Player, 'id' | 'uid'>, value: string) => {
-    setSelectedPlayer(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleOpenDialog = () => {
-    setSelectedPlayer(emptyPlayer);
-    setDialogOpen(true);
-  };
-  
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const jerseyNumberValue = (event.target as any).jerseyNumber.value;
-    const jerseyNumber = jerseyNumberValue ? parseInt(jerseyNumberValue, 10) : 0;
-
-    if (jerseyNumberValue && (isNaN(jerseyNumber) || jerseyNumber <= 0)) {
-      toast({
-        variant: "destructive",
-        title: "Erreur de validation",
-        description: "Veuillez entrer un numéro de maillot valide (nombre positif) ou laisser le champ vide.",
-      });
-      return;
-    }
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          form.setValue('photo', result);
+          setPhotoPreview(result);
+        };
+        reader.readAsDataURL(file);
+      }
+    };
     
-    await addPlayer({ ...selectedPlayer, jerseyNumber });
-    setDialogOpen(false);
-  };
-  
-  return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Gestion des Joueurs</h2>
-        <Button onClick={handleOpenDialog}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un joueur
-        </Button>
-      </div>
+    const onSubmit = async (data: PlayerFormValues) => {
+      await addPlayer({ ...data, jerseyNumber: data.jerseyNumber || 0 });
+      setDialogOpen(false);
+      form.reset(defaultValues);
+      setPhotoPreview(null);
+      toast({ title: "Joueur ajouté", description: "Le nouveau joueur a été ajouté avec succès." });
+    };
 
-       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle>Ajouter un joueur</DialogTitle>
-            <DialogDescription>Remplissez les informations ci-dessous.</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full pr-6 -mr-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4">
-                    
-                    <div className="md:col-span-2">
-                        <h4 className="font-medium text-lg mb-4 pb-2 border-b">Informations Personnelles</h4>
-                    </div>
+    const getBadgeVariant = (status: string) => {
+      switch (status) {
+        case 'Actif': return 'default';
+        case 'Blessé': return 'destructive';
+        case 'Suspendu': return 'secondary';
+        default: return 'outline';
+      }
+    };
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Nom complet</Label>
-                        <Input id="name" placeholder="Jean Dupont" value={selectedPlayer.name} onChange={handleInputChange} required />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="birthDate">Date de naissance</Label>
-                        <Input id="birthDate" type="date" value={selectedPlayer.birthDate} onChange={handleInputChange} required />
-                    </div>
-                    <div className="grid gap-2 md:col-span-2">
-                        <Label htmlFor="address">Adresse</Label>
-                        <Input id="address" placeholder="123 Rue de Paris" value={selectedPlayer.address} onChange={handleInputChange} required />
-                    </div>
+    const groupedPlayers = players.reduce((acc, player) => {
+      const { category } = player;
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(player);
+      return acc;
+    }, {} as Record<string, Player[]>);
 
-                    <div className="md:col-span-2">
-                        <h4 className="font-medium text-lg mt-6 mb-4 pb-2 border-b">Informations Sportives</h4>
-                    </div>
-                    
-                    <div className="grid gap-2">
-                        <Label htmlFor="category">Catégorie</Label>
-                        <Select onValueChange={(value) => handleSelectChange('category', value)} value={selectedPlayer.category} required>
-                            <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Sénior">Sénior</SelectItem>
-                              <SelectItem value="U23">U23</SelectItem>
-                              <SelectItem value="U19">U19</SelectItem>
-                              <SelectItem value="U18">U18</SelectItem>
-                              <SelectItem value="U17">U17</SelectItem>
-                              <SelectItem value="U16">U16</SelectItem>
-                              <SelectItem value="U15">U15</SelectItem>
-                              <SelectItem value="U13">U13</SelectItem>
-                              <SelectItem value="U11">U11</SelectItem>
-                              <SelectItem value="U9">U9</SelectItem>
-                              <SelectItem value="U7">U7</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="poste">Poste</Label>
-                        <Select onValueChange={(value) => handleSelectChange('poste', value)} value={selectedPlayer.poste} required>
-                            <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
-                            <SelectContent>
-                            <SelectItem value="Gardien">Gardien</SelectItem>
-                            <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
-                            <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
-                            <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
-                            <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
-                            <SelectItem value="Milieu Central">Milieu Central</SelectItem>
-                            <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
-                            <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
-                            <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
-                            <SelectItem value="Avant-centre">Avant-centre</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+    return (
+        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="flex items-center justify-between space-y-2">
+            <h2 className="text-3xl font-bold tracking-tight">Gestion des Joueurs</h2>
+            <Dialog open={dialogOpen} onOpenChange={(isOpen) => {
+                if (!isOpen) {
+                    form.reset(defaultValues);
+                    setPhotoPreview(null);
+                }
+                setDialogOpen(isOpen);
+            }}>
+            <DialogTrigger asChild>
+                <Button><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un joueur</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-4xl max-h-[90vh]">
+                <DialogHeader>
+                <DialogTitle>Ajouter un joueur</DialogTitle>
+                <DialogDescription>Remplissez les informations ci-dessous.</DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden">
+                    <ScrollArea className="h-[65vh] pr-6 -mr-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4">
+                            <h4 className="font-medium text-lg mb-2 pb-2 border-b md:col-span-2">Informations Personnelles</h4>
+                            <FormField control={form.control} name="name" render={({ field }) => (
+                                <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input placeholder="Jean Dupont" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="birthDate" render={({ field }) => (
+                                <FormItem><FormLabel>Date de naissance</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="address" render={({ field }) => (
+                                <FormItem className="md:col-span-2"><FormLabel>Adresse</FormLabel><FormControl><Input placeholder="123 Rue de Paris" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="status">Statut</Label>
-                        <Select onValueChange={(value) => handleSelectChange('status', value)} value={selectedPlayer.status} required>
-                            <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Actif">Actif</SelectItem>
-                                <SelectItem value="Blessé">Blessé</SelectItem>
-                                <SelectItem value="Suspendu">Suspendu</SelectItem>
-                                <SelectItem value="Inactif">Inactif</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="jerseyNumber">Numéro de maillot</Label>
-                        <Input id="jerseyNumber" type="number" placeholder="10" value={selectedPlayer.jerseyNumber || ''} onChange={handleInputChange} />
-                    </div>
+                            <h4 className="font-medium text-lg mt-4 mb-2 pb-2 border-b md:col-span-2">Informations Sportives</h4>
+                            <FormField control={form.control} name="category" render={({ field }) => (
+                                <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
+                                    <SelectContent><SelectItem value="Sénior">Sénior</SelectItem><SelectItem value="U23">U23</SelectItem><SelectItem value="U19">U19</SelectItem><SelectItem value="U18">U18</SelectItem><SelectItem value="U17">U17</SelectItem><SelectItem value="U16">U16</SelectItem><SelectItem value="U15">U15</SelectItem><SelectItem value="U13">U13</SelectItem><SelectItem value="U11">U11</SelectItem><SelectItem value="U9">U9</SelectItem><SelectItem value="U7">U7</SelectItem></SelectContent>
+                                </Select><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="poste" render={({ field }) => (
+                                <FormItem><FormLabel>Poste</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
+                                    <SelectContent><SelectItem value="Gardien">Gardien</SelectItem><SelectItem value="Défenseur Central">Défenseur Central</SelectItem><SelectItem value="Latéral Droit">Latéral Droit</SelectItem><SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem><SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem><SelectItem value="Milieu Central">Milieu Central</SelectItem><SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem><SelectItem value="Ailier Droit">Ailier Droit</SelectItem><SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem><SelectItem value="Avant-centre">Avant-centre</SelectItem></SelectContent>
+                                </Select><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="status" render={({ field }) => (
+                                <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
+                                    <SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="Blessé">Blessé</SelectItem><SelectItem value="Suspendu">Suspendu</SelectItem><SelectItem value="Inactif">Inactif</SelectItem></SelectContent>
+                                </Select><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="jerseyNumber" render={({ field }) => (
+                                <FormItem><FormLabel>Numéro de maillot</FormLabel><FormControl><Input type="number" placeholder="10" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
 
-                    <div className="md:col-span-2">
-                        <h4 className="font-medium text-lg mt-6 mb-4 pb-2 border-b">Contact</h4>
-                    </div>
+                            <h4 className="font-medium text-lg mt-4 mb-2 pb-2 border-b md:col-span-2">Contact</h4>
+                            <FormField control={form.control} name="phone" render={({ field }) => (
+                                <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input placeholder="0612345678" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="email" render={({ field }) => (
+                                <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="jean@exemple.com" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="phone">Téléphone</Label>
-                        <Input id="phone" placeholder="0612345678" value={selectedPlayer.phone} onChange={handleInputChange} required />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" placeholder="jean@exemple.com" value={selectedPlayer.email} onChange={handleInputChange} required />
-                    </div>
+                            <h4 className="font-medium text-lg mt-4 mb-2 pb-2 border-b md:col-span-2">Tuteur Légal (si mineur)</h4>
+                            <FormField control={form.control} name="tutorName" render={({ field }) => (
+                                <FormItem><FormLabel>Nom du tuteur</FormLabel><FormControl><Input placeholder="Jacques Dupont" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="tutorPhone" render={({ field }) => (
+                                <FormItem><FormLabel>Téléphone du tuteur</FormLabel><FormControl><Input placeholder="0611223344" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
 
-                    <div className="md:col-span-2">
-                        <h4 className="font-medium text-lg mt-6 mb-4 pb-2 border-b">Tuteur Légal (si mineur)</h4>
-                    </div>
-                    
-                    <div className="grid gap-2">
-                        <Label htmlFor="tutorName">Nom du tuteur</Label>
-                        <Input id="tutorName" placeholder="Jacques Dupont" value={selectedPlayer.tutorName} onChange={handleInputChange} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="tutorPhone">Téléphone du tuteur</Label>
-                        <Input id="tutorPhone" placeholder="0611223344" value={selectedPlayer.tutorPhone} onChange={handleInputChange} />
-                    </div>
-                
-                    <div className="md:col-span-2 pt-4 mt-6 border-t">
-                        <Label htmlFor="photo">Photo</Label>
-                        <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
-                        {selectedPlayer.photo && (
-                        <Avatar className="h-20 w-20 mt-2">
-                            <AvatarImage src={selectedPlayer.photo as string} alt="Aperçu" />
-                            <AvatarFallback>??</AvatarFallback>
-                        </Avatar>
-                        )}
-                    </div>
-                </div>
-            </ScrollArea>
-            <DialogFooter className="pt-4 border-t -mx-6 px-6 bg-background mt-auto">
-              <Button type="submit">Sauvegarder</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-      
-      {loading ? (
-        Array.from({ length: 2 }).map((_, index) => (
-          <div key={index} className="space-y-4">
-            <Skeleton className="h-8 w-32 mt-6" />
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {Array.from({ length: 4 }).map((_, cardIndex) => (
-                <Card key={cardIndex}>
-                  <CardHeader className="p-4">
-                    <div className="flex items-center gap-4">
-                      <Skeleton className="h-16 w-16 rounded-full" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-3/4" />
-                        <Skeleton className="h-4 w-1/2" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0">
-                    <div className="flex justify-between items-center">
-                      <Skeleton className="h-5 w-1/4" />
-                      <Skeleton className="h-5 w-1/4" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        ))
-      ) : (
-      Object.entries(groupedPlayers).map(([category, playersInCategory]) => (
-        <div key={category} className="space-y-4">
-            <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {playersInCategory.map((player) => (
-                <Link key={player.id} href={`/players/${player.id}`} className="flex flex-col h-full">
-                    <Card className="flex flex-col w-full hover:shadow-lg transition-shadow h-full">
-                        <CardHeader className="p-4">
-                            <div className="flex items-center gap-4">
-                            <Avatar className="h-16 w-16">
-                                <AvatarImage src={player.photo} alt={player.name} data-ai-hint="player photo" />
-                                <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                                <CardTitle className="text-base font-bold">{player.name}</CardTitle>
-                                <CardDescription>{player.poste}</CardDescription>
+                            <div className="md:col-span-2 pt-4 mt-4 border-t">
+                                <FormLabel>Photo</FormLabel>
+                                <FormControl><Input type="file" accept="image/*" onChange={handleFileChange} /></FormControl>
+                                <FormMessage />
+                                {photoPreview && (
+                                    <Avatar className="h-20 w-20 mt-2">
+                                        <AvatarImage src={photoPreview} alt="Aperçu" />
+                                        <AvatarFallback>??</AvatarFallback>
+                                    </Avatar>
+                                )}
                             </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
-                            <div className="flex justify-between items-center">
-                                <Badge variant="outline" className="text-xs">{player.category}</Badge>
-                                <Badge variant={getBadgeVariant(player.status) as any} className="text-xs">{player.status}</Badge>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </Link>
-            ))}
-            </div>
+                        </div>
+                    </ScrollArea>
+                    <DialogFooter className="pt-4 border-t -mx-6 px-6 bg-background">
+                        <Button type="submit">Sauvegarder</Button>
+                    </DialogFooter>
+                </form>
+                </Form>
+            </DialogContent>
+            </Dialog>>
         </div>
-      )))}
-    </div>
-  );
+
+        {loading ? (
+            Array.from({ length: 2 }).map((_, index) => (
+            <div key={index} className="space-y-4">
+                <Skeleton className="h-8 w-32 mt-6" />
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, cardIndex) => (
+                    <Card key={cardIndex}>
+                    <CardHeader className="p-4">
+                        <div className="flex items-center gap-4">
+                        <Skeleton className="h-16 w-16 rounded-full" />
+                        <div className="flex-1 space-y-2">
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                        </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                        <div className="flex justify-between items-center">
+                        <Skeleton className="h-5 w-1/4" />
+                        <Skeleton className="h-5 w-1/4" />
+                        </div>
+                    </CardContent>
+                    </Card>
+                ))}
+                </div>
+            </div>
+            ))
+        ) : (
+        Object.entries(groupedPlayers).map(([category, playersInCategory]) => (
+            <div key={category} className="space-y-4">
+                <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {playersInCategory.map((player) => (
+                    <Link key={player.id} href={`/players/${player.id}`} className="flex flex-col h-full">
+                        <Card className="flex flex-col w-full hover:shadow-lg transition-shadow h-full">
+                            <CardHeader className="p-4">
+                                <div className="flex items-center gap-4">
+                                <Avatar className="h-16 w-16">
+                                    <AvatarImage src={player.photo} alt={player.name} data-ai-hint="player photo" />
+                                    <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                    <CardTitle className="text-base font-bold">{player.name}</CardTitle>
+                                    <CardDescription>{player.poste}</CardDescription>
+                                </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
+                                <div className="flex justify-between items-center">
+                                    <Badge variant="outline" className="text-xs">{player.category}</Badge>
+                                    <Badge variant={getBadgeVariant(player.status) as any} className="text-xs">{player.status}</Badge>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </Link>
+                ))}
+                </div>
+            </div>
+        )))}
+        </div>
+    );
 }
