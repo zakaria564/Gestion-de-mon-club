@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from 'react';
 import Link from "next/link";
 import {
@@ -14,7 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Coach } from "@/lib/data";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Camera } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,15 +36,37 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCoachesContext } from "@/context/coaches-context";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Textarea } from "@/components/ui/textarea";
 
-const emptyCoach: Omit<Coach, 'id' | 'uid'> = {
+const coachSchema = z.object({
+  name: z.string().min(1, "Le nom est requis."),
+  specialization: z.string().min(1, "La spécialité est requise."),
+  phone: z.string().min(1, "Le téléphone est requis."),
+  email: z.string().email("L'adresse email est invalide."),
+  experience: z.coerce.number().min(0, "L'expérience ne peut être négative."),
+  notes: z.string().optional(),
+  photo: z.string().optional(),
+  // Fields not in form but required by Coach type
+  status: z.string().min(1, "Le statut est requis."),
+  category: z.string().min(1, "La catégorie est requise."),
+});
+
+type CoachFormValues = z.infer<typeof coachSchema>;
+
+const defaultValues: CoachFormValues = {
     name: '',
     specialization: 'Entraîneur Principal',
-    status: 'Actif',
-    contact: '',
-    category: 'Sénior',
     phone: '',
+    email: '',
+    experience: 0,
+    notes: '',
     photo: '',
+    status: 'Actif',
+    category: 'Sénior',
 };
 
 export default function CoachesPage() {
@@ -56,8 +79,32 @@ export default function CoachesPage() {
   const { coaches, loading, addCoach } = context;
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedCoach, setSelectedCoach] = useState<Omit<Coach, 'id' | 'uid'>>(emptyCoach);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
+  const form = useForm<CoachFormValues>({
+    resolver: zodResolver(coachSchema),
+    defaultValues,
+  });
+
+  useEffect(() => {
+    if (!dialogOpen) {
+      form.reset(defaultValues);
+      setPhotoPreview(null);
+    }
+  }, [dialogOpen, form]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        form.setValue('photo', result);
+        setPhotoPreview(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const getBadgeVariant = (status: string) => {
     switch (status) {
@@ -79,35 +126,8 @@ export default function CoachesPage() {
     return acc;
   }, {} as Record<string, typeof coaches>);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setSelectedCoach(prev => ({ ...prev, [id]: value }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedCoach(prev => ({...prev, photo: reader.result as string}));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSelectChange = (name: keyof Omit<Coach, 'id' | 'uid'>, value: string) => {
-    setSelectedCoach(prev => ({ ...prev, [name]: value }));
-  };
-  
-  const handleOpenDialog = () => {
-    setSelectedCoach(emptyCoach);
-    setDialogOpen(true);
-  }
-
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    await addCoach(selectedCoach);
+  const onSubmit = async (data: CoachFormValues) => {
+    await addCoach(data);
     setDialogOpen(false);
   };
 
@@ -116,101 +136,139 @@ export default function CoachesPage() {
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Gestion des Entraîneurs</h2>
         
-        <Button onClick={handleOpenDialog}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un entraîneur
-        </Button>
-        
-      </div>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+                <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un entraîneur
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-2xl max-h-[90vh]">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+                <DialogHeader>
+                  <DialogTitle>Ajouter un entraîneur</DialogTitle>
+                  <DialogDescription>
+                    Remplissez les informations du nouvel entraîneur ci-dessous.
+                  </DialogDescription>
+                </DialogHeader>
 
-       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Ajouter un entraîneur</DialogTitle>
-                <DialogDescription>
-                  Remplissez les informations ci-dessous.
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 py-4 pr-6">
-                  <div className="grid gap-2">
-                    <Label htmlFor="name">Nom</Label>
-                    <Input id="name" placeholder="Alain Prost" value={selectedCoach.name} onChange={handleInputChange} required />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="category">Catégorie entraînée</Label>
-                    <Select onValueChange={(value) => handleSelectChange('category', value)} value={selectedCoach.category} required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner une catégorie" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Sénior">Sénior</SelectItem>
-                        <SelectItem value="U23">U23</SelectItem>
-                        <SelectItem value="U19">U19</SelectItem>
-                        <SelectItem value="U18">U18</SelectItem>
-                        <SelectItem value="U17">U17</SelectItem>
-                        <SelectItem value="U16">U16</SelectItem>
-                        <SelectItem value="U15">U15</SelectItem>
-                        <SelectItem value="U13">U13</SelectItem>
-                        <SelectItem value="U11">U11</SelectItem>
-                        <SelectItem value="U9">U9</SelectItem>
-                        <SelectItem value="U7">U7</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="specialization">Spécialisation</Label>
-                    <Select onValueChange={(value) => handleSelectChange('specialization', value)} value={selectedCoach.specialization} required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner une spécialité" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Entraîneur Principal">Entraîneur Principal</SelectItem>
-                        <SelectItem value="Entraîneur Adjoint">Entraîneur Adjoint</SelectItem>
-                        <SelectItem value="Entraîneur des Gardiens">Entraîneur des Gardiens</SelectItem>
-                        <SelectItem value="Préparateur Physique">Préparateur Physique</SelectItem>
-                        <SelectItem value="Entraîneur Jeunes">Entraîneur Jeunes</SelectItem>
-                        <SelectItem value="Analyste Vidéo">Analyste Vidéo</SelectItem>
-                        <SelectItem value="Entraîneur Féminines">Entraîneur Féminines</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="status">Statut</Label>
-                    <Select onValueChange={(value) => handleSelectChange('status', value)} value={selectedCoach.status} required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un statut" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Actif">Actif</SelectItem>
-                        <SelectItem value="Inactif">Inactif</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="contact">Email</Label>
-                    <Input id="contact" placeholder="email@exemple.com" value={selectedCoach.contact} onChange={handleInputChange} required />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="phone">Téléphone</Label>
-                    <Input id="phone" placeholder="0612345678" value={selectedCoach.phone} onChange={handleInputChange} required />
-                  </div>
-                  <div className="grid gap-2 md:col-span-2">
-                      <Label htmlFor="photo">Photo</Label>
-                      <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
-                      { selectedCoach.photo && (
-                        <Avatar className="h-20 w-20 mt-2">
-                          <AvatarImage src={selectedCoach.photo as string} alt="Aperçu" />
-                          <AvatarFallback>??</AvatarFallback>
-                        </Avatar>
+                <div className="flex-1 overflow-y-auto py-4 px-1 -mx-1 pr-4">
+                  <div className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="photo"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col items-center gap-4">
+                          <FormLabel htmlFor="photo-upload-coach">
+                            <Avatar className="h-24 w-24 border-2 border-dashed hover:border-primary cursor-pointer">
+                              <AvatarImage src={photoPreview ?? undefined} alt="Aperçu de l'entraîneur" data-ai-hint="coach photo"/>
+                              <AvatarFallback className="bg-muted">
+                                <Camera className="h-8 w-8 text-muted-foreground" />
+                              </AvatarFallback>
+                            </Avatar>
+                          </FormLabel>
+                          <FormControl>
+                            <Input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="photo-upload-coach" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel>Nom complet</FormLabel>
+                            <FormControl><Input placeholder="ex: Alain Prost" {...field} required /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="specialization"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Spécialité</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                              <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une spécialité" /></SelectTrigger></FormControl>
+                              <SelectContent>
+                                <SelectItem value="Entraîneur Principal">Entraîneur Principal</SelectItem>
+                                <SelectItem value="Entraîneur Adjoint">Entraîneur Adjoint</SelectItem>
+                                <SelectItem value="Entraîneur des Gardiens">Entraîneur des Gardiens</SelectItem>
+                                <SelectItem value="Préparateur Physique">Préparateur Physique</SelectItem>
+                                <SelectItem value="Analyste Vidéo">Analyste Vidéo</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="experience"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Expérience (années)</FormLabel>
+                            <FormControl><Input type="number" placeholder="ex: 5" {...field} required /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Téléphone</FormLabel>
+                            <FormControl><Input placeholder="ex: 0612345678" {...field} required /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl><Input type="email" placeholder="ex: email@exemple.com" {...field} required /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                        control={form.control}
+                        name="notes"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel>Notes</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Ajouter des notes sur l'entraîneur"
+                                className="resize-y min-h-[100px]"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
                 </div>
-                <DialogFooter className="pt-4 border-t">
-                  <Button type="submit">Sauvegarder</Button>
+
+                <DialogFooter className="pt-4 border-t mt-4">
+                  <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
+                  <Button type="submit">Enregistrer</Button>
                 </DialogFooter>
               </form>
+            </Form>
           </DialogContent>
         </Dialog>
+      </div>
 
        {loading ? (
         Array.from({ length: 2 }).map((_, index) => (

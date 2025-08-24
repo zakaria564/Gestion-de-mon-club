@@ -5,14 +5,16 @@ export type Player = {
   uid: string;
   name: string;
   birthDate: string;
-  address: string;
   poste: string;
+  notes: string;
+  photo: string;
+  // Fields for backward compatibility & grouping/display
+  address: string;
   status: 'Actif' | 'Blessé' | 'Suspendu' | 'Inactif';
   phone: string;
   email: string;
   tutorName: string;
   tutorPhone: string;
-  photo: string;
   jerseyNumber: number;
   category: string;
 }
@@ -22,11 +24,14 @@ export type Coach = {
   uid: string;
   name: string;
   specialization: string;
-  status: 'Actif' | 'Inactif';
-  contact: string;
-  category: string;
   phone: string;
+  email: string;
+  experience: number;
+  notes: string;
   photo: string;
+  // Fields for backward compatibility & grouping/display
+  status: 'Actif' | 'Inactif';
+  category: string;
 }
 
 export type CalendarEvent = {

@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Player } from "@/lib/data";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Camera } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -36,44 +36,35 @@ import React from 'react';
 import { usePlayersContext } from "@/context/players-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+
 
 const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
   birthDate: z.string().min(1, "La date de naissance est requise."),
-  address: z.string().min(1, "L'adresse est requise."),
   poste: z.string().min(1, "Le poste est requis."),
-  status: z.string().min(1, "Le statut est requis."),
-  phone: z.string().min(1, "Le téléphone est requis."),
-  email: z.string().email("Email invalide."),
-  tutorName: z.string().optional(),
-  tutorPhone: z.string().optional(),
+  notes: z.string().optional(),
   photo: z.string().optional(),
-  jerseyNumber: z.coerce.number().positive("Le numéro de maillot doit être positif.").optional().or(z.literal(0)),
+  // Fields not in the form but required by Player type
   category: z.string().min(1, "La catégorie est requise."),
+  status: z.string().min(1, "Le statut est requis."),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
 
-const defaultValues: Partial<PlayerFormValues> = {
+const defaultValues: PlayerFormValues = {
     name: '',
     birthDate: '',
-    address: '',
     poste: 'Milieu Central',
-    status: 'Actif',
-    phone: '',
-    email: '',
-    tutorName: '',
-    tutorPhone: '',
+    notes: '',
     photo: '',
-    jerseyNumber: 0,
-    category: 'Sénior'
+    category: 'Sénior',
+    status: 'Actif',
 };
-
 
 export default function PlayersPage() {
     const context = usePlayersContext();
@@ -85,13 +76,12 @@ export default function PlayersPage() {
 
     const { players, loading, addPlayer } = context;
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
     const form = useForm<PlayerFormValues>({
       resolver: zodResolver(playerSchema),
       defaultValues,
     });
-
-    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files[0]) {
@@ -107,12 +97,27 @@ export default function PlayersPage() {
     };
     
     const onSubmit = async (data: PlayerFormValues) => {
-      await addPlayer({ ...data, jerseyNumber: data.jerseyNumber || 0 });
+      // Add default or empty values for fields not in the form but in the Player type
+      const fullPlayerData = {
+        ...data,
+        address: '',
+        phone: '',
+        email: '',
+        tutorName: '',
+        tutorPhone: '',
+        jerseyNumber: 0,
+      };
+      await addPlayer(fullPlayerData);
       setDialogOpen(false);
-      form.reset(defaultValues);
-      setPhotoPreview(null);
-      toast({ title: "Joueur ajouté", description: "Le nouveau joueur a été ajouté avec succès." });
     };
+
+    // Reset form and preview when dialog closes
+    React.useEffect(() => {
+        if (!dialogOpen) {
+            form.reset(defaultValues);
+            setPhotoPreview(null);
+        }
+    }, [dialogOpen, form]);
 
     const getBadgeVariant = (status: string) => {
       switch (status) {
@@ -136,94 +141,129 @@ export default function PlayersPage() {
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
             <h2 className="text-3xl font-bold tracking-tight">Gestion des Joueurs</h2>
-            <Dialog open={dialogOpen} onOpenChange={(isOpen) => {
-                if (!isOpen) {
-                    form.reset(defaultValues);
-                    setPhotoPreview(null);
-                }
-                setDialogOpen(isOpen);
-            }}>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
                 <Button><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un joueur</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col">
-                <DialogHeader>
-                    <DialogTitle>Ajouter un joueur</DialogTitle>
-                    <DialogDescription>Remplissez les informations ci-dessous.</DialogDescription>
-                </DialogHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-hidden">
-                        <ScrollArea className="h-full pr-6 -mr-6">
-                            <div className="space-y-4 py-4">
-                                
-                                <h4 className="font-medium text-lg mb-2 pb-2 border-b">Informations Personnelles</h4>
-                                <FormField control={form.control} name="name" render={({ field }) => (
-                                    <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input placeholder="Jean Dupont" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                                <FormField control={form.control} name="birthDate" render={({ field }) => (
-                                    <FormItem><FormLabel>Date de naissance</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                                <FormField control={form.control} name="address" render={({ field }) => (
-                                    <FormItem><FormLabel>Adresse</FormLabel><FormControl><Input placeholder="123 Rue de Paris" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
+            <DialogContent className="sm:max-w-2xl max-h-[90vh]">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+                  <DialogHeader>
+                      <DialogTitle>Ajouter un joueur</DialogTitle>
+                      <DialogDescription>
+                        Remplissez les informations du nouveau joueur ci-dessous.
+                      </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="flex-1 overflow-y-auto py-4 px-1 -mx-1 pr-4">
+                    <div className="space-y-6">
+                        <FormField
+                          control={form.control}
+                          name="photo"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col items-center gap-4">
+                              <FormLabel htmlFor="photo-upload">
+                                <Avatar className="h-24 w-24 border-2 border-dashed hover:border-primary cursor-pointer">
+                                  <AvatarImage src={photoPreview ?? undefined} alt="Aperçu du joueur" data-ai-hint="player photo"/>
+                                  <AvatarFallback className="bg-muted">
+                                    <Camera className="h-8 w-8 text-muted-foreground" />
+                                  </AvatarFallback>
+                                </Avatar>
+                              </FormLabel>
+                              <FormControl>
+                                <Input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="photo-upload" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                                <h4 className="font-medium text-lg mt-6 mb-2 pb-2 border-b">Informations Sportives</h4>
-                                <FormField control={form.control} name="category" render={({ field }) => (
-                                    <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
-                                        <SelectContent><SelectItem value="Sénior">Sénior</SelectItem><SelectItem value="U23">U23</SelectItem><SelectItem value="U19">U19</SelectItem><SelectItem value="U18">U18</SelectItem><SelectItem value="U17">U17</SelectItem><SelectItem value="U16">U16</SelectItem><SelectItem value="U15">U15</SelectItem><SelectItem value="U13">U13</SelectItem><SelectItem value="U11">U11</SelectItem><SelectItem value="U9">U9</SelectItem><SelectItem value="U7">U7</SelectItem></SelectContent>
-                                    </Select><FormMessage /></FormItem>
-                                )} />
-                                <FormField control={form.control} name="poste" render={({ field }) => (
-                                    <FormItem><FormLabel>Poste</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
-                                        <SelectContent><SelectItem value="Gardien">Gardien</SelectItem><SelectItem value="Défenseur Central">Défenseur Central</SelectItem><SelectItem value="Latéral Droit">Latéral Droit</SelectItem><SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem><SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem><SelectItem value="Milieu Central">Milieu Central</SelectItem><SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem><SelectItem value="Ailier Droit">Ailier Droit</SelectItem><SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem><SelectItem value="Avant-centre">Avant-centre</SelectItem></SelectContent>
-                                    </Select><FormMessage /></FormItem>
-                                )} />
-                                <FormField control={form.control} name="status" render={({ field }) => (
-                                    <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
-                                        <SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="Blessé">Blessé</SelectItem><SelectItem value="Suspendu">Suspendu</SelectItem><SelectItem value="Inactif">Inactif</SelectItem></SelectContent>
-                                    </Select><FormMessage /></FormItem>
-                                )} />
-                                <FormField control={form.control} name="jerseyNumber" render={({ field }) => (
-                                    <FormItem><FormLabel>Numéro de maillot</FormLabel><FormControl><Input type="number" placeholder="10" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                          <FormField
+                              control={form.control}
+                              name="name"
+                              render={({ field }) => (
+                                <FormItem className="md:col-span-2">
+                                  <FormLabel>Nom complet</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="ex: Jean Dupont" {...field} required />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
 
-                                <h4 className="font-medium text-lg mt-6 mb-2 pb-2 border-b">Contact</h4>
-                                <FormField control={form.control} name="phone" render={({ field }) => (
-                                    <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input placeholder="0612345678" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                                <FormField control={form.control} name="email" render={({ field }) => (
-                                    <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="jean@exemple.com" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
+                          <FormField
+                            control={form.control}
+                            name="birthDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Date de naissance</FormLabel>
+                                <FormControl>
+                                  <Input type="date" {...field} required />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                                <h4 className="font-medium text-lg mt-6 mb-2 pb-2 border-b">Tuteur Légal (si mineur)</h4>
-                                <FormField control={form.control} name="tutorName" render={({ field }) => (
-                                    <FormItem><FormLabel>Nom du tuteur</FormLabel><FormControl><Input placeholder="Jacques Dupont" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                                <FormField control={form.control} name="tutorPhone" render={({ field }) => (
-                                    <FormItem><FormLabel>Téléphone du tuteur</FormLabel><FormControl><Input placeholder="0611223344" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
+                          <FormField
+                            control={form.control}
+                            name="poste"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Poste</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Sélectionner un poste" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="Gardien">Gardien</SelectItem>
+                                    <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
+                                    <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
+                                    <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
+                                    <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
+                                    <SelectItem value="Milieu Central">Milieu Central</SelectItem>
+                                    <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
+                                    <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
+                                    <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
+                                    <SelectItem value="Avant-centre">Avant-centre</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                                <div className="pt-4 mt-4 border-t">
-                                    <FormLabel>Photo</FormLabel>
-                                    <FormControl><Input type="file" accept="image/*" onChange={handleFileChange} /></FormControl>
-                                    <FormMessage />
-                                    {photoPreview && (
-                                        <Avatar className="h-20 w-20 mt-2">
-                                            <AvatarImage src={photoPreview} alt="Aperçu" />
-                                            <AvatarFallback>??</AvatarFallback>
-                                        </Avatar>
-                                    )}
-                                </div>
-                            </div>
-                        </ScrollArea>
-                        <DialogFooter className="pt-4 mt-4 border-t -mx-6 px-6 bg-background">
-                            <Button type="submit">Sauvegarder</Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
+                          <FormField
+                            control={form.control}
+                            name="notes"
+                            render={({ field }) => (
+                              <FormItem className="md:col-span-2">
+                                <FormLabel>Notes</FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    placeholder="Ajouter des notes sur le joueur (style de jeu, comportement, etc.)"
+                                    className="resize-y min-h-[100px]"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                  </div>
+                  
+                  <DialogFooter className="pt-4 border-t mt-4">
+                      <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
+                      <Button type="submit">Enregistrer</Button>
+                  </DialogFooter>
+                </form>
+              </Form>
             </DialogContent>
             </Dialog>
         </div>
@@ -290,5 +330,3 @@ export default function PlayersPage() {
         </div>
     );
 }
-
-    
