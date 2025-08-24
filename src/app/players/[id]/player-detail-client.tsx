@@ -136,8 +136,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
 
   const handleDeletePlayer = async () => {
     if (typeof id === 'string') {
-        await deletePlayer(id);
         router.push('/players');
+        await deletePlayer(id);
     }
   }
 
