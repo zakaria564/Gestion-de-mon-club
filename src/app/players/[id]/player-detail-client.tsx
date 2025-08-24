@@ -263,12 +263,25 @@ export function PlayerDetailClient({ id }: { id: string }) {
                       <Input id="name" placeholder="Jean Dupont" value={selectedPlayer.name} onChange={handleInputChange} required />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="birthDate">Date de naissance</Label>
-                        <Input id="birthDate" type="date" value={selectedPlayer.birthDate} onChange={handleInputChange} required />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="address">Adresse</Label>
-                        <Input id="address" placeholder="123 Rue de Paris" value={selectedPlayer.address} onChange={handleInputChange} required />
+                      <Label htmlFor="category">Catégorie</Label>
+                      <Select onValueChange={(value) => handleSelectChange('category', value)} value={selectedPlayer.category} required>
+                          <SelectTrigger>
+                              <SelectValue placeholder="Sélectionner" />
+                          </SelectTrigger>
+                          <SelectContent>
+                              <SelectItem value="Sénior">Sénior</SelectItem>
+                              <SelectItem value="U23">U23</SelectItem>
+                              <SelectItem value="U19">U19</SelectItem>
+                              <SelectItem value="U18">U18</SelectItem>
+                              <SelectItem value="U17">U17</SelectItem>
+                              <SelectItem value="U16">U16</SelectItem>
+                              <SelectItem value="U15">U15</SelectItem>
+                              <SelectItem value="U13">U13</SelectItem>
+                              <SelectItem value="U11">U11</SelectItem>
+                              <SelectItem value="U9">U9</SelectItem>
+                              <SelectItem value="U7">U7</SelectItem>
+                          </SelectContent>
+                      </Select>
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="poste">Poste</Label>
@@ -304,30 +317,23 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           </SelectContent>
                       </Select>
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="category">Catégorie</Label>
-                      <Select onValueChange={(value) => handleSelectChange('category', value)} value={selectedPlayer.category} required>
-                          <SelectTrigger>
-                              <SelectValue placeholder="Sélectionner" />
-                          </SelectTrigger>
-                          <SelectContent>
-                              <SelectItem value="Sénior">Sénior</SelectItem>
-                              <SelectItem value="U23">U23</SelectItem>
-                              <SelectItem value="U19">U19</SelectItem>
-                              <SelectItem value="U18">U18</SelectItem>
-                              <SelectItem value="U17">U17</SelectItem>
-                              <SelectItem value="U16">U16</SelectItem>
-                              <SelectItem value="U15">U15</SelectItem>
-                              <SelectItem value="U13">U13</SelectItem>
-                              <SelectItem value="U11">U11</SelectItem>
-                              <SelectItem value="U9">U9</SelectItem>
-                              <SelectItem value="U7">U7</SelectItem>
-                          </SelectContent>
-                      </Select>
+                     <div className="md:col-span-2">
+                        <h4 className="font-medium text-lg mb-4 pt-4 border-b pb-2">Informations Personnelles</h4>
                     </div>
                     <div className="grid gap-2">
+                        <Label htmlFor="birthDate">Date de naissance</Label>
+                        <Input id="birthDate" type="date" value={selectedPlayer.birthDate} onChange={handleInputChange} required />
+                    </div>
+                     <div className="grid gap-2">
                       <Label htmlFor="jerseyNumber">Numéro de maillot</Label>
                       <Input id="jerseyNumber" type="number" placeholder="10" value={selectedPlayer.jerseyNumber || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="grid gap-2 md:col-span-2">
+                        <Label htmlFor="address">Adresse</Label>
+                        <Input id="address" placeholder="123 Rue de Paris" value={selectedPlayer.address} onChange={handleInputChange} required />
+                    </div>
+                     <div className="md:col-span-2">
+                        <h4 className="font-medium text-lg mb-4 pt-4 border-b pb-2">Contact</h4>
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="phone">Téléphone</Label>
@@ -337,20 +343,20 @@ export function PlayerDetailClient({ id }: { id: string }) {
                         <Label htmlFor="email">Email</Label>
                         <Input id="email" type="email" placeholder="jean@exemple.com" value={selectedPlayer.email} onChange={handleInputChange} required />
                     </div>
-                     <div className="md:col-span-2 space-y-4 pt-4 border-t">
-                        <h4 className="font-medium text-lg">Tuteur Légal (si mineur)</h4>
-                        <div className="grid md:grid-cols-2 gap-x-8 gap-y-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="tutorName">Nom du tuteur</Label>
-                                <Input id="tutorName" placeholder="Jacques Dupont" value={selectedPlayer.tutorName} onChange={handleInputChange} />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="tutorPhone">Téléphone du tuteur</Label>                            
-                                <Input id="tutorPhone" placeholder="0611223344" value={selectedPlayer.tutorPhone} onChange={handleInputChange} />
-                            </div>
-                        </div>
+
+                    <div className="md:col-span-2">
+                        <h4 className="font-medium text-lg mb-4 pt-4 border-b pb-2">Tuteur Légal (si mineur)</h4>
                     </div>
-                    <div className="grid gap-2 md:col-span-2 pt-4 border-t">
+                    <div className="grid gap-2">
+                        <Label htmlFor="tutorName">Nom du tuteur</Label>
+                        <Input id="tutorName" placeholder="Jacques Dupont" value={selectedPlayer.tutorName} onChange={handleInputChange} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="tutorPhone">Téléphone du tuteur</Label>                            
+                        <Input id="tutorPhone" placeholder="0611223344" value={selectedPlayer.tutorPhone} onChange={handleInputChange} />
+                    </div>
+                    
+                    <div className="grid gap-2 md:col-span-2 pt-4 border-t mt-4">
                         <Label htmlFor="photo">Photo</Label>
                         <Input id="photo" type="file" onChange={handleFileChange} accept="image/*" />
                         { selectedPlayer.photo && (
@@ -360,7 +366,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                         </Avatar>
                         )}
                     </div>
-                </div>
+                  </div>
                 )}
               </ScrollArea>
               <DialogFooter className="pt-4 border-t -mx-6 px-6 bg-background">
