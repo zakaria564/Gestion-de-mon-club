@@ -238,8 +238,8 @@ export function CoachDetailClient({ id }: { id: string }) {
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
-                <ScrollArea className="flex-1 p-1">
-                  <div className="space-y-6 px-4 py-2">
+                <ScrollArea className="flex-1">
+                  <div className="px-6 py-4 space-y-6">
                     <FormField
                       control={form.control}
                       name="photo"
@@ -345,7 +345,7 @@ export function CoachDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
                 </ScrollArea>
-                <DialogFooter className="pt-4 border-t">
+                <DialogFooter className="px-6 py-4 border-t">
                   <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                   <Button type="submit">Mettre à jour</Button>
                 </DialogFooter>
