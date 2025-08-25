@@ -49,6 +49,7 @@ const playerSchema = z.object({
   birthDate: z.string().min(1, "La date de naissance est requise."),
   address: z.string().min(1, "L'adresse est requise."),
   phone: z.string().min(1, "Le téléphone est requis."),
+  email: z.string().email("L'adresse email est invalide.").optional().or(z.literal('')),
   poste: z.string().min(1, "Le poste est requis."),
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   notes: z.string().optional(),
@@ -67,6 +68,7 @@ const defaultValues: PlayerFormValues = {
     birthDate: '',
     address: '',
     phone: '',
+    email: '',
     country: '',
     poste: 'Milieu Central',
     jerseyNumber: 10,
@@ -216,6 +218,19 @@ export default function PlayersPage() {
                                       <FormLabel>Téléphone</FormLabel>
                                       <FormControl>
                                         <Input placeholder="ex: 0612345678" {...field} required />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="email"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Email</FormLabel>
+                                      <FormControl>
+                                        <Input type="email" placeholder="ex: email@exemple.com" {...field} />
                                       </FormControl>
                                       <FormMessage />
                                     </FormItem>
@@ -422,7 +437,3 @@ export default function PlayersPage() {
         </div>
     );
 }
-
-    
-
-    

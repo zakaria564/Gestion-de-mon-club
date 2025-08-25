@@ -8,7 +8,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield } from "lucide-react";
+import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield, Mail } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -31,6 +31,7 @@ const playerSchema = z.object({
   birthDate: z.string().min(1, "La date de naissance est requise."),
   address: z.string().min(1, "L'adresse est requise."),
   phone: z.string().min(1, "Le téléphone est requis."),
+  email: z.string().email("L'adresse email est invalide.").optional().or(z.literal('')),
   poste: z.string().min(1, "Le poste est requis."),
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   notes: z.string().optional(),
@@ -72,6 +73,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
       form.reset({
         ...player,
         birthDate: birthDate,
+        email: player.email || '',
         notes: player.notes || '',
         photo: player.photo || '',
         country: player.country || '',
@@ -203,6 +205,12 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <Phone className="h-5 w-5 text-muted-foreground" />
                     <span>{player.phone}</span>
                 </div>
+                {player.email && (
+                  <div className="flex items-center gap-4">
+                    <Mail className="h-5 w-5 text-muted-foreground" />
+                    <a href={`mailto:${player.email}`} className="hover:underline">{player.email}</a>
+                  </div>
+                )}
                 <div className="flex items-center gap-4">
                     <Home className="h-5 w-5 text-muted-foreground" />
                     <span>{player.address}</span>
@@ -296,74 +304,87 @@ export function PlayerDetailClient({ id }: { id: string }) {
                       )}
                     />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                      <div className="space-y-4">
-                          <h4 className="text-lg font-medium border-b pb-2">Informations Personnelles</h4>
-                          <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Nom complet</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="ex: Jean Dupont" {...field} required />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="birthDate"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Date de naissance</FormLabel>
-                                <FormControl>
-                                  <Input type="date" {...field} required />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                           <FormField
+                        <div className="space-y-4">
+                            <h4 className="text-lg font-medium border-b pb-2">Informations Personnelles</h4>
+                            <FormField
                               control={form.control}
-                              name="phone"
+                              name="name"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Téléphone</FormLabel>
+                                  <FormLabel>Nom complet</FormLabel>
                                   <FormControl>
-                                    <Input placeholder="ex: 0612345678" {...field} required />
+                                    <Input placeholder="ex: Jean Dupont" {...field} required />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
                             />
-                          <FormField
+                            <FormField
                               control={form.control}
-                              name="address"
+                              name="birthDate"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Adresse</FormLabel>
+                                  <FormLabel>Date de naissance</FormLabel>
                                   <FormControl>
-                                    <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
+                                    <Input type="date" {...field} required />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
                             />
-                          <FormField
-                              control={form.control}
-                              name="country"
-                              render={({ field }) => (
-                              <FormItem>
-                                  <FormLabel>Pays</FormLabel>
-                                  <FormControl>
-                                  <Input placeholder="ex: France" {...field} required />
-                                  </FormControl>
-                                  <FormMessage />
-                              </FormItem>
-                              )}
-                          />
-                      </div>
+                             <FormField
+                                control={form.control}
+                                name="phone"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Téléphone</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="ex: 0612345678" {...field} required />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                      <Input type="email" placeholder="ex: email@exemple.com" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            <FormField
+                                control={form.control}
+                                name="address"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Adresse</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            <FormField
+                                control={form.control}
+                                name="country"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Pays</FormLabel>
+                                    <FormControl>
+                                    <Input placeholder="ex: France" {...field} required />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </div>
                         <div className="space-y-4">
                           <h4 className="text-lg font-medium border-b pb-2">Tuteur Légal (si mineur)</h4>
                           <FormField
@@ -473,7 +494,3 @@ export function PlayerDetailClient({ id }: { id: string }) {
     </div>
   );
 }
-
-    
-
-    

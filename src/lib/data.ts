@@ -6,6 +6,7 @@ export type Player = {
   birthDate: string;
   address: string;
   phone: string;
+  email?: string;
   poste: string;
   jerseyNumber: number;
   notes?: string;
