@@ -38,6 +38,8 @@ const playerSchema = z.object({
   country: z.string().min(1, "Le pays est requis."),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
+  status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
+  category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -139,7 +141,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
         id: player.id,
         uid: player.uid
     };
-    await updatePlayer(dataToUpdate);
+    await updatePlayer(dataToUpdate as Player);
     setDialogOpen(false);
     toast({ title: "Joueur mis à jour", description: "Les informations du joueur ont été modifiées avec succès." });
   };

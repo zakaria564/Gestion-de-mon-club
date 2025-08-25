@@ -56,6 +56,8 @@ const playerSchema = z.object({
   country: z.string().min(1, "Le pays est requis."),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
+  status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
+  category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -72,6 +74,8 @@ const defaultValues: PlayerFormValues = {
     photo: '',
     tutorName: '',
     tutorPhone: '',
+    status: 'Actif',
+    category: 'Sénior',
 };
 
 export default function PlayersPage() {
@@ -105,12 +109,7 @@ export default function PlayersPage() {
     };
     
     const onSubmit = async (data: PlayerFormValues) => {
-      const playerData = {
-        ...data,
-        status: 'Actif',
-        category: 'Sénior'
-      }
-      await addPlayer(playerData as any);
+      await addPlayer(data as any);
       setDialogOpen(false);
       toast({ title: "Joueur ajouté", description: "Le nouveau joueur a été ajouté avec succès." });
     };
