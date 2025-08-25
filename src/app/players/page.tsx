@@ -49,6 +49,7 @@ const playerSchema = z.object({
   birthDate: z.string().min(1, "La date de naissance est requise."),
   address: z.string().min(1, "L'adresse est requise."),
   poste: z.string().min(1, "Le poste est requis."),
+  jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   notes: z.string().optional(),
   photo: z.string().optional(),
 });
@@ -60,6 +61,7 @@ const defaultValues: PlayerFormValues = {
     birthDate: '',
     address: '',
     poste: 'Milieu Central',
+    jerseyNumber: 1,
     notes: '',
     photo: '',
 };
@@ -145,11 +147,11 @@ export default function PlayersPage() {
                     Remplissez les informations du nouveau joueur ci-dessous.
                   </DialogDescription>
               </DialogHeader>
-              <Form {...form}>
+               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
                   <ScrollArea className="flex-1">
                     <div className="px-6 py-4 space-y-6">
-                      <FormField
+                       <FormField
                           control={form.control}
                           name="photo"
                           render={({ field }) => (
@@ -209,11 +211,11 @@ export default function PlayersPage() {
                             </FormItem>
                           )}
                         />
-                        <FormField
+                         <FormField
                           control={form.control}
                           name="poste"
                           render={({ field }) => (
-                            <FormItem className="md:col-span-2">
+                            <FormItem>
                               <FormLabel>Poste</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value} required>
                                 <FormControl>
@@ -240,6 +242,19 @@ export default function PlayersPage() {
                         />
                         <FormField
                           control={form.control}
+                          name="jerseyNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Numéro de maillot</FormLabel>
+                              <FormControl>
+                                <Input type="number" placeholder="ex: 10" {...field} required />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
                           name="notes"
                           render={({ field }) => (
                             <FormItem className="md:col-span-2">
@@ -258,7 +273,7 @@ export default function PlayersPage() {
                       </div>
                     </div>
                   </ScrollArea>
-                  <DialogFooter className="px-6 py-4 border-t">
+                  <DialogFooter className="px-6 py-4 border-t mt-auto">
                       <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                       <Button type="submit">Enregistrer</Button>
                   </DialogFooter>
@@ -332,5 +347,3 @@ export default function PlayersPage() {
         </div>
     );
 }
-
-    

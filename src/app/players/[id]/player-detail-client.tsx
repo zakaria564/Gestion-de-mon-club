@@ -8,7 +8,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cake, UserCircle, Edit, Trash2, Camera, Home } from "lucide-react";
+import { ArrowLeft, Cake, UserCircle, Edit, Trash2, Camera, Home, Shirt } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -31,6 +31,7 @@ const playerSchema = z.object({
   birthDate: z.string().min(1, "La date de naissance est requise."),
   address: z.string().min(1, "L'adresse est requise."),
   poste: z.string().min(1, "Le poste est requis."),
+  jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   notes: z.string().optional(),
   photo: z.string().optional(),
 });
@@ -67,6 +68,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
         birthDate: birthDate,
         address: player.address,
         poste: player.poste,
+        jerseyNumber: player.jerseyNumber,
         notes: player.notes || '',
         photo: player.photo || '',
       });
@@ -174,7 +176,10 @@ export function PlayerDetailClient({ id }: { id: string }) {
           </Avatar>
           <div className="flex-1">
             <CardTitle className="text-3xl font-bold">{player.name}</CardTitle>
-            <CardDescription className="text-lg text-muted-foreground mt-1">{player.poste}</CardDescription>
+            <CardDescription className="text-lg text-muted-foreground mt-1 flex items-center">
+              {player.poste}
+              <Badge variant="outline" className="ml-2 text-lg">#{player.jerseyNumber}</Badge>
+            </CardDescription>
             <div className="flex flex-wrap gap-2 mt-4">
               <Badge variant={getBadgeVariant(playerStatus) as any}>{playerStatus}</Badge>
               <Badge variant="secondary">{playerCategory}</Badge>
@@ -306,7 +311,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           control={form.control}
                           name="poste"
                           render={({ field }) => (
-                            <FormItem className="md:col-span-2">
+                            <FormItem>
                               <FormLabel>Poste</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value} required>
                                 <FormControl>
@@ -331,6 +336,19 @@ export function PlayerDetailClient({ id }: { id: string }) {
                             </FormItem>
                           )}
                         />
+                        <FormField
+                          control={form.control}
+                          name="jerseyNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Numéro de maillot</FormLabel>
+                              <FormControl>
+                                <Input type="number" placeholder="ex: 10" {...field} required />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       <FormField
                         control={form.control}
                         name="notes"
@@ -351,7 +369,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
               </ScrollArea>
-              <DialogFooter className="px-6 py-4 border-t">
+              <DialogFooter className="px-6 py-4 border-t mt-auto">
                   <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                   <Button type="submit">Mettre à jour</Button>
               </DialogFooter>
@@ -362,5 +380,3 @@ export function PlayerDetailClient({ id }: { id: string }) {
     </div>
   );
 }
-
-    
