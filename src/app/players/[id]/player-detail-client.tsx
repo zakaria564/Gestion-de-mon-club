@@ -266,7 +266,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Modifier un joueur</DialogTitle>
             <DialogDescription>
@@ -298,7 +298,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                       )}
                     />
                      <div className="space-y-4">
-                        <h4 className="text-lg font-medium">Informations Personnelles</h4>
+                        <h4 className="text-lg font-medium border-b pb-2">Informations Personnelles</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                            <FormField
                               control={form.control}
@@ -355,7 +355,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                         </div>
                      </div>
                      <div className="space-y-4">
-                        <h4 className="text-lg font-medium">Informations Sportives</h4>
+                        <h4 className="text-lg font-medium border-b pb-2">Informations Sportives</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
                               control={form.control}
@@ -402,7 +402,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                         </div>
                      </div>
                       <div className="space-y-4">
-                            <h4 className="text-lg font-medium">Contact</h4>
+                            <h4 className="text-lg font-medium border-b pb-2">Contact</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                <FormField
                                   control={form.control}
@@ -420,7 +420,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                             </div>
                         </div>
                         <div className="space-y-4">
-                            <h4 className="text-lg font-medium">Tuteur Légal (si mineur)</h4>
+                            <h4 className="text-lg font-medium border-b pb-2">Tuteur Légal (si mineur)</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                <FormField
                                   control={form.control}
