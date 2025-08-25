@@ -53,6 +53,9 @@ const playerSchema = z.object({
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   notes: z.string().optional(),
   photo: z.string().optional(),
+  country: z.string().min(1, "Le pays est requis."),
+  tutorName: z.string().optional(),
+  tutorPhone: z.string().optional(),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -62,10 +65,13 @@ const defaultValues: PlayerFormValues = {
     birthDate: '',
     address: '',
     phone: '',
+    country: '',
     poste: 'Milieu Central',
-    jerseyNumber: 1,
+    jerseyNumber: 10,
     notes: '',
     photo: '',
+    tutorName: '',
+    tutorPhone: '',
 };
 
 export default function PlayersPage() {
@@ -151,8 +157,8 @@ export default function PlayersPage() {
               </DialogHeader>
                <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
-                  <ScrollArea className="flex-1 pr-6">
-                    <div className="space-y-6 py-4">
+                  <ScrollArea className="flex-1 pr-6 -mr-6">
+                    <div className="space-y-6 py-4 px-1">
                        <FormField
                           control={form.control}
                           name="photo"
@@ -173,101 +179,159 @@ export default function PlayersPage() {
                             </FormItem>
                           )}
                         />
-                      
-                        <FormField
-                          control={form.control}
-                          name="name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Nom complet</FormLabel>
-                              <FormControl>
-                                <Input placeholder="ex: Jean Dupont" {...field} required />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="birthDate"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Date de naissance</FormLabel>
-                              <FormControl>
-                                <Input type="date" {...field} required />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="address"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Adresse</FormLabel>
-                              <FormControl>
-                                <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="phone"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Téléphone</FormLabel>
-                              <FormControl>
-                                <Input placeholder="ex: 0612345678" {...field} required />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                         <FormField
-                          control={form.control}
-                          name="poste"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Poste</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value} required>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner un poste" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="Gardien">Gardien</SelectItem>
-                                  <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
-                                  <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
-                                  <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
-                                  <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
-                                  <SelectItem value="Milieu Central">Milieu Central</SelectItem>
-                                  <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
-                                  <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
-                                  <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
-                                  <SelectItem value="Avant-centre">Avant-centre</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="jerseyNumber"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Numéro de maillot</FormLabel>
-                              <FormControl>
-                                <Input type="number" placeholder="ex: 10" {...field} required />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                         <div className="space-y-4">
+                            <h4 className="text-lg font-medium">Informations Personnelles</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                               <FormField
+                                  control={form.control}
+                                  name="name"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Nom complet</FormLabel>
+                                      <FormControl>
+                                        <Input placeholder="ex: Jean Dupont" {...field} required />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="birthDate"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Date de naissance</FormLabel>
+                                      <FormControl>
+                                        <Input type="date" {...field} required />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="address"
+                                    render={({ field }) => (
+                                      <FormItem className="md:col-span-2">
+                                        <FormLabel>Adresse</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                />
+                                 <FormField
+                                    control={form.control}
+                                    name="country"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Pays</FormLabel>
+                                        <FormControl>
+                                        <Input placeholder="ex: France" {...field} required />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                            </div>
+                         </div>
+                         <div className="space-y-4">
+                            <h4 className="text-lg font-medium">Informations Sportives</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                  control={form.control}
+                                  name="poste"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Poste</FormLabel>
+                                      <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                                        <FormControl>
+                                          <SelectTrigger>
+                                            <SelectValue placeholder="Sélectionner un poste" />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                          <SelectItem value="Gardien">Gardien</SelectItem>
+                                          <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
+                                          <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
+                                          <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
+                                          <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
+                                          <SelectItem value="Milieu Central">Milieu Central</SelectItem>
+                                          <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
+                                          <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
+                                          <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
+                                          <SelectItem value="Avant-centre">Avant-centre</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="jerseyNumber"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Numéro de maillot</FormLabel>
+                                      <FormControl>
+                                        <Input type="number" placeholder="ex: 10" {...field} required />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                            </div>
+                         </div>
+                         <div className="space-y-4">
+                            <h4 className="text-lg font-medium">Contact</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                               <FormField
+                                  control={form.control}
+                                  name="phone"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Téléphone</FormLabel>
+                                      <FormControl>
+                                        <Input placeholder="ex: 0612345678" {...field} required />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <h4 className="text-lg font-medium">Tuteur Légal (si mineur)</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                               <FormField
+                                  control={form.control}
+                                  name="tutorName"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Nom du tuteur</FormLabel>
+                                      <FormControl>
+                                        <Input placeholder="ex: Marie Dupont" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="tutorPhone"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Téléphone du tuteur</FormLabel>
+                                      <FormControl>
+                                        <Input placeholder="ex: 0712345678" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                            </div>
+                        </div>
                         <FormField
                           control={form.control}
                           name="notes"
@@ -285,7 +349,6 @@ export default function PlayersPage() {
                             </FormItem>
                           )}
                         />
-                      
                     </div>
                   </ScrollArea>
                   <DialogFooter className="pt-4 border-t">

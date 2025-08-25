@@ -1,16 +1,18 @@
 
-
 export type Player = {
   id: string;
   uid: string;
   name: string;
   birthDate: string;
   address: string;
+  phone: string;
   poste: string;
   jerseyNumber: number;
-  notes: string;
-  photo: string;
-  phone: string;
+  notes?: string;
+  photo?: string;
+  country?: string;
+  tutorName?: string;
+  tutorPhone?: string;
 }
 
 export type Coach = {
@@ -21,8 +23,8 @@ export type Coach = {
   phone: string;
   email: string;
   experience: number;
-  notes: string;
-  photo: string;
+  notes?: string;
+  photo?: string;
 }
 
 export type CalendarEvent = {

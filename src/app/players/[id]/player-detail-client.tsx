@@ -8,7 +8,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cake, UserCircle, Edit, Trash2, Camera, Home, Shirt, Phone } from "lucide-react";
+import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -35,6 +35,9 @@ const playerSchema = z.object({
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   notes: z.string().optional(),
   photo: z.string().optional(),
+  country: z.string().min(1, "Le pays est requis."),
+  tutorName: z.string().optional(),
+  tutorPhone: z.string().optional(),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -69,6 +72,9 @@ export function PlayerDetailClient({ id }: { id: string }) {
         birthDate: birthDate,
         notes: player.notes || '',
         photo: player.photo || '',
+        country: player.country || '',
+        tutorName: player.tutorName || '',
+        tutorPhone: player.tutorPhone || '',
       });
       setPhotoPreview(player.photo || null);
     } else if (!dialogOpen) {
@@ -184,7 +190,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-6 grid md:grid-cols-2 gap-6">
+        <CardContent className="pt-6 grid md:grid-cols-2 gap-x-8 gap-y-6">
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Informations Personnelles</h3>
                  <div className="flex items-center gap-4">
@@ -195,6 +201,10 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <Home className="h-5 w-5 text-muted-foreground" />
                     <span>{player.address}</span>
                 </div>
+                 <div className="flex items-center gap-4">
+                    <Flag className="h-5 w-5 text-muted-foreground" />
+                    <span>{player.country}</span>
+                </div>
             </div>
              <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Contact</h3>
@@ -203,6 +213,23 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <span>{player.phone}</span>
                 </div>
             </div>
+             {(player.tutorName || player.tutorPhone) && (
+              <div className="space-y-4 md:col-span-2">
+                  <h3 className="font-semibold text-lg">Tuteur Légal</h3>
+                  {player.tutorName && (
+                    <div className="flex items-center gap-4">
+                        <Shield className="h-5 w-5 text-muted-foreground" />
+                        <span>{player.tutorName}</span>
+                    </div>
+                  )}
+                  {player.tutorPhone && (
+                    <div className="flex items-center gap-4">
+                        <Phone className="h-5 w-5 text-muted-foreground" />
+                        <span>{player.tutorPhone}</span>
+                    </div>
+                  )}
+              </div>
+            )}
             {player.notes && (
               <div className="space-y-4 mt-6 md:col-span-2">
                   <h3 className="font-semibold text-lg">Notes</h3>
@@ -246,8 +273,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
-                <ScrollArea className="flex-1 pr-6">
-                   <div className="space-y-6 py-4">
+                <ScrollArea className="flex-1 pr-6 -mr-6">
+                   <div className="space-y-6 py-4 px-1">
                     <FormField
                       control={form.control}
                       name="photo"
@@ -268,100 +295,159 @@ export function PlayerDetailClient({ id }: { id: string }) {
                         </FormItem>
                       )}
                     />
-                       <FormField
-                          control={form.control}
-                          name="name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Nom complet</FormLabel>
-                              <FormControl>
-                                <Input placeholder="ex: Jean Dupont" {...field} required />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="birthDate"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Date de naissance</FormLabel>
-                              <FormControl>
-                                <Input type="date" {...field} required />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="address"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Adresse</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                     <div className="space-y-4">
+                        <h4 className="text-lg font-medium">Informations Personnelles</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                            <FormField
-                            control={form.control}
-                            name="phone"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Téléphone</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="ex: 0612345678" {...field} required />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        <FormField
-                          control={form.control}
-                          name="poste"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Poste</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value} required>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner un poste" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="Gardien">Gardien</SelectItem>
-                                  <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
-                                  <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
-                                  <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
-                                  <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
-                                  <SelectItem value="Milieu Central">Milieu Central</SelectItem>
-                                  <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
-                                  <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
-                                  <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
-                                  <SelectItem value="Avant-centre">Avant-centre</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="jerseyNumber"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Numéro de maillot</FormLabel>
-                              <FormControl>
-                                <Input type="number" placeholder="ex: 10" {...field} required />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                              control={form.control}
+                              name="name"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Nom complet</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="ex: Jean Dupont" {...field} required />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="birthDate"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Date de naissance</FormLabel>
+                                  <FormControl>
+                                    <Input type="date" {...field} required />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="address"
+                                render={({ field }) => (
+                                  <FormItem className="md:col-span-2">
+                                    <FormLabel>Adresse</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            <FormField
+                                control={form.control}
+                                name="country"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Pays</FormLabel>
+                                    <FormControl>
+                                    <Input placeholder="ex: France" {...field} required />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </div>
+                     </div>
+                     <div className="space-y-4">
+                        <h4 className="text-lg font-medium">Informations Sportives</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="poste"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Poste</FormLabel>
+                                  <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner un poste" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="Gardien">Gardien</SelectItem>
+                                      <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
+                                      <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
+                                      <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
+                                      <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
+                                      <SelectItem value="Milieu Central">Milieu Central</SelectItem>
+                                      <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
+                                      <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
+                                      <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
+                                      <SelectItem value="Avant-centre">Avant-centre</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="jerseyNumber"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Numéro de maillot</FormLabel>
+                                  <FormControl>
+                                    <Input type="number" placeholder="ex: 10" {...field} required />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                        </div>
+                     </div>
+                      <div className="space-y-4">
+                            <h4 className="text-lg font-medium">Contact</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                               <FormField
+                                  control={form.control}
+                                  name="phone"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Téléphone</FormLabel>
+                                      <FormControl>
+                                        <Input placeholder="ex: 0612345678" {...field} required />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <h4 className="text-lg font-medium">Tuteur Légal (si mineur)</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                               <FormField
+                                  control={form.control}
+                                  name="tutorName"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Nom du tuteur</FormLabel>
+                                      <FormControl>
+                                        <Input placeholder="ex: Marie Dupont" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="tutorPhone"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Téléphone du tuteur</FormLabel>
+                                      <FormControl>
+                                        <Input placeholder="ex: 0712345678" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                            </div>
+                        </div>
                       <FormField
                         control={form.control}
                         name="notes"
@@ -379,7 +465,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           </FormItem>
                         )}
                       />
-                    
                   </div>
               </ScrollArea>
               <DialogFooter className="pt-4 border-t">
