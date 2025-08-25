@@ -200,6 +200,10 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <span>{formattedBirthDate}</span>
                 </div>
                 <div className="flex items-center gap-4">
+                    <Phone className="h-5 w-5 text-muted-foreground" />
+                    <span>{player.phone}</span>
+                </div>
+                <div className="flex items-center gap-4">
                     <Home className="h-5 w-5 text-muted-foreground" />
                     <span>{player.address}</span>
                 </div>
@@ -208,15 +212,9 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <span>{player.country}</span>
                 </div>
             </div>
-             <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Contact</h3>
-                <div className="flex items-center gap-4">
-                    <Phone className="h-5 w-5 text-muted-foreground" />
-                    <span>{player.phone}</span>
-                </div>
-            </div>
+            
              {(player.tutorName || player.tutorPhone) && (
-              <div className="space-y-4 md:col-span-2">
+              <div className="space-y-4">
                   <h3 className="font-semibold text-lg">Tuteur Légal</h3>
                   {player.tutorName && (
                     <div className="flex items-center gap-4">
@@ -298,90 +296,103 @@ export function PlayerDetailClient({ id }: { id: string }) {
                       )}
                     />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                        <div className="space-y-4">
-                            <h4 className="text-lg font-medium border-b pb-2">Informations Personnelles</h4>
-                            <FormField
-                              control={form.control}
-                              name="name"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Nom complet</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="ex: Jean Dupont" {...field} required />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="birthDate"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Date de naissance</FormLabel>
-                                  <FormControl>
-                                    <Input type="date" {...field} required />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="address"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Adresse</FormLabel>
-                                    <FormControl>
-                                      <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            <FormField
-                                control={form.control}
-                                name="country"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Pays</FormLabel>
-                                    <FormControl>
-                                    <Input placeholder="ex: France" {...field} required />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                        </div>
-                         <div className="space-y-4">
-                            <h4 className="text-lg font-medium border-b pb-2">Tuteur Légal (si mineur)</h4>
+                      <div className="space-y-4">
+                          <h4 className="text-lg font-medium border-b pb-2">Informations Personnelles</h4>
+                          <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Nom complet</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="ex: Jean Dupont" {...field} required />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="birthDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Date de naissance</FormLabel>
+                                <FormControl>
+                                  <Input type="date" {...field} required />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                            <FormField
                               control={form.control}
-                              name="tutorName"
+                              name="phone"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Nom du tuteur</FormLabel>
+                                  <FormLabel>Téléphone</FormLabel>
                                   <FormControl>
-                                    <Input placeholder="ex: Marie Dupont" {...field} />
+                                    <Input placeholder="ex: 0612345678" {...field} required />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
                             />
-                            <FormField
+                          <FormField
                               control={form.control}
-                              name="tutorPhone"
+                              name="address"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Téléphone du tuteur</FormLabel>
+                                  <FormLabel>Adresse</FormLabel>
                                   <FormControl>
-                                    <Input placeholder="ex: 0712345678" {...field} />
+                                    <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
                             />
-                        </div>
+                          <FormField
+                              control={form.control}
+                              name="country"
+                              render={({ field }) => (
+                              <FormItem>
+                                  <FormLabel>Pays</FormLabel>
+                                  <FormControl>
+                                  <Input placeholder="ex: France" {...field} required />
+                                  </FormControl>
+                                  <FormMessage />
+                              </FormItem>
+                              )}
+                          />
+                      </div>
+                        <div className="space-y-4">
+                          <h4 className="text-lg font-medium border-b pb-2">Tuteur Légal (si mineur)</h4>
+                          <FormField
+                            control={form.control}
+                            name="tutorName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Nom du tuteur</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="ex: Marie Dupont" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="tutorPhone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Téléphone du tuteur</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="ex: 0712345678" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                      </div>
                     </div>
 
                      <div className="space-y-4">
@@ -431,24 +442,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                             />
                         </div>
                      </div>
-                      <div className="space-y-4">
-                            <h4 className="text-lg font-medium border-b pb-2">Contact</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                               <FormField
-                                  control={form.control}
-                                  name="phone"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel>Téléphone</FormLabel>
-                                      <FormControl>
-                                        <Input placeholder="ex: 0612345678" {...field} required />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                            </div>
-                        </div>
+                      
                       <FormField
                         control={form.control}
                         name="notes"

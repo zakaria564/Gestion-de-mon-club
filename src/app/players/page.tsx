@@ -209,6 +209,19 @@ export default function PlayersPage() {
                                   )}
                                 />
                                 <FormField
+                                  control={form.control}
+                                  name="phone"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Téléphone</FormLabel>
+                                      <FormControl>
+                                        <Input placeholder="ex: 0612345678" {...field} required />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
                                     control={form.control}
                                     name="address"
                                     render={({ field }) => (
@@ -315,24 +328,6 @@ export default function PlayersPage() {
                                 />
                             </div>
                          </div>
-                         <div className="space-y-4">
-                            <h4 className="text-lg font-medium border-b pb-2">Contact</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                               <FormField
-                                  control={form.control}
-                                  name="phone"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel>Téléphone</FormLabel>
-                                      <FormControl>
-                                        <Input placeholder="ex: 0612345678" {...field} required />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                            </div>
-                        </div>
                        
                         <FormField
                           control={form.control}
