@@ -185,7 +185,7 @@ export default function PlayersPage() {
                                   control={form.control}
                                   name="name"
                                   render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="md:col-span-2">
                                       <FormLabel>Nom complet</FormLabel>
                                       <FormControl>
                                         <Input placeholder="ex: Jean Dupont" {...field} required />
@@ -198,7 +198,7 @@ export default function PlayersPage() {
                                   control={form.control}
                                   name="birthDate"
                                   render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="md:col-span-2">
                                       <FormLabel>Date de naissance</FormLabel>
                                       <FormControl>
                                         <Input type="date" {...field} required />
