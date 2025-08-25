@@ -356,3 +356,5 @@ export function CoachDetailClient({ id }: { id: string }) {
     </div>
   );
 }
+
+    
