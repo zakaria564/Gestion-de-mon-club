@@ -10,6 +10,7 @@ export type Player = {
   jerseyNumber: number;
   notes: string;
   photo: string;
+  phone: string;
 }
 
 export type Coach = {

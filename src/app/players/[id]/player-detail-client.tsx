@@ -8,7 +8,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cake, UserCircle, Edit, Trash2, Camera, Home, Shirt } from "lucide-react";
+import { ArrowLeft, Cake, UserCircle, Edit, Trash2, Camera, Home, Shirt, Phone } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -30,6 +30,7 @@ const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
   birthDate: z.string().min(1, "La date de naissance est requise."),
   address: z.string().min(1, "L'adresse est requise."),
+  phone: z.string().min(1, "Le téléphone est requis."),
   poste: z.string().min(1, "Le poste est requis."),
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   notes: z.string().optional(),
@@ -64,11 +65,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
         ? format(parseISO(player.birthDate), 'yyyy-MM-dd') 
         : '';
       form.reset({
-        name: player.name,
+        ...player,
         birthDate: birthDate,
-        address: player.address,
-        poste: player.poste,
-        jerseyNumber: player.jerseyNumber,
         notes: player.notes || '',
         photo: player.photo || '',
       });
@@ -186,14 +184,10 @@ export function PlayerDetailClient({ id }: { id: string }) {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 grid md:grid-cols-2 gap-6">
             <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Informations</h3>
-                <div className="flex items-center gap-4">
-                    <UserCircle className="h-5 w-5 text-muted-foreground" />
-                    <span>{player.poste}</span>
-                </div>
-                <div className="flex items-center gap-4">
+                <h3 className="text-lg font-semibold">Informations Personnelles</h3>
+                 <div className="flex items-center gap-4">
                     <Cake className="h-5 w-5 text-muted-foreground" />
                     <span>{formattedBirthDate}</span>
                 </div>
@@ -202,8 +196,15 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <span>{player.address}</span>
                 </div>
             </div>
+             <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Contact</h3>
+                <div className="flex items-center gap-4">
+                    <Phone className="h-5 w-5 text-muted-foreground" />
+                    <span>{player.phone}</span>
+                </div>
+            </div>
             {player.notes && (
-              <div className="space-y-4 mt-6">
+              <div className="space-y-4 mt-6 md:col-span-2">
                   <h3 className="font-semibold text-lg">Notes</h3>
                   <p className="text-muted-foreground whitespace-pre-wrap">{player.notes}</p>
               </div>
@@ -245,8 +246,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
-                <ScrollArea className="flex-1">
-                   <div className="px-6 py-4 space-y-6">
+                <ScrollArea className="flex-1 pr-6">
+                   <div className="space-y-6 py-4">
                     <FormField
                       control={form.control}
                       name="photo"
@@ -267,7 +268,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                         </FormItem>
                       )}
                     />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                        <FormField
                           control={form.control}
                           name="name"
@@ -298,10 +298,23 @@ export function PlayerDetailClient({ id }: { id: string }) {
                             control={form.control}
                             name="address"
                             render={({ field }) => (
-                              <FormItem className="md:col-span-2">
+                              <FormItem>
                                 <FormLabel>Adresse</FormLabel>
                                 <FormControl>
                                   <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                           <FormField
+                            control={form.control}
+                            name="phone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Téléphone</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="ex: 0612345678" {...field} required />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -353,7 +366,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                         control={form.control}
                         name="notes"
                         render={({ field }) => (
-                          <FormItem className="md:col-span-2">
+                          <FormItem>
                             <FormLabel>Notes</FormLabel>
                             <FormControl>
                               <Textarea
@@ -366,10 +379,10 @@ export function PlayerDetailClient({ id }: { id: string }) {
                           </FormItem>
                         )}
                       />
-                    </div>
+                    
                   </div>
               </ScrollArea>
-              <DialogFooter className="px-6 py-4 border-t mt-auto">
+              <DialogFooter className="pt-4 border-t">
                   <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                   <Button type="submit">Mettre à jour</Button>
               </DialogFooter>

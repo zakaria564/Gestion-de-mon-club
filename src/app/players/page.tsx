@@ -48,6 +48,7 @@ const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
   birthDate: z.string().min(1, "La date de naissance est requise."),
   address: z.string().min(1, "L'adresse est requise."),
+  phone: z.string().min(1, "Le téléphone est requis."),
   poste: z.string().min(1, "Le poste est requis."),
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   notes: z.string().optional(),
@@ -60,6 +61,7 @@ const defaultValues: PlayerFormValues = {
     name: '',
     birthDate: '',
     address: '',
+    phone: '',
     poste: 'Milieu Central',
     jerseyNumber: 1,
     notes: '',
@@ -149,8 +151,8 @@ export default function PlayersPage() {
               </DialogHeader>
                <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
-                  <ScrollArea className="flex-1">
-                    <div className="px-6 py-4 space-y-6">
+                  <ScrollArea className="flex-1 pr-6">
+                    <div className="space-y-6 py-4">
                        <FormField
                           control={form.control}
                           name="photo"
@@ -171,7 +173,7 @@ export default function PlayersPage() {
                             </FormItem>
                           )}
                         />
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      
                         <FormField
                           control={form.control}
                           name="name"
@@ -202,10 +204,23 @@ export default function PlayersPage() {
                           control={form.control}
                           name="address"
                           render={({ field }) => (
-                            <FormItem className="md:col-span-2">
+                            <FormItem>
                               <FormLabel>Adresse</FormLabel>
                               <FormControl>
                                 <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Téléphone</FormLabel>
+                              <FormControl>
+                                <Input placeholder="ex: 0612345678" {...field} required />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -257,7 +272,7 @@ export default function PlayersPage() {
                           control={form.control}
                           name="notes"
                           render={({ field }) => (
-                            <FormItem className="md:col-span-2">
+                            <FormItem>
                               <FormLabel>Notes</FormLabel>
                               <FormControl>
                                 <Textarea
@@ -270,10 +285,10 @@ export default function PlayersPage() {
                             </FormItem>
                           )}
                         />
-                      </div>
+                      
                     </div>
                   </ScrollArea>
-                  <DialogFooter className="px-6 py-4 border-t mt-auto">
+                  <DialogFooter className="pt-4 border-t">
                       <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                       <Button type="submit">Enregistrer</Button>
                   </DialogFooter>
