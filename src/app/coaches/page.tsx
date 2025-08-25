@@ -142,7 +142,7 @@ export default function CoachesPage() {
                 <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un entraîneur
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
+          <DialogContent className="sm:max-w-4xl h-full flex flex-col">
              <DialogHeader>
                 <DialogTitle>Ajouter un entraîneur</DialogTitle>
                 <DialogDescription>
@@ -330,3 +330,5 @@ export default function CoachesPage() {
     </div>
   );
 }
+
+    
