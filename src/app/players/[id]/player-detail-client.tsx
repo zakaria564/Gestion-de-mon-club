@@ -297,14 +297,14 @@ export function PlayerDetailClient({ id }: { id: string }) {
                         </FormItem>
                       )}
                     />
-                     <div className="space-y-4">
-                        <h4 className="text-lg font-medium border-b pb-2">Informations Personnelles</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           <FormField
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <div className="space-y-4">
+                            <h4 className="text-lg font-medium border-b pb-2">Informations Personnelles</h4>
+                            <FormField
                               control={form.control}
                               name="name"
                               render={({ field }) => (
-                                <FormItem className="md:col-span-2">
+                                <FormItem>
                                   <FormLabel>Nom complet</FormLabel>
                                   <FormControl>
                                     <Input placeholder="ex: Jean Dupont" {...field} required />
@@ -317,7 +317,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                               control={form.control}
                               name="birthDate"
                               render={({ field }) => (
-                                <FormItem className="md:col-span-2">
+                                <FormItem>
                                   <FormLabel>Date de naissance</FormLabel>
                                   <FormControl>
                                     <Input type="date" {...field} required />
@@ -330,7 +330,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 control={form.control}
                                 name="address"
                                 render={({ field }) => (
-                                  <FormItem className="md:col-span-2">
+                                  <FormItem>
                                     <FormLabel>Adresse</FormLabel>
                                     <FormControl>
                                       <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
@@ -353,7 +353,37 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 )}
                             />
                         </div>
-                     </div>
+                         <div className="space-y-4">
+                            <h4 className="text-lg font-medium border-b pb-2">Tuteur Légal (si mineur)</h4>
+                           <FormField
+                              control={form.control}
+                              name="tutorName"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Nom du tuteur</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="ex: Marie Dupont" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="tutorPhone"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Téléphone du tuteur</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="ex: 0712345678" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                        </div>
+                    </div>
+
                      <div className="space-y-4">
                         <h4 className="text-lg font-medium border-b pb-2">Informations Sportives</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -419,37 +449,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 />
                             </div>
                         </div>
-                        <div className="space-y-4">
-                            <h4 className="text-lg font-medium border-b pb-2">Tuteur Légal (si mineur)</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                               <FormField
-                                  control={form.control}
-                                  name="tutorName"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel>Nom du tuteur</FormLabel>
-                                      <FormControl>
-                                        <Input placeholder="ex: Marie Dupont" {...field} />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                                <FormField
-                                  control={form.control}
-                                  name="tutorPhone"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel>Téléphone du tuteur</FormLabel>
-                                      <FormControl>
-                                        <Input placeholder="ex: 0712345678" {...field} />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                            </div>
-                        </div>
                       <FormField
                         control={form.control}
                         name="notes"
@@ -480,5 +479,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
     </div>
   );
 }
+
+    
 
     
