@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Link from "next/link";
@@ -14,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Player } from "@/lib/data";
-import { PlusCircle, Camera } from "lucide-react";
+import { PlusCircle, Camera, Search } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import React from 'react';
 import { usePlayersContext } from "@/context/players-context";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,13 +47,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
   birthDate: z.string().min(1, "La date de naissance est requise."),
-  address: z.string().min(1, "L'adresse est requise."),
   phone: z.string().min(1, "Le téléphone est requis."),
   email: z.string().email("L'adresse email est invalide.").optional().or(z.literal('')),
+  address: z.string().min(1, "L'adresse est requise."),
+  country: z.string().min(1, "Le pays est requis."),
   poste: z.string().min(1, "Le poste est requis."),
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   photo: z.string().optional(),
-  country: z.string().min(1, "Le pays est requis."),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
   tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
@@ -96,6 +95,8 @@ export default function PlayersPage() {
     const { players, loading, addPlayer } = context;
     const [dialogOpen, setDialogOpen] = useState(false);
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filterKey, setFilterKey] = useState("name");
 
     const form = useForm<PlayerFormValues>({
       resolver: zodResolver(playerSchema),
@@ -137,7 +138,16 @@ export default function PlayersPage() {
       }
     };
 
-    const groupedPlayers = players.reduce((acc, player) => {
+    const filteredPlayers = useMemo(() => {
+        if (!searchQuery) return players;
+        return players.filter(player => {
+            const value = player[filterKey as keyof Player] as string;
+            return value?.toLowerCase().includes(searchQuery.toLowerCase());
+        });
+    }, [players, searchQuery, filterKey]);
+
+
+    const groupedPlayers = filteredPlayers.reduce((acc, player) => {
       const category = (player as any).category || 'Sénior';
       if (!acc[category]) {
         acc[category] = [];
@@ -444,6 +454,29 @@ export default function PlayersPage() {
             </Dialog>
         </div>
 
+        <div className="flex items-center gap-4 my-4">
+            <div className="relative w-full max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                    placeholder={`Rechercher par ${filterKey === 'name' ? 'nom' : filterKey}...`}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                />
+            </div>
+            <Select value={filterKey} onValueChange={setFilterKey}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filtrer par" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="name">Nom</SelectItem>
+                    <SelectItem value="poste">Poste</SelectItem>
+                    <SelectItem value="category">Catégorie</SelectItem>
+                    <SelectItem value="status">Statut</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+
         {loading ? (
             Array.from({ length: 2 }).map((_, index) => (
             <div key={index} className="space-y-4">
@@ -474,37 +507,46 @@ export default function PlayersPage() {
             </div>
             ))
         ) : (
-        Object.entries(groupedPlayers).map(([category, playersInCategory]) => (
-            <div key={category} className="space-y-4">
-                <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {playersInCategory.map((player) => (
-                    <Link key={player.id} href={`/players/${player.id}`} className="flex flex-col h-full">
-                        <Card className="flex flex-col w-full hover:shadow-lg transition-shadow h-full">
-                            <CardHeader className="p-4">
-                                <div className="flex items-center gap-4">
-                                <Avatar className="h-16 w-16">
-                                    <AvatarImage src={player.photo} alt={player.name} data-ai-hint="player photo" />
-                                    <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1">
-                                    <CardTitle className="text-base font-bold">{player.name}</CardTitle>
-                                    <CardDescription>{player.poste}</CardDescription>
-                                </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
-                                <div className="flex justify-between items-center">
-                                    <Badge variant="outline" className="text-xs">{(player as any).category || 'Sénior'}</Badge>
-                                    <Badge variant={getBadgeVariant((player as any).status || 'Actif') as any} className="text-xs">{(player as any).status || 'Actif'}</Badge>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </Link>
-                ))}
-                </div>
-            </div>
-        )))}
-        </div>
+        Object.entries(groupedPlayers).length > 0 ? (
+          Object.entries(groupedPlayers).map(([category, playersInCategory]) => (
+              <div key={category} className="space-y-4">
+                  <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {playersInCategory.map((player) => (
+                      <Link key={player.id} href={`/players/${player.id}`} className="flex flex-col h-full">
+                          <Card className="flex flex-col w-full hover:shadow-lg transition-shadow h-full">
+                              <CardHeader className="p-4">
+                                  <div className="flex items-center gap-4">
+                                  <Avatar className="h-16 w-16">
+                                      <AvatarImage src={player.photo} alt={player.name} data-ai-hint="player photo" />
+                                      <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1">
+                                      <CardTitle className="text-base font-bold">{player.name}</CardTitle>
+                                      <CardDescription>{player.poste}</CardDescription>
+                                  </div>
+                                  </div>
+                              </CardHeader>
+                              <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
+                                  <div className="flex justify-between items-center">
+                                      <Badge variant="outline" className="text-xs">{(player as any).category || 'Sénior'}</Badge>
+                                      <Badge variant={getBadgeVariant((player as any).status || 'Actif') as any} className="text-xs">{(player as any).status || 'Actif'}</Badge>
+                                  </div>
+                              </CardContent>
+                          </Card>
+                      </Link>
+                  ))}
+                  </div>
+              </div>
+          ))
+        ) : (
+          <div className="text-center py-10">
+              <p className="text-muted-foreground">Aucun joueur trouvé.</p>
+          </div>
+        )
+      )}
+    </div>
     );
 }
+
+    
