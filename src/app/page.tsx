@@ -51,7 +51,7 @@ export default function Dashboard() {
       .slice(0, 5)
       .map(event => ({
         ...event,
-        formattedDate: `${format(new Date(event.date), 'dd/MM/yyyy')} @ ${event.time} - ${event.location}`
+        formattedDate: `${format(new Date(event.date), 'dd/MM/yyyy')} à ${event.time} - ${event.location}`
       }));
     setFormattedUpcomingEvents(upcoming);
   }, [calendarEvents]);
@@ -200,12 +200,12 @@ export default function Dashboard() {
               {formattedUpcomingEvents.map((event) => (
                 <div key={event.id} className="flex items-center">
                   <Calendar className="h-6 w-6 mr-4 text-primary" />
-                  <div className="flex-1">
+                  <div className="flex-1 text-center">
                     <p className="text-sm font-medium leading-none">
-                      {event.type} {event.opponent && `vs ${event.opponent}`}
+                      {event.type}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                       {event.formattedDate}
+                       {event.opponent && `vs ${event.opponent} - `}{event.formattedDate}
                     </p>
                   </div>
                 </div>
