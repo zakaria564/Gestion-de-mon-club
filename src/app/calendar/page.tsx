@@ -275,15 +275,13 @@ export default function CalendarPage() {
               <CardContent>
                 <div className="space-y-4">
                   {eventsForSelectedDate.map((event) => (
-                    <div key={event.id} onClick={() => handleEventClick(event)} className="p-4 rounded-md border flex items-start gap-4 cursor-pointer hover:bg-muted/50">
-                      <div className="flex-shrink-0">
+                    <div key={event.id} onClick={() => handleEventClick(event)} className="p-4 rounded-md border flex flex-col items-center gap-2 cursor-pointer hover:bg-muted/50">
                         <Badge variant={event.type.toLowerCase().includes('match') ? 'default' : 'secondary'}>{event.type}</Badge>
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `vs ${event.opponent}` : event.type}</p>
-                        <p className="text-sm text-muted-foreground">{new Date(event.date).toLocaleDateString('fr-FR')} à {event.time}</p>
-                        <p className="text-sm text-muted-foreground">{event.location}</p>
-                      </div>
+                        <div className="text-center">
+                            <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `vs ${event.opponent}` : ''}</p>
+                            <p className="text-sm text-muted-foreground">{new Date(event.date).toLocaleDateString('fr-FR')} à {event.time}</p>
+                            <p className="text-sm text-muted-foreground">{event.location}</p>
+                        </div>
                     </div>
                   ))}
                 </div>
