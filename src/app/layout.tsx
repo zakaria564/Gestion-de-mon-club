@@ -8,6 +8,7 @@ import { PlayersProvider } from "@/context/players-context";
 import { CoachesProvider } from "@/context/coaches-context";
 import { CalendarProvider } from "@/context/calendar-context";
 import { FinancialProvider } from "@/context/financial-context";
+import { ResultsProvider } from "@/context/results-context";
 import { AppLayout } from "@/components/app-layout";
 import { Toaster } from "@/components/ui/toaster";
 import { usePathname, useRouter } from "next/navigation";
@@ -53,7 +54,9 @@ function AppProviders({ children }: { children: React.ReactNode }) {
         <CoachesProvider>
           <CalendarProvider>
             <FinancialProvider>
-              <AppLayout>{children}</AppLayout>
+                <ResultsProvider>
+                    <AppLayout>{children}</AppLayout>
+                </ResultsProvider>
             </FinancialProvider>
           </CalendarProvider>
         </CoachesProvider>
@@ -89,3 +92,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    

@@ -5,13 +5,13 @@ export type Player = {
   uid: string;
   name: string;
   birthDate: string;
-  address: string;
   phone: string;
   email?: string;
+  address: string;
+  country: string;
   poste: string;
   jerseyNumber: number;
   photo?: string;
-  country: string;
   tutorName?: string;
   tutorPhone?: string;
   tutorEmail?: string;
@@ -62,3 +62,5 @@ export const notifications = [
     { id: 1, message: 'Rappel: Inscriptions pour la nouvelle saison ouvertes.', date: '2024-08-10', priority: 'Moyenne' },
     { id: 2, message: 'Le prochain match a été déplacé à 19h.', date: '2024-08-12', priority: 'Haute' },
 ];
+
+    
