@@ -6,11 +6,6 @@ import { db, storage } from "@/lib/firebase";
 import { doc, getDoc, setDoc, collection, getDocs, writeBatch } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "./auth-context";
-import { usePlayersContext } from "./players-context";
-import { useCoachesContext } from "./coaches-context";
-import { useCalendarContext } from "./calendar-context";
-import { useFinancialContext } from "./financial-context";
-import { useResultsContext } from "./results-context";
 
 interface ClubInfo {
   name: string;
@@ -21,23 +16,15 @@ interface ClubContextType {
   clubInfo: ClubInfo;
   loading: boolean;
   updateClubInfo: (name: string, logoFile?: File) => Promise<void>;
-  backupData: () => Promise<void>;
   restoreData: (file: File) => Promise<void>;
 }
 
 const ClubContext = createContext<ClubContextType | undefined>(undefined);
 
-function ClubBusinessLogic({ children }: { children: ReactNode }) {
+export function ClubProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [clubInfo, setClubInfo] = useState<ClubInfo>({ name: "Gestion Club", logoUrl: null });
   const [loading, setLoading] = useState(true);
-
-  // References to other contexts to get data for backup/restore
-  const playersCtx = usePlayersContext();
-  const coachesCtx = useCoachesContext();
-  const calendarCtx = useCalendarContext();
-  const financialCtx = useFinancialContext();
-  const resultsCtx = useResultsContext();
 
   const getClubInfoDocRef = useCallback(() => {
     if (!user) return null;
@@ -56,14 +43,14 @@ function ClubBusinessLogic({ children }: { children: ReactNode }) {
       if (docSnap.exists()) {
         setClubInfo(docSnap.data() as ClubInfo);
       } else {
-        await setDoc(docRef, clubInfo);
+        await setDoc(docRef, { name: "Gestion Club", logoUrl: null });
       }
     } catch (err) {
       console.error("Error fetching club info: ", err);
     } finally {
       setLoading(false);
     }
-  }, [getClubInfoDocRef, clubInfo]);
+  }, [getClubInfoDocRef]);
 
   useEffect(() => {
     if (user) {
@@ -93,30 +80,6 @@ function ClubBusinessLogic({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const backupData = async () => {
-    const dataToBackup = {
-      clubInfo: clubInfo,
-      players: playersCtx.players,
-      coaches: coachesCtx.coaches,
-      calendarEvents: calendarCtx.calendarEvents,
-      playerPayments: financialCtx.playerPayments,
-      coachSalaries: financialCtx.coachSalaries,
-      results: resultsCtx.results,
-    };
-
-    const jsonString = JSON.stringify(dataToBackup, null, 2);
-    const blob = new Blob([jsonString], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    const date = new Date().toISOString().slice(0, 10);
-    a.download = `backup-gestion-club-${date}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
   
   const restoreData = async (file: File) => {
@@ -185,7 +148,6 @@ function ClubBusinessLogic({ children }: { children: ReactNode }) {
     clubInfo,
     loading,
     updateClubInfo,
-    backupData,
     restoreData,
   };
 
@@ -196,9 +158,6 @@ function ClubBusinessLogic({ children }: { children: ReactNode }) {
   );
 }
 
-export function ClubProvider({ children }: { children: React.ReactNode }) {
-  return <ClubBusinessLogic>{children}</ClubBusinessLogic>
-}
 
 export const useClubContext = () => {
   const context = useContext(ClubContext);

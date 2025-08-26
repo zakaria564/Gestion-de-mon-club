@@ -24,15 +24,26 @@ import { useClubContext } from "@/context/club-context";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { usePlayersContext } from "@/context/players-context";
+import { useCoachesContext } from "@/context/coaches-context";
+import { useCalendarContext } from "@/context/calendar-context";
+import { useFinancialContext } from "@/context/financial-context";
+import { useResultsContext } from "@/context/results-context";
 
 export default function SettingsPage() {
   const { 
     clubInfo, 
-    loading, 
+    loading: clubLoading, 
     updateClubInfo, 
-    backupData, 
     restoreData 
   } = useClubContext();
+
+  const playersCtx = usePlayersContext();
+  const coachesCtx = useCoachesContext();
+  const calendarCtx = useCalendarContext();
+  const financialCtx = useFinancialContext();
+  const resultsCtx = useResultsContext();
+
   const { toast } = useToast();
 
   const [clubName, setClubName] = useState("");
@@ -43,6 +54,8 @@ export default function SettingsPage() {
   const [restoreError, setRestoreError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const loading = clubLoading || playersCtx.loading || coachesCtx.loading || calendarCtx.loading || financialCtx.loading || resultsCtx.loading;
 
   useEffect(() => {
     if (clubInfo) {
@@ -73,7 +86,27 @@ export default function SettingsPage() {
   const handleBackup = async () => {
     setIsBackuping(true);
     try {
-        await backupData();
+        const dataToBackup = {
+            clubInfo: clubInfo,
+            players: playersCtx.players,
+            coaches: coachesCtx.coaches,
+            calendarEvents: calendarCtx.calendarEvents,
+            playerPayments: financialCtx.playerPayments,
+            coachSalaries: financialCtx.coachSalaries,
+            results: resultsCtx.results,
+        };
+
+        const jsonString = JSON.stringify(dataToBackup, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        const date = new Date().toISOString().slice(0, 10);
+        a.download = `backup-gestion-club-${date}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
         toast({
             title: "Sauvegarde réussie",
             description: "Un fichier JSON avec vos données a été téléchargé.",
