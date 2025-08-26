@@ -20,47 +20,47 @@ const firebaseConfig = {
 
 
 // #############################################################################
-// #  IMPORTANT: FIREBASE SECURITY RULES                                       #
+// # ÉTAPES DE CONFIGURATION DE FIREBASE                                       #
 // #############################################################################
 // #
-// # Your application will not be able to save or load data until you configure
-// # your Firebase security rules in the Firebase Console.
+// # Pour que l'application puisse sauvegarder des données et des images,
+// # vous devez activer Firestore et Storage et définir leurs règles de sécurité.
 // #
-// # ----------------   1. FIRESTORE DATABASE RULES   ----------------
+// # ----------------   ÉTAPE 1 : FIRESTORE (Base de données)   ----------------
 // #
-// # 1. Go to the Firebase Console: https://console.firebase.google.com/
-// # 2. Select your project: "gestion-de-mon-club"
-// # 3. Go to "Firestore Database" > "Rules" tab.
-// # 4. Replace the existing rules with:
+// # 1. Allez sur la console Firebase : https://console.firebase.google.com/
+// # 2. Sélectionnez votre projet : "gestion-de-mon-club"
+// # 3. Dans le menu, allez dans "Build > Firestore Database".
+// # 4. Cliquez sur "Créer une base de données", démarrez en "mode production".
+// # 5. Allez dans l'onglet "Règles".
+// # 6. Remplacez le contenu par ceci et cliquez sur "Publier":
 // #
 // #    rules_version = '2';
 // #    service cloud.firestore {
 // #      match /databases/{database}/documents {
-// #        // Allow users to only access their own data
+// #        // Permet aux utilisateurs d'accéder uniquement à leurs propres données
 // #        match /users/{userId}/{document=**} {
 // #           allow read, write: if request.auth != null && request.auth.uid == userId;
 // #        }
 // #      }
 // #    }
 // #
-// # 5. Click "Publish".
+// # ----------------   ÉTAPE 2 : STORAGE (Pour les photos)   ------------------
 // #
-// # ----------------   2. STORAGE RULES (For Images)   ----------------
-// #
-// # 1. In the Firebase Console, go to "Storage" > "Rules" tab.
-// # 2. Replace the existing rules with:
+// # 1. Dans la console Firebase, allez dans "Build > Storage".
+// # 2. Cliquez sur "Commencer" et suivez les étapes (les options par défaut sont bonnes).
+// # 3. Une fois créé, allez dans l'onglet "Règles".
+// # 4. Remplacez le contenu par ceci et cliquez sur "Publier":
 // #
 // #    rules_version = '2';
 // #    service firebase.storage {
 // #      match /b/{bucket}/o {
-// #        // Allow users to only access their own folder
+// #        // Permet aux utilisateurs d'accéder uniquement à leur propre dossier
 // #        match /users/{userId}/{allPaths=**} {
 // #          allow read, write: if request.auth != null && request.auth.uid == userId;
 // #        }
 // #      }
 // #    }
-// #
-// # 3. Click "Publish".
 // #
 // #############################################################################
 
