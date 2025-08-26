@@ -1,4 +1,5 @@
 
+
 export type Player = {
   id: string;
   uid: string;
@@ -13,9 +14,11 @@ export type Player = {
   country: string;
   tutorName?: string;
   tutorPhone?: string;
-tutorEmail?: string;
+  tutorEmail?: string;
   status: 'Actif' | 'Blessé' | 'Suspendu' | 'Inactif';
   category: 'Sénior' | 'U23' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
+  entryDate?: string;
+  exitDate?: string;
 }
 
 export type Coach = {

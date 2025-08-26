@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo, useState, useContext, useEffect } from 'react';
@@ -41,6 +42,8 @@ const playerSchema = z.object({
   tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
   category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
+  entryDate: z.string().optional(),
+  exitDate: z.string().optional(),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -70,9 +73,18 @@ export function PlayerDetailClient({ id }: { id: string }) {
       const birthDate = player.birthDate && isValid(parseISO(player.birthDate)) 
         ? format(parseISO(player.birthDate), 'yyyy-MM-dd') 
         : '';
+      const entryDate = player.entryDate && isValid(parseISO(player.entryDate)) 
+        ? format(parseISO(player.entryDate), 'yyyy-MM-dd') 
+        : '';
+       const exitDate = player.exitDate && isValid(parseISO(player.exitDate)) 
+        ? format(parseISO(player.exitDate), 'yyyy-MM-dd') 
+        : '';
+
       form.reset({
         ...player,
         birthDate: birthDate,
+        entryDate: entryDate,
+        exitDate: exitDate,
         email: player.email || '',
         photo: player.photo || '',
         country: player.country || '',
@@ -474,6 +486,77 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 </FormItem>
                               )}
                             />
+                            <FormField
+                                  control={form.control}
+                                  name="status"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Statut</FormLabel>
+                                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un statut" /></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                          <SelectItem value="Actif">Actif</SelectItem>
+                                          <SelectItem value="Blessé">Blessé</SelectItem>
+                                          <SelectItem value="Suspendu">Suspendu</SelectItem>
+                                          <SelectItem value="Inactif">Inactif</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="category"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Catégorie</FormLabel>
+                                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une catégorie" /></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                          <SelectItem value="Sénior">Sénior</SelectItem>
+                                          <SelectItem value="U23">U23</SelectItem>
+                                          <SelectItem value="U19">U19</SelectItem>
+                                          <SelectItem value="U18">U18</SelectItem>
+                                          <SelectItem value="U17">U17</SelectItem>
+                                          <SelectItem value="U16">U16</SelectItem>
+                                          <SelectItem value="U15">U15</SelectItem>
+                                          <SelectItem value="U13">U13</SelectItem>
+                                          <SelectItem value="U11">U11</SelectItem>
+                                          <SelectItem value="U9">U9</SelectItem>
+                                          <SelectItem value="U7">U7</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="entryDate"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Date d'entrée au club</FormLabel>
+                                        <FormControl>
+                                        <Input type="date" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="exitDate"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Date de sortie du club</FormLabel>
+                                        <FormControl>
+                                        <Input type="date" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
                         </div>
                      </div>
                   </div>

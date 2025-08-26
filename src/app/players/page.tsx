@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -56,9 +57,11 @@ const playerSchema = z.object({
   country: z.string().min(1, "Le pays est requis."),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
-tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
+  tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
   category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
+  entryDate: z.string().optional(),
+  exitDate: z.string().optional(),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -75,9 +78,11 @@ const defaultValues: PlayerFormValues = {
     photo: '',
     tutorName: '',
     tutorPhone: '',
-tutorEmail: '',
+    tutorEmail: '',
     status: 'Actif',
     category: 'Sénior',
+    entryDate: '',
+    exitDate: '',
 };
 
 export default function PlayersPage() {
@@ -210,7 +215,7 @@ export default function PlayersPage() {
                                     </FormItem>
                                   )}
                                 />
-                                <FormField
+                                 <FormField
                                   control={form.control}
                                   name="phone"
                                   render={({ field }) => (
@@ -353,6 +358,77 @@ export default function PlayersPage() {
                                       <FormMessage />
                                     </FormItem>
                                   )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="status"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Statut</FormLabel>
+                                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un statut" /></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                          <SelectItem value="Actif">Actif</SelectItem>
+                                          <SelectItem value="Blessé">Blessé</SelectItem>
+                                          <SelectItem value="Suspendu">Suspendu</SelectItem>
+                                          <SelectItem value="Inactif">Inactif</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="category"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Catégorie</FormLabel>
+                                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une catégorie" /></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                          <SelectItem value="Sénior">Sénior</SelectItem>
+                                          <SelectItem value="U23">U23</SelectItem>
+                                          <SelectItem value="U19">U19</SelectItem>
+                                          <SelectItem value="U18">U18</SelectItem>
+                                          <SelectItem value="U17">U17</SelectItem>
+                                          <SelectItem value="U16">U16</SelectItem>
+                                          <SelectItem value="U15">U15</SelectItem>
+                                          <SelectItem value="U13">U13</SelectItem>
+                                          <SelectItem value="U11">U11</SelectItem>
+                                          <SelectItem value="U9">U9</SelectItem>
+                                          <SelectItem value="U7">U7</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="entryDate"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Date d'entrée au club</FormLabel>
+                                        <FormControl>
+                                        <Input type="date" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="exitDate"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Date de sortie du club</FormLabel>
+                                        <FormControl>
+                                        <Input type="date" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
                                 />
                             </div>
                          </div>
