@@ -17,6 +17,7 @@ export interface Result {
   opponent: string;
   date: string;
   time: string;
+  location: string;
   score: string;
   scorers: PerformanceDetail[];
   assists: PerformanceDetail[];

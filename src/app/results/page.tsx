@@ -53,6 +53,7 @@ export default function ResultsPage() {
     opponent: '',
     date: '',
     time: '',
+    location: '',
     score: '',
     scorers: [],
     assists: [],
@@ -105,7 +106,7 @@ export default function ResultsPage() {
   };
   
   const resetForm = () => {
-    setNewResult({ opponent: '', date: '', time: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior' });
+    setNewResult({ opponent: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior' });
     setOpen(false);
     setIsEditing(false);
     setEditingResult(null);
@@ -135,6 +136,7 @@ export default function ResultsPage() {
         opponent: result.opponent,
         date: result.date,
         time: result.time || '',
+        location: result.location || '',
         score: result.score,
         category: result.category || 'Match Championnat',
         teamCategory: result.teamCategory || 'Sénior',
@@ -228,6 +230,10 @@ export default function ResultsPage() {
                                 <Label htmlFor="time">Heure</Label>
                                 <Input id="time" type="time" value={newResult.time} onChange={handleInputChange} required />
                             </div>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="location">Lieu</Label>
+                          <Input id="location" value={newResult.location} onChange={handleInputChange} placeholder="Stade de l'équipe adverse" required />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="score">Score (ex: 3-1)</Label>
@@ -332,10 +338,13 @@ export default function ResultsPage() {
                   <AccordionContent>
                     <div className="space-y-2 px-4">
                       <p>
-                        <strong>Buteurs:</strong> {formatPerformance(result.scorers)}
+                        <strong>Lieu :</strong> {result.location || "Non spécifié"}
+                      </p>
+                      <p>
+                        <strong>Buteurs :</strong> {formatPerformance(result.scorers)}
                       </p>
                        <p>
-                        <strong>Passeurs:</strong> {formatPerformance(result.assists)}
+                        <strong>Passeurs :</strong> {formatPerformance(result.assists)}
                       </p>
                        <div className="flex justify-end gap-2 pt-2">
                           <Button variant="outline" size="sm" onClick={() => openEditDialog(result)}>
