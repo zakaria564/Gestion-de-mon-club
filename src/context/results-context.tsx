@@ -21,7 +21,6 @@ export interface Result {
   assists: PerformanceDetail[];
   category: string;
   teamCategory: string;
-  notes?: string;
 }
 
 export type NewResult = Omit<Result, 'id' | 'uid'>;
@@ -126,5 +125,3 @@ export const useResultsContext = () => {
     }
     return context;
 };
-
-    

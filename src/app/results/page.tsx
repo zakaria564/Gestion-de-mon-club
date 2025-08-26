@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useResultsContext, NewResult, Result, PerformanceDetail } from "@/context/results-context";
 import { Edit, PlusCircle, Search, Trash2, X } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
@@ -57,7 +56,6 @@ export default function ResultsPage() {
     assists: [],
     category: 'Match Championnat',
     teamCategory: 'Sénior',
-    notes: '',
   });
 
   useEffect(() => {
@@ -66,7 +64,7 @@ export default function ResultsPage() {
     }
   }, [open]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setNewResult(prev => ({ ...prev, [id]: value }));
   };
@@ -105,7 +103,7 @@ export default function ResultsPage() {
   };
   
   const resetForm = () => {
-    setNewResult({ opponent: '', date: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', notes: '' });
+    setNewResult({ opponent: '', date: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior' });
     setOpen(false);
     setIsEditing(false);
     setEditingResult(null);
@@ -139,7 +137,6 @@ export default function ResultsPage() {
         teamCategory: result.teamCategory || 'Sénior',
         scorers: Array.isArray(result.scorers) ? result.scorers : [],
         assists: result.assists && Array.isArray(result.assists) ? result.assists : [],
-        notes: result.notes || '',
     });
     setOpen(true);
   }
@@ -263,10 +260,6 @@ export default function ResultsPage() {
                              <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('assists')}>Ajouter un passeur</Button>
                         </div>
                         
-                        <div className="grid gap-2">
-                            <Label htmlFor="notes">Notes</Label>
-                            <Textarea id="notes" value={newResult.notes || ''} onChange={handleInputChange} />
-                        </div>
                     </div>
                     <DialogFooter>
                         <Button type="submit">Sauvegarder</Button>
@@ -336,9 +329,6 @@ export default function ResultsPage() {
                        <p>
                         <strong>Passeurs:</strong> {formatPerformance(result.assists)}
                       </p>
-                      <p>
-                        <strong>Notes:</strong> {result.notes || 'Aucune'}
-                      </p>
                        <div className="flex justify-end gap-2 pt-2">
                           <Button variant="outline" size="sm" onClick={() => openEditDialog(result)}>
                               <Edit className="mr-2 h-4 w-4" /> Modifier
@@ -377,5 +367,3 @@ export default function ResultsPage() {
     </div>
   );
 }
-
-    
