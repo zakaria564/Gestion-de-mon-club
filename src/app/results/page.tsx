@@ -153,8 +153,11 @@ export default function ResultsPage() {
   const filteredResults = useMemo(() => {
     if (!searchQuery) return results;
     return results.filter(result => {
-        const value = result[filterKey as keyof Result] as string;
-        return value?.toLowerCase().includes(searchQuery.toLowerCase());
+      const valueToSearch = result[filterKey as keyof Omit<Result, 'scorers' | 'assists' | 'id' | 'uid'>];
+      if (typeof valueToSearch === 'string') {
+        return valueToSearch.toLowerCase().includes(searchQuery.toLowerCase());
+      }
+      return false;
     });
   }, [results, searchQuery, filterKey]);
   
