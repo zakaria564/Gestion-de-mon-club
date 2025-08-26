@@ -2,8 +2,9 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { db } from "@/lib/firebase";
+import { db, storage } from "@/lib/firebase";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { useAuth } from "./auth-context";
 import type { Player } from "@/lib/data";
 
@@ -19,6 +20,16 @@ interface PlayersContextType {
 }
 
 const PlayersContext = createContext<PlayersContextType | undefined>(undefined);
+
+async function uploadPhoto(uid: string, photoDataUrl: string, playerId: string): Promise<string> {
+    if (!photoDataUrl.startsWith('data:image')) {
+        // This is not a new photo upload, just an existing URL.
+        return photoDataUrl;
+    }
+    const storageRef = ref(storage, `users/${uid}/player_photos/${playerId}-${Date.now()}`);
+    const snapshot = await uploadString(storageRef, photoDataUrl, 'data_url');
+    return await getDownloadURL(snapshot.ref);
+}
 
 export function PlayersProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -62,7 +73,12 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
     const collectionRef = getPlayersCollection();
     if (!collectionRef || !user) return;
     try {
-      const newPlayerData = { ...playerData, uid: user.uid };
+      let photoUrl = playerData.photo || '';
+      if (photoUrl) {
+          photoUrl = await uploadPhoto(user.uid, photoUrl, `new_player_${Date.now()}`);
+      }
+
+      const newPlayerData = { ...playerData, photo: photoUrl, uid: user.uid };
       await addDoc(collectionRef, newPlayerData);
       fetchPlayers();
     } catch (err) {
@@ -73,10 +89,15 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
   const updatePlayer = async (playerData: Player) => {
     if (!user) return;
     try {
-      const playerDoc = doc(db, "users", user.uid, "players", playerData.id);
-      const { id, ...dataToUpdate } = playerData;
-      await updateDoc(playerDoc, dataToUpdate);
-      fetchPlayers();
+        let photoUrl = playerData.photo || '';
+        if (photoUrl && photoUrl.startsWith('data:image')) {
+            photoUrl = await uploadPhoto(user.uid, photoUrl, playerData.id);
+        }
+
+        const playerDoc = doc(db, "users", user.uid, "players", playerData.id);
+        const { id, ...dataToUpdate } = { ...playerData, photo: photoUrl };
+        await updateDoc(playerDoc, dataToUpdate);
+        fetchPlayers();
     } catch (err) {
       console.error("Error updating player: ", err);
     }
