@@ -27,6 +27,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { usePlayersContext } from "@/context/players-context";
+import type { Player } from "@/lib/data";
+
+const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
 export default function ResultsPage() {
   const context = useResultsContext();
@@ -53,6 +56,7 @@ export default function ResultsPage() {
     scorers: [],
     assists: [],
     category: 'Match Championnat',
+    teamCategory: 'Sénior',
     notes: '',
   });
 
@@ -67,10 +71,10 @@ export default function ResultsPage() {
     setNewResult(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleSelectChange = (value: string) => {
-    setNewResult(prev => ({ ...prev, category: value }));
+  const handleSelectChange = (field: 'category' | 'teamCategory', value: string) => {
+    setNewResult(prev => ({ ...prev, [field]: value }));
   };
-
+  
   const handleDynamicListChange = (
     listName: 'scorers' | 'assists',
     index: number,
@@ -101,7 +105,7 @@ export default function ResultsPage() {
   };
   
   const resetForm = () => {
-    setNewResult({ opponent: '', date: '', score: '', scorers: [], assists: [], category: 'Match Championnat', notes: '' });
+    setNewResult({ opponent: '', date: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', notes: '' });
     setOpen(false);
     setIsEditing(false);
     setEditingResult(null);
@@ -132,6 +136,7 @@ export default function ResultsPage() {
         date: result.date,
         score: result.score,
         category: result.category || 'Match Championnat',
+        teamCategory: result.teamCategory || 'Sénior',
         scorers: Array.isArray(result.scorers) ? result.scorers : [],
         assists: result.assists && Array.isArray(result.assists) ? result.assists : [],
         notes: result.notes || '',
@@ -151,7 +156,11 @@ export default function ResultsPage() {
     });
   }, [results, searchQuery, filterKey]);
   
-  const playerOptions = useMemo(() => players.map(p => ({ value: p.name, label: p.name })), [players]);
+  const filteredPlayerOptions = useMemo(() => {
+    return players
+      .filter(p => p.category === newResult.teamCategory)
+      .map(p => ({ value: p.name, label: p.name }));
+  }, [players, newResult.teamCategory]);
 
   const formatPerformance = (items: PerformanceDetail[] | undefined): string => {
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -177,19 +186,34 @@ export default function ResultsPage() {
                         <DialogDescription>Remplissez les détails du match ci-dessous.</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="category">Type de match</Label>
-                            <Select onValueChange={handleSelectChange} value={newResult.category} required>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner un type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Match Amical">Match Amical</SelectItem>
-                                  <SelectItem value="Match Championnat">Match de Championnat</SelectItem>
-                                  <SelectItem value="Match Coupe">Match de Coupe</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                       <div className="grid grid-cols-2 gap-4">
+                          <div className="grid gap-2">
+                              <Label htmlFor="category">Type de match</Label>
+                              <Select onValueChange={(v) => handleSelectChange('category', v)} value={newResult.category} required>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner un type" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Match Amical">Match Amical</SelectItem>
+                                    <SelectItem value="Match Championnat">Match de Championnat</SelectItem>
+                                    <SelectItem value="Match Coupe">Match de Coupe</SelectItem>
+                                  </SelectContent>
+                              </Select>
+                          </div>
+                           <div className="grid gap-2">
+                              <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
+                              <Select onValueChange={(v) => handleSelectChange('teamCategory', v)} value={newResult.teamCategory} required>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner une catégorie" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {playerCategories.map(cat => (
+                                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                              </Select>
+                          </div>
+                       </div>
                         <div className="grid gap-2">
                             <Label htmlFor="opponent">Adversaire</Label>
                             <Input id="opponent" value={newResult.opponent} onChange={handleInputChange} required />
@@ -212,7 +236,7 @@ export default function ResultsPage() {
                                     <Select onValueChange={(value) => handleDynamicListChange('scorers', index, 'playerName', value)} value={scorer.playerName}>
                                         <SelectTrigger><SelectValue placeholder="Choisir un joueur..." /></SelectTrigger>
                                         <SelectContent>
-                                            {playerOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                            {filteredPlayerOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                     <Input type="number" min="1" value={scorer.count} onChange={(e) => handleDynamicListChange('scorers', index, 'count', e.target.value)} className="w-20" />
@@ -229,7 +253,7 @@ export default function ResultsPage() {
                                     <Select onValueChange={(value) => handleDynamicListChange('assists', index, 'playerName', value)} value={assist.playerName}>
                                         <SelectTrigger><SelectValue placeholder="Choisir un joueur..." /></SelectTrigger>
                                         <SelectContent>
-                                            {playerOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                            {filteredPlayerOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                     <Input type="number" min="1" value={assist.count} onChange={(e) => handleDynamicListChange('assists', index, 'count', e.target.value)} className="w-20" />
@@ -294,6 +318,7 @@ export default function ResultsPage() {
                   <AccordionTrigger>
                     <div className="flex justify-between w-full pr-4 items-center">
                       <div className="flex-1 text-left flex items-center gap-4">
+                        <Badge variant="outline">{result.teamCategory || 'N/A'}</Badge>
                         <Badge variant="secondary">{result.category}</Badge>
                         <span>
                           Club vs {result.opponent} -{" "}
@@ -352,3 +377,5 @@ export default function ResultsPage() {
     </div>
   );
 }
+
+    

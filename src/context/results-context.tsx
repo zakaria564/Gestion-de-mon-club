@@ -20,6 +20,7 @@ export interface Result {
   scorers: PerformanceDetail[];
   assists: PerformanceDetail[];
   category: string;
+  teamCategory: string;
   notes?: string;
 }
 
@@ -125,3 +126,5 @@ export const useResultsContext = () => {
     }
     return context;
 };
+
+    
