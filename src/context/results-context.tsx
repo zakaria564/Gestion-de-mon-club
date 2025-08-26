@@ -12,8 +12,8 @@ export interface Result {
   opponent: string;
   date: string;
   score: string;
-  scorers: string | string[];
-  assists?: string | string[];
+  scorers: string[];
+  assists: string[];
   category: string;
   notes?: string;
 }
@@ -68,12 +68,6 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, fetchResults]);
 
-  const processNames = (names: string | string[] | undefined): string[] => {
-    if (!names) return [];
-    if (Array.isArray(names)) return names;
-    return names.split(',').map(s => s.trim()).filter(s => s.length > 0);
-  };
-
   const addResult = async (resultData: NewResult) => {
     const collectionRef = getResultsCollection();
     if (!collectionRef || !user) return;
@@ -81,8 +75,6 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
       const newResultData = { 
           ...resultData, 
           uid: user.uid,
-          scorers: processNames(resultData.scorers),
-          assists: processNames(resultData.assists),
         };
       await addDoc(collectionRef, newResultData);
       fetchResults();
@@ -96,11 +88,7 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
     try {
       const resultDoc = doc(db, "users", user.uid, "results", resultData.id);
       const { id, ...dataToUpdate } = resultData;
-      await updateDoc(resultDoc, {
-          ...dataToUpdate,
-          scorers: processNames(dataToUpdate.scorers),
-          assists: processNames(dataToUpdate.assists),
-      });
+      await updateDoc(resultDoc, dataToUpdate);
       fetchResults();
     } catch (err) {
       console.error("Error updating result: ", err);

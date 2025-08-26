@@ -26,15 +26,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { usePlayersContext } from "@/context/players-context";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 export default function ResultsPage() {
   const context = useResultsContext();
+  const playersContext = usePlayersContext();
 
-  if (!context) {
-    throw new Error("ResultsPage must be used within a ResultsProvider");
+  if (!context || !playersContext) {
+    throw new Error("ResultsPage must be used within a ResultsProvider and PlayersProvider");
   }
 
   const { results, loading, addResult, updateResult, deleteResult } = context;
+  const { players, loading: playersLoading } = playersContext;
 
   const [open, setOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -47,8 +51,8 @@ export default function ResultsPage() {
     opponent: '',
     date: '',
     score: '',
-    scorers: '',
-    assists: '',
+    scorers: [],
+    assists: [],
     category: 'Match Championnat',
     notes: '',
   });
@@ -63,7 +67,7 @@ export default function ResultsPage() {
   };
   
   const resetForm = () => {
-    setNewResult({ opponent: '', date: '', score: '', scorers: '', assists: '', category: 'Match Championnat', notes: '' });
+    setNewResult({ opponent: '', date: '', score: '', scorers: [], assists: [], category: 'Match Championnat', notes: '' });
     setOpen(false);
     setIsEditing(false);
     setEditingResult(null);
@@ -87,8 +91,8 @@ export default function ResultsPage() {
         date: result.date,
         score: result.score,
         category: result.category || 'Match Championnat',
-        scorers: Array.isArray(result.scorers) ? result.scorers.join(', ') : result.scorers,
-        assists: result.assists && Array.isArray(result.assists) ? result.assists.join(', ') : '',
+        scorers: Array.isArray(result.scorers) ? result.scorers : [],
+        assists: result.assists && Array.isArray(result.assists) ? result.assists : [],
         notes: result.notes || '',
     });
     setOpen(true);
@@ -105,6 +109,8 @@ export default function ResultsPage() {
         return value?.toLowerCase().includes(searchQuery.toLowerCase());
     });
   }, [results, searchQuery, filterKey]);
+  
+  const playerOptions = useMemo(() => players.map(p => ({ value: p.name, label: p.name })), [players]);
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -151,12 +157,22 @@ export default function ResultsPage() {
                             </div>
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="scorers">Buteurs (séparés par une virgule)</Label>
-                            <Input id="scorers" value={newResult.scorers} onChange={handleInputChange} />
+                            <Label>Buteurs</Label>
+                            <MultiSelect
+                                placeholder="Sélectionner des buteurs..."
+                                options={playerOptions}
+                                value={newResult.scorers}
+                                onChange={(selected) => setNewResult(prev => ({ ...prev, scorers: selected }))}
+                            />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="assists">Passeurs (séparés par une virgule)</Label>
-                            <Input id="assists" value={newResult.assists} onChange={handleInputChange} />
+                           <Label>Passeurs</Label>
+                            <MultiSelect
+                                placeholder="Sélectionner des passeurs..."
+                                options={playerOptions}
+                                value={newResult.assists || []}
+                                onChange={(selected) => setNewResult(prev => ({ ...prev, assists: selected }))}
+                            />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="notes">Notes</Label>
@@ -200,7 +216,7 @@ export default function ResultsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {loading || playersLoading ? (
              <div className="space-y-4">
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
