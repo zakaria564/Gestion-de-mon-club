@@ -19,15 +19,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useResultsContext, NewResult, Result } from "@/context/results-context";
-import { Edit, PlusCircle, Search, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useResultsContext, NewResult, Result, PerformanceDetail } from "@/context/results-context";
+import { Edit, PlusCircle, Search, Trash2, X } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { usePlayersContext } from "@/context/players-context";
-import { MultiSelect } from "@/components/ui/multi-select";
 
 export default function ResultsPage() {
   const context = useResultsContext();
@@ -57,6 +56,12 @@ export default function ResultsPage() {
     notes: '',
   });
 
+  useEffect(() => {
+    if (!open) {
+      resetForm();
+    }
+  }, [open]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setNewResult(prev => ({ ...prev, [id]: value }));
@@ -64,6 +69,35 @@ export default function ResultsPage() {
 
   const handleSelectChange = (value: string) => {
     setNewResult(prev => ({ ...prev, category: value }));
+  };
+
+  const handleDynamicListChange = (
+    listName: 'scorers' | 'assists',
+    index: number,
+    field: 'playerName' | 'count',
+    value: string | number
+  ) => {
+    const list = [...newResult[listName]];
+    const currentItem = { ...list[index] };
+    
+    if (field === 'count') {
+        currentItem.count = Number(value) < 1 ? 1 : Number(value);
+    } else {
+        currentItem.playerName = value as string;
+    }
+
+    list[index] = currentItem;
+    setNewResult(prev => ({ ...prev, [listName]: list }));
+  };
+
+  const addDynamicListItem = (listName: 'scorers' | 'assists') => {
+    const list = [...newResult[listName], { playerName: '', count: 1 }];
+    setNewResult(prev => ({ ...prev, [listName]: list }));
+  };
+
+  const removeDynamicListItem = (listName: 'scorers' | 'assists', index: number) => {
+    const list = newResult[listName].filter((_, i) => i !== index);
+    setNewResult(prev => ({ ...prev, [listName]: list }));
   };
   
   const resetForm = () => {
@@ -75,10 +109,17 @@ export default function ResultsPage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const finalResult = {
+        ...newResult,
+        scorers: newResult.scorers.filter(s => s.playerName),
+        assists: newResult.assists.filter(a => a.playerName)
+    };
+
     if (isEditing && editingResult) {
-      await updateResult({ id: editingResult.id, ...newResult });
+      await updateResult({ id: editingResult.id, ...finalResult });
     } else {
-      await addResult(newResult);
+      await addResult(finalResult);
     }
     resetForm();
   };
@@ -112,11 +153,18 @@ export default function ResultsPage() {
   
   const playerOptions = useMemo(() => players.map(p => ({ value: p.name, label: p.name })), [players]);
 
+  const formatPerformance = (items: PerformanceDetail[] | undefined): string => {
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return "Aucun";
+    }
+    return items.map(item => `${item.playerName}${item.count > 1 ? ` (${item.count})` : ''}`).join(", ");
+  };
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Suivi des Résultats</h2>
-         <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); else setOpen(true);}}>
+         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button onClick={() => { setIsEditing(false); setEditingResult(null); setOpen(true); }}>
                     <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un résultat
@@ -156,27 +204,44 @@ export default function ResultsPage() {
                                 <Input id="score" value={newResult.score} onChange={handleInputChange} required />
                             </div>
                         </div>
-                        <div className="grid gap-2">
+
+                        <div className="space-y-4">
                             <Label>Buteurs</Label>
-                            <MultiSelect
-                                placeholder="Sélectionner des buteurs..."
-                                options={playerOptions}
-                                value={newResult.scorers}
-                                onChange={(selected) => setNewResult(prev => ({ ...prev, scorers: selected }))}
-                            />
+                            {newResult.scorers.map((scorer, index) => (
+                                <div key={index} className="flex items-center gap-2">
+                                    <Select onValueChange={(value) => handleDynamicListChange('scorers', index, 'playerName', value)} value={scorer.playerName}>
+                                        <SelectTrigger><SelectValue placeholder="Choisir un joueur..." /></SelectTrigger>
+                                        <SelectContent>
+                                            {playerOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                    <Input type="number" min="1" value={scorer.count} onChange={(e) => handleDynamicListChange('scorers', index, 'count', e.target.value)} className="w-20" />
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeDynamicListItem('scorers', index)}><X className="h-4 w-4" /></Button>
+                                </div>
+                            ))}
+                             <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('scorers')}>Ajouter un buteur</Button>
                         </div>
-                        <div className="grid gap-2">
-                           <Label>Passeurs</Label>
-                            <MultiSelect
-                                placeholder="Sélectionner des passeurs..."
-                                options={playerOptions}
-                                value={newResult.assists || []}
-                                onChange={(selected) => setNewResult(prev => ({ ...prev, assists: selected }))}
-                            />
+
+                        <div className="space-y-4">
+                            <Label>Passeurs</Label>
+                            {newResult.assists.map((assist, index) => (
+                                <div key={index} className="flex items-center gap-2">
+                                    <Select onValueChange={(value) => handleDynamicListChange('assists', index, 'playerName', value)} value={assist.playerName}>
+                                        <SelectTrigger><SelectValue placeholder="Choisir un joueur..." /></SelectTrigger>
+                                        <SelectContent>
+                                            {playerOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                    <Input type="number" min="1" value={assist.count} onChange={(e) => handleDynamicListChange('assists', index, 'count', e.target.value)} className="w-20" />
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeDynamicListItem('assists', index)}><X className="h-4 w-4" /></Button>
+                                </div>
+                            ))}
+                             <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('assists')}>Ajouter un passeur</Button>
                         </div>
+                        
                         <div className="grid gap-2">
                             <Label htmlFor="notes">Notes</Label>
-                            <Textarea id="notes" value={newResult.notes} onChange={handleInputChange} />
+                            <Textarea id="notes" value={newResult.notes || ''} onChange={handleInputChange} />
                         </div>
                     </div>
                     <DialogFooter>
@@ -241,16 +306,10 @@ export default function ResultsPage() {
                   <AccordionContent>
                     <div className="space-y-2 px-4">
                       <p>
-                        <strong>Buteurs:</strong>{" "}
-                        {result.scorers && Array.isArray(result.scorers) && result.scorers.length > 0
-                          ? result.scorers.join(", ")
-                          : "Aucun"}
+                        <strong>Buteurs:</strong> {formatPerformance(result.scorers)}
                       </p>
                        <p>
-                        <strong>Passeurs:</strong>{" "}
-                        {result.assists && Array.isArray(result.assists) && result.assists.length > 0
-                          ? result.assists.join(", ")
-                          : "Aucun"}
+                        <strong>Passeurs:</strong> {formatPerformance(result.assists)}
                       </p>
                       <p>
                         <strong>Notes:</strong> {result.notes || 'Aucune'}

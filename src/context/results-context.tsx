@@ -6,14 +6,19 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 
+export interface PerformanceDetail {
+  playerName: string;
+  count: number;
+}
+
 export interface Result {
   id: string;
   uid: string;
   opponent: string;
   date: string;
   score: string;
-  scorers: string[];
-  assists: string[];
+  scorers: PerformanceDetail[];
+  assists: PerformanceDetail[];
   category: string;
   notes?: string;
 }
