@@ -203,17 +203,19 @@ export default function Dashboard() {
           <CardContent>
              <div className="space-y-4">
               {formattedUpcomingEvents.map((event) => (
-                <div key={event.id} className="flex items-center">
-                  <Calendar className="h-6 w-6 mr-4 text-primary" />
-                  <div className="flex-1 text-center">
-                    <p className="text-sm font-medium leading-none">
-                      {event.type}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                       {event.opponent && `vs ${event.opponent} - `}{event.formattedDate}
-                    </p>
+                <Link href="/calendar" key={event.id} className="block hover:bg-muted/50 p-2 rounded-md transition-colors">
+                  <div className="flex items-center">
+                    <Calendar className="h-6 w-6 mr-4 text-primary" />
+                    <div className="flex-1 text-center">
+                      <p className="text-sm font-medium leading-none">
+                        {event.type}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                         {event.opponent && `vs ${event.opponent} - `}{event.formattedDate}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
                {formattedUpcomingEvents.length === 0 && (
                 <p className="text-sm text-muted-foreground">Aucun événement à venir.</p>
