@@ -25,6 +25,7 @@ import { useCoachesContext } from "@/context/coaches-context";
 import { useCalendarContext, CalendarEvent } from "@/context/calendar-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import Link from "next/link";
 
 type FormattedEvent = CalendarEvent & { formattedDate: string };
 
@@ -142,20 +143,22 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Notifications
-            </CardTitle>
-            <Bell className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{notifications.length}</div>
-            <p className="text-xs text-muted-foreground">
-              messages non lus
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/notifications">
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Notifications
+              </CardTitle>
+              <Bell className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{notifications.length}</div>
+              <p className="text-xs text-muted-foreground">
+                messages non lus
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
