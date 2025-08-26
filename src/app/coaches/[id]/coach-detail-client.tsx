@@ -1,8 +1,8 @@
 
 "use client"
 
-import { useMemo, useState, useContext, useEffect } from 'react';
-import { Coach } from "@/lib/data";
+import { useMemo, useState, useEffect } from 'react';
+import type { Coach } from "@/lib/data";
 import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -160,15 +160,15 @@ export function CoachDetailClient({ id }: { id: string }) {
       <Card>
         <CardHeader className="flex flex-col md:flex-row md:items-start gap-6">
           <Avatar className="h-32 w-32 border">
-            <AvatarImage src={coach.photo} alt={coach.name} data-ai-hint="coach photo"/>
+            <AvatarImage src={coach.photo ?? undefined} alt={coach.name} data-ai-hint="coach photo"/>
             <AvatarFallback className="text-4xl">{coach.name.substring(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
             <CardTitle className="text-3xl font-bold">{coach.name}</CardTitle>
             <CardDescription className="text-lg text-muted-foreground mt-1">{coach.specialization}</CardDescription>
             <div className="flex flex-wrap gap-2 mt-4">
-              <Badge variant={getBadgeVariant((coach as any).status) as any}>{(coach as any).status}</Badge>
-              <Badge variant="secondary">{(coach as any).category}</Badge>
+              <Badge variant={getBadgeVariant(coach.status) as any}>{coach.status}</Badge>
+              <Badge variant="secondary">{coach.category}</Badge>
             </div>
           </div>
         </CardHeader>
@@ -356,7 +356,3 @@ export function CoachDetailClient({ id }: { id: string }) {
     </div>
   );
 }
-
-    
-
-    

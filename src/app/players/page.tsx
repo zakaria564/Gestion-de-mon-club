@@ -12,7 +12,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Player } from "@/lib/data";
+import type { Player } from "@/lib/data";
 import { PlusCircle, Camera, Search } from "lucide-react";
 import {
   Dialog,
@@ -40,7 +40,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 
@@ -117,7 +116,7 @@ export default function PlayersPage() {
     };
     
     const onSubmit = async (data: PlayerFormValues) => {
-      await addPlayer(data as any);
+      await addPlayer(data);
       setDialogOpen(false);
       toast({ title: "Joueur ajouté", description: "Le nouveau joueur a été ajouté avec succès." });
     };
@@ -148,7 +147,7 @@ export default function PlayersPage() {
 
 
     const groupedPlayers = filteredPlayers.reduce((acc, player) => {
-      const category = (player as any).category || 'Sénior';
+      const category = player.category || 'Sénior';
       if (!acc[category]) {
         acc[category] = [];
       }
@@ -518,7 +517,7 @@ export default function PlayersPage() {
                               <CardHeader className="p-4">
                                   <div className="flex items-center gap-4">
                                   <Avatar className="h-16 w-16">
-                                      <AvatarImage src={player.photo} alt={player.name} data-ai-hint="player photo" />
+                                      <AvatarImage src={player.photo ?? undefined} alt={player.name} data-ai-hint="player photo" />
                                       <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
                                   </Avatar>
                                   <div className="flex-1">
@@ -529,8 +528,8 @@ export default function PlayersPage() {
                               </CardHeader>
                               <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
                                   <div className="flex justify-between items-center">
-                                      <Badge variant="outline" className="text-xs">{(player as any).category || 'Sénior'}</Badge>
-                                      <Badge variant={getBadgeVariant((player as any).status || 'Actif') as any} className="text-xs">{(player as any).status || 'Actif'}</Badge>
+                                      <Badge variant="outline" className="text-xs">{player.category || 'Sénior'}</Badge>
+                                      <Badge variant={getBadgeVariant(player.status || 'Actif') as any} className="text-xs">{player.status || 'Actif'}</Badge>
                                   </div>
                               </CardContent>
                           </Card>
@@ -548,5 +547,3 @@ export default function PlayersPage() {
     </div>
     );
 }
-
-    

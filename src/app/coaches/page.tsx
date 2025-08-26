@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Coach } from "@/lib/data";
+import type { Coach } from "@/lib/data";
 import { PlusCircle, Camera, Search } from "lucide-react";
 import {
   Dialog,
@@ -123,7 +123,7 @@ export default function CoachesPage() {
   }, [coaches, searchQuery, filterKey]);
 
   const groupedCoaches = filteredCoaches.reduce((acc, coach) => {
-    const { category } = coach as any;
+    const { category } = coach;
     if (!acc[category]) {
       acc[category] = [];
     }
@@ -137,7 +137,7 @@ export default function CoachesPage() {
         status: 'Actif',
         category: 'Sénior'
       }
-    await addCoach(coachData as any);
+    await addCoach(coachData);
     setDialogOpen(false);
   };
 
@@ -340,7 +340,7 @@ export default function CoachesPage() {
                             <CardHeader className="p-4">
                                 <div className="flex items-center gap-4">
                                 <Avatar className="h-16 w-16">
-                                    <AvatarImage src={coach.photo} alt={coach.name} data-ai-hint="coach photo" />
+                                    <AvatarImage src={coach.photo ?? undefined} alt={coach.name} data-ai-hint="coach photo" />
                                     <AvatarFallback>{coach.name.substring(0, 2)}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1">
@@ -351,8 +351,8 @@ export default function CoachesPage() {
                             </CardHeader>
                             <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
                                 <div className="flex justify-between items-center">
-                                    <Badge variant="outline" className="text-xs">{(coach as any).category}</Badge>
-                                    <Badge variant={getBadgeVariant((coach as any).status) as any} className="text-xs">{(coach as any).status}</Badge>
+                                    <Badge variant="outline" className="text-xs">{coach.category}</Badge>
+                                    <Badge variant={getBadgeVariant(coach.status) as any} className="text-xs">{coach.status}</Badge>
                                 </div>
                             </CardContent>
                         </Card>

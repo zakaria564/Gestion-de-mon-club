@@ -2,9 +2,9 @@
 
 'use client';
 
-import { useMemo, useState, useContext, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import React from 'react';
-import { Player } from "@/lib/data";
+import type { Player } from "@/lib/data";
 import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,15 +24,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
   birthDate: z.string().min(1, "La date de naissance est requise."),
-  address: z.string().min(1, "L'adresse est requise."),
   phone: z.string().min(1, "Le téléphone est requis."),
   email: z.string().email("L'adresse email est invalide.").optional().or(z.literal('')),
+  address: z.string().min(1, "L'adresse est requise."),
   poste: z.string().min(1, "Le poste est requis."),
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   photo: z.string().optional(),
@@ -176,8 +175,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
   };
   
   const formattedBirthDate = player.birthDate && isValid(parseISO(player.birthDate)) ? format(parseISO(player.birthDate), 'dd/MM/yyyy') : 'N/A';
-  const playerStatus = (player as any).status || 'Actif';
-  const playerCategory = (player as any).category || 'Sénior';
+  const playerStatus = player.status || 'Actif';
+  const playerCategory = player.category || 'Sénior';
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
