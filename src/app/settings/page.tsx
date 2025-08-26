@@ -71,7 +71,7 @@ export default function SettingsPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const loading = clubLoading || authLoading || playersCtx.loading || coachesCtx.loading || calendarCtx.loading || financialCtx.loading || resultsCtx.loading;
+  const loading = clubLoading || authLoading || playersCtx.loading || coachesCtx.loading || calendarCtx.loading || financialCtx.loading;
 
   useEffect(() => {
     if (clubInfo) {
@@ -277,7 +277,7 @@ export default function SettingsPage() {
                 <Input id="email" type="email" value={user?.email || ''} disabled />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="display-name">Nom d'affichage</Label>
+                <Label htmlFor="display-name">Nom d'utilisateur</Label>
                 <Input id="display-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
               </div>
               <div className="space-y-2">
