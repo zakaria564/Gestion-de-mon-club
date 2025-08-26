@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, User } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, updateProfile, updatePassword, User } from 'firebase/auth';
 import { app } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -13,6 +13,8 @@ interface AuthContextType {
   logIn: (email: string, password: string) => Promise<any>;
   logOut: () => Promise<any>;
   resetPassword: (email: string) => Promise<any>;
+  updateUserProfile: (profileData: { displayName?: string; photoURL?: string; }) => Promise<void>;
+  updateUserPassword: (newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -56,6 +58,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return sendPasswordResetEmail(auth, email);
   };
 
+  const updateUserProfile = (profileData: { displayName?: string; photoURL?: string; }) => {
+    if (!auth.currentUser) throw new Error("Utilisateur non authentifié.");
+    return updateProfile(auth.currentUser, profileData);
+  }
+
+  const updateUserPassword = (newPassword: string) => {
+     if (!auth.currentUser) throw new Error("Utilisateur non authentifié.");
+     return updatePassword(auth.currentUser, newPassword);
+  }
+
   const value = {
     user,
     loading,
@@ -63,6 +75,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     logIn,
     logOut,
     resetPassword,
+    updateUserProfile,
+    updateUserPassword,
   };
 
   return (

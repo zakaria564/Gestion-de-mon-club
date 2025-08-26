@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/tabs";
 import { Download, Upload, AlertCircle } from "lucide-react";
 import { useClubContext } from "@/context/club-context";
+import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -38,6 +39,13 @@ export default function SettingsPage() {
     restoreData 
   } = useClubContext();
 
+  const {
+    user,
+    updateUserProfile,
+    updateUserPassword,
+    loading: authLoading
+  } = useAuth();
+
   const playersCtx = usePlayersContext();
   const coachesCtx = useCoachesContext();
   const calendarCtx = useCalendarContext();
@@ -48,20 +56,31 @@ export default function SettingsPage() {
 
   const [clubName, setClubName] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  
+  const [displayName, setDisplayName] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [isSavingInfo, setIsSavingInfo] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isBackuping, setIsBackuping] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+
   const [restoreError, setRestoreError] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const loading = clubLoading || playersCtx.loading || coachesCtx.loading || calendarCtx.loading || financialCtx.loading || resultsCtx.loading;
+  const loading = clubLoading || authLoading || playersCtx.loading || coachesCtx.loading || calendarCtx.loading || financialCtx.loading || resultsCtx.loading;
 
   useEffect(() => {
     if (clubInfo) {
       setClubName(clubInfo.name);
     }
-  }, [clubInfo]);
+    if (user) {
+        setDisplayName(user.displayName || '');
+    }
+  }, [clubInfo, user]);
 
   const handleSaveInfo = async () => {
     if (!clubName) {
@@ -72,15 +91,50 @@ export default function SettingsPage() {
         });
         return;
     }
-    setIsSaving(true);
+    setIsSavingInfo(true);
     await updateClubInfo(clubName, logoFile || undefined);
-    setIsSaving(false);
+    setIsSavingInfo(false);
     setLogoFile(null); 
     if(fileInputRef.current) fileInputRef.current.value = "";
     toast({
         title: "Succès",
         description: "Les informations du club ont été mises à jour.",
     });
+  };
+
+  const handleSaveProfile = async () => {
+    setProfileError(null);
+    setIsSavingProfile(true);
+
+    try {
+      if (newPassword) {
+        if (newPassword !== confirmPassword) {
+          throw new Error("Les mots de passe ne correspondent pas.");
+        }
+        await updateUserPassword(newPassword);
+        setNewPassword('');
+        setConfirmPassword('');
+      }
+
+      if (displayName !== user?.displayName) {
+        await updateUserProfile({ displayName });
+      }
+      
+      toast({
+        title: "Profil mis à jour",
+        description: "Vos informations ont été modifiées avec succès."
+      });
+
+    } catch (error: any) {
+        setProfileError(error.message);
+        toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: error.message
+        });
+    } finally {
+        setIsSavingProfile(false);
+    }
   };
 
   const handleBackup = async () => {
@@ -173,15 +227,16 @@ export default function SettingsPage() {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
        <h2 className="text-3xl font-bold tracking-tight">Paramètres du Club</h2>
       <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="info">Informations de base</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="info">Informations du Club</TabsTrigger>
+          <TabsTrigger value="account">Mon Compte</TabsTrigger>
           <TabsTrigger value="admins">Comptes Admin</TabsTrigger>
           <TabsTrigger value="backup">Sauvegarde</TabsTrigger>
         </TabsList>
         <TabsContent value="info">
           <Card>
             <CardHeader>
-              <CardTitle>Informations de base</CardTitle>
+              <CardTitle>Informations du Club</CardTitle>
               <CardDescription>
                 Gérez les informations de base de votre club.
               </CardDescription>
@@ -198,7 +253,46 @@ export default function SettingsPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSaveInfo} disabled={isSaving}>{isSaving ? "Enregistrement..." : "Enregistrer les modifications"}</Button>
+              <Button onClick={handleSaveInfo} disabled={isSavingInfo}>{isSavingInfo ? "Enregistrement..." : "Enregistrer les modifications"}</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+         <TabsContent value="account">
+          <Card>
+            <CardHeader>
+              <CardTitle>Mon Compte</CardTitle>
+              <CardDescription>
+                Gérez les informations de votre compte administrateur.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+               {profileError && (
+                  <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{profileError}</AlertDescription>
+                  </Alert>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={user?.email || ''} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="display-name">Nom d'affichage</Label>
+                <Input id="display-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-password">Nouveau mot de passe</Label>
+                <Input id="new-password" type="password" placeholder="Laisser vide pour ne pas changer" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}/>
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+                <Input id="confirm-password" type="password" placeholder="Confirmer le nouveau mot de passe" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={handleSaveProfile} disabled={isSavingProfile}>
+                {isSavingProfile ? "Enregistrement..." : "Mettre à jour le profil"}
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
