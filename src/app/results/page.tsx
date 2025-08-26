@@ -164,7 +164,7 @@ export default function ResultsPage() {
     if (!items || !Array.isArray(items) || items.length === 0) {
       return "Aucun";
     }
-    return items.map(item => `${item.playerName}${item.count > 1 ? ` (${item.count})` : ''}`).join(", ");
+    return items.map(item => `${item.playerName}${item.count ? ` (${item.count})` : ''}`).join(", ");
   };
 
   return (
