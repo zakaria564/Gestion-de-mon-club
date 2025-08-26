@@ -34,6 +34,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
   const fetchClubInfo = useCallback(async () => {
     const docRef = getClubInfoDocRef();
     if (!docRef) {
+      setClubInfo({ name: "Gestion Club", logoUrl: null });
       setLoading(false);
       return;
     }
@@ -43,7 +44,10 @@ export function ClubProvider({ children }: { children: ReactNode }) {
       if (docSnap.exists()) {
         setClubInfo(docSnap.data() as ClubInfo);
       } else {
-        await setDoc(docRef, { name: "Gestion Club", logoUrl: null });
+        // If no info exists, create it with default values
+        const defaultInfo = { name: "Gestion Club", logoUrl: null };
+        await setDoc(docRef, defaultInfo);
+        setClubInfo(defaultInfo);
       }
     } catch (err) {
       console.error("Error fetching club info: ", err);
@@ -64,19 +68,28 @@ export function ClubProvider({ children }: { children: ReactNode }) {
   const updateClubInfo = async (name: string, logoFile?: File) => {
     const docRef = getClubInfoDocRef();
     if (!docRef || !user) return;
+  
     setLoading(true);
     try {
-      let logoUrl = clubInfo.logoUrl;
+      let newLogoUrl = clubInfo.logoUrl;
+  
       if (logoFile) {
         const storageRef = ref(storage, `users/${user.uid}/logos/${logoFile.name}`);
-        await uploadBytes(storageRef, logoFile);
-        logoUrl = await getDownloadURL(storageRef);
+        const uploadResult = await uploadBytes(storageRef, logoFile);
+        newLogoUrl = await getDownloadURL(uploadResult.ref);
       }
-      const newInfo = { name, logoUrl };
+  
+      const newInfo: ClubInfo = {
+        name: name,
+        logoUrl: newLogoUrl,
+      };
+  
       await setDoc(docRef, newInfo);
       setClubInfo(newInfo);
+  
     } catch (err) {
       console.error("Error updating club info: ", err);
+      // Optionally re-throw or show a toast message
     } finally {
       setLoading(false);
     }
@@ -120,10 +133,12 @@ export function ClubProvider({ children }: { children: ReactNode }) {
           // Add new data
           for (const collectionName in collections) {
             const items = collections[collectionName];
-            for (const item of items) {
-                const { id, ...itemData } = item;
-                const newDocRef = doc(collection(db, "users", user.uid, collectionName));
-                batch.set(newDocRef, { ...itemData, uid: user.uid });
+            if (Array.isArray(items)) {
+              for (const item of items) {
+                  const { id, ...itemData } = item;
+                  const newDocRef = doc(collection(db, "users", user.uid, collectionName));
+                  batch.set(newDocRef, { ...itemData, uid: user.uid });
+              }
             }
           }
           
