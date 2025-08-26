@@ -52,12 +52,11 @@ const playerSchema = z.object({
   email: z.string().email("L'adresse email est invalide.").optional().or(z.literal('')),
   poste: z.string().min(1, "Le poste est requis."),
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
-  notes: z.string().optional(),
   photo: z.string().optional(),
   country: z.string().min(1, "Le pays est requis."),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
-  tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
+tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
   category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
 });
@@ -73,11 +72,10 @@ const defaultValues: PlayerFormValues = {
     country: '',
     poste: 'Milieu Central',
     jerseyNumber: 10,
-    notes: '',
     photo: '',
     tutorName: '',
     tutorPhone: '',
-    tutorEmail: '',
+tutorEmail: '',
     status: 'Actif',
     category: 'Sénior',
 };
@@ -358,24 +356,6 @@ export default function PlayersPage() {
                                 />
                             </div>
                          </div>
-                       
-                        <FormField
-                          control={form.control}
-                          name="notes"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Notes</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Ajouter des notes sur le joueur (style de jeu, comportement, etc.)"
-                                  className="resize-y min-h-[100px]"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
                     </div>
                   </ScrollArea>
                   <DialogFooter className="pt-4 border-t">

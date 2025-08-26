@@ -34,7 +34,6 @@ const playerSchema = z.object({
   email: z.string().email("L'adresse email est invalide.").optional().or(z.literal('')),
   poste: z.string().min(1, "Le poste est requis."),
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
-  notes: z.string().optional(),
   photo: z.string().optional(),
   country: z.string().min(1, "Le pays est requis."),
   tutorName: z.string().optional(),
@@ -75,7 +74,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
         ...player,
         birthDate: birthDate,
         email: player.email || '',
-        notes: player.notes || '',
         photo: player.photo || '',
         country: player.country || '',
         tutorName: player.tutorName || '',
@@ -244,12 +242,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                         <a href={`mailto:${player.tutorEmail}`} className="hover:underline">{player.tutorEmail}</a>
                     </div>
                   )}
-              </div>
-            )}
-            {player.notes && (
-              <div className="space-y-4 mt-6 md:col-span-2">
-                  <h3 className="font-semibold text-lg">Notes</h3>
-                  <p className="text-muted-foreground whitespace-pre-wrap">{player.notes}</p>
               </div>
             )}
         </CardContent>
@@ -484,24 +476,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                             />
                         </div>
                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="notes"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Notes</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Ajouter des notes sur le joueur (style de jeu, comportement, etc.)"
-                                className="resize-y min-h-[100px]"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
                   </div>
               </ScrollArea>
               <DialogFooter className="pt-4 border-t">
