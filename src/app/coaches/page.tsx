@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import React from 'react';
 import Link from "next/link";
 import {
@@ -14,7 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Coach } from "@/lib/data";
-import { PlusCircle, Camera } from "lucide-react";
+import { PlusCircle, Camera, Search } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -75,6 +75,8 @@ export default function CoachesPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterKey, setFilterKey] = useState("name");
 
   const form = useForm<CoachFormValues>({
     resolver: zodResolver(coachSchema),
@@ -112,7 +114,15 @@ export default function CoachesPage() {
     }
   };
 
-  const groupedCoaches = coaches.reduce((acc, coach) => {
+  const filteredCoaches = useMemo(() => {
+    if (!searchQuery) return coaches;
+    return coaches.filter(coach => {
+        const value = coach[filterKey as keyof Coach] as string;
+        return value?.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+  }, [coaches, searchQuery, filterKey]);
+
+  const groupedCoaches = filteredCoaches.reduce((acc, coach) => {
     const { category } = coach as any;
     if (!acc[category]) {
       acc[category] = [];
@@ -268,6 +278,29 @@ export default function CoachesPage() {
         </Dialog>
       </div>
 
+       <div className="flex items-center gap-4 my-4">
+            <div className="relative w-full max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                    placeholder={`Rechercher par ${filterKey === 'name' ? 'nom' : filterKey}...`}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                />
+            </div>
+            <Select value={filterKey} onValueChange={setFilterKey}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filtrer par" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="name">Nom</SelectItem>
+                    <SelectItem value="specialization">Spécialité</SelectItem>
+                    <SelectItem value="category">Catégorie</SelectItem>
+                    <SelectItem value="status">Statut</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+
        {loading ? (
         Array.from({ length: 2 }).map((_, index) => (
           <div key={index} className="space-y-4">
@@ -296,39 +329,44 @@ export default function CoachesPage() {
           </div>
         ))
        ) : (
-       Object.entries(groupedCoaches).map(([category, coachesInCategory]) => (
-        <div key={category} className="space-y-4">
-            <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {coachesInCategory.map((coach) => (
-                <Link key={coach.id} href={`/coaches/${coach.id}`} className="flex flex-col h-full">
-                    <Card className="flex flex-col w-full hover:shadow-lg transition-shadow h-full">
-                        <CardHeader className="p-4">
-                            <div className="flex items-center gap-4">
-                            <Avatar className="h-16 w-16">
-                                <AvatarImage src={coach.photo} alt={coach.name} data-ai-hint="coach photo" />
-                                <AvatarFallback>{coach.name.substring(0, 2)}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                                <CardTitle className="text-base font-bold">{coach.name}</CardTitle>
-                                <CardDescription>{coach.specialization}</CardDescription>
-                            </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
-                            <div className="flex justify-between items-center">
-                                <Badge variant="outline" className="text-xs">{(coach as any).category}</Badge>
-                                <Badge variant={getBadgeVariant((coach as any).status) as any} className="text-xs">{(coach as any).status}</Badge>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </Link>
-            ))}
+        Object.entries(groupedCoaches).length > 0 ? (
+          Object.entries(groupedCoaches).map(([category, coachesInCategory]) => (
+            <div key={category} className="space-y-4">
+                <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {coachesInCategory.map((coach) => (
+                    <Link key={coach.id} href={`/coaches/${coach.id}`} className="flex flex-col h-full">
+                        <Card className="flex flex-col w-full hover:shadow-lg transition-shadow h-full">
+                            <CardHeader className="p-4">
+                                <div className="flex items-center gap-4">
+                                <Avatar className="h-16 w-16">
+                                    <AvatarImage src={coach.photo} alt={coach.name} data-ai-hint="coach photo" />
+                                    <AvatarFallback>{coach.name.substring(0, 2)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                    <CardTitle className="text-base font-bold">{coach.name}</CardTitle>
+                                    <CardDescription>{coach.specialization}</CardDescription>
+                                </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
+                                <div className="flex justify-between items-center">
+                                    <Badge variant="outline" className="text-xs">{(coach as any).category}</Badge>
+                                    <Badge variant={getBadgeVariant((coach as any).status) as any} className="text-xs">{(coach as any).status}</Badge>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </Link>
+                ))}
+                </div>
             </div>
-        </div>
-      )))}
+          ))
+        ) : (
+          <div className="text-center py-10">
+              <p className="text-muted-foreground">Aucun entraîneur trouvé.</p>
+          </div>
+        )
+      )}
     </div>
   );
 }
-
-    
