@@ -177,13 +177,13 @@ export default function ResultsPage() {
                     <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un résultat
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+            <DialogContent className="sm:max-w-2xl h-full flex flex-col">
                 <DialogHeader>
                     <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un résultat</DialogTitle>
                     <DialogDescription>Remplissez les détails du match ci-dessous.</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="flex-1 overflow-y-hidden">
-                  <ScrollArea className="h-full pr-6 -mr-6">
+                <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+                  <ScrollArea className="flex-1 pr-6 -mr-6">
                     <div className="grid gap-4 py-4 px-1">
                        <div className="grid grid-cols-2 gap-4">
                           <div className="grid gap-2">
