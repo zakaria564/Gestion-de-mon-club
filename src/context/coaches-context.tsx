@@ -71,7 +71,7 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
     if (!collectionRef || !user) return;
     try {
         let photoUrl = coachData.photo || '';
-        if (photoUrl) {
+        if (photoUrl && photoUrl.startsWith('data:image')) {
             photoUrl = await uploadPhoto(user.uid, photoUrl, `new_coach_${Date.now()}`);
         }
 

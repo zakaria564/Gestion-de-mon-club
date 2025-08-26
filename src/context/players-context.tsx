@@ -23,7 +23,6 @@ const PlayersContext = createContext<PlayersContextType | undefined>(undefined);
 
 async function uploadPhoto(uid: string, photoDataUrl: string, playerId: string): Promise<string> {
     if (!photoDataUrl.startsWith('data:image')) {
-        // This is not a new photo upload, just an existing URL.
         return photoDataUrl;
     }
     const storageRef = ref(storage, `users/${uid}/player_photos/${playerId}-${Date.now()}`);
@@ -74,7 +73,7 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
     if (!collectionRef || !user) return;
     try {
       let photoUrl = playerData.photo || '';
-      if (photoUrl) {
+      if (photoUrl && photoUrl.startsWith('data:image')) {
           photoUrl = await uploadPhoto(user.uid, photoUrl, `new_player_${Date.now()}`);
       }
 
