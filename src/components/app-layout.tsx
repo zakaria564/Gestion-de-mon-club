@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { ProtectedRoute, useAuth } from "@/context/auth-context";
+import { useClubContext } from "@/context/club-context";
 import { useToast } from "@/hooks/use-toast";
 
 const navItems = [
@@ -53,6 +54,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logOut, loading } = useAuth();
+  const { clubInfo, loading: clubLoading } = useClubContext();
   const { toast } = useToast();
 
   const handleLogout = async () => {
@@ -68,7 +70,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }
 
-  if (loading) {
+  if (loading || clubLoading) {
     return (
         <div className="flex h-screen w-full items-center justify-center">
             <ClubLogo className="size-12 animate-pulse" />
@@ -82,8 +84,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <Sidebar>
           <SidebarHeader>
             <div className="flex items-center gap-2">
-              <ClubLogo className="size-8 shrink-0" />
-              <span className="text-lg font-semibold">Gestion Club</span>
+              <ClubLogo src={clubInfo.logoUrl} className="size-8 shrink-0" />
+              <span className="text-lg font-semibold truncate">{clubInfo.name}</span>
             </div>
           </SidebarHeader>
           <SidebarContent>
@@ -109,7 +111,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <DropdownMenuTrigger asChild>
                  <Button variant="ghost" className="w-full justify-start gap-2 p-2">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.photoURL || "https://placehold.co/40x40.png"} alt={user?.displayName || "Admin"} data-ai-hint="user avatar" />
+                      <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "Admin"} data-ai-hint="user avatar" />
                       <AvatarFallback>{user?.email?.substring(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="text-left group-data-[collapsible=icon]:hidden">
@@ -128,8 +130,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Profil</DropdownMenuItem>
-                  <DropdownMenuItem>Paramètres</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/settings')}>Profil</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/settings')}>Paramètres</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     Se déconnecter

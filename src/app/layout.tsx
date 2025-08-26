@@ -9,6 +9,7 @@ import { CoachesProvider } from "@/context/coaches-context";
 import { CalendarProvider } from "@/context/calendar-context";
 import { FinancialProvider } from "@/context/financial-context";
 import { ResultsProvider } from "@/context/results-context";
+import { ClubProvider } from "@/context/club-context";
 import { AppLayout } from "@/components/app-layout";
 import { Toaster } from "@/components/ui/toaster";
 import { usePathname, useRouter } from "next/navigation";
@@ -28,7 +29,7 @@ function AppProviders({ children }: { children: React.ReactNode }) {
   const isAuthPage = ["/login", "/signup", "/forgot-password"].includes(pathname);
 
   React.useEffect(() => {
-    if (loading) return; // Ne rien faire pendant le chargement
+    if (loading) return; 
 
     if (user && isAuthPage) {
       router.push('/');
@@ -50,17 +51,19 @@ function AppProviders({ children }: { children: React.ReactNode }) {
 
   if (user && !isAuthPage) {
     return (
-      <PlayersProvider>
-        <CoachesProvider>
-          <CalendarProvider>
-            <FinancialProvider>
-                <ResultsProvider>
-                    <AppLayout>{children}</AppLayout>
-                </ResultsProvider>
-            </FinancialProvider>
-          </CalendarProvider>
-        </CoachesProvider>
-      </PlayersProvider>
+      <ClubProvider>
+        <PlayersProvider>
+          <CoachesProvider>
+            <CalendarProvider>
+              <FinancialProvider>
+                  <ResultsProvider>
+                      <AppLayout>{children}</AppLayout>
+                  </ResultsProvider>
+              </FinancialProvider>
+            </CalendarProvider>
+          </CoachesProvider>
+        </PlayersProvider>
+      </ClubProvider>
     );
   }
   
@@ -68,7 +71,6 @@ function AppProviders({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Fallback pour les cas transitoires (par exemple, pendant que le routeur redirige)
   return (
     <div className="flex h-screen w-full items-center justify-center">
         <ClubLogo className="size-12 animate-pulse" />
@@ -92,5 +94,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    

@@ -1,7 +1,17 @@
+
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import Image from "next/image"
 
-export function ClubLogo({ className, ...props }: React.SVGProps<SVGSVGElement>) {
+interface ClubLogoProps extends React.SVGProps<SVGSVGElement> {
+    src?: string | null;
+}
+
+export function ClubLogo({ className, src, ...props }: ClubLogoProps) {
+  if (src) {
+      return <Image src={src} alt="Club Logo" width={40} height={40} className={cn("rounded-full", className)} data-ai-hint="club logo" />
+  }
+  
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

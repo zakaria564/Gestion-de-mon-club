@@ -1,3 +1,7 @@
+
+"use client";
+
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,9 +19,123 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { Download, Upload } from "lucide-react";
+import { Download, Upload, AlertCircle } from "lucide-react";
+import { useClubContext } from "@/context/club-context";
+import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function SettingsPage() {
+  const { 
+    clubInfo, 
+    loading, 
+    updateClubInfo, 
+    backupData, 
+    restoreData 
+  } = useClubContext();
+  const { toast } = useToast();
+
+  const [clubName, setClubName] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isBackuping, setIsBackuping] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreError, setRestoreError] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (clubInfo) {
+      setClubName(clubInfo.name);
+    }
+  }, [clubInfo]);
+
+  const handleSaveInfo = async () => {
+    if (!clubName) {
+        toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Le nom du club ne peut pas être vide.",
+        });
+        return;
+    }
+    setIsSaving(true);
+    await updateClubInfo(clubName, logoFile || undefined);
+    setIsSaving(false);
+    setLogoFile(null); 
+    if(fileInputRef.current) fileInputRef.current.value = "";
+    toast({
+        title: "Succès",
+        description: "Les informations du club ont été mises à jour.",
+    });
+  };
+
+  const handleBackup = async () => {
+    setIsBackuping(true);
+    try {
+        await backupData();
+        toast({
+            title: "Sauvegarde réussie",
+            description: "Un fichier JSON avec vos données a été téléchargé.",
+        });
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Erreur de sauvegarde",
+            description: "La sauvegarde des données a échoué.",
+        });
+    }
+    setIsBackuping(false);
+  }
+
+  const handleRestore = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsRestoring(true);
+    setRestoreError(null);
+    try {
+        await restoreData(file);
+        toast({
+            title: "Restauration réussie",
+            description: "Vos données ont été restaurées. La page va être rechargée.",
+        });
+        setTimeout(() => window.location.reload(), 2000);
+    } catch (error: any) {
+        setRestoreError(error.message || "Le fichier de sauvegarde est invalide ou corrompu.");
+        toast({
+            variant: "destructive",
+            title: "Erreur de restauration",
+            description: error.message || "Le fichier de sauvegarde est invalide ou corrompu.",
+        });
+    }
+    setIsRestoring(false);
+  }
+
+  if (loading) {
+      return (
+          <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+              <Skeleton className="h-10 w-48" />
+              <Skeleton className="h-12 w-full max-w-lg" />
+              <Card>
+                  <CardHeader>
+                      <Skeleton className="h-8 w-1/3" />
+                      <Skeleton className="h-4 w-2/3" />
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                      <Skeleton className="h-6 w-1/4" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-6 w-1/4" />
+                      <Skeleton className="h-10 w-full" />
+                  </CardContent>
+                  <CardFooter>
+                      <Skeleton className="h-10 w-32" />
+                  </CardFooter>
+              </Card>
+          </div>
+      )
+  }
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
        <h2 className="text-3xl font-bold tracking-tight">Paramètres du Club</h2>
@@ -38,15 +156,16 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="club-name">Nom du club</Label>
-                <Input id="club-name" defaultValue="Mon Super Club" />
+                <Input id="club-name" value={clubName} onChange={(e) => setClubName(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="club-logo">Logo du club</Label>
-                <Input id="club-logo" type="file" />
+                <Input id="club-logo" type="file" accept="image/*" onChange={(e) => setLogoFile(e.target.files?.[0] || null)} ref={fileInputRef}/>
+                <p className="text-xs text-muted-foreground">Si aucun nouveau logo n'est sélectionné, l'ancien sera conservé.</p>
               </div>
             </CardContent>
             <CardFooter>
-              <Button>Enregistrer les modifications</Button>
+              <Button onClick={handleSaveInfo} disabled={isSaving}>{isSaving ? "Enregistrement..." : "Enregistrer les modifications"}</Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -72,14 +191,29 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {restoreError && (
+                  <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{restoreError}</AlertDescription>
+                  </Alert>
+              )}
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button variant="outline" className="w-full">
-                  <Download className="mr-2 h-4 w-4" /> Sauvegarder les données (JSON)
+                <Button variant="outline" className="w-full" onClick={handleBackup} disabled={isBackuping}>
+                  <Download className="mr-2 h-4 w-4" /> 
+                  {isBackuping ? "Sauvegarde en cours..." : "Sauvegarder les données (JSON)"}
                 </Button>
-                <Button variant="outline" className="w-full">
-                  <Upload className="mr-2 h-4 w-4" /> Restaurer les données (JSON)
+                <Button variant="outline" className="w-full" onClick={() => document.getElementById('restore-input')?.click()} disabled={isRestoring}>
+                  <Upload className="mr-2 h-4 w-4" /> 
+                  {isRestoring ? "Restauration en cours..." : "Restaurer les données (JSON)"}
                 </Button>
+                <Input id="restore-input" type="file" accept=".json" className="hidden" onChange={handleRestore} />
               </div>
+              <Alert>
+                <AlertCircle className="h-4 w-4"/>
+                <AlertDescription>
+                  La restauration écrasera toutes les données actuelles (joueurs, entraîneurs, calendrier, etc.). Utilisez cette fonction avec précaution.
+                </AlertDescription>
+              </Alert>
             </CardContent>
           </Card>
         </TabsContent>
