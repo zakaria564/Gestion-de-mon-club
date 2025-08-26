@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { usePlayersContext } from "@/context/players-context";
 import type { Player } from "@/lib/data";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
@@ -176,13 +177,14 @@ export default function ResultsPage() {
                     <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un résultat
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
-                <form onSubmit={handleSubmit}>
-                    <DialogHeader>
-                        <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un résultat</DialogTitle>
-                        <DialogDescription>Remplissez les détails du match ci-dessous.</DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+                <DialogHeader>
+                    <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un résultat</DialogTitle>
+                    <DialogDescription>Remplissez les détails du match ci-dessous.</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="flex-1 overflow-y-hidden">
+                  <ScrollArea className="h-full pr-6 -mr-6">
+                    <div className="grid gap-4 py-4 px-1">
                        <div className="grid grid-cols-2 gap-4">
                           <div className="grid gap-2">
                               <Label htmlFor="category">Type de match</Label>
@@ -259,11 +261,11 @@ export default function ResultsPage() {
                             ))}
                              <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('assists')}>Ajouter un passeur</Button>
                         </div>
-                        
                     </div>
-                    <DialogFooter>
-                        <Button type="submit">Sauvegarder</Button>
-                    </DialogFooter>
+                  </ScrollArea>
+                  <DialogFooter className="pt-4 border-t">
+                      <Button type="submit">Sauvegarder</Button>
+                  </DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>
