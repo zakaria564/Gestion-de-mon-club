@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useResultsContext, NewResult, Result, PerformanceDetail } from "@/context/results-context";
-import { Edit, PlusCircle, Search, Trash2, X } from "lucide-react";
+import { Edit, PlusCircle, Trash2, X, FilterX } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -30,6 +30,7 @@ import type { Player } from "@/lib/data";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical'];
 
 export default function ResultsPage() {
   const context = useResultsContext();
@@ -46,8 +47,8 @@ export default function ResultsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingResult, setEditingResult] = useState<Result | null>(null);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterKey, setFilterKey] = useState("opponent");
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [opponentFilter, setOpponentFilter] = useState('all');
 
   const [newResult, setNewResult] = useState<NewResult>({
     opponent: '',
@@ -150,22 +151,18 @@ export default function ResultsPage() {
     await deleteResult(id);
   }
   
+  const opponentOptions = useMemo(() => {
+    const opponents = new Set(results.map(r => r.opponent));
+    return Array.from(opponents);
+  }, [results]);
+
   const filteredResults = useMemo(() => {
-    if (!searchQuery) return results;
     return results.filter(result => {
-      let valueToSearch: string | undefined;
-      if (filterKey === 'opponent') {
-        valueToSearch = result.opponent;
-      } else if (filterKey === 'category') {
-        valueToSearch = result.category;
-      }
-      
-      if (typeof valueToSearch === 'string') {
-        return valueToSearch.toLowerCase().includes(searchQuery.toLowerCase());
-      }
-      return false;
+      const categoryMatch = categoryFilter === 'all' || result.category === categoryFilter;
+      const opponentMatch = opponentFilter === 'all' || result.opponent === opponentFilter;
+      return categoryMatch && opponentMatch;
     });
-  }, [results, searchQuery, filterKey]);
+  }, [results, categoryFilter, opponentFilter]);
   
   const filteredPlayerOptions = useMemo(() => {
     return players
@@ -179,6 +176,11 @@ export default function ResultsPage() {
     }
     return items.map(item => `${item.playerName}${item.count ? ` (${item.count})` : ''}`).join(", ");
   };
+
+  const resetFilters = () => {
+    setCategoryFilter('all');
+    setOpponentFilter('all');
+  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -206,9 +208,9 @@ export default function ResultsPage() {
                                     <SelectValue placeholder="Sélectionner un type" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="Match Amical">Match Amical</SelectItem>
-                                    <SelectItem value="Match Championnat">Match de Championnat</SelectItem>
-                                    <SelectItem value="Match Coupe">Match de Coupe</SelectItem>
+                                    {matchCategories.map(cat => (
+                                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                    ))}
                                   </SelectContent>
                               </Select>
                           </div>
@@ -293,24 +295,32 @@ export default function ResultsPage() {
       </div>
 
        <div className="flex items-center gap-4 my-4">
-            <div className="relative w-full max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                    placeholder={`Rechercher par ${filterKey === 'opponent' ? 'adversaire' : 'catégorie'}...`}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                />
-            </div>
-            <Select value={filterKey} onValueChange={setFilterKey}>
-                <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filtrer par" />
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Filtrer par catégorie" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="opponent">Adversaire</SelectItem>
-                    <SelectItem value="category">Catégorie</SelectItem>
+                    <SelectItem value="all">Toutes les catégories</SelectItem>
+                    {matchCategories.map(cat => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
                 </SelectContent>
             </Select>
+            <Select value={opponentFilter} onValueChange={setOpponentFilter}>
+                <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Filtrer par adversaire" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">Tous les adversaires</SelectItem>
+                     {opponentOptions.map(op => (
+                        <SelectItem key={op} value={op}>{op}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            <Button variant="ghost" onClick={resetFilters} className="text-muted-foreground">
+                <FilterX className="mr-2 h-4 w-4"/>
+                Réinitialiser
+            </Button>
         </div>
 
       <Card>
