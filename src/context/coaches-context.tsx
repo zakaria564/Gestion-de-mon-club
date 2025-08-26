@@ -2,9 +2,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { db, storage } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
-import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { useAuth } from "./auth-context";
 import type { Coach } from "@/lib/data";
 
@@ -18,15 +17,6 @@ interface CoachesContextType {
 }
 
 const CoachesContext = createContext<CoachesContextType | undefined>(undefined);
-
-async function uploadPhoto(uid: string, photoDataUrl: string, coachId: string): Promise<string> {
-    if (!photoDataUrl.startsWith('data:image')) {
-        return photoDataUrl;
-    }
-    const storageRef = ref(storage, `users/${uid}/coach_photos/${coachId}-${Date.now()}`);
-    const snapshot = await uploadString(storageRef, photoDataUrl, 'data_url');
-    return await getDownloadURL(snapshot.ref);
-}
 
 export function CoachesProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -70,12 +60,7 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
     const collectionRef = getCoachesCollection();
     if (!collectionRef || !user) return;
     try {
-        let photoUrl = coachData.photo || '';
-        if (photoUrl && photoUrl.startsWith('data:image')) {
-            photoUrl = await uploadPhoto(user.uid, photoUrl, `new_coach_${Date.now()}`);
-        }
-
-      const newCoachData = { ...coachData, photo: photoUrl, uid: user.uid };
+      const newCoachData = { ...coachData, uid: user.uid };
       await addDoc(collectionRef, newCoachData);
       fetchCoaches();
     } catch (err) {
@@ -86,13 +71,8 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
   const updateCoach = async (coachData: Coach) => {
     if (!user) return;
     try {
-        let photoUrl = coachData.photo || '';
-        if (photoUrl && photoUrl.startsWith('data:image')) {
-            photoUrl = await uploadPhoto(user.uid, photoUrl, coachData.id);
-        }
-      
       const coachDoc = doc(db, "users", user.uid, "coaches", coachData.id);
-      const { id, ...dataToUpdate } = { ...coachData, photo: photoUrl };
+      const { id, ...dataToUpdate } = coachData;
       await updateDoc(coachDoc, dataToUpdate);
       fetchCoaches();
     } catch (err) {

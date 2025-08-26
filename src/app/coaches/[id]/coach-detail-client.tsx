@@ -30,7 +30,7 @@ const coachSchema = z.object({
   email: z.string().email("L'adresse email est invalide."),
   experience: z.coerce.number().min(0, "L'expérience ne peut être négative."),
   notes: z.string().optional(),
-  photo: z.string().optional(),
+  photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
 });
 
 type CoachFormValues = z.infer<typeof coachSchema>;
@@ -48,7 +48,6 @@ export function CoachDetailClient({ id }: { id: string }) {
   const { loading, updateCoach, deleteCoach, getCoachById } = context;
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const coach = useMemo(() => getCoachById(id), [id, getCoachById]);
   
@@ -59,11 +58,12 @@ export function CoachDetailClient({ id }: { id: string }) {
 
   useEffect(() => {
     if (coach && dialogOpen) {
-      form.reset(coach);
-      setPhotoPreview(coach.photo || null);
+      form.reset({
+        ...coach,
+        photo: coach.photo || '',
+      });
     } else if (!dialogOpen) {
         form.reset();
-        setPhotoPreview(null);
     }
   }, [coach, dialogOpen, form]);
 
@@ -105,19 +105,6 @@ export function CoachDetailClient({ id }: { id: string }) {
     return notFound();
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        form.setValue('photo', result);
-        setPhotoPreview(result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const onSubmit = async (data: CoachFormValues) => {
     if (!coach) return;
     const dataToUpdate = { 
@@ -147,6 +134,8 @@ export function CoachDetailClient({ id }: { id: string }) {
         return 'outline';
     }
   };
+
+  const photoPreview = form.watch('photo');
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -240,26 +229,27 @@ export function CoachDetailClient({ id }: { id: string }) {
               <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
                 <ScrollArea className="flex-1">
                   <div className="px-6 py-4 space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="photo"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col items-center gap-4">
-                          <FormLabel htmlFor="photo-upload-coach">
-                            <Avatar className="h-24 w-24 border-2 border-dashed hover:border-primary cursor-pointer">
-                              <AvatarImage src={photoPreview ?? field.value} alt="Aperçu de l'entraîneur" data-ai-hint="coach photo"/>
-                              <AvatarFallback className="bg-muted">
-                                <Camera className="h-8 w-8 text-muted-foreground" />
-                              </AvatarFallback>
-                            </Avatar>
-                          </FormLabel>
-                          <FormControl>
-                            <Input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="photo-upload-coach" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="flex flex-col items-center gap-4">
+                      <Avatar className="h-24 w-24 border">
+                        <AvatarImage src={photoPreview || undefined} alt="Aperçu de l'entraîneur" data-ai-hint="coach photo"/>
+                        <AvatarFallback className="bg-muted">
+                          <Camera className="h-8 w-8 text-muted-foreground" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <FormField
+                        control={form.control}
+                        name="photo"
+                        render={({ field }) => (
+                          <FormItem className="w-full max-w-sm">
+                            <FormLabel>URL de la photo</FormLabel>
+                            <FormControl>
+                              <Input type="text" placeholder="https://example.com/photo.jpg" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}

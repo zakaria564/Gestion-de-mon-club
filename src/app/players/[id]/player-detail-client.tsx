@@ -34,7 +34,7 @@ const playerSchema = z.object({
   address: z.string().min(1, "L'adresse est requise."),
   poste: z.string().min(1, "Le poste est requis."),
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
-  photo: z.string().optional(),
+  photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
   country: z.string().min(1, "Le pays est requis."),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
@@ -60,8 +60,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const player = useMemo(() => getPlayerById(id), [id, getPlayerById]);
   
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-
   const form = useForm<PlayerFormValues>({
     resolver: zodResolver(playerSchema),
     defaultValues: {},
@@ -91,10 +89,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
         tutorPhone: player.tutorPhone || '',
         tutorEmail: player.tutorEmail || '',
       });
-      setPhotoPreview(player.photo || null);
     } else if (!dialogOpen) {
       form.reset();
-      setPhotoPreview(null);
     }
   }, [player, dialogOpen, form]);
 
@@ -133,19 +129,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
     return notFound();
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        form.setValue('photo', result);
-        setPhotoPreview(result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const onSubmit = async (data: PlayerFormValues) => {
     if (!player) return;
     const dataToUpdate = { 
@@ -177,6 +160,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
   const formattedBirthDate = player.birthDate && isValid(parseISO(player.birthDate)) ? format(parseISO(player.birthDate), 'dd/MM/yyyy') : 'N/A';
   const playerStatus = player.status || 'Actif';
   const playerCategory = player.category || 'Sénior';
+
+  const photoPreview = form.watch('photo');
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -294,26 +279,27 @@ export function PlayerDetailClient({ id }: { id: string }) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
                 <ScrollArea className="flex-1 pr-6 -mr-6">
                    <div className="space-y-6 py-4 px-1">
-                    <FormField
-                      control={form.control}
-                      name="photo"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col items-center gap-4">
-                          <FormLabel htmlFor="photo-upload">
-                            <Avatar className="h-24 w-24 border-2 border-dashed hover:border-primary cursor-pointer">
-                              <AvatarImage src={photoPreview ?? field.value} alt="Aperçu du joueur" data-ai-hint="player photo" />
-                              <AvatarFallback className="bg-muted">
-                                <Camera className="h-8 w-8 text-muted-foreground" />
-                              </AvatarFallback>
-                            </Avatar>
-                          </FormLabel>
-                          <FormControl>
-                            <Input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="photo-upload" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="flex flex-col items-center gap-4">
+                        <Avatar className="h-24 w-24 border">
+                          <AvatarImage src={photoPreview || undefined} alt="Aperçu du joueur" data-ai-hint="player photo" />
+                          <AvatarFallback className="bg-muted">
+                            <Camera className="h-8 w-8 text-muted-foreground" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <FormField
+                          control={form.control}
+                          name="photo"
+                          render={({ field }) => (
+                            <FormItem className="w-full max-w-sm">
+                              <FormLabel>URL de la photo</FormLabel>
+                              <FormControl>
+                                <Input type="text" placeholder="https://example.com/photo.jpg" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                         <div className="space-y-4">
                             <h4 className="text-lg font-medium border-b pb-2">Informations Personnelles</h4>
