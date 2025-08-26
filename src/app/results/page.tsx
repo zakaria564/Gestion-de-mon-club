@@ -20,10 +20,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useResultsContext, NewResult, Result } from "@/context/results-context";
-import { Edit, PlusCircle, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Edit, PlusCircle, Search, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 export default function ResultsPage() {
   const context = useResultsContext();
@@ -38,11 +40,16 @@ export default function ResultsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingResult, setEditingResult] = useState<Result | null>(null);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterKey, setFilterKey] = useState("opponent");
+
   const [newResult, setNewResult] = useState<NewResult>({
     opponent: '',
     date: '',
     score: '',
     scorers: '',
+    assists: '',
+    category: 'Match Championnat',
     notes: '',
   });
 
@@ -50,9 +57,13 @@ export default function ResultsPage() {
     const { id, value } = e.target;
     setNewResult(prev => ({ ...prev, [id]: value }));
   };
+
+  const handleSelectChange = (value: string) => {
+    setNewResult(prev => ({ ...prev, category: value }));
+  };
   
   const resetForm = () => {
-    setNewResult({ opponent: '', date: '', score: '', scorers: '', notes: '' });
+    setNewResult({ opponent: '', date: '', score: '', scorers: '', assists: '', category: 'Match Championnat', notes: '' });
     setOpen(false);
     setIsEditing(false);
     setEditingResult(null);
@@ -75,7 +86,9 @@ export default function ResultsPage() {
         opponent: result.opponent,
         date: result.date,
         score: result.score,
+        category: result.category || 'Match Championnat',
         scorers: Array.isArray(result.scorers) ? result.scorers.join(', ') : result.scorers,
+        assists: result.assists && Array.isArray(result.assists) ? result.assists.join(', ') : '',
         notes: result.notes || '',
     });
     setOpen(true);
@@ -84,6 +97,14 @@ export default function ResultsPage() {
   const handleDelete = async (id: string) => {
     await deleteResult(id);
   }
+  
+  const filteredResults = useMemo(() => {
+    if (!searchQuery) return results;
+    return results.filter(result => {
+        const value = result[filterKey as keyof Result] as string;
+        return value?.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+  }, [results, searchQuery, filterKey]);
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -95,13 +116,26 @@ export default function ResultsPage() {
                     <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un résultat
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-lg">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un résultat</DialogTitle>
                         <DialogDescription>Remplissez les détails du match ci-dessous.</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="category">Type de match</Label>
+                            <Select onValueChange={handleSelectChange} value={newResult.category} required>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Sélectionner un type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Match Amical">Match Amical</SelectItem>
+                                  <SelectItem value="Match Championnat">Match de Championnat</SelectItem>
+                                  <SelectItem value="Match Coupe">Match de Coupe</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <div className="grid gap-2">
                             <Label htmlFor="opponent">Adversaire</Label>
                             <Input id="opponent" value={newResult.opponent} onChange={handleInputChange} required />
@@ -121,6 +155,10 @@ export default function ResultsPage() {
                             <Input id="scorers" value={newResult.scorers} onChange={handleInputChange} />
                         </div>
                         <div className="grid gap-2">
+                            <Label htmlFor="assists">Passeurs (séparés par une virgule)</Label>
+                            <Input id="assists" value={newResult.assists} onChange={handleInputChange} />
+                        </div>
+                        <div className="grid gap-2">
                             <Label htmlFor="notes">Notes</Label>
                             <Textarea id="notes" value={newResult.notes} onChange={handleInputChange} />
                         </div>
@@ -132,6 +170,28 @@ export default function ResultsPage() {
             </DialogContent>
         </Dialog>
       </div>
+
+       <div className="flex items-center gap-4 my-4">
+            <div className="relative w-full max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                    placeholder={`Rechercher par ${filterKey === 'opponent' ? 'adversaire' : 'catégorie'}...`}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                />
+            </div>
+            <Select value={filterKey} onValueChange={setFilterKey}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filtrer par" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="opponent">Adversaire</SelectItem>
+                    <SelectItem value="category">Catégorie</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Résultats des Matchs</CardTitle>
@@ -148,11 +208,12 @@ export default function ResultsPage() {
             </div>
           ) : (
             <Accordion type="single" collapsible className="w-full">
-              {results.map((result) => (
+              {filteredResults.map((result) => (
                 <AccordionItem key={result.id} value={`item-${result.id}`}>
                   <AccordionTrigger>
                     <div className="flex justify-between w-full pr-4 items-center">
-                      <div className="flex-1 text-left">
+                      <div className="flex-1 text-left flex items-center gap-4">
+                        <Badge variant="secondary">{result.category}</Badge>
                         <span>
                           Club vs {result.opponent} -{" "}
                           <span className="text-muted-foreground">{result.date}</span>
@@ -162,11 +223,17 @@ export default function ResultsPage() {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <div className="space-y-2">
+                    <div className="space-y-2 px-4">
                       <p>
                         <strong>Buteurs:</strong>{" "}
                         {result.scorers && Array.isArray(result.scorers) && result.scorers.length > 0
                           ? result.scorers.join(", ")
+                          : "Aucun"}
+                      </p>
+                       <p>
+                        <strong>Passeurs:</strong>{" "}
+                        {result.assists && Array.isArray(result.assists) && result.assists.length > 0
+                          ? result.assists.join(", ")
                           : "Aucun"}
                       </p>
                       <p>
@@ -200,6 +267,9 @@ export default function ResultsPage() {
                   </AccordionContent>
                 </AccordionItem>
               ))}
+                {filteredResults.length === 0 && (
+                    <p className="text-center text-muted-foreground py-8">Aucun résultat trouvé.</p>
+                )}
             </Accordion>
           )}
         </CardContent>
@@ -207,5 +277,3 @@ export default function ResultsPage() {
     </div>
   );
 }
-
-    

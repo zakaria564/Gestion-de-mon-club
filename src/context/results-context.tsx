@@ -13,6 +13,8 @@ export interface Result {
   date: string;
   score: string;
   scorers: string | string[];
+  assists?: string | string[];
+  category: string;
   notes?: string;
 }
 
@@ -66,9 +68,10 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, fetchResults]);
 
-  const processScorers = (scorers: string | string[]): string[] => {
-    if (Array.isArray(scorers)) return scorers;
-    return scorers.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  const processNames = (names: string | string[] | undefined): string[] => {
+    if (!names) return [];
+    if (Array.isArray(names)) return names;
+    return names.split(',').map(s => s.trim()).filter(s => s.length > 0);
   };
 
   const addResult = async (resultData: NewResult) => {
@@ -78,7 +81,8 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
       const newResultData = { 
           ...resultData, 
           uid: user.uid,
-          scorers: processScorers(resultData.scorers),
+          scorers: processNames(resultData.scorers),
+          assists: processNames(resultData.assists),
         };
       await addDoc(collectionRef, newResultData);
       fetchResults();
@@ -94,7 +98,8 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
       const { id, ...dataToUpdate } = resultData;
       await updateDoc(resultDoc, {
           ...dataToUpdate,
-          scorers: processScorers(dataToUpdate.scorers),
+          scorers: processNames(dataToUpdate.scorers),
+          assists: processNames(dataToUpdate.assists),
       });
       fetchResults();
     } catch (err) {
@@ -127,5 +132,3 @@ export const useResultsContext = () => {
     }
     return context;
 };
-
-    
