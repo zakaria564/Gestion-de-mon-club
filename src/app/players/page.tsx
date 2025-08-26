@@ -57,6 +57,7 @@ const playerSchema = z.object({
   country: z.string().min(1, "Le pays est requis."),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
+  tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
   category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
 });
@@ -76,6 +77,7 @@ const defaultValues: PlayerFormValues = {
     photo: '',
     tutorName: '',
     tutorPhone: '',
+    tutorEmail: '',
     status: 'Actif',
     category: 'Sénior',
 };
@@ -287,6 +289,19 @@ export default function PlayersPage() {
                                       <FormLabel>Téléphone du tuteur</FormLabel>
                                       <FormControl>
                                         <Input placeholder="ex: 0712345678" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="tutorEmail"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Email du tuteur</FormLabel>
+                                      <FormControl>
+                                        <Input type="email" placeholder="ex: tuteur@exemple.com" {...field} />
                                       </FormControl>
                                       <FormMessage />
                                     </FormItem>

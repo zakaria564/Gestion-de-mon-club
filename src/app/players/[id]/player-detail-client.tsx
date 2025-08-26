@@ -39,6 +39,7 @@ const playerSchema = z.object({
   country: z.string().min(1, "Le pays est requis."),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
+  tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
   category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
 });
@@ -79,6 +80,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
         country: player.country || '',
         tutorName: player.tutorName || '',
         tutorPhone: player.tutorPhone || '',
+        tutorEmail: player.tutorEmail || '',
       });
       setPhotoPreview(player.photo || null);
     } else if (!dialogOpen) {
@@ -234,6 +236,12 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <div className="flex items-center gap-4">
                         <Phone className="h-5 w-5 text-muted-foreground" />
                         <span>{player.tutorPhone}</span>
+                    </div>
+                  )}
+                  {player.tutorEmail && (
+                    <div className="flex items-center gap-4">
+                        <Mail className="h-5 w-5 text-muted-foreground" />
+                        <a href={`mailto:${player.tutorEmail}`} className="hover:underline">{player.tutorEmail}</a>
                     </div>
                   )}
               </div>
@@ -413,7 +421,20 @@ export function PlayerDetailClient({ id }: { id: string }) {
                               </FormItem>
                             )}
                           />
-                      </div>
+                          <FormField
+                              control={form.control}
+                              name="tutorEmail"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Email du tuteur</FormLabel>
+                                  <FormControl>
+                                    <Input type="email" placeholder="ex: tuteur@exemple.com" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                        </div>
                     </div>
 
                      <div className="space-y-4">
