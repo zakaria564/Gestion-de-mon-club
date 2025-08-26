@@ -116,7 +116,7 @@ export default function ResultsPage() {
                     <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un résultat
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-lg">
+            <DialogContent className="sm:max-w-2xl">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un résultat</DialogTitle>
