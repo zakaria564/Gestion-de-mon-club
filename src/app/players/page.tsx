@@ -443,10 +443,10 @@ export default function PlayersPage() {
                          </div>
                     </div>
                   </ScrollArea>
-                  <DialogFooter className="pt-4 border-t">
+                   <div className="flex justify-end gap-2 pt-4 border-t">
                       <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                       <Button type="submit">Enregistrer</Button>
-                  </DialogFooter>
+                  </div>
                 </form>
               </Form>
             </DialogContent>
