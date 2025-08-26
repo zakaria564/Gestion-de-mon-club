@@ -16,6 +16,7 @@ export interface Result {
   uid: string;
   opponent: string;
   date: string;
+  time: string;
   score: string;
   scorers: PerformanceDetail[];
   assists: PerformanceDetail[];

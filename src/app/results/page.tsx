@@ -52,6 +52,7 @@ export default function ResultsPage() {
   const [newResult, setNewResult] = useState<NewResult>({
     opponent: '',
     date: '',
+    time: '',
     score: '',
     scorers: [],
     assists: [],
@@ -104,7 +105,7 @@ export default function ResultsPage() {
   };
   
   const resetForm = () => {
-    setNewResult({ opponent: '', date: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior' });
+    setNewResult({ opponent: '', date: '', time: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior' });
     setOpen(false);
     setIsEditing(false);
     setEditingResult(null);
@@ -133,6 +134,7 @@ export default function ResultsPage() {
     setNewResult({
         opponent: result.opponent,
         date: result.date,
+        time: result.time || '',
         score: result.score,
         category: result.category || 'Match Championnat',
         teamCategory: result.teamCategory || 'Sénior',
@@ -223,9 +225,13 @@ export default function ResultsPage() {
                                 <Input id="date" type="date" value={newResult.date} onChange={handleInputChange} required />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="score">Score (ex: 3-1)</Label>
-                                <Input id="score" value={newResult.score} onChange={handleInputChange} required />
+                                <Label htmlFor="time">Heure</Label>
+                                <Input id="time" type="time" value={newResult.time} onChange={handleInputChange} required />
                             </div>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="score">Score (ex: 3-1)</Label>
+                            <Input id="score" value={newResult.score} onChange={handleInputChange} required />
                         </div>
 
                         <div className="space-y-4">
@@ -317,7 +323,7 @@ export default function ResultsPage() {
                         <Badge variant="secondary">{result.category}</Badge>
                         <span>
                           Club vs {result.opponent} -{" "}
-                          <span className="text-muted-foreground">{result.date}</span>
+                          <span className="text-muted-foreground">{result.date}{result.time ? ` à ${result.time}` : ''}</span>
                         </span>
                       </div>
                        <span className="font-bold text-primary mx-4">{result.score}</span>
