@@ -1,7 +1,7 @@
 
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { db, storage } from "@/lib/firebase";
 import { doc, getDoc, setDoc, collection, getDocs, writeBatch } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -27,7 +27,7 @@ interface ClubContextType {
 
 const ClubContext = createContext<ClubContextType | undefined>(undefined);
 
-export function ClubProvider({ children }: { children: React.ReactNode }) {
+function ClubBusinessLogic({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [clubInfo, setClubInfo] = useState<ClubInfo>({ name: "Gestion Club", logoUrl: null });
   const [loading, setLoading] = useState(true);
@@ -181,11 +181,23 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const value = {
+    clubInfo,
+    loading,
+    updateClubInfo,
+    backupData,
+    restoreData,
+  };
+
   return (
-    <ClubContext.Provider value={{ clubInfo, loading, updateClubInfo, backupData, restoreData }}>
+    <ClubContext.Provider value={value}>
       {children}
     </ClubContext.Provider>
   );
+}
+
+export function ClubProvider({ children }: { children: React.ReactNode }) {
+  return <ClubBusinessLogic>{children}</ClubBusinessLogic>
 }
 
 export const useClubContext = () => {

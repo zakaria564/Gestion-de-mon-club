@@ -51,19 +51,19 @@ function AppProviders({ children }: { children: React.ReactNode }) {
 
   if (user && !isAuthPage) {
     return (
-      <ClubProvider>
         <PlayersProvider>
           <CoachesProvider>
             <CalendarProvider>
               <FinancialProvider>
                   <ResultsProvider>
+                    <ClubProvider>
                       <AppLayout>{children}</AppLayout>
+                    </ClubProvider>
                   </ResultsProvider>
               </FinancialProvider>
             </CalendarProvider>
           </CoachesProvider>
         </PlayersProvider>
-      </ClubProvider>
     );
   }
   
