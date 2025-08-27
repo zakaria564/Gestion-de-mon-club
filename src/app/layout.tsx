@@ -10,7 +10,6 @@ import { CalendarProvider } from "@/context/calendar-context";
 import { FinancialProvider } from "@/context/financial-context";
 import { ResultsProvider } from "@/context/results-context";
 import { ClubProvider } from "@/context/club-context";
-import { NotificationsProvider } from "@/context/notifications-context";
 import { AppLayout } from "@/components/app-layout";
 import { Toaster } from "@/components/ui/toaster";
 import { usePathname, useRouter } from "next/navigation";
@@ -58,9 +57,7 @@ function AppProviders({ children }: { children: React.ReactNode }) {
               <FinancialProvider>
                   <ResultsProvider>
                     <ClubProvider>
-                      <NotificationsProvider>
                         <AppLayout>{children}</AppLayout>
-                      </NotificationsProvider>
                     </ClubProvider>
                   </ResultsProvider>
               </FinancialProvider>

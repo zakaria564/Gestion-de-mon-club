@@ -22,7 +22,6 @@ import {
   Trophy,
   Banknote,
   Settings,
-  Bell,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { ClubLogo } from "./club-logo";
@@ -46,7 +45,6 @@ const navItems = [
   { href: "/calendar", label: "Calendrier", icon: Calendar },
   { href: "/results", label: "Résultats", icon: Trophy },
   { href: "/finances", label: "Paiements", icon: Banknote },
-  { href: "/notifications", label: "Notifications", icon: Bell },
   { href: "/settings", label: "Paramètres", icon: Settings },
 ];
 

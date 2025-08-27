@@ -9,20 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Users, UserCheck, Calendar, Bell } from "lucide-react";
+import { Users, UserCheck, Calendar } from "lucide-react";
 import { usePlayersContext } from "@/context/players-context";
 import { useCoachesContext } from "@/context/coaches-context";
 import { useCalendarContext, CalendarEvent } from "@/context/calendar-context";
-import { useNotificationsContext } from "@/context/notifications-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -33,20 +24,18 @@ export default function Dashboard() {
   const playersContext = usePlayersContext();
   const coachesContext = useCoachesContext();
   const calendarContext = useCalendarContext();
-  const notificationsContext = useNotificationsContext();
 
   const [formattedUpcomingEvents, setFormattedUpcomingEvents] = useState<FormattedEvent[]>([]);
 
-  if (!playersContext || !coachesContext || !calendarContext || !notificationsContext) {
+  if (!playersContext || !coachesContext || !calendarContext) {
     throw new Error("Dashboard must be used within all required providers");
   }
 
   const { players, loading: playersLoading } = playersContext;
   const { coaches, loading: coachesLoading } = coachesContext;
   const { calendarEvents, loading: calendarLoading } = calendarContext;
-  const { notifications, loading: notificationsLoading } = notificationsContext;
   
-  const loading = playersLoading || coachesLoading || calendarLoading || notificationsLoading;
+  const loading = playersLoading || coachesLoading || calendarLoading;
 
   useEffect(() => {
     const upcoming = calendarEvents
@@ -64,8 +53,8 @@ export default function Dashboard() {
     return (
        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <h2 className="text-3xl font-bold tracking-tight">Tableau de bord</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {Array.from({length: 4}).map((_, i) => (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({length: 3}).map((_, i) => (
                 <Card key={i}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <Skeleton className="h-5 w-2/3" />
@@ -77,24 +66,14 @@ export default function Dashboard() {
                 </Card>
             ))}
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
-                <CardHeader>
-                    <CardTitle>Notifications Importantes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                   <Skeleton className="h-40 w-full" />
-                </CardContent>
-            </Card>
-            <Card className="col-span-3">
-                 <CardHeader>
-                    <CardTitle>Événements à Venir</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Skeleton className="h-40 w-full" />
-                </CardContent>
-            </Card>
-        </div>
+        <Card>
+            <CardHeader>
+                <CardTitle>Événements à Venir</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Skeleton className="h-40 w-full" />
+            </CardContent>
+        </Card>
       </div>
     )
   }
@@ -102,7 +81,7 @@ export default function Dashboard() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <h2 className="text-3xl font-bold tracking-tight">Tableau de bord</h2>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -147,62 +126,8 @@ export default function Dashboard() {
             </CardContent>
             </Card>
         </Link>
-        <Link href="/notifications">
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Notifications
-              </CardTitle>
-              <Bell className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{notifications.length}</div>
-              <p className="text-xs text-muted-foreground">
-                messages non lus
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Notifications Importantes</CardTitle>
-            <CardDescription>
-              Messages et rappels récents pour le club.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Message</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Priorité</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {notifications.slice(0, 5).map((notification) => (
-                  <TableRow key={notification.id}>
-                    <TableCell>{notification.message}</TableCell>
-                    <TableCell>{format(new Date(notification.date), 'dd/MM/yyyy')}</TableCell>
-                    <TableCell>
-                      <Badge variant={notification.priority === 'Haute' ? 'destructive' : 'secondary'}>{notification.priority}</Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {notifications.length === 0 && (
-                    <TableRow>
-                        <TableCell colSpan={3} className="text-center text-muted-foreground">
-                        Aucune notification à afficher.
-                        </TableCell>
-                    </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-        <Card className="col-span-3">
+       <Card>
           <CardHeader>
             <CardTitle>Événements à Venir</CardTitle>
             <CardDescription>
@@ -227,12 +152,11 @@ export default function Dashboard() {
                 </Link>
               ))}
                {formattedUpcomingEvents.length === 0 && (
-                <p className="text-sm text-muted-foreground">Aucun événement à venir.</p>
+                <p className="text-sm text-muted-foreground text-center">Aucun événement à venir.</p>
               )}
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }
