@@ -18,11 +18,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { notifications } from "@/lib/data";
 import { Users, UserCheck, Calendar, Bell } from "lucide-react";
 import { usePlayersContext } from "@/context/players-context";
 import { useCoachesContext } from "@/context/coaches-context";
 import { useCalendarContext, CalendarEvent } from "@/context/calendar-context";
+import { useNotificationsContext } from "@/context/notifications-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -33,18 +33,20 @@ export default function Dashboard() {
   const playersContext = usePlayersContext();
   const coachesContext = useCoachesContext();
   const calendarContext = useCalendarContext();
+  const notificationsContext = useNotificationsContext();
 
   const [formattedUpcomingEvents, setFormattedUpcomingEvents] = useState<FormattedEvent[]>([]);
 
-  if (!playersContext || !coachesContext || !calendarContext) {
+  if (!playersContext || !coachesContext || !calendarContext || !notificationsContext) {
     throw new Error("Dashboard must be used within all required providers");
   }
 
   const { players, loading: playersLoading } = playersContext;
   const { coaches, loading: coachesLoading } = coachesContext;
   const { calendarEvents, loading: calendarLoading } = calendarContext;
+  const { notifications, loading: notificationsLoading } = notificationsContext;
   
-  const loading = playersLoading || coachesLoading || calendarLoading;
+  const loading = playersLoading || coachesLoading || calendarLoading || notificationsLoading;
 
   useEffect(() => {
     const upcoming = calendarEvents
@@ -180,15 +182,22 @@ export default function Dashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {notifications.map((notification) => (
+                {notifications.slice(0, 5).map((notification) => (
                   <TableRow key={notification.id}>
                     <TableCell>{notification.message}</TableCell>
-                    <TableCell>{notification.date}</TableCell>
+                    <TableCell>{format(new Date(notification.date), 'dd/MM/yyyy')}</TableCell>
                     <TableCell>
                       <Badge variant={notification.priority === 'Haute' ? 'destructive' : 'secondary'}>{notification.priority}</Badge>
                     </TableCell>
                   </TableRow>
                 ))}
+                {notifications.length === 0 && (
+                    <TableRow>
+                        <TableCell colSpan={3} className="text-center text-muted-foreground">
+                        Aucune notification à afficher.
+                        </TableCell>
+                    </TableRow>
+                )}
               </TableBody>
             </Table>
           </CardContent>

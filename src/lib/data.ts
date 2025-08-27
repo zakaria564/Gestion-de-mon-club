@@ -47,6 +47,14 @@ export type CalendarEvent = {
   location: string;
 };
 
+export type Notification = {
+    id: string;
+    uid: string;
+    message: string;
+    date: string;
+    priority: 'Haute' | 'Moyenne';
+}
+
 export const clubStats = {
   totalPlayers: 45,
   totalCoaches: 5,
@@ -59,10 +67,4 @@ export const results = [
   { id: 2, opponent: 'Paris SG', date: '2024-07-25', score: '0-2', scorers: [], notes: 'Match difficile contre une équipe solide.' },
   { id: 3, opponent: 'OGC Nice', date: '2024-07-18', score: '2-2', scorers: ['J. Dupont', 'M. Curie'], notes: 'Match nul arraché en fin de partie.' },
 ];
-
-export const notifications = [
-    { id: 1, message: 'Rappel: Inscriptions pour la nouvelle saison ouvertes.', date: '2024-08-10', priority: 'Moyenne' },
-    { id: 2, message: 'Le prochain match a été déplacé à 19h.', date: '2024-08-12', priority: 'Haute' },
-];
-
     
