@@ -100,7 +100,8 @@ export default function CalendarPage() {
   const handleDayClick = (day: Date | undefined) => {
     if (!day) return;
     setDate(day);
-    openAddDialog(day);
+    // We don't open the dialog on day click anymore, only on plus icon.
+    // openAddDialog(day);
   };
 
   const openEditDialog = (event: CalendarEvent) => {
@@ -243,7 +244,14 @@ export default function CalendarPage() {
                   DayContent: ({ date: dayDate }) => {
                     const dayEvents = eventsByDate[format(dayDate, 'yyyy-MM-dd')];
                     return (
-                      <div className="relative h-full w-full flex flex-col items-center justify-center">
+                      <div className="relative h-full w-full flex flex-col items-center justify-center group">
+                        <PlusCircle 
+                          className="absolute top-1 right-1 h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openAddDialog(dayDate);
+                          }}
+                        />
                         <span>{dayDate.getDate()}</span>
                         {dayEvents && (
                           <div className="absolute bottom-1 flex space-x-1">
@@ -340,3 +348,5 @@ export default function CalendarPage() {
     </div>
   );
 }
+
+    
