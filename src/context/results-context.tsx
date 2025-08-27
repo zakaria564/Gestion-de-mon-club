@@ -1,9 +1,9 @@
 
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 
 export interface PerformanceDetail {
@@ -37,7 +37,7 @@ interface ResultsContextType {
 
 const ResultsContext = createContext<ResultsContextType | undefined>(undefined);
 
-export function ResultsProvider({ children }: { children: React.ReactNode }) {
+export function ResultsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +47,7 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
     return collection(db, "users", user.uid, "results");
   }, [user]);
 
-  useEffect(() => {
+  const fetchResults = useCallback(async () => {
     const collectionRef = getResultsCollection();
     if (!collectionRef) {
       setResults([]);
@@ -55,18 +55,27 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     
-    const q = query(collectionRef, orderBy("date", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    setLoading(true);
+    try {
+        const q = query(collectionRef, orderBy("date", "desc"));
+        const snapshot = await getDocs(q);
         const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Result));
         setResults(data);
-        setLoading(false);
-    }, (err) => {
+    } catch (err) {
         console.error("Error fetching results: ", err);
+    } finally {
         setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [user, getResultsCollection]);
+    }
+  }, [getResultsCollection]);
+  
+  useEffect(() => {
+    if(user) {
+      fetchResults();
+    } else {
+        setResults([]);
+        setLoading(false);
+    }
+  }, [user, fetchResults]);
 
   const addResult = async (resultData: NewResult) => {
     const collectionRef = getResultsCollection();
@@ -77,6 +86,7 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
           uid: user.uid,
         };
       await addDoc(collectionRef, newResultData);
+      await fetchResults();
     } catch (err) {
       console.error("Error adding result: ", err);
     }
@@ -88,6 +98,7 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
       const resultDoc = doc(db, "users", user.uid, "results", resultData.id);
       const { id, ...dataToUpdate } = resultData;
       await updateDoc(resultDoc, dataToUpdate);
+      await fetchResults();
     } catch (err) {
       console.error("Error updating result: ", err);
     }
@@ -98,6 +109,7 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
     try {
       const resultDoc = doc(db, "users", user.uid, "results", id);
       await deleteDoc(resultDoc);
+      await fetchResults();
     } catch (err) {
       console.error("Error deleting result: ", err);
     }

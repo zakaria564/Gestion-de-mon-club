@@ -1,9 +1,9 @@
 
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Player } from "@/lib/data";
 
@@ -20,7 +20,7 @@ interface PlayersContextType {
 
 const PlayersContext = createContext<PlayersContextType | undefined>(undefined);
 
-export function PlayersProvider({ children }: { children: React.ReactNode }) {
+export function PlayersProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
     return collection(db, "users", user.uid, "players");
   }, [user]);
 
-  useEffect(() => {
+  const fetchPlayers = useCallback(async () => {
     const collectionRef = getPlayersCollection();
     if (!collectionRef) {
       setPlayers([]);
@@ -38,18 +38,27 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const q = query(collectionRef);
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    setLoading(true);
+    try {
+        const q = query(collectionRef);
+        const snapshot = await getDocs(q);
         const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Player));
         setPlayers(data);
-        setLoading(false);
-    }, (err) => {
+    } catch (err) {
         console.error("Error fetching players: ", err);
+    } finally {
         setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [user, getPlayersCollection]);
+    }
+  }, [getPlayersCollection]);
+  
+  useEffect(() => {
+    if(user) {
+      fetchPlayers();
+    } else {
+      setPlayers([]);
+      setLoading(false);
+    }
+  }, [user, fetchPlayers]);
 
   const addPlayer = async (playerData: NewPlayer) => {
     const collectionRef = getPlayersCollection();
@@ -57,6 +66,7 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
     try {
       const newPlayerData = { ...playerData, uid: user.uid };
       await addDoc(collectionRef, newPlayerData);
+      await fetchPlayers();
     } catch (err) {
       console.error("Error adding player: ", err);
     }
@@ -68,6 +78,7 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
       const playerDoc = doc(db, "users", user.uid, "players", playerData.id);
       const { id, ...dataToUpdate } = playerData;
       await updateDoc(playerDoc, dataToUpdate);
+      await fetchPlayers();
     } catch (err) {
       console.error("Error updating player: ", err);
     }
@@ -78,6 +89,7 @@ export function PlayersProvider({ children }: { children: React.ReactNode }) {
     try {
       const playerDoc = doc(db, "users", user.uid, "players", id);
       await deleteDoc(playerDoc);
+      await fetchPlayers();
     } catch (err) {
       console.error("Error deleting player: ", err);
     }

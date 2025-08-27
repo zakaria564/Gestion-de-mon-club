@@ -1,9 +1,9 @@
 
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, updateDoc, doc, runTransaction, onSnapshot, query } from "firebase/firestore";
+import { collection, addDoc, updateDoc, doc, runTransaction, getDocs, query } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Payment, NewPayment, Transaction, Overview } from "@/lib/financial-data";
 
@@ -23,7 +23,7 @@ interface FinancialContextType {
 
 const FinancialContext = createContext<FinancialContextType | undefined>(undefined);
 
-export function FinancialProvider({ children }: { children: React.ReactNode }) {
+export function FinancialProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [playerPayments, setPlayerPayments] = useState<Payment[]>([]);
   const [coachSalaries, setCoachSalaries] = useState<Payment[]>([]);
@@ -39,70 +39,45 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
     return collection(db, "users", user.uid, "coachSalaries");
   }, [user]);
 
-  useEffect(() => {
-    if (!user) {
-        setPlayerPayments([]);
-        setCoachSalaries([]);
-        setLoading(false);
-        return;
-    }
-    
+  const fetchFinancialData = useCallback(async () => {
+    setLoading(true);
     const playerPaymentsRef = getPlayerPaymentsCollection();
     const coachSalariesRef = getCoachSalariesCollection();
 
-    let playerUnsub: (() => void) | undefined;
-    let coachUnsub: (() => void) | undefined;
-    
-    let playerLoaded = false;
-    let coachLoaded = false;
-
-    const checkLoadingDone = () => {
-        if (playerLoaded && coachLoaded) {
-            setLoading(false);
+    try {
+        if(playerPaymentsRef) {
+            const playerQuery = query(playerPaymentsRef);
+            const playerSnapshot = await getDocs(playerQuery);
+            const playerData = playerSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Payment));
+            setPlayerPayments(playerData);
+        } else {
+            setPlayerPayments([]);
         }
-    }
 
-    if(playerPaymentsRef) {
-        const playerQuery = query(playerPaymentsRef);
-        playerUnsub = onSnapshot(playerQuery, (snapshot) => {
-            const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Payment));
-            setPlayerPayments(data);
-            playerLoaded = true;
-            checkLoadingDone();
-        }, (error) => {
-            console.error("Error fetching player payments:", error);
-            playerLoaded = true;
-            checkLoadingDone();
-        });
-    } else {
-        playerLoaded = true;
+        if(coachSalariesRef) {
+            const coachQuery = query(coachSalariesRef);
+            const coachSnapshot = await getDocs(coachQuery);
+            const coachData = coachSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Payment));
+            setCoachSalaries(coachData);
+        } else {
+            setCoachSalaries([]);
+        }
+    } catch(error) {
+        console.error("Error fetching financial data:", error);
+    } finally {
+        setLoading(false);
     }
-
-    if(coachSalariesRef) {
-        const coachQuery = query(coachSalariesRef);
-        coachUnsub = onSnapshot(coachQuery, (snapshot) => {
-            const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Payment));
-            setCoachSalaries(data);
-            coachLoaded = true;
-            checkLoadingDone();
-        }, (error) => {
-            console.error("Error fetching coach salaries:", error);
-            coachLoaded = true;
-            checkLoadingDone();
-        });
-    } else {
-        coachLoaded = true;
-    }
-    
-    if(!playerPaymentsRef && !coachSalariesRef) {
-      setLoading(false);
-    }
-    
-    return () => {
-        playerUnsub?.();
-        coachUnsub?.();
-    };
   }, [user, getPlayerPaymentsCollection, getCoachSalariesCollection]);
+  
+  useEffect(() => {
+    if(user) {
+        fetchFinancialData();
+    } else {
+        setPlayerPayments([]);
+        setCoachSalaries([]);
+        setLoading(false);
+    }
+  }, [user, fetchFinancialData]);
 
 
   const calculateStatus = (total: number, paid: number): 'payé' | 'non payé' | 'partiel' => {
@@ -134,6 +109,7 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
       };
 
       await addDoc(collectionRef, { ...newPayment, uid: user.uid });
+      await fetchFinancialData();
     } catch (err) {
       console.error(`Error adding payment: `, err);
     }
@@ -170,6 +146,7 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
                 transactions: updatedTransactions
             });
         });
+        await fetchFinancialData();
     } catch (err) {
         console.error(`Error updating ${collectionName}:`, err);
     }

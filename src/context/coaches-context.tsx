@@ -1,9 +1,9 @@
 
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Coach } from "@/lib/data";
 
@@ -18,7 +18,7 @@ interface CoachesContextType {
 
 const CoachesContext = createContext<CoachesContextType | undefined>(undefined);
 
-export function CoachesProvider({ children }: { children: React.ReactNode }) {
+export function CoachesProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +28,7 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
     return collection(db, "users", user.uid, "coaches");
   }, [user]);
 
-  useEffect(() => {
+  const fetchCoaches = useCallback(async () => {
     const collectionRef = getCoachesCollection();
     if (!collectionRef) {
         setCoaches([]);
@@ -36,18 +36,27 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
         return;
     }
     
-    const q = query(collectionRef);
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    setLoading(true);
+    try {
+        const q = query(collectionRef);
+        const snapshot = await getDocs(q);
         const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Coach));
         setCoaches(data);
-        setLoading(false);
-    }, (err) => {
+    } catch (err) {
         console.error("Error fetching coaches: ", err);
+    } finally {
         setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [user, getCoachesCollection]);
+    }
+  }, [getCoachesCollection]);
+  
+  useEffect(() => {
+    if(user) {
+        fetchCoaches();
+    } else {
+        setCoaches([]);
+        setLoading(false);
+    }
+  }, [user, fetchCoaches]);
 
   const addCoach = async (coachData: Omit<Coach, 'id' | 'uid'>) => {
     const collectionRef = getCoachesCollection();
@@ -55,6 +64,7 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
     try {
       const newCoachData = { ...coachData, uid: user.uid };
       await addDoc(collectionRef, newCoachData);
+      await fetchCoaches();
     } catch (err) {
       console.error("Error adding coach: ", err);
     }
@@ -66,6 +76,7 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
       const coachDoc = doc(db, "users", user.uid, "coaches", coachData.id);
       const { id, ...dataToUpdate } = coachData;
       await updateDoc(coachDoc, dataToUpdate);
+      await fetchCoaches();
     } catch (err) {
       console.error("Error updating coach: ", err);
     }
@@ -76,6 +87,7 @@ export function CoachesProvider({ children }: { children: React.ReactNode }) {
     try {
       const coachDoc = doc(db, "users", user.uid, "coaches", id);
       await deleteDoc(coachDoc);
+      await fetchCoaches();
     } catch (err) {
       console.error("Error deleting coach: ", err);
     }
