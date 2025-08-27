@@ -115,8 +115,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                       <AvatarFallback>{user?.email?.substring(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="text-left group-data-[collapsible=icon]:hidden">
-                      <p className="font-medium text-sm truncate">{user?.displayName || "Admin"}</p>
-                      <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                      <p className="font-medium text-sm truncate">Compte</p>
                     </div>
                  </Button>
               </DropdownMenuTrigger>
