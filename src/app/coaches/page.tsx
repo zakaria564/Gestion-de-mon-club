@@ -24,6 +24,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -41,6 +48,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
 
 const coachSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
@@ -66,12 +74,13 @@ const defaultValues: CoachFormValues = {
 
 export default function CoachesPage() {
   const context = useCoachesContext();
+  const { toast } = useToast();
   
   if (!context) {
     throw new Error("CoachesPage must be used within a CoachesProvider");
   }
 
-  const { coaches, loading, addCoach } = context;
+  const { coaches, loading, addCoach, updateCoach } = context;
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -96,6 +105,17 @@ export default function CoachesPage() {
         return 'secondary';
       default:
         return 'outline';
+    }
+  };
+
+  const handleStatusChange = async (coach: Coach, newStatus: string) => {
+    if (coach.status !== newStatus) {
+      const updatedCoach = { ...coach, status: newStatus as Coach['status'] };
+      await updateCoach(updatedCoach);
+      toast({
+          title: "Statut mis à jour",
+          description: `Le statut de ${coach.name} est maintenant ${newStatus}.`
+      });
     }
   };
 
@@ -323,8 +343,8 @@ export default function CoachesPage() {
                 <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {coachesInCategory.map((coach) => (
-                    <Link key={coach.id} href={`/coaches/${coach.id}`} className="flex flex-col h-full">
-                        <Card className="flex flex-col w-full hover:shadow-lg transition-shadow h-full">
+                    <Card key={coach.id} className="flex flex-col w-full hover:shadow-lg transition-shadow h-full group">
+                        <Link href={`/coaches/${coach.id}`} className="flex flex-col h-full">
                             <CardHeader className="p-4">
                                 <div className="flex items-center gap-4">
                                 <Avatar className="h-16 w-16">
@@ -337,14 +357,29 @@ export default function CoachesPage() {
                                 </div>
                                 </div>
                             </CardHeader>
-                            <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
-                                <div className="flex justify-between items-center">
-                                    <Badge variant="outline" className="text-xs">{coach.category}</Badge>
-                                    <Badge variant={getBadgeVariant(coach.status) as any} className="text-xs">{coach.status}</Badge>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </Link>
+                        </Link>
+                        <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
+                            <div className="flex justify-between items-center">
+                                <Badge variant="outline" className="text-xs">{coach.category}</Badge>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
+                                            <Badge variant={getBadgeVariant(coach.status) as any} className="text-xs cursor-pointer">{coach.status}</Badge>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
+                                        <DropdownMenuRadioGroup
+                                            value={coach.status}
+                                            onValueChange={(newStatus) => handleStatusChange(coach, newStatus)}
+                                        >
+                                            <DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="Inactif">Inactif</DropdownMenuRadioItem>
+                                        </DropdownMenuRadioGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </CardContent>
+                    </Card>
                 ))}
                 </div>
             </div>

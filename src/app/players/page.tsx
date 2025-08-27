@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Player } from "@/lib/data";
-import { PlusCircle, Camera, Search, FileHeart } from "lucide-react";
+import { PlusCircle, Camera, Search } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -95,7 +102,7 @@ export default function PlayersPage() {
       throw new Error("PlayersPage must be used within a PlayersProvider");
     }
 
-    const { players, loading, addPlayer } = context;
+    const { players, loading, addPlayer, updatePlayer } = context;
     const [dialogOpen, setDialogOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterKey, setFilterKey] = useState("name");
@@ -123,6 +130,17 @@ export default function PlayersPage() {
         case 'Blessé': return 'destructive';
         case 'Suspendu': return 'secondary';
         default: return 'outline';
+      }
+    };
+
+    const handleStatusChange = async (player: Player, newStatus: string) => {
+      if (player.status !== newStatus) {
+          const updatedPlayer = { ...player, status: newStatus as Player['status'] };
+          await updatePlayer(updatedPlayer);
+          toast({
+              title: "Statut mis à jour",
+              description: `Le statut de ${player.name} est maintenant ${newStatus}.`
+          });
       }
     };
 
@@ -533,8 +551,8 @@ export default function PlayersPage() {
                   <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
                   <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {playersInCategory.map((player) => (
-                      <Link key={player.id} href={`/players/${player.id}`} className="flex flex-col h-full">
-                          <Card className="flex flex-col w-full hover:shadow-lg transition-shadow h-full">
+                      <Card key={player.id} className="flex flex-col w-full hover:shadow-lg transition-shadow h-full group">
+                          <Link href={`/players/${player.id}`} className="flex flex-col h-full">
                               <CardHeader className="p-4">
                                   <div className="flex items-center gap-4">
                                   <Avatar className="h-16 w-16">
@@ -547,14 +565,31 @@ export default function PlayersPage() {
                                   </div>
                                   </div>
                               </CardHeader>
-                              <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
-                                  <div className="flex justify-between items-center">
-                                      <Badge variant="outline" className="text-xs">{player.category || 'Sénior'}</Badge>
-                                      <Badge variant={getBadgeVariant(player.status || 'Actif') as any} className="text-xs">{player.status || 'Actif'}</Badge>
-                                  </div>
-                              </CardContent>
-                          </Card>
-                      </Link>
+                          </Link>
+                          <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
+                              <div className="flex justify-between items-center">
+                                  <Badge variant="outline" className="text-xs">{player.category || 'Sénior'}</Badge>
+                                  <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                          <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
+                                              <Badge variant={getBadgeVariant(player.status || 'Actif') as any} className="text-xs cursor-pointer">{player.status || 'Actif'}</Badge>
+                                          </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
+                                          <DropdownMenuRadioGroup
+                                              value={player.status}
+                                              onValueChange={(newStatus) => handleStatusChange(player, newStatus)}
+                                          >
+                                              <DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem>
+                                              <DropdownMenuRadioItem value="Blessé">Blessé</DropdownMenuRadioItem>
+                                              <DropdownMenuRadioItem value="Suspendu">Suspendu</DropdownMenuRadioItem>
+                                              <DropdownMenuRadioItem value="Inactif">Inactif</DropdownMenuRadioItem>
+                                          </DropdownMenuRadioGroup>
+                                      </DropdownMenuContent>
+                                  </DropdownMenu>
+                              </div>
+                          </CardContent>
+                      </Card>
                   ))}
                   </div>
               </div>
