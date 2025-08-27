@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
@@ -37,6 +38,7 @@ import {
 import { ProtectedRoute, useAuth } from "@/context/auth-context";
 import { useClubContext } from "@/context/club-context";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "./ui/skeleton";
 
 const navItems = [
   { href: "/", label: "Tableau de bord", icon: LayoutDashboard },
@@ -47,6 +49,19 @@ const navItems = [
   { href: "/finances", label: "Paiements", icon: Banknote },
   { href: "/settings", label: "Paramètres", icon: Settings },
 ];
+
+function MobileHeader() {
+    const pathname = usePathname();
+    const currentPage = navItems.find((item) => item.href === pathname);
+    const pageTitle = currentPage ? currentPage.label : "Gestion Club";
+
+    return (
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:hidden">
+            <SidebarTrigger />
+            <span className="font-semibold">{pageTitle}</span>
+        </header>
+    );
+}
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -70,9 +85,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (loading || clubLoading) {
     return (
-        <div className="flex h-screen w-full items-center justify-center">
-            <ClubLogo className="size-12 animate-pulse" />
-        </div>
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+          <ClubLogo className="size-12 animate-pulse" />
+      </div>
     );
   }
 
@@ -137,7 +152,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </DropdownMenu>
           </SidebarFooter>
         </Sidebar>
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 flex flex-col h-screen">
+          <MobileHeader />
+          <div className="flex-1 overflow-auto">
+            {children}
+          </div>
+        </main>
       </SidebarProvider>
     </ProtectedRoute>
   );
