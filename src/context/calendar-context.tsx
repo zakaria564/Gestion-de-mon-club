@@ -39,7 +39,7 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
 
     setLoading(true);
     try {
-        const q = query(collectionRef, orderBy("date", "desc"));
+        const q = query(collectionRef, orderBy("date", "desc"), orderBy("time", "asc"));
         const snapshot = await getDocs(q);
         const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as CalendarEvent));
         setCalendarEvents(data);
@@ -109,3 +109,5 @@ export const useCalendarContext = () => {
     }
     return context;
 };
+
+    

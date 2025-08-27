@@ -134,7 +134,16 @@ export default function CalendarPage() {
   }, {} as Record<string, typeof calendarEvents>);
 
   const selectedDateString = date ? format(date, 'yyyy-MM-dd') : undefined;
-  const eventsForSelectedDate = selectedDateString ? eventsByDate[selectedDateString] : undefined;
+  const eventsForSelectedDate = selectedDateString 
+    ? (eventsByDate[selectedDateString] || []).sort((a, b) => {
+        const timeA = a.time.split(':').map(Number);
+        const timeB = b.time.split(':').map(Number);
+        if (timeA[0] !== timeB[0]) {
+          return timeA[0] - timeB[0];
+        }
+        return timeA[1] - timeB[1];
+      })
+    : undefined;
 
   if (loading || !date) {
     return (
@@ -283,7 +292,7 @@ export default function CalendarPage() {
         </div>
 
         <div className="md:col-span-1">
-          {date && eventsForSelectedDate && (
+          {date && eventsForSelectedDate && eventsForSelectedDate.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>Événements du {date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle>
@@ -304,7 +313,7 @@ export default function CalendarPage() {
               </CardContent>
             </Card>
           )}
-           {!eventsForSelectedDate && date && (
+           {(!eventsForSelectedDate || eventsForSelectedDate.length === 0) && date && (
                 <Card>
                 <CardHeader>
                     <CardTitle>Événements du {date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle>
