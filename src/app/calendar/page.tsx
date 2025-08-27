@@ -100,7 +100,6 @@ export default function CalendarPage() {
   const handleDayClick = (day: Date | undefined) => {
     if (!day) return;
     setDate(day);
-    openAddDialog(day);
   };
 
   const openEditDialog = (event: CalendarEvent) => {
@@ -375,5 +374,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-
-    
