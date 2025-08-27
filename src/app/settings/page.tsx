@@ -55,7 +55,7 @@ export default function SettingsPage() {
   const { toast } = useToast();
 
   const [clubName, setClubName] = useState("");
-  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoUrl, setLogoUrl] = useState("");
   
   const [displayName, setDisplayName] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -76,6 +76,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (clubInfo) {
       setClubName(clubInfo.name);
+      setLogoUrl(clubInfo.logoUrl || "");
     }
     if (user) {
         setDisplayName(user.displayName || '');
@@ -92,10 +93,8 @@ export default function SettingsPage() {
         return;
     }
     setIsSavingInfo(true);
-    await updateClubInfo(clubName, logoFile || undefined);
+    await updateClubInfo(clubName, logoUrl);
     setIsSavingInfo(false);
-    setLogoFile(null); 
-    if(fileInputRef.current) fileInputRef.current.value = "";
     toast({
         title: "Succès",
         description: "Les informations du club ont été mises à jour.",
@@ -255,9 +254,8 @@ export default function SettingsPage() {
                 <Input id="club-name" value={clubName} onChange={(e) => setClubName(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="club-logo">Logo du club</Label>
-                <Input id="club-logo" type="file" accept="image/*" onChange={(e) => setLogoFile(e.target.files?.[0] || null)} ref={fileInputRef}/>
-                <p className="text-xs text-muted-foreground">Si aucun nouveau logo n'est sélectionné, l'ancien sera conservé.</p>
+                <Label htmlFor="club-logo-url">URL du logo du club</Label>
+                <Input id="club-logo-url" type="text" placeholder="https://example.com/logo.png" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} />
               </div>
             </CardContent>
             <CardFooter>
@@ -280,7 +278,7 @@ export default function SettingsPage() {
                       <AlertDescription>{profileError}</AlertDescription>
                   </Alert>
               )}
-              <div className="space-y-2">
+               <div className="space-y-2">
                 <Label htmlFor="display-name">Nom d'utilisateur</Label>
                 <Input id="display-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
               </div>
@@ -341,7 +339,7 @@ export default function SettingsPage() {
                   <Upload className="mr-2 h-4 w-4" /> 
                   {isRestoring ? "Restauration en cours..." : "Restaurer les données (JSON)"}
                 </Button>
-                <Input id="restore-input" type="file" accept=".json" className="hidden" onChange={handleRestore} />
+                <Input id="restore-input" type="file" accept=".json" className="hidden" onChange={handleRestore} ref={fileInputRef} />
               </div>
               <Alert>
                 <AlertCircle className="h-4 w-4"/>

@@ -2,9 +2,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
-import { db, storage } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc, collection, getDocs, writeBatch } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "./auth-context";
 
 interface ClubInfo {
@@ -15,7 +14,7 @@ interface ClubInfo {
 interface ClubContextType {
   clubInfo: ClubInfo;
   loading: boolean;
-  updateClubInfo: (name: string, logoFile?: File) => Promise<void>;
+  updateClubInfo: (name: string, logoUrl?: string) => Promise<void>;
   restoreData: (file: File) => Promise<void>;
 }
 
@@ -44,7 +43,6 @@ export function ClubProvider({ children }: { children: ReactNode }) {
       if (docSnap.exists()) {
         setClubInfo(docSnap.data() as ClubInfo);
       } else {
-        // If no info exists, create it with default values
         const defaultInfo = { name: "Gestion Club", logoUrl: null };
         await setDoc(docRef, defaultInfo);
         setClubInfo(defaultInfo);
@@ -65,31 +63,20 @@ export function ClubProvider({ children }: { children: ReactNode }) {
     }
   }, [user, fetchClubInfo]);
 
-  const updateClubInfo = async (name: string, logoFile?: File) => {
+  const updateClubInfo = async (name: string, logoUrl?: string) => {
     const docRef = getClubInfoDocRef();
     if (!docRef || !user) return;
   
     setLoading(true);
     try {
-      let newLogoUrl = clubInfo.logoUrl;
-  
-      if (logoFile) {
-        const storageRef = ref(storage, `users/${user.uid}/logos/${logoFile.name}`);
-        const uploadResult = await uploadBytes(storageRef, logoFile);
-        newLogoUrl = await getDownloadURL(uploadResult.ref);
-      }
-  
       const newInfo: ClubInfo = {
         name: name,
-        logoUrl: newLogoUrl,
+        logoUrl: logoUrl || clubInfo.logoUrl,
       };
-  
       await setDoc(docRef, newInfo);
       setClubInfo(newInfo);
-  
     } catch (err) {
       console.error("Error updating club info: ", err);
-      // Optionally re-throw or show a toast message
     } finally {
       setLoading(false);
     }
@@ -104,7 +91,6 @@ export function ClubProvider({ children }: { children: ReactNode }) {
         try {
           const data = JSON.parse(event.target?.result as string);
   
-          // Basic validation
           const requiredKeys = ['players', 'coaches', 'calendarEvents', 'playerPayments', 'coachSalaries', 'results', 'clubInfo'];
           for (const key of requiredKeys) {
             if (!data.hasOwnProperty(key)) {
@@ -123,14 +109,12 @@ export function ClubProvider({ children }: { children: ReactNode }) {
   
           const batch = writeBatch(db);
   
-          // Delete old data
           for (const collectionName in collections) {
             const collectionRef = collection(db, "users", user.uid, collectionName);
             const snapshot = await getDocs(collectionRef);
             snapshot.docs.forEach(doc => batch.delete(doc.ref));
           }
           
-          // Add new data
           for (const collectionName in collections) {
             const items = collections[collectionName];
             if (Array.isArray(items)) {
@@ -142,7 +126,6 @@ export function ClubProvider({ children }: { children: ReactNode }) {
             }
           }
           
-          // Restore Club Info
           const { name, logoUrl } = data.clubInfo;
           const clubInfoRef = doc(db, "users", user.uid, "clubInfo", "main");
           batch.set(clubInfoRef, { name, logoUrl });
