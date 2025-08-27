@@ -100,8 +100,7 @@ export default function CalendarPage() {
   const handleDayClick = (day: Date | undefined) => {
     if (!day) return;
     setDate(day);
-    // We don't open the dialog on day click anymore, only on plus icon.
-    // openAddDialog(day);
+    openAddDialog(day);
   };
 
   const openEditDialog = (event: CalendarEvent) => {
@@ -144,6 +143,25 @@ export default function CalendarPage() {
         return timeA[1] - timeB[1];
       })
     : undefined;
+
+  const getEventColor = (eventType: string) => {
+    const lowerType = eventType.toLowerCase();
+    if (lowerType.includes('match')) return 'bg-primary'; // Blue
+    if (lowerType.includes('entraînement')) return 'bg-green-500'; // Green
+    if (lowerType.includes('réunion')) return 'bg-orange-500'; // Orange
+    if (lowerType.includes('événement spécial')) return 'bg-purple-500'; // Purple
+    return 'bg-secondary-foreground'; // Default
+  }
+
+  const getEventBadgeStyle = (eventType: string): React.CSSProperties => {
+    const lowerType = eventType.toLowerCase();
+    if (lowerType.includes('match')) return { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' };
+    if (lowerType.includes('entraînement')) return { backgroundColor: 'hsl(var(--chart-2))', color: 'hsl(var(--primary-foreground))' };
+    if (lowerType.includes('réunion')) return { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' };
+    if (lowerType.includes('événement spécial')) return { backgroundColor: '#A855F7', color: 'white' }; // Purple
+    return { backgroundColor: 'hsl(var(--secondary))', color: 'hsl(var(--secondary-foreground))' };
+  };
+
 
   if (loading || !date) {
     return (
@@ -265,7 +283,7 @@ export default function CalendarPage() {
                         {dayEvents && (
                           <div className="absolute bottom-1 flex space-x-1">
                             {dayEvents.map(event => (
-                              <div key={event.id} className={`h-1.5 w-1.5 rounded-full ${event.type.toLowerCase().includes('match') ? 'bg-primary' : 'bg-secondary-foreground'}`} />
+                              <div key={event.id} className={`h-1.5 w-1.5 rounded-full ${getEventColor(event.type)}`} />
                             ))}
                           </div>
                         )}
@@ -301,10 +319,10 @@ export default function CalendarPage() {
                 <div className="space-y-4">
                   {eventsForSelectedDate.map((event) => (
                     <div key={event.id} onClick={() => handleEventClick(event)} className="p-4 rounded-md border flex flex-col items-center gap-2 cursor-pointer hover:bg-muted/50">
-                        <Badge variant={event.type.toLowerCase().includes('match') ? 'default' : 'secondary'}>{event.type}</Badge>
+                        <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
                         <div className="text-center">
                             <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `vs ${event.opponent}` : ''}</p>
-                            <p className="text-sm text-muted-foreground">{new Date(event.date).toLocaleDateString('fr-FR')} à {event.time}</p>
+                            <p className="text-sm text-muted-foreground">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
                             <p className="text-sm text-muted-foreground">{event.location}</p>
                         </div>
                     </div>
@@ -337,7 +355,7 @@ export default function CalendarPage() {
           {selectedEvent && (
             <>
               <div className="grid gap-4 py-4">
-                  <p><strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString('fr-FR')}</p>
+                  <p><strong>Date:</strong> {format(parseISO(selectedEvent.date), 'dd/MM/yyyy')}</p>
                   <p><strong>Heure:</strong> {selectedEvent.time}</p>
                   <p><strong>Lieu:</strong> {selectedEvent.location}</p>
                   {selectedEvent.opponent && <p><strong>Adversaire:</strong> {selectedEvent.opponent}</p>}
@@ -357,3 +375,5 @@ export default function CalendarPage() {
     </div>
   );
 }
+
+    
