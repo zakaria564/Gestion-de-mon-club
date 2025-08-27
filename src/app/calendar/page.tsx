@@ -31,7 +31,7 @@ export default function CalendarPage() {
 
   const { calendarEvents, loading, addEvent, updateEvent, deleteEvent } = context;
 
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const [open, setOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
@@ -46,10 +46,6 @@ export default function CalendarPage() {
 
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
-
-  useEffect(() => {
-    setDate(new Date());
-  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -88,12 +84,24 @@ export default function CalendarPage() {
     setDetailsOpen(true);
   };
   
-  const openAddDialog = () => {
+  const openAddDialog = (selectedDate: Date) => {
     setIsEditing(false);
     setEditingEvent(null);
-    setNewEvent({ type: '', opponent: '', date: '', time: '', location: '' });
+    setNewEvent({ 
+        type: '', 
+        opponent: '', 
+        date: format(selectedDate, 'yyyy-MM-dd'), 
+        time: '', 
+        location: '' 
+    });
     setOpen(true);
   }
+  
+  const handleDayClick = (day: Date | undefined) => {
+    if (!day) return;
+    setDate(day);
+    openAddDialog(day);
+  };
 
   const openEditDialog = (event: CalendarEvent) => {
     setDetailsOpen(false);
@@ -163,7 +171,7 @@ export default function CalendarPage() {
         <h2 className="text-3xl font-bold tracking-tight">Calendrier</h2>
         <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); else setOpen(true);}}>
           <DialogTrigger asChild>
-            <Button onClick={openAddDialog}>
+            <Button onClick={() => openAddDialog(new Date())}>
               <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un événement
             </Button>
           </DialogTrigger>
@@ -228,7 +236,7 @@ export default function CalendarPage() {
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={setDate}
+                onSelect={handleDayClick}
                 className="w-full"
                 locale={fr}
                 components={{
