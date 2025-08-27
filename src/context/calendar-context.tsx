@@ -39,9 +39,17 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
 
     setLoading(true);
     try {
-        const q = query(collectionRef, orderBy("date", "desc"), orderBy("time", "asc"));
+        const q = query(collectionRef, orderBy("date", "desc"));
         const snapshot = await getDocs(q);
         const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as CalendarEvent));
+        
+        // Tri côté client par heure car Firestore ne peut pas faire un double tri sans index composite
+        data.sort((a, b) => {
+          if (a.date > b.date) return -1;
+          if (a.date < b.date) return 1;
+          return a.time.localeCompare(b.time);
+        });
+
         setCalendarEvents(data);
     } catch (err) {
         console.error("Error fetching calendar events: ", err);
