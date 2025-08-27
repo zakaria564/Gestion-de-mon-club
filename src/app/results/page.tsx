@@ -192,7 +192,7 @@ export default function ResultsPage() {
                     <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un résultat
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl h-full flex flex-col md:h-auto">
+            <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
                 <DialogHeader>
                     <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un résultat</DialogTitle>
                     <DialogDescription>Remplissez les détails du match ci-dessous.</DialogDescription>
@@ -286,7 +286,7 @@ export default function ResultsPage() {
                         </div>
                     </div>
                   </ScrollArea>
-                  <DialogFooter className="pt-4 border-t">
+                  <DialogFooter className="pt-4 border-t shrink-0">
                       <Button type="submit">Sauvegarder</Button>
                   </DialogFooter>
                 </form>

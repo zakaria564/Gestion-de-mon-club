@@ -218,7 +218,7 @@ export function CoachDetailClient({ id }: { id: string }) {
       </Card>
       
        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-2xl h-full flex flex-col md:h-auto">
+        <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
             <DialogHeader>
               <DialogTitle>Modifier un entraîneur</DialogTitle>
               <DialogDescription>
@@ -335,7 +335,7 @@ export function CoachDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
                 </ScrollArea>
-                <DialogFooter className="px-6 py-4 border-t">
+                <DialogFooter className="pt-4 border-t shrink-0">
                   <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                   <Button type="submit">Mettre à jour</Button>
                 </DialogFooter>

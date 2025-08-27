@@ -172,7 +172,7 @@ export default function PlayersPage() {
             <DialogTrigger asChild>
                 <Button><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un joueur</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
               <DialogHeader>
                   <DialogTitle>Ajouter un joueur</DialogTitle>
                   <DialogDescription>
@@ -180,8 +180,8 @@ export default function PlayersPage() {
                   </DialogDescription>
               </DialogHeader>
                <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden">
-                  <ScrollArea className="max-h-[70vh]">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
+                  <ScrollArea className="flex-1 pr-6 -mr-6">
                     <div className="space-y-6 py-4 px-1">
                        <div className="flex flex-col items-center gap-4">
                           <Avatar className="h-24 w-24 border">
@@ -482,7 +482,7 @@ export default function PlayersPage() {
                          </div>
                     </div>
                   </ScrollArea>
-                  <DialogFooter className="pt-4 border-t">
+                  <DialogFooter className="pt-4 border-t shrink-0">
                       <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                       <Button type="submit">Enregistrer</Button>
                   </DialogFooter>
