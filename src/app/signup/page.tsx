@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -23,6 +24,7 @@ export default function SignupPage() {
   const { signUp } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -38,7 +40,7 @@ export default function SignupPage() {
     setError('');
     setLoading(true);
     try {
-      await signUp(email, password);
+      await signUp(email, password, displayName);
       router.push('/');
       toast({
         title: "Compte créé",
@@ -72,6 +74,17 @@ export default function SignupPage() {
                   </AlertDescription>
                 </Alert>
               )}
+               <div className="grid gap-2">
+                <Label htmlFor="display-name">Nom d'utilisateur</Label>
+                <Input
+                  id="display-name"
+                  type="text"
+                  placeholder="ex: Alain Prost"
+                  required
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                />
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input

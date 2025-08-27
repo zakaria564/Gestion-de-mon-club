@@ -9,7 +9,7 @@ import { useRouter, usePathname } from 'next/navigation';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<any>;
+  signUp: (email: string, password: string, displayName: string) => Promise<any>;
   logIn: (email: string, password: string) => Promise<any>;
   logOut: () => Promise<any>;
   resetPassword: (email: string) => Promise<any>;
@@ -42,8 +42,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const signUp = (email: string, password: string) => {
-    return createUserWithEmailAndPassword(auth, email, password);
+  const signUp = async (email: string, password: string, displayName: string) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    if (userCredential.user) {
+      await updateProfile(userCredential.user, { displayName });
+    }
+    return userCredential;
   };
 
   const logIn = (email: string, password: string) => {
