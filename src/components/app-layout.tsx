@@ -14,6 +14,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
@@ -63,12 +64,14 @@ function MobileHeader() {
     );
 }
 
-export function AppLayout({ children }: { children: React.ReactNode }) {
+function MainAppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logOut, loading } = useAuth();
   const { clubInfo, loading: clubLoading } = useClubContext();
   const { toast } = useToast();
+  const { setOpenMobile } = useSidebar();
+
 
   const handleLogout = async () => {
     try {
@@ -91,9 +94,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
+  const handleLinkClick = () => {
+    setOpenMobile(false);
+  }
+
   return (
     <ProtectedRoute>
-      <SidebarProvider>
         <Sidebar>
           <SidebarHeader>
             <div className="flex items-center gap-2">
@@ -109,6 +115,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     asChild
                     isActive={pathname === item.href}
                     tooltip={{ children: item.label }}
+                    onClick={handleLinkClick}
                   >
                     <Link href={item.href}>
                       <item.icon />
@@ -158,7 +165,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             {children}
           </div>
         </main>
-      </SidebarProvider>
     </ProtectedRoute>
-  );
+  )
+}
+
+
+export function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarProvider>
+      <MainAppLayout>{children}</MainAppLayout>
+    </SidebarProvider>
+  )
 }
