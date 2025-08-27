@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useContext, useEffect, useState } from "react";
+import { useContext, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Users, UserCheck, Calendar } from "lucide-react";
 import { usePlayersContext } from "@/context/players-context";
 import { useCoachesContext } from "@/context/coaches-context";
@@ -17,15 +16,13 @@ import { useCalendarContext, CalendarEvent } from "@/context/calendar-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import Link from "next/link";
-
-type FormattedEvent = CalendarEvent & { formattedDate: string };
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 export default function Dashboard() {
   const playersContext = usePlayersContext();
   const coachesContext = useCoachesContext();
   const calendarContext = useCalendarContext();
-
-  const [formattedUpcomingEvents, setFormattedUpcomingEvents] = useState<FormattedEvent[]>([]);
 
   if (!playersContext || !coachesContext || !calendarContext) {
     throw new Error("Dashboard must be used within all required providers");
@@ -37,17 +34,35 @@ export default function Dashboard() {
   
   const loading = playersLoading || coachesLoading || calendarLoading;
 
-  useEffect(() => {
-    const upcoming = calendarEvents
+  const upcomingEvents = useMemo(() => {
+    return calendarEvents
       .filter(event => new Date(event.date) >= new Date())
       .slice(0, 5)
       .map(event => ({
         ...event,
         formattedDate: `${format(new Date(event.date), 'dd/MM/yyyy')} à ${event.time} - ${event.location}`
       }));
-    setFormattedUpcomingEvents(upcoming);
   }, [calendarEvents]);
 
+  const playersByCategory = useMemo(() => {
+    const counts = players.reduce((acc, player) => {
+      const category = player.category || 'Sénior';
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(counts).map(([category, count]) => ({
+      category,
+      count,
+    })).sort((a,b) => a.category.localeCompare(b.category));
+  }, [players]);
+
+  const chartConfig = {
+    count: {
+      label: "Joueurs",
+      color: "hsl(var(--primary))",
+    },
+  };
 
   if (loading) {
     return (
@@ -66,14 +81,25 @@ export default function Dashboard() {
                 </Card>
             ))}
         </div>
-        <Card>
-            <CardHeader>
-                <CardTitle>Événements à Venir</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <Skeleton className="h-40 w-full" />
-            </CardContent>
-        </Card>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <Card className="lg:col-span-4">
+                <CardHeader>
+                    <Skeleton className="h-6 w-1/2" />
+                    <Skeleton className="h-4 w-3/4" />
+                </CardHeader>
+                <CardContent className="pl-2">
+                   <Skeleton className="h-[350px] w-full" />
+                </CardContent>
+            </Card>
+            <Card className="lg:col-span-3">
+                <CardHeader>
+                    <CardTitle>Événements à Venir</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-40 w-full" />
+                </CardContent>
+            </Card>
+        </div>
       </div>
     )
   }
@@ -119,7 +145,7 @@ export default function Dashboard() {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{formattedUpcomingEvents.length}</div>
+                <div className="text-2xl font-bold">{upcomingEvents.length}</div>
                 <p className="text-xs text-muted-foreground">
                 dans les prochains jours
                 </p>
@@ -127,7 +153,40 @@ export default function Dashboard() {
             </Card>
         </Link>
       </div>
-       <Card>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="lg:col-span-4">
+          <CardHeader>
+            <CardTitle>Répartition des Joueurs par Catégorie</CardTitle>
+            <CardDescription>
+              Nombre de joueurs dans chaque catégorie d'âge.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pl-2">
+            <ChartContainer config={chartConfig} className="h-[350px] w-full">
+              <ResponsiveContainer>
+                <BarChart data={playersByCategory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis dataKey="category" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                  <Tooltip
+                    cursor={false}
+                    content={<ChartTooltipContent 
+                        labelKey="name" 
+                        indicator="dot" 
+                        formatter={(value, name, item) => (
+                            <div className="flex flex-col gap-1">
+                                <span className="font-bold">{item.payload.category}</span>
+                                <span className="text-muted-foreground">{value} joueurs</span>
+                            </div>
+                        )}
+                    />}
+                  />
+                  <Bar dataKey="count" fill="var(--color-count)" radius={4} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Événements à Venir</CardTitle>
             <CardDescription>
@@ -136,7 +195,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
              <div className="space-y-4">
-              {formattedUpcomingEvents.map((event) => (
+              {upcomingEvents.map((event) => (
                 <Link href="/calendar" key={event.id} className="block hover:bg-muted/50 p-2 rounded-md transition-colors">
                   <div className="flex items-center">
                     <Calendar className="h-6 w-6 mr-4 text-primary" />
@@ -151,12 +210,13 @@ export default function Dashboard() {
                   </div>
                 </Link>
               ))}
-               {formattedUpcomingEvents.length === 0 && (
+               {upcomingEvents.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center">Aucun événement à venir.</p>
               )}
             </div>
           </CardContent>
         </Card>
+      </div>
     </div>
   );
 }
