@@ -9,7 +9,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield, Mail } from "lucide-react";
+import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield, Mail, MapPin } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -199,7 +199,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                 </div>
                 <div className="flex items-center gap-4">
                     <Phone className="h-5 w-5 text-muted-foreground" />
-                    <span>{player.phone}</span>
+                    <a href={`tel:${player.phone}`} className="hover:underline">{player.phone}</a>
                 </div>
                 {player.email && (
                   <div className="flex items-center gap-4">
@@ -208,8 +208,10 @@ export function PlayerDetailClient({ id }: { id: string }) {
                   </div>
                 )}
                 <div className="flex items-center gap-4">
-                    <Home className="h-5 w-5 text-muted-foreground" />
-                    <span>{player.address}</span>
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                     <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(player.address)}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                        {player.address}
+                    </a>
                 </div>
                  <div className="flex items-center gap-4">
                     <Flag className="h-5 w-5 text-muted-foreground" />
@@ -229,7 +231,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                   {player.tutorPhone && (
                     <div className="flex items-center gap-4">
                         <Phone className="h-5 w-5 text-muted-foreground" />
-                        <span>{player.tutorPhone}</span>
+                        <a href={`tel:${player.tutorPhone}`} className="hover:underline">{player.tutorPhone}</a>
                     </div>
                   )}
                   {player.tutorEmail && (
