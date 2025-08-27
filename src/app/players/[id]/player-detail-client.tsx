@@ -618,3 +618,5 @@ export function PlayerDetailClient({ id }: { id: string }) {
     </div>
   );
 }
+
+    

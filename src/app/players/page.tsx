@@ -482,10 +482,10 @@ export default function PlayersPage() {
                          </div>
                     </div>
                   </ScrollArea>
-                   <div className="flex justify-end gap-2 pt-4 border-t">
+                  <DialogFooter className="pt-4 border-t">
                       <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                       <Button type="submit">Enregistrer</Button>
-                  </div>
+                  </DialogFooter>
                 </form>
               </Form>
             </DialogContent>
@@ -499,7 +499,7 @@ export default function PlayersPage() {
                     placeholder={`Rechercher par ${filterKey === 'name' ? 'nom' : filterKey}...`}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 text-base"
                 />
             </div>
             <Select value={filterKey} onValueChange={setFilterKey}>
@@ -603,5 +603,7 @@ export default function PlayersPage() {
     </div>
     );
 }
+
+    
 
     
