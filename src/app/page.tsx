@@ -16,8 +16,8 @@ import { useCalendarContext, CalendarEvent } from "@/context/calendar-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import Link from "next/link";
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell, Legend } from "recharts";
+import { ChartConfig, ChartContainer, ChartTooltipContent, ChartLegendContent } from "@/components/ui/chart";
 
 export default function Dashboard() {
   const playersContext = usePlayersContext();
@@ -52,17 +52,23 @@ export default function Dashboard() {
     }, {} as Record<string, number>);
 
     return Object.entries(counts).map(([category, count]) => ({
-      category,
-      count,
-    })).sort((a,b) => a.category.localeCompare(b.category));
+      name: category,
+      value: count,
+      fill: `hsl(var(--chart-${Object.keys(counts).indexOf(category) + 1}))`
+    })).sort((a,b) => a.name.localeCompare(b.name));
   }, [players]);
 
-  const chartConfig = {
-    count: {
-      label: "Joueurs",
-      color: "hsl(var(--primary))",
-    },
-  };
+  const chartConfig = useMemo(() => {
+    const config: ChartConfig = {};
+    playersByCategory.forEach((item, index) => {
+      config[item.name] = {
+        label: item.name,
+        color: `hsl(var(--chart-${index + 1}))`,
+      };
+    });
+    return config;
+  }, [playersByCategory]);
+
 
   if (loading) {
     return (
@@ -162,27 +168,31 @@ export default function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
-            <ChartContainer config={chartConfig} className="h-[350px] w-full">
-              <ResponsiveContainer>
-                <BarChart data={playersByCategory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="category" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
-                  <Tooltip
-                    cursor={false}
-                    content={<ChartTooltipContent 
-                        labelKey="name" 
-                        indicator="dot" 
-                        formatter={(value, name, item) => (
-                            <div className="flex flex-col gap-1">
-                                <span className="font-bold">{item.payload.category}</span>
-                                <span className="text-muted-foreground">{value} joueurs</span>
-                            </div>
-                        )}
-                    />}
-                  />
-                  <Bar dataKey="count" fill="var(--color-count)" radius={4} />
-                </BarChart>
-              </ResponsiveContainer>
+             <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[300px]">
+                <ResponsiveContainer>
+                    <PieChart>
+                        <Tooltip
+                            cursor={false}
+                            content={<ChartTooltipContent
+                                nameKey="value"
+                                labelKey="name"
+                                hideLabel
+                                formatter={(value, name, item) => (
+                                    <div className="flex flex-col gap-1">
+                                        <span className="font-bold">{item.payload.name}</span>
+                                        <span className="text-muted-foreground">{value} joueurs</span>
+                                    </div>
+                                )}
+                            />}
+                        />
+                        <Pie data={playersByCategory} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                             {playersByCategory.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                        </Pie>
+                         <Legend content={<ChartLegendContent />} />
+                    </PieChart>
+                </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
         </Card>
