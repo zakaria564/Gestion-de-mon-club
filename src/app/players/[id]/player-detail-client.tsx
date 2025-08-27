@@ -9,7 +9,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield, Mail, MapPin } from "lucide-react";
+import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield, Mail, MapPin, FileHeart } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -43,6 +43,8 @@ const playerSchema = z.object({
   category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
+  medicalCertificateUrl: z.string().url("URL de certificat invalide.").optional().or(z.literal('')),
+  medicalCertificateExpiration: z.string().optional(),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -76,18 +78,24 @@ export function PlayerDetailClient({ id }: { id: string }) {
        const exitDate = player.exitDate && isValid(parseISO(player.exitDate)) 
         ? format(parseISO(player.exitDate), 'yyyy-MM-dd') 
         : '';
+       const medicalCertificateExpiration = player.medicalCertificateExpiration && isValid(parseISO(player.medicalCertificateExpiration))
+        ? format(parseISO(player.medicalCertificateExpiration), 'yyyy-MM-dd')
+        : '';
+
 
       form.reset({
         ...player,
         birthDate: birthDate,
         entryDate: entryDate,
         exitDate: exitDate,
+        medicalCertificateExpiration: medicalCertificateExpiration,
         email: player.email || '',
         photo: player.photo || '',
         country: player.country || '',
         tutorName: player.tutorName || '',
         tutorPhone: player.tutorPhone || '',
         tutorEmail: player.tutorEmail || '',
+        medicalCertificateUrl: player.medicalCertificateUrl || '',
       });
     } else if (!dialogOpen) {
       form.reset();
@@ -158,6 +166,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
   };
   
   const formattedBirthDate = player.birthDate && isValid(parseISO(player.birthDate)) ? format(parseISO(player.birthDate), 'dd/MM/yyyy') : 'N/A';
+  const formattedCertExpiration = player.medicalCertificateExpiration && isValid(parseISO(player.medicalCertificateExpiration)) ? format(parseISO(player.medicalCertificateExpiration), 'dd/MM/yyyy') : 'N/A';
   const playerStatus = player.status || 'Actif';
   const playerCategory = player.category || 'Sénior';
 
@@ -190,7 +199,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-6 grid md:grid-cols-2 gap-x-8 gap-y-6">
+        <CardContent className="pt-6 grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Informations Personnelles</h3>
                  <div className="flex items-center gap-4">
@@ -219,7 +228,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                 </div>
             </div>
             
-             {(player.tutorName || player.tutorPhone) && (
+            {(player.tutorName || player.tutorPhone || player.tutorEmail) && (
               <div className="space-y-4">
                   <h3 className="font-semibold text-lg">Tuteur Légal</h3>
                   {player.tutorName && (
@@ -241,6 +250,26 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   )}
               </div>
+            )}
+
+            {(player.medicalCertificateUrl || player.medicalCertificateExpiration) && (
+                <div className="space-y-4">
+                    <h3 className="font-semibold text-lg">Informations Médicales</h3>
+                    {player.medicalCertificateUrl && (
+                        <div className="flex items-center gap-4">
+                            <FileHeart className="h-5 w-5 text-muted-foreground" />
+                            <a href={player.medicalCertificateUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary">
+                                Voir le certificat
+                            </a>
+                        </div>
+                    )}
+                    {player.medicalCertificateExpiration && (
+                        <div className="flex items-center gap-4">
+                            <Cake className="h-5 w-5 text-muted-foreground" />
+                            <span>Expire le: {formattedCertExpiration}</span>
+                        </div>
+                    )}
+                </div>
             )}
         </CardContent>
         <CardFooter className="justify-end gap-2">
@@ -426,6 +455,36 @@ export function PlayerDetailClient({ id }: { id: string }) {
                               )}
                             />
                         </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h4 className="text-lg font-medium border-b pb-2">Informations Médicales</h4>
+                          <FormField
+                            control={form.control}
+                            name="medicalCertificateUrl"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>URL du Certificat Médical</FormLabel>
+                                <FormControl>
+                                <Input type="text" placeholder="https://example.com/certificat.pdf" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="medicalCertificateExpiration"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Date d'expiration du certificat</FormLabel>
+                                <FormControl>
+                                <Input type="date" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
                     </div>
 
                      <div className="space-y-4">

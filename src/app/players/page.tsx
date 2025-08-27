@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Player } from "@/lib/data";
-import { PlusCircle, Camera, Search } from "lucide-react";
+import { PlusCircle, Camera, Search, FileHeart } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -60,6 +60,8 @@ const playerSchema = z.object({
   category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
+  medicalCertificateUrl: z.string().url("URL de certificat invalide.").optional().or(z.literal('')),
+  medicalCertificateExpiration: z.string().optional(),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -81,6 +83,8 @@ const defaultValues: PlayerFormValues = {
     category: 'Sénior',
     entryDate: '',
     exitDate: '',
+    medicalCertificateUrl: '',
+    medicalCertificateExpiration: '',
 };
 
 export default function PlayersPage() {
@@ -310,6 +314,35 @@ export default function PlayersPage() {
                             </div>
                         </div>
 
+                        <div className="space-y-4">
+                            <h4 className="text-lg font-medium border-b pb-2">Informations Médicales</h4>
+                              <FormField
+                                control={form.control}
+                                name="medicalCertificateUrl"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>URL du Certificat Médical</FormLabel>
+                                    <FormControl>
+                                    <Input type="text" placeholder="https://example.com/certificat.pdf" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="medicalCertificateExpiration"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Date d'expiration du certificat</FormLabel>
+                                    <FormControl>
+                                    <Input type="date" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </div>
 
                          <div className="space-y-4">
                             <h4 className="text-lg font-medium border-b pb-2">Informations Sportives</h4>
