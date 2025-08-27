@@ -172,7 +172,7 @@ export default function PlayersPage() {
             <DialogTrigger asChild>
                 <Button><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un joueur</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
+            <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90dvh]">
               <DialogHeader>
                   <DialogTitle>Ajouter un joueur</DialogTitle>
                   <DialogDescription>
@@ -180,7 +180,7 @@ export default function PlayersPage() {
                   </DialogDescription>
               </DialogHeader>
                <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-y-hidden">
                   <ScrollArea className="flex-1 pr-6 -mr-6">
                     <div className="space-y-6 py-4 px-1">
                        <div className="flex flex-col items-center gap-4">
@@ -499,7 +499,7 @@ export default function PlayersPage() {
                     placeholder={`Rechercher par ${filterKey === 'name' ? 'nom' : filterKey}...`}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 text-base"
+                    className="pl-10 text-sm md:text-base"
                 />
             </div>
             <Select value={filterKey} onValueChange={setFilterKey}>
@@ -603,7 +603,3 @@ export default function PlayersPage() {
     </div>
     );
 }
-
-    
-
-    

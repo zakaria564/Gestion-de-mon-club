@@ -159,7 +159,7 @@ export default function CoachesPage() {
                 <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un entraîneur
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
+          <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90dvh]">
              <DialogHeader>
                 <DialogTitle>Ajouter un entraîneur</DialogTitle>
                 <DialogDescription>
@@ -167,7 +167,7 @@ export default function CoachesPage() {
                 </DialogDescription>
               </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-y-hidden">
                 <ScrollArea className="flex-1 pr-6 -mr-6">
                   <div className="px-1 py-4 space-y-6">
                     <div className="flex flex-col items-center gap-4">
@@ -393,5 +393,3 @@ export default function CoachesPage() {
     </div>
   );
 }
-
-    
