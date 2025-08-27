@@ -299,7 +299,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl h-full flex flex-col md:h-auto">
           <DialogHeader>
             <DialogTitle>Modifier un joueur</DialogTitle>
             <DialogDescription>
@@ -307,8 +307,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden">
-                <ScrollArea className="max-h-[70vh]">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
+                <ScrollArea className="flex-1 pr-6 -mr-6">
                    <div className="space-y-6 py-4 px-1">
                     <div className="flex flex-col items-center gap-4">
                         <Avatar className="h-24 w-24 border">
@@ -618,5 +618,3 @@ export function PlayerDetailClient({ id }: { id: string }) {
     </div>
   );
 }
-
-    
