@@ -218,7 +218,7 @@ export function CoachDetailClient({ id }: { id: string }) {
       </Card>
       
        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-4xl h-full flex flex-col">
+        <DialogContent className="sm:max-w-2xl">
             <DialogHeader>
               <DialogTitle>Modifier un entraîneur</DialogTitle>
               <DialogDescription>
@@ -226,9 +226,9 @@ export function CoachDetailClient({ id }: { id: string }) {
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
-                <ScrollArea className="flex-1">
-                  <div className="px-6 py-4 space-y-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden">
+                <ScrollArea className="max-h-[70vh]">
+                  <div className="px-1 py-4 space-y-6">
                     <div className="flex flex-col items-center gap-4">
                       <Avatar className="h-24 w-24 border">
                         <AvatarImage src={photoPreview || undefined} alt="Aperçu de l'entraîneur" data-ai-hint="coach photo"/>

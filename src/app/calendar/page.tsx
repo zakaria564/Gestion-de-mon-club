@@ -198,7 +198,7 @@ export default function CalendarPage() {
         <h2 className="text-3xl font-bold tracking-tight">Calendrier</h2>
         <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); else setOpen(true);}}>
           <DialogTrigger asChild>
-            <Button onClick={() => openAddDialog(new Date())}>
+            <Button onClick={() => openAddDialog(date)}>
               <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un événement
             </Button>
           </DialogTrigger>
@@ -270,7 +270,10 @@ export default function CalendarPage() {
                   DayContent: ({ date: dayDate }) => {
                     const dayEvents = eventsByDate[format(dayDate, 'yyyy-MM-dd')];
                     return (
-                      <div className="relative h-full w-full flex flex-col items-center justify-center group">
+                      <div 
+                        className="relative h-full w-full flex flex-col items-center justify-center group"
+                        onClick={() => handleDayClick(dayDate)}
+                      >
                         <PlusCircle 
                           className="absolute top-1 right-1 h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                           onClick={(e) => {
@@ -297,7 +300,7 @@ export default function CalendarPage() {
                   head_row: "flex justify-around",
                   head_cell: "w-full text-muted-foreground rounded-md font-normal text-[0.8rem]",
                   row: "flex w-full mt-2 justify-around",
-                  cell: "h-24 w-full text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                  cell: "h-16 w-full text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 md:h-24",
                   day: "h-full w-full p-2 font-normal",
                   day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-md",
                   day_today: "bg-accent text-accent-foreground rounded-md",

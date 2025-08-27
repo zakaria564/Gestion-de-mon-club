@@ -159,7 +159,7 @@ export default function CoachesPage() {
                 <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un entraîneur
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-4xl h-full flex flex-col">
+          <DialogContent className="sm:max-w-2xl">
              <DialogHeader>
                 <DialogTitle>Ajouter un entraîneur</DialogTitle>
                 <DialogDescription>
@@ -167,9 +167,9 @@ export default function CoachesPage() {
                 </DialogDescription>
               </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
-                <ScrollArea className="flex-1">
-                  <div className="px-6 py-4 space-y-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden">
+                <ScrollArea className="max-h-[70vh]">
+                  <div className="px-1 py-4 space-y-6">
                     <div className="flex flex-col items-center gap-4">
                         <Avatar className="h-24 w-24 border">
                           <AvatarImage src={photoPreview || undefined} alt="Aperçu de l'entraîneur" data-ai-hint="coach photo"/>
@@ -286,8 +286,8 @@ export default function CoachesPage() {
         </Dialog>
       </div>
 
-       <div className="flex items-center gap-4 my-4">
-            <div className="relative w-full max-w-sm">
+       <div className="flex flex-col sm:flex-row items-center gap-4 my-4">
+            <div className="relative w-full sm:max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                     placeholder={`Rechercher par ${filterKey === 'name' ? 'nom' : filterKey}...`}
@@ -297,7 +297,7 @@ export default function CoachesPage() {
                 />
             </div>
             <Select value={filterKey} onValueChange={setFilterKey}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Filtrer par" />
                 </SelectTrigger>
                 <SelectContent>
