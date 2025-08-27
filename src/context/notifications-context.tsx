@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, addDoc, deleteDoc, doc, orderBy, query } from "firebase/firestore";
+import { collection, addDoc, deleteDoc, doc, orderBy, query, onSnapshot } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Notification } from "@/lib/data";
 
@@ -28,34 +28,26 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     return collection(db, "users", user.uid, "notifications");
   }, [user]);
 
-  const fetchNotifications = useCallback(async () => {
+  useEffect(() => {
     const collectionRef = getNotificationsCollection();
     if (!collectionRef) {
       setNotifications([]);
       setLoading(false);
       return;
     }
-    setLoading(true);
-    try {
-      const q = query(collectionRef, orderBy("date", "desc"));
-      const snapshot = await getDocs(q);
+    
+    const q = query(collectionRef, orderBy("date", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Notification));
       setNotifications(data);
-    } catch (err) {
+      setLoading(false);
+    }, (err) => {
       console.error("Error fetching notifications: ", err);
-    } finally {
       setLoading(false);
-    }
-  }, [getNotificationsCollection]);
+    });
 
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-    } else {
-      setNotifications([]);
-      setLoading(false);
-    }
-  }, [user, fetchNotifications]);
+    return () => unsubscribe();
+  }, [user, getNotificationsCollection]);
 
   const addNotification = async (notificationData: NewNotification) => {
     const collectionRef = getNotificationsCollection();
@@ -67,7 +59,6 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
         uid: user.uid 
       };
       await addDoc(collectionRef, newNotificationData);
-      fetchNotifications();
     } catch (err) {
       console.error("Error adding notification: ", err);
     }
@@ -78,7 +69,6 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     try {
       const notificationDoc = doc(db, "users", user.uid, "notifications", id);
       await deleteDoc(notificationDoc);
-      fetchNotifications();
     } catch (err) {
       console.error("Error deleting notification: ", err);
     }

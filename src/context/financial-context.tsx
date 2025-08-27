@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, addDoc, updateDoc, doc, runTransaction } from "firebase/firestore";
+import { collection, addDoc, updateDoc, doc, runTransaction, onSnapshot, query } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Payment, NewPayment, Transaction, Overview } from "@/lib/financial-data";
 
@@ -39,43 +39,71 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
     return collection(db, "users", user.uid, "coachSalaries");
   }, [user]);
 
-  const fetchPayments = useCallback(async () => {
+  useEffect(() => {
+    if (!user) {
+        setPlayerPayments([]);
+        setCoachSalaries([]);
+        setLoading(false);
+        return;
+    }
+    
     const playerPaymentsRef = getPlayerPaymentsCollection();
     const coachSalariesRef = getCoachSalariesCollection();
 
-    if (!playerPaymentsRef || !coachSalariesRef) {
-      setPlayerPayments([]);
-      setCoachSalaries([]);
-      setLoading(false);
-      return;
+    let playerUnsub: (() => void) | undefined;
+    let coachUnsub: (() => void) | undefined;
+    
+    let playerLoaded = false;
+    let coachLoaded = false;
+
+    const checkLoadingDone = () => {
+        if (playerLoaded && coachLoaded) {
+            setLoading(false);
+        }
     }
 
-    setLoading(true);
-    try {
-      const [playerSnapshot, coachSnapshot] = await Promise.all([
-        getDocs(playerPaymentsRef),
-        getDocs(coachSalariesRef)
-      ]);
-      const playerData = playerSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Payment));
-      const coachData = coachSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Payment));
-      setPlayerPayments(playerData);
-      setCoachSalaries(coachData);
-    } catch (err) {
-      console.error("Error fetching payments:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [getPlayerPaymentsCollection, getCoachSalariesCollection]);
-
-  useEffect(() => {
-    if (user) {
-      fetchPayments();
+    if(playerPaymentsRef) {
+        const playerQuery = query(playerPaymentsRef);
+        playerUnsub = onSnapshot(playerQuery, (snapshot) => {
+            const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Payment));
+            setPlayerPayments(data);
+            playerLoaded = true;
+            checkLoadingDone();
+        }, (error) => {
+            console.error("Error fetching player payments:", error);
+            playerLoaded = true;
+            checkLoadingDone();
+        });
     } else {
-      setPlayerPayments([]);
-      setCoachSalaries([]);
+        playerLoaded = true;
+    }
+
+    if(coachSalariesRef) {
+        const coachQuery = query(coachSalariesRef);
+        coachUnsub = onSnapshot(coachQuery, (snapshot) => {
+            const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Payment));
+            setCoachSalaries(data);
+            coachLoaded = true;
+            checkLoadingDone();
+        }, (error) => {
+            console.error("Error fetching coach salaries:", error);
+            coachLoaded = true;
+            checkLoadingDone();
+        });
+    } else {
+        coachLoaded = true;
+    }
+    
+    if(!playerPaymentsRef && !coachSalariesRef) {
       setLoading(false);
     }
-  }, [user, fetchPayments]);
+    
+    return () => {
+        playerUnsub?.();
+        coachUnsub?.();
+    };
+  }, [user, getPlayerPaymentsCollection, getCoachSalariesCollection]);
+
 
   const calculateStatus = (total: number, paid: number): 'payé' | 'non payé' | 'partiel' => {
     if (paid >= total) return 'payé';
@@ -106,7 +134,6 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
       };
 
       await addDoc(collectionRef, { ...newPayment, uid: user.uid });
-      fetchPayments();
     } catch (err) {
       console.error(`Error adding payment: `, err);
     }
@@ -143,7 +170,6 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
                 transactions: updatedTransactions
             });
         });
-        fetchPayments();
     } catch (err) {
         console.error(`Error updating ${collectionName}:`, err);
     }

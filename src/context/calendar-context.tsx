@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { CalendarEvent } from "@/lib/data";
 
@@ -29,33 +29,27 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
     return collection(db, "users", user.uid, "calendarEvents");
   }, [user]);
 
-  const fetchEvents = useCallback(async () => {
+  useEffect(() => {
     const collectionRef = getCalendarCollection();
     if (!collectionRef) {
       setCalendarEvents([]);
       setLoading(false);
       return;
     }
-    setLoading(true);
-    try {
-      const snapshot = await getDocs(collectionRef);
+
+    const q = query(collectionRef, orderBy("date", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as CalendarEvent));
       setCalendarEvents(data);
-    } catch (err) {
+      setLoading(false);
+    }, (err) => {
       console.error("Error fetching calendar events: ", err);
-    } finally {
       setLoading(false);
-    }
-  }, [getCalendarCollection]);
+    });
 
-  useEffect(() => {
-    if (user) {
-      fetchEvents();
-    } else {
-      setCalendarEvents([]);
-      setLoading(false);
-    }
-  }, [user, fetchEvents]);
+    return () => unsubscribe();
+  }, [user, getCalendarCollection]);
+
 
   const addEvent = async (eventData: NewCalendarEvent) => {
     const collectionRef = getCalendarCollection();
@@ -63,7 +57,6 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
     try {
       const newEventData = { ...eventData, uid: user.uid };
       await addDoc(collectionRef, newEventData);
-      fetchEvents();
     } catch (err) {
       console.error("Error adding event: ", err);
     }
@@ -75,7 +68,6 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
       const eventDoc = doc(db, "users", user.uid, "calendarEvents", eventData.id);
       const { id, ...dataToUpdate } = eventData;
       await updateDoc(eventDoc, dataToUpdate);
-      fetchEvents();
     } catch (err) {
       console.error("Error updating event: ", err);
     }
@@ -86,7 +78,6 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
     try {
       const eventDoc = doc(db, "users", user.uid, "calendarEvents", id);
       await deleteDoc(eventDoc);
-      fetchEvents();
     } catch (err) {
       console.error("Error deleting event: ", err);
     }

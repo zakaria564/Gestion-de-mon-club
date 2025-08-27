@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 
 export interface PerformanceDetail {
@@ -47,33 +47,26 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
     return collection(db, "users", user.uid, "results");
   }, [user]);
 
-  const fetchResults = useCallback(async () => {
+  useEffect(() => {
     const collectionRef = getResultsCollection();
     if (!collectionRef) {
       setResults([]);
       setLoading(false);
       return;
     }
-    setLoading(true);
-    try {
-      const snapshot = await getDocs(collectionRef);
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Result)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      setResults(data);
-    } catch (err) {
-      console.error("Error fetching results: ", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [getResultsCollection]);
+    
+    const q = query(collectionRef, orderBy("date", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Result));
+        setResults(data);
+        setLoading(false);
+    }, (err) => {
+        console.error("Error fetching results: ", err);
+        setLoading(false);
+    });
 
-  useEffect(() => {
-    if (user) {
-      fetchResults();
-    } else {
-      setResults([]);
-      setLoading(false);
-    }
-  }, [user, fetchResults]);
+    return () => unsubscribe();
+  }, [user, getResultsCollection]);
 
   const addResult = async (resultData: NewResult) => {
     const collectionRef = getResultsCollection();
@@ -84,7 +77,6 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
           uid: user.uid,
         };
       await addDoc(collectionRef, newResultData);
-      fetchResults();
     } catch (err) {
       console.error("Error adding result: ", err);
     }
@@ -96,7 +88,6 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
       const resultDoc = doc(db, "users", user.uid, "results", resultData.id);
       const { id, ...dataToUpdate } = resultData;
       await updateDoc(resultDoc, dataToUpdate);
-      fetchResults();
     } catch (err) {
       console.error("Error updating result: ", err);
     }
@@ -107,7 +98,6 @@ export function ResultsProvider({ children }: { children: React.ReactNode }) {
     try {
       const resultDoc = doc(db, "users", user.uid, "results", id);
       await deleteDoc(resultDoc);
-      fetchResults();
     } catch (err) {
       console.error("Error deleting result: ", err);
     }
