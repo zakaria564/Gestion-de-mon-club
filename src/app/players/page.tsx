@@ -133,6 +133,23 @@ export default function PlayersPage() {
         default: return 'outline';
       }
     };
+    
+    const getCategoryStyle = (category: string): { color: string; borderColor: string } => {
+        switch (category) {
+            case 'Sénior': return { color: 'text-red-600 dark:text-red-400', borderColor: 'border-red-600 dark:border-red-400' };
+            case 'U23': return { color: 'text-blue-600 dark:text-blue-400', borderColor: 'border-blue-600 dark:border-blue-400' };
+            case 'U19': return { color: 'text-green-600 dark:text-green-400', borderColor: 'border-green-600 dark:border-green-400' };
+            case 'U18': return { color: 'text-yellow-600 dark:text-yellow-400', borderColor: 'border-yellow-600 dark:border-yellow-400' };
+            case 'U17': return { color: 'text-purple-600 dark:text-purple-400', borderColor: 'border-purple-600 dark:border-purple-400' };
+            case 'U16': return { color: 'text-pink-600 dark:text-pink-400', borderColor: 'border-pink-600 dark:border-pink-400' };
+            case 'U15': return { color: 'text-indigo-600 dark:text-indigo-400', borderColor: 'border-indigo-600 dark:border-indigo-400' };
+            case 'U13': return { color: 'text-teal-600 dark:text-teal-400', borderColor: 'border-teal-600 dark:border-teal-400' };
+            case 'U11': return { color: 'text-orange-600 dark:text-orange-400', borderColor: 'border-orange-600 dark:border-orange-400' };
+            case 'U9': return { color: 'text-cyan-600 dark:text-cyan-400', borderColor: 'border-cyan-600 dark:border-cyan-400' };
+            case 'U7': return { color: 'text-lime-600 dark:text-lime-400', borderColor: 'border-lime-600 dark:border-lime-400' };
+            default: return { color: 'text-gray-600 dark:text-gray-400', borderColor: 'border-gray-600 dark:border-gray-400' };
+        }
+    };
 
     const handleStatusChange = async (player: Player, newStatus: string) => {
       if (player.status !== newStatus) {
@@ -536,8 +553,8 @@ export default function PlayersPage() {
             <Accordion type="multiple" className="w-full space-y-4">
                 {Object.entries(groupedPlayers).map(([category, postes]) => (
                     <AccordionItem value={category} key={category} className="border rounded-lg">
-                        <AccordionTrigger className="px-4 py-2 text-xl font-bold hover:no-underline">
-                            {category}
+                         <AccordionTrigger className="px-4 py-2 text-xl font-bold hover:no-underline">
+                            <span className={getCategoryStyle(category).color}>{category}</span>
                         </AccordionTrigger>
                         <AccordionContent className="p-2">
                             <Accordion type="multiple" className="w-full space-y-2">
@@ -610,4 +627,3 @@ export default function PlayersPage() {
     );
 }
 
-    
