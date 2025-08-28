@@ -85,6 +85,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={inter.variable}>
+       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0ea5e9" />
+      </head>
       <body>
         <AuthProvider>
           <AppProviders>{children}</AppProviders>
