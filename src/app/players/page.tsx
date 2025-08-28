@@ -95,6 +95,8 @@ const defaultValues: PlayerFormValues = {
     medicalCertificateExpiration: '',
 };
 
+const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+
 export default function PlayersPage() {
     const context = usePlayersContext();
     const { toast } = useToast();
@@ -160,6 +162,17 @@ export default function PlayersPage() {
               description: `Le statut de ${player.name} est maintenant ${newStatus}.`
           });
       }
+    };
+
+    const handleCategoryChange = async (player: Player, newCategory: string) => {
+        if (player.category !== newCategory) {
+            const updatedPlayer = { ...player, category: newCategory as Player['category'] };
+            await updatePlayer(updatedPlayer);
+            toast({
+                title: "Catégorie mise à jour",
+                description: `La catégorie de ${player.name} est maintenant ${newCategory}.`
+            });
+        }
     };
 
     const filteredPlayers = useMemo(() => {
@@ -461,17 +474,7 @@ export default function PlayersPage() {
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une catégorie" /></SelectTrigger></FormControl>
                                             <SelectContent>
-                                            <SelectItem value="Sénior">Sénior</SelectItem>
-                                            <SelectItem value="U23">U23</SelectItem>
-                                            <SelectItem value="U19">U19</SelectItem>
-                                            <SelectItem value="U18">U18</SelectItem>
-                                            <SelectItem value="U17">U17</SelectItem>
-                                            <SelectItem value="U16">U16</SelectItem>
-                                            <SelectItem value="U15">U15</SelectItem>
-                                            <SelectItem value="U13">U13</SelectItem>
-                                            <SelectItem value="U11">U11</SelectItem>
-                                            <SelectItem value="U9">U9</SelectItem>
-                                            <SelectItem value="U7">U7</SelectItem>
+                                                {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />
@@ -586,7 +589,22 @@ export default function PlayersPage() {
                                                         </Link>
                                                         <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
                                                             <div className="flex justify-between items-center">
-                                                                <Badge variant="outline" className="text-xs">{player.category || 'Sénior'}</Badge>
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
+                                                                            <Badge variant="outline" className="text-xs cursor-pointer">{player.category || 'Sénior'}</Badge>
+                                                                        </Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
+                                                                        <DropdownMenuRadioGroup
+                                                                            value={player.category}
+                                                                            onValueChange={(newCategory) => handleCategoryChange(player, newCategory)}
+                                                                        >
+                                                                            {playerCategories.map(cat => <DropdownMenuRadioItem key={cat} value={cat}>{cat}</DropdownMenuRadioItem>)}
+                                                                        </DropdownMenuRadioGroup>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                                
                                                                 <DropdownMenu>
                                                                     <DropdownMenuTrigger asChild>
                                                                         <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
@@ -626,4 +644,3 @@ export default function PlayersPage() {
     </div>
     );
 }
-
