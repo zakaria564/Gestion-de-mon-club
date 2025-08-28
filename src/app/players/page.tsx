@@ -172,7 +172,7 @@ export default function PlayersPage() {
             <DialogTrigger asChild>
                 <Button><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un joueur</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90dvh]">
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
               <DialogHeader>
                   <DialogTitle>Ajouter un joueur</DialogTitle>
                   <DialogDescription>
@@ -180,8 +180,7 @@ export default function PlayersPage() {
                   </DialogDescription>
               </DialogHeader>
                <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-y-hidden">
-                  <ScrollArea className="flex-1 pr-6 -mr-6">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex-grow overflow-y-auto pr-6 -mr-6">
                     <div className="space-y-6 py-4 px-1">
                        <div className="flex flex-col items-center gap-4">
                           <Avatar className="h-24 w-24 border">
@@ -481,11 +480,10 @@ export default function PlayersPage() {
                             </div>
                          </div>
                     </div>
-                  </ScrollArea>
-                  <DialogFooter className="pt-4 border-t shrink-0">
-                      <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
-                      <Button type="submit">Enregistrer</Button>
-                  </DialogFooter>
+                    <DialogFooter className="pt-4 border-t sticky bottom-0 bg-background">
+                        <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
+                        <Button type="submit">Enregistrer</Button>
+                    </DialogFooter>
                 </form>
               </Form>
             </DialogContent>
@@ -603,3 +601,5 @@ export default function PlayersPage() {
     </div>
     );
 }
+
+    

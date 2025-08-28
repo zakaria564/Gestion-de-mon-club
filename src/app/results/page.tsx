@@ -192,14 +192,13 @@ export default function ResultsPage() {
                     <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un résultat
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90dvh]">
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un résultat</DialogTitle>
                     <DialogDescription>Remplissez les détails du match ci-dessous.</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-y-hidden">
-                  <ScrollArea className="flex-1 pr-6 -mr-6">
-                    <div className="grid gap-4 py-4 px-1">
+                <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto pr-6 -mr-6">
+                  <div className="grid gap-4 py-4 px-1">
                        <div className="grid grid-cols-2 gap-4">
                           <div className="grid gap-2">
                               <Label htmlFor="category">Type de match</Label>
@@ -285,8 +284,7 @@ export default function ResultsPage() {
                              <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('assists')}>Ajouter un passeur</Button>
                         </div>
                     </div>
-                  </ScrollArea>
-                  <DialogFooter className="pt-4 border-t shrink-0">
+                  <DialogFooter className="pt-4 border-t sticky bottom-0 bg-background">
                       <Button type="submit">Sauvegarder</Button>
                   </DialogFooter>
                 </form>
@@ -403,3 +401,5 @@ export default function ResultsPage() {
     </div>
   );
 }
+
+    
