@@ -153,14 +153,22 @@ export default function PlayersPage() {
     }, [players, searchQuery, filterKey]);
 
 
-    const groupedPlayers = filteredPlayers.reduce((acc, player) => {
-      const category = player.category || 'Sénior';
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(player);
-      return acc;
-    }, {} as Record<string, Player[]>);
+    const groupedPlayers = useMemo(() => {
+        return filteredPlayers.reduce((acc, player) => {
+            const category = player.category || 'Sénior';
+            const poste = player.poste || 'Non défini';
+
+            if (!acc[category]) {
+                acc[category] = {};
+            }
+            if (!acc[category][poste]) {
+                acc[category][poste] = [];
+            }
+            acc[category][poste].push(player);
+            return acc;
+        }, {} as Record<string, Record<string, Player[]>>);
+    }, [filteredPlayers]);
+
 
     const photoPreview = form.watch('photo');
 
@@ -543,53 +551,58 @@ export default function PlayersPage() {
             </div>
             ))
         ) : (
-        Object.entries(groupedPlayers).length > 0 ? (
-          Object.entries(groupedPlayers).map(([category, playersInCategory]) => (
-              <div key={category} className="space-y-4">
-                  <h3 className="text-2xl font-bold tracking-tight mt-6">{category}</h3>
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {playersInCategory.map((player) => (
-                      <Card key={player.id} className="flex flex-col w-full hover:shadow-lg transition-shadow h-full group">
-                          <Link href={`/players/${player.id}`} className="flex flex-col h-full">
-                              <CardHeader className="p-4">
-                                  <div className="flex items-center gap-4">
-                                  <Avatar className="h-16 w-16">
-                                      <AvatarImage src={player.photo ?? undefined} alt={player.name} data-ai-hint="player photo" />
-                                      <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
-                                  </Avatar>
-                                  <div className="flex-1">
-                                      <CardTitle className="text-base font-bold">{player.name}</CardTitle>
-                                      <CardDescription>{player.poste}</CardDescription>
-                                  </div>
-                                  </div>
-                              </CardHeader>
-                          </Link>
-                          <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
-                              <div className="flex justify-between items-center">
-                                  <Badge variant="outline" className="text-xs">{player.category || 'Sénior'}</Badge>
-                                  <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                          <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
-                                              <Badge variant={getBadgeVariant(player.status || 'Actif') as any} className="text-xs cursor-pointer">{player.status || 'Actif'}</Badge>
-                                          </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
-                                          <DropdownMenuRadioGroup
-                                              value={player.status}
-                                              onValueChange={(newStatus) => handleStatusChange(player, newStatus)}
-                                          >
-                                              <DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem>
-                                              <DropdownMenuRadioItem value="Blessé">Blessé</DropdownMenuRadioItem>
-                                              <DropdownMenuRadioItem value="Suspendu">Suspendu</DropdownMenuRadioItem>
-                                              <DropdownMenuRadioItem value="Inactif">Inactif</DropdownMenuRadioItem>
-                                          </DropdownMenuRadioGroup>
-                                      </DropdownMenuContent>
-                                  </DropdownMenu>
-                              </div>
-                          </CardContent>
-                      </Card>
-                  ))}
-                  </div>
+        Object.keys(groupedPlayers).length > 0 ? (
+          Object.entries(groupedPlayers).map(([category, postes]) => (
+              <div key={category} className="space-y-8">
+                  <h3 className="text-2xl font-bold tracking-tight mt-6 border-b pb-2">{category}</h3>
+                   {Object.entries(postes).map(([poste, playersInPoste]) => (
+                        <div key={poste} className="space-y-4 pl-4">
+                            <h4 className="text-lg font-semibold">{poste} ({playersInPoste.length} joueur{playersInPoste.length > 1 ? 's' : ''})</h4>
+                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                {playersInPoste.map((player) => (
+                                <Card key={player.id} className="flex flex-col w-full hover:shadow-lg transition-shadow h-full group">
+                                    <Link href={`/players/${player.id}`} className="flex flex-col h-full">
+                                        <CardHeader className="p-4">
+                                            <div className="flex items-center gap-4">
+                                            <Avatar className="h-16 w-16">
+                                                <AvatarImage src={player.photo ?? undefined} alt={player.name} data-ai-hint="player photo" />
+                                                <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex-1">
+                                                <CardTitle className="text-base font-bold">{player.name}</CardTitle>
+                                                <CardDescription>{player.poste}</CardDescription>
+                                            </div>
+                                            </div>
+                                        </CardHeader>
+                                    </Link>
+                                    <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
+                                        <div className="flex justify-between items-center">
+                                            <Badge variant="outline" className="text-xs">{player.category || 'Sénior'}</Badge>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
+                                                        <Badge variant={getBadgeVariant(player.status || 'Actif') as any} className="text-xs cursor-pointer">{player.status || 'Actif'}</Badge>
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
+                                                    <DropdownMenuRadioGroup
+                                                        value={player.status}
+                                                        onValueChange={(newStatus) => handleStatusChange(player, newStatus)}
+                                                    >
+                                                        <DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem>
+                                                        <DropdownMenuRadioItem value="Blessé">Blessé</DropdownMenuRadioItem>
+                                                        <DropdownMenuRadioItem value="Suspendu">Suspendu</DropdownMenuRadioItem>
+                                                        <DropdownMenuRadioItem value="Inactif">Inactif</DropdownMenuRadioItem>
+                                                    </DropdownMenuRadioGroup>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                            </div>
+                        </div>
+                   ))}
               </div>
           ))
         ) : (
@@ -601,5 +614,7 @@ export default function PlayersPage() {
     </div>
     );
 }
+
+    
 
     
