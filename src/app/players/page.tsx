@@ -49,6 +49,7 @@ import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 const playerSchema = z.object({
@@ -202,6 +203,10 @@ export default function PlayersPage() {
 
 
     const photoPreview = form.watch('photo');
+    const defaultCategory = useMemo(() => {
+      const categories = Object.keys(groupedPlayers);
+      return categories.length > 0 ? categories[0] : 'Sénior';
+    }, [groupedPlayers]);
 
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
@@ -554,89 +559,89 @@ export default function PlayersPage() {
                     </div>
                 ))
             ) : Object.keys(groupedPlayers).length > 0 ? (
-                <Accordion type="multiple" className="w-full space-y-4" defaultValue={Object.keys(groupedPlayers)}>
+                <Tabs defaultValue={defaultCategory} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
+                         {Object.keys(groupedPlayers).map((category) => (
+                            <TabsTrigger key={category} value={category}>{category}</TabsTrigger>
+                        ))}
+                    </TabsList>
                     {Object.entries(groupedPlayers).map(([category, postes]) => (
-                        <AccordionItem value={category} key={category} className="border rounded-lg">
-                            <AccordionTrigger className="px-4 py-2 text-xl font-bold hover:no-underline">
-                                <span className={getCategoryStyle(category).color}>{category}</span>
-                            </AccordionTrigger>
-                            <AccordionContent className="p-2">
-                                <Accordion type="multiple" className="w-full space-y-2" defaultValue={Object.keys(postes)}>
-                                    {Object.entries(postes).map(([poste, playersInPoste]) => (
-                                        <AccordionItem value={`${category}-${poste}`} key={`${category}-${poste}`} className="border rounded-md">
-                                            <AccordionTrigger className="px-4 text-base font-semibold hover:no-underline">
-                                            {playersInPoste.length === 1
-                                                ? `${poste} (${playersInPoste[0].name})`
-                                                : `${poste} (${playersInPoste.length} joueur${playersInPoste.length > 1 ? 's' : ''})`
-                                            }
-                                            </AccordionTrigger>
-                                            <AccordionContent className="p-2">
-                                                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                                    {playersInPoste.map((player) => (
-                                                        <Card key={player.id} className="flex flex-col w-full hover:shadow-lg transition-shadow h-full group">
-                                                            <Link href={`/players/${player.id}`} className="flex flex-col h-full">
-                                                                <CardHeader className="p-4">
-                                                                    <div className="flex items-center gap-4">
-                                                                        <Avatar className="h-16 w-16">
-                                                                            <AvatarImage src={player.photo ?? undefined} alt={player.name} data-ai-hint="player photo" />
-                                                                            <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
-                                                                        </Avatar>
-                                                                        <div className="flex-1">
-                                                                            <CardTitle className="text-base font-bold">{player.name}</CardTitle>
-                                                                            <CardDescription>{player.poste}</CardDescription>
-                                                                        </div>
+                        <TabsContent value={category} key={category} className="mt-4">
+                            <Accordion type="multiple" className="w-full space-y-2" defaultValue={Object.keys(postes)}>
+                                {Object.entries(postes).map(([poste, playersInPoste]) => (
+                                    <AccordionItem value={`${category}-${poste}`} key={`${category}-${poste}`} className="border rounded-md">
+                                        <AccordionTrigger className="px-4 text-base font-semibold hover:no-underline">
+                                        {playersInPoste.length === 1
+                                            ? `${poste} (${playersInPoste[0].name})`
+                                            : `${poste} (${playersInPoste.length} joueur${playersInPoste.length > 1 ? 's' : ''})`
+                                        }
+                                        </AccordionTrigger>
+                                        <AccordionContent className="p-2">
+                                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                                {playersInPoste.map((player) => (
+                                                    <Card key={player.id} className="flex flex-col w-full hover:shadow-lg transition-shadow h-full group">
+                                                        <Link href={`/players/${player.id}`} className="flex flex-col h-full">
+                                                            <CardHeader className="p-4">
+                                                                <div className="flex items-center gap-4">
+                                                                    <Avatar className="h-16 w-16">
+                                                                        <AvatarImage src={player.photo ?? undefined} alt={player.name} data-ai-hint="player photo" />
+                                                                        <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
+                                                                    </Avatar>
+                                                                    <div className="flex-1">
+                                                                        <CardTitle className="text-base font-bold">{player.name}</CardTitle>
+                                                                        <CardDescription>{player.poste}</CardDescription>
                                                                     </div>
-                                                                </CardHeader>
-                                                            </Link>
-                                                            <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
-                                                                <div className="flex justify-between items-center">
-                                                                    <DropdownMenu>
-                                                                        <DropdownMenuTrigger asChild>
-                                                                            <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
-                                                                                <Badge variant="outline" className="text-xs cursor-pointer">{player.category || 'Sénior'}</Badge>
-                                                                            </Button>
-                                                                        </DropdownMenuTrigger>
-                                                                        <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
-                                                                            <DropdownMenuRadioGroup
-                                                                                value={player.category}
-                                                                                onValueChange={(newCategory) => handleCategoryChange(player, newCategory)}
-                                                                            >
-                                                                                {playerCategories.map(cat => <DropdownMenuRadioItem key={cat} value={cat}>{cat}</DropdownMenuRadioItem>)}
-                                                                            </DropdownMenuRadioGroup>
-                                                                        </DropdownMenuContent>
-                                                                    </DropdownMenu>
-                                                                    
-                                                                    <DropdownMenu>
-                                                                        <DropdownMenuTrigger asChild>
-                                                                            <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
-                                                                                <Badge variant={getBadgeVariant(player.status || 'Actif') as any} className="text-xs cursor-pointer">{player.status || 'Actif'}</Badge>
-                                                                            </Button>
-                                                                        </DropdownMenuTrigger>
-                                                                        <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
-                                                                            <DropdownMenuRadioGroup
-                                                                                value={player.status}
-                                                                                onValueChange={(newStatus) => handleStatusChange(player, newStatus)}
-                                                                            >
-                                                                                <DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem>
-                                                                                <DropdownMenuRadioItem value="Blessé">Blessé</DropdownMenuRadioItem>
-                                                                                <DropdownMenuRadioItem value="Suspendu">Suspendu</DropdownMenuRadioItem>
-                                                                                <DropdownMenuRadioItem value="Inactif">Inactif</DropdownMenuRadioItem>
-                                                                            </DropdownMenuRadioGroup>
-                                                                        </DropdownMenuContent>
-                                                                    </DropdownMenu>
                                                                 </div>
-                                                            </CardContent>
-                                                        </Card>
-                                                    ))}
-                                                </div>
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    ))}
-                                </Accordion>
-                            </AccordionContent>
-                        </AccordionItem>
+                                                            </CardHeader>
+                                                        </Link>
+                                                        <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
+                                                            <div className="flex justify-between items-center">
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
+                                                                            <Badge variant="outline" className="text-xs cursor-pointer">{player.category || 'Sénior'}</Badge>
+                                                                        </Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
+                                                                        <DropdownMenuRadioGroup
+                                                                            value={player.category}
+                                                                            onValueChange={(newCategory) => handleCategoryChange(player, newCategory)}
+                                                                        >
+                                                                            {playerCategories.map(cat => <DropdownMenuRadioItem key={cat} value={cat}>{cat}</DropdownMenuRadioItem>)}
+                                                                        </DropdownMenuRadioGroup>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                                
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
+                                                                            <Badge variant={getBadgeVariant(player.status || 'Actif') as any} className="text-xs cursor-pointer">{player.status || 'Actif'}</Badge>
+                                                                        </Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
+                                                                        <DropdownMenuRadioGroup
+                                                                            value={player.status}
+                                                                            onValueChange={(newStatus) => handleStatusChange(player, newStatus)}
+                                                                        >
+                                                                            <DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem>
+                                                                            <DropdownMenuRadioItem value="Blessé">Blessé</DropdownMenuRadioItem>
+                                                                            <DropdownMenuRadioItem value="Suspendu">Suspendu</DropdownMenuRadioItem>
+                                                                            <DropdownMenuRadioItem value="Inactif">Inactif</DropdownMenuRadioItem>
+                                                                        </DropdownMenuRadioGroup>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                ))}
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
+                        </TabsContent>
                     ))}
-                </Accordion>
+                </Tabs>
             ) : (
                 <div className="text-center py-10">
                     <p className="text-muted-foreground">Aucun joueur trouvé.</p>
@@ -646,5 +651,3 @@ export default function PlayersPage() {
     </div>
     );
 }
-
-    
