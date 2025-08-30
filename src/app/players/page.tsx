@@ -50,6 +50,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 
 const playerSchema = z.object({
@@ -137,20 +138,21 @@ export default function PlayersPage() {
       }
     };
     
-    const getCategoryStyle = (category: string): { color: string; borderColor: string } => {
+    const getCategoryStyle = (category: string) => {
+        const baseStyle = "border-b-2 transition-colors ";
         switch (category) {
-            case 'Sénior': return { color: 'text-red-600 dark:text-red-400', borderColor: 'border-red-600 dark:border-red-400' };
-            case 'U23': return { color: 'text-blue-600 dark:text-blue-400', borderColor: 'border-blue-600 dark:border-blue-400' };
-            case 'U19': return { color: 'text-green-600 dark:text-green-400', borderColor: 'border-green-600 dark:border-green-400' };
-            case 'U18': return { color: 'text-yellow-600 dark:text-yellow-400', borderColor: 'border-yellow-600 dark:border-yellow-400' };
-            case 'U17': return { color: 'text-purple-600 dark:text-purple-400', borderColor: 'border-purple-600 dark:border-purple-400' };
-            case 'U16': return { color: 'text-pink-600 dark:text-pink-400', borderColor: 'border-pink-600 dark:border-pink-400' };
-            case 'U15': return { color: 'text-indigo-600 dark:text-indigo-400', borderColor: 'border-indigo-600 dark:border-indigo-400' };
-            case 'U13': return { color: 'text-teal-600 dark:text-teal-400', borderColor: 'border-teal-600 dark:border-teal-400' };
-            case 'U11': return { color: 'text-orange-600 dark:text-orange-400', borderColor: 'border-orange-600 dark:border-orange-400' };
-            case 'U9': return { color: 'text-cyan-600 dark:text-cyan-400', borderColor: 'border-cyan-600 dark:border-cyan-400' };
-            case 'U7': return { color: 'text-lime-600 dark:text-lime-400', borderColor: 'border-lime-600 dark:border-lime-400' };
-            default: return { color: 'text-gray-600 dark:text-gray-400', borderColor: 'border-gray-600 dark:border-gray-400' };
+            case 'Sénior': return `${baseStyle} border-transparent data-[state=active]:border-red-500`;
+            case 'U23': return `${baseStyle} border-transparent data-[state=active]:border-blue-500`;
+            case 'U19': return `${baseStyle} border-transparent data-[state=active]:border-green-500`;
+            case 'U18': return `${baseStyle} border-transparent data-[state=active]:border-yellow-500`;
+            case 'U17': return `${baseStyle} border-transparent data-[state=active]:border-purple-500`;
+            case 'U16': return `${baseStyle} border-transparent data-[state=active]:border-pink-500`;
+            case 'U15': return `${baseStyle} border-transparent data-[state=active]:border-indigo-500`;
+            case 'U13': return `${baseStyle} border-transparent data-[state=active]:border-teal-500`;
+            case 'U11': return `${baseStyle} border-transparent data-[state=active]:border-orange-500`;
+            case 'U9': return `${baseStyle} border-transparent data-[state=active]:border-cyan-500`;
+            case 'U7': return `${baseStyle} border-transparent data-[state=active]:border-lime-500`;
+            default: return `${baseStyle} border-transparent data-[state=active]:border-gray-500`;
         }
     };
 
@@ -186,7 +188,9 @@ export default function PlayersPage() {
 
 
     const groupedPlayers = useMemo(() => {
-        return filteredPlayers.reduce((acc, player) => {
+        const sortedPlayers = [...filteredPlayers].sort((a, b) => a.name.localeCompare(b.name));
+
+        const groups = sortedPlayers.reduce((acc, player) => {
             const category = player.category || 'Sénior';
             const poste = player.poste || 'Non défini';
 
@@ -199,6 +203,20 @@ export default function PlayersPage() {
             acc[category][poste].push(player);
             return acc;
         }, {} as Record<string, Record<string, Player[]>>);
+
+        // Sort categories
+        const sortedCategories = Object.keys(groups).sort((a, b) => {
+            const aIndex = playerCategories.indexOf(a as Player['category']);
+            const bIndex = playerCategories.indexOf(b as Player['category']);
+            return aIndex - bIndex;
+        });
+
+        const sortedGroups: Record<string, Record<string, Player[]>> = {};
+        for(const category of sortedCategories) {
+            sortedGroups[category] = groups[category];
+        }
+
+        return sortedGroups;
     }, [filteredPlayers]);
 
 
@@ -562,7 +580,7 @@ export default function PlayersPage() {
                 <Tabs defaultValue={defaultCategory} className="w-full">
                     <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
                          {Object.keys(groupedPlayers).map((category) => (
-                            <TabsTrigger key={category} value={category}>{category}</TabsTrigger>
+                            <TabsTrigger key={category} value={category} className={cn("data-[state=active]:shadow-none", getCategoryStyle(category))}>{category}</TabsTrigger>
                         ))}
                     </TabsList>
                     {Object.entries(groupedPlayers).map(([category, postes]) => (
