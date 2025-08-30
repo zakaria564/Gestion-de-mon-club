@@ -103,7 +103,7 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <ProtectedRoute>
-        <div className={cn("flex", isMobile && "no-select")}>
+        <div className={cn("flex min-h-screen", isMobile && "no-select")}>
             <Sidebar>
             <SidebarHeader>
                 <div className="flex items-center gap-2">
@@ -163,11 +163,9 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
                 </DropdownMenu>
             </SidebarFooter>
             </Sidebar>
-            <main className="flex-1 flex flex-col h-screen">
-            <MobileHeader />
-            <div className="flex-1 overflow-auto">
+            <main className="flex flex-1 flex-col overflow-auto">
+                <MobileHeader />
                 {children}
-            </div>
             </main>
         </div>
     </ProtectedRoute>
