@@ -13,13 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { Download, Upload, AlertCircle } from "lucide-react";
+import { Download, Upload, AlertCircle, Info, User, Key, Database } from "lucide-react";
 import { useClubContext } from "@/context/club-context";
 import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
@@ -209,23 +203,24 @@ export default function SettingsPage() {
   if (loading) {
       return (
           <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-              <Skeleton className="h-10 w-48" />
-              <Skeleton className="h-12 w-full max-w-lg" />
-              <Card>
-                  <CardHeader>
-                      <Skeleton className="h-8 w-1/3" />
-                      <Skeleton className="h-4 w-2/3" />
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                      <Skeleton className="h-6 w-1/4" />
-                      <Skeleton className="h-10 w-full" />
-                      <Skeleton className="h-6 w-1/4" />
-                      <Skeleton className="h-10 w-full" />
-                  </CardContent>
-                  <CardFooter>
-                      <Skeleton className="h-10 w-32" />
-                  </CardFooter>
-              </Card>
+              <h2 className="text-3xl font-bold tracking-tight">Paramètres du Club</h2>
+              <div className="grid gap-6 lg:grid-cols-2">
+                 {Array.from({ length: 4 }).map((_, i) => (
+                      <Card key={i}>
+                          <CardHeader>
+                              <Skeleton className="h-8 w-1/3" />
+                              <Skeleton className="h-4 w-2/3" />
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                              <Skeleton className="h-6 w-1/4" />
+                              <Skeleton className="h-10 w-full" />
+                          </CardContent>
+                          <CardFooter>
+                              <Skeleton className="h-10 w-32" />
+                          </CardFooter>
+                      </Card>
+                  ))}
+              </div>
           </div>
       )
   }
@@ -233,20 +228,12 @@ export default function SettingsPage() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
        <h2 className="text-3xl font-bold tracking-tight">Paramètres du Club</h2>
-      <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="info">Informations du Club</TabsTrigger>
-          <TabsTrigger value="account">Mon Compte</TabsTrigger>
-          <TabsTrigger value="admins">Comptes Admin</TabsTrigger>
-          <TabsTrigger value="backup">Sauvegarde</TabsTrigger>
-        </TabsList>
-        <TabsContent value="info">
-          <Card>
+       <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+          
+          <Card className="lg:col-span-1 xl:col-span-1">
             <CardHeader>
-              <CardTitle>Informations du Club</CardTitle>
-              <CardDescription>
-                Gérez les informations de base de votre club.
-              </CardDescription>
+              <CardTitle className="flex items-center gap-2"><Info />Informations du Club</CardTitle>
+              <CardDescription>Gérez les informations de base de votre club.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -259,17 +246,14 @@ export default function SettingsPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSaveInfo} disabled={isSavingInfo}>{isSavingInfo ? "Enregistrement..." : "Enregistrer les modifications"}</Button>
+              <Button onClick={handleSaveInfo} disabled={isSavingInfo}>{isSavingInfo ? "Enregistrement..." : "Enregistrer"}</Button>
             </CardFooter>
           </Card>
-        </TabsContent>
-         <TabsContent value="account">
-          <Card>
+
+          <Card className="lg:col-span-1 xl:col-span-1">
             <CardHeader>
-              <CardTitle>Mon Compte</CardTitle>
-              <CardDescription>
-                Gérez les informations de votre compte administrateur.
-              </CardDescription>
+              <CardTitle className="flex items-center gap-2"><User />Mon Compte</CardTitle>
+              <CardDescription>Gérez les informations de votre compte.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                {profileError && (
@@ -286,6 +270,20 @@ export default function SettingsPage() {
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" value={user?.email || ''} disabled />
               </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={handleSaveProfile} disabled={isSavingProfile}>
+                {isSavingProfile ? "Enregistrement..." : "Mettre à jour le profil"}
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card className="lg:col-span-1 xl:col-span-1">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Key />Sécurité</CardTitle>
+              <CardDescription>Modifiez votre mot de passe.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="new-password">Nouveau mot de passe</Label>
                 <Input id="new-password" type="password" placeholder="Laisser vide pour ne pas changer" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}/>
@@ -295,33 +293,17 @@ export default function SettingsPage() {
                 <Input id="confirm-password" type="password" placeholder="Confirmer le nouveau mot de passe" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
               </div>
             </CardContent>
-            <CardFooter>
+             <CardFooter>
               <Button onClick={handleSaveProfile} disabled={isSavingProfile}>
-                {isSavingProfile ? "Enregistrement..." : "Mettre à jour le profil"}
+                {isSavingProfile ? "Enregistrement..." : "Mettre à jour le mot de passe"}
               </Button>
             </CardFooter>
           </Card>
-        </TabsContent>
-        <TabsContent value="admins">
-          <Card>
+
+          <Card className="lg:col-span-2 xl:col-span-3">
             <CardHeader>
-              <CardTitle>Comptes Admin</CardTitle>
-              <CardDescription>
-                Gérez les comptes administrateurs du club. Bientôt disponible.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">Cette fonctionnalité est en cours de développement.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="backup">
-          <Card>
-            <CardHeader>
-              <CardTitle>Sauvegarde et Restauration</CardTitle>
-              <CardDescription>
-                Sauvegardez ou restaurez les données de votre club via un fichier JSON.
-              </CardDescription>
+              <CardTitle className="flex items-center gap-2"><Database />Sauvegarde et Restauration</CardTitle>
+              <CardDescription>Sauvegardez ou restaurez les données de votre club via un fichier JSON.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {restoreError && (
@@ -335,7 +317,7 @@ export default function SettingsPage() {
                   <Download className="mr-2 h-4 w-4" /> 
                   {isBackuping ? "Sauvegarde en cours..." : "Sauvegarder les données (JSON)"}
                 </Button>
-                <Button variant="outline" className="w-full" onClick={() => document.getElementById('restore-input')?.click()} disabled={isRestoring}>
+                <Button variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()} disabled={isRestoring}>
                   <Upload className="mr-2 h-4 w-4" /> 
                   {isRestoring ? "Restauration en cours..." : "Restaurer les données (JSON)"}
                 </Button>
@@ -349,8 +331,19 @@ export default function SettingsPage() {
               </Alert>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+
+          <Card className="lg:col-span-2 xl:col-span-3">
+            <CardHeader>
+              <CardTitle>Comptes Admin</CardTitle>
+              <CardDescription>Gérez les comptes administrateurs du club. Bientôt disponible.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Cette fonctionnalité est en cours de développement.</p>
+            </CardContent>
+          </Card>
+
+       </div>
     </div>
   );
 }
+
