@@ -159,8 +159,8 @@ export default function Dashboard() {
             </Card>
         </Link>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="lg:col-span-4">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-5">
+        <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Répartition des Joueurs par Catégorie</CardTitle>
             <CardDescription>
@@ -196,7 +196,7 @@ export default function Dashboard() {
             </ChartContainer>
           </CardContent>
         </Card>
-        <Card className="lg:col-span-3">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Événements à Venir</CardTitle>
             <CardDescription>
