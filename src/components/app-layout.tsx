@@ -40,6 +40,8 @@ import { ProtectedRoute, useAuth } from "@/context/auth-context";
 import { useClubContext } from "@/context/club-context";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "./ui/skeleton";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const navItems = [
   { href: "/", label: "Tableau de bord", icon: LayoutDashboard },
@@ -71,6 +73,7 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
   const { clubInfo, loading: clubLoading } = useClubContext();
   const { toast } = useToast();
   const { setOpenMobile } = useSidebar();
+  const isMobile = useIsMobile();
 
 
   const handleLogout = async () => {
@@ -100,71 +103,73 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <ProtectedRoute>
-        <Sidebar>
-          <SidebarHeader>
-            <div className="flex items-center gap-2">
-              <ClubLogo src={clubInfo.logoUrl} className="size-8 shrink-0" />
-              <span className="text-lg font-semibold truncate">{clubInfo.name}</span>
+        <div className={cn(isMobile && "no-select")}>
+            <Sidebar>
+            <SidebarHeader>
+                <div className="flex items-center gap-2">
+                <ClubLogo src={clubInfo.logoUrl} className="size-8 shrink-0" />
+                <span className="text-lg font-semibold truncate">{clubInfo.name}</span>
+                </div>
+            </SidebarHeader>
+            <SidebarContent>
+                <SidebarMenu>
+                {navItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={pathname === item.href}
+                        tooltip={{ children: item.label }}
+                        onClick={handleLinkClick}
+                    >
+                        <Link href={item.href}>
+                        <item.icon />
+                        <span>{item.label}</span>
+                        </Link>
+                    </SidebarMenuButton>
+                    </SidebarMenuItem>
+                ))}
+                </SidebarMenu>
+            </SidebarContent>
+            <SidebarFooter>
+                <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-start gap-2 p-2">
+                        <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "Admin"} data-ai-hint="user avatar" />
+                        <AvatarFallback>{user?.email?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="text-left group-data-[collapsible=icon]:hidden">
+                        <p className="font-medium text-sm truncate">Compte</p>
+                        </div>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user?.displayName || "Admin"}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                            {user?.email}
+                        </p>
+                        </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => router.push('/settings')}>Profil</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/settings')}>Paramètres</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                        Se déconnecter
+                    </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </SidebarFooter>
+            </Sidebar>
+            <main className="flex-1 flex flex-col h-screen">
+            <MobileHeader />
+            <div className="flex-1 overflow-auto">
+                {children}
             </div>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href}
-                    tooltip={{ children: item.label }}
-                    onClick={handleLinkClick}
-                  >
-                    <Link href={item.href}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarContent>
-          <SidebarFooter>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" className="w-full justify-start gap-2 p-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "Admin"} data-ai-hint="user avatar" />
-                      <AvatarFallback>{user?.email?.substring(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div className="text-left group-data-[collapsible=icon]:hidden">
-                      <p className="font-medium text-sm truncate">Compte</p>
-                    </div>
-                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user?.displayName || "Admin"}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user?.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => router.push('/settings')}>Profil</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push('/settings')}>Paramètres</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    Se déconnecter
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarFooter>
-        </Sidebar>
-        <main className="flex-1 flex flex-col h-screen">
-          <MobileHeader />
-          <div className="flex-1 overflow-auto">
-            {children}
-          </div>
-        </main>
+            </main>
+        </div>
     </ProtectedRoute>
   )
 }
