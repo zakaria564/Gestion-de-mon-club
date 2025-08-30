@@ -103,7 +103,7 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <ProtectedRoute>
-        <div className={cn(isMobile && "no-select")}>
+        <div className={cn("flex", isMobile && "no-select")}>
             <Sidebar>
             <SidebarHeader>
                 <div className="flex items-center gap-2">
