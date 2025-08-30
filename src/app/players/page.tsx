@@ -204,7 +204,7 @@ export default function PlayersPage() {
     const photoPreview = form.watch('photo');
 
     return (
-        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
         <div className="flex items-center justify-between space-y-2">
             <h2 className="text-3xl font-bold tracking-tight">Gestion des Joueurs</h2>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -565,7 +565,10 @@ export default function PlayersPage() {
                                     {Object.entries(postes).map(([poste, playersInPoste]) => (
                                         <AccordionItem value={`${category}-${poste}`} key={`${category}-${poste}`} className="border rounded-md">
                                             <AccordionTrigger className="px-4 text-base font-semibold hover:no-underline">
-                                            {`${poste} (${playersInPoste.length} joueur${playersInPoste.length > 1 ? 's' : ''})`}
+                                            {playersInPoste.length === 1
+                                                ? `${poste} (${playersInPoste[0].name})`
+                                                : `${poste} (${playersInPoste.length} joueur${playersInPoste.length > 1 ? 's' : ''})`
+                                            }
                                             </AccordionTrigger>
                                             <AccordionContent className="p-2">
                                                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -643,3 +646,5 @@ export default function PlayersPage() {
     </div>
     );
 }
+
+    
