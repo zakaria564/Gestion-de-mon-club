@@ -219,8 +219,8 @@ export default function PlayersPage() {
                   </DialogDescription>
               </DialogHeader>
                <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col min-h-0">
-                    <div className="flex-1 overflow-y-auto pr-6 -mr-6">
+                <form onSubmit={form.handleSubmit(onSubmit)}>
+                    <div className="overflow-y-auto pr-6 -mr-6 max-h-[calc(90vh-180px)]">
                         <div className="space-y-6 py-4 px-1">
                         <div className="flex flex-col items-center gap-4">
                             <Avatar className="h-24 w-24 border">
@@ -511,7 +511,7 @@ export default function PlayersPage() {
                             </div>
                         </div>
                     </div>
-                    <DialogFooter className="pt-4 border-t sticky bottom-0 bg-background">
+                    <DialogFooter className="pt-4 border-t">
                         <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                         <Button type="submit">Enregistrer</Button>
                     </DialogFooter>
@@ -553,7 +553,7 @@ export default function PlayersPage() {
                 </div>
             ))
         ) : Object.keys(groupedPlayers).length > 0 ? (
-            <Accordion type="multiple" className="w-full space-y-4">
+            <Accordion type="multiple" className="w-full space-y-4" defaultValue={Object.keys(groupedPlayers)}>
                 {Object.entries(groupedPlayers).map(([category, postes]) => (
                     <AccordionItem value={category} key={category} className="border rounded-lg">
                          <AccordionTrigger className="px-4 py-2 text-xl font-bold hover:no-underline">

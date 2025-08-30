@@ -226,114 +226,116 @@ export function CoachDetailClient({ id }: { id: string }) {
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="flex-grow overflow-y-auto pr-6 -mr-6">
-                  <div className="px-1 py-4 space-y-6">
-                    <div className="flex flex-col items-center gap-4">
-                      <Avatar className="h-24 w-24 border">
-                        <AvatarImage src={photoPreview || undefined} alt="Aperçu de l'entraîneur" data-ai-hint="coach photo"/>
-                        <AvatarFallback className="bg-muted">
-                          <Camera className="h-8 w-8 text-muted-foreground" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <FormField
-                        control={form.control}
-                        name="photo"
-                        render={({ field }) => (
-                          <FormItem className="w-full max-w-sm">
-                            <FormLabel>URL de la photo</FormLabel>
-                            <FormControl>
-                              <Input type="text" placeholder="https://example.com/photo.jpg" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nom complet</FormLabel>
-                            <FormControl><Input placeholder="ex: Alain Prost" {...field} required /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="specialization"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Spécialité</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value} required>
-                              <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une spécialité" /></SelectTrigger></FormControl>
-                              <SelectContent>
-                                <SelectItem value="Entraîneur Principal">Entraîneur Principal</SelectItem>
-                                <SelectItem value="Entraîneur Adjoint">Entraîneur Adjoint</SelectItem>
-                                <SelectItem value="Entraîneur des Gardiens">Entraîneur des Gardiens</SelectItem>
-                                <SelectItem value="Préparateur Physique">Préparateur Physique</SelectItem>
-                                <SelectItem value="Analyste Vidéo">Analyste Vidéo</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Téléphone</FormLabel>
-                            <FormControl><Input placeholder="ex: 0612345678" {...field} required /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl><Input type="email" placeholder="ex: email@exemple.com" {...field} required /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="experience"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Expérience (années)</FormLabel>
-                            <FormControl><Input type="number" placeholder="ex: 5" {...field} required /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                       <FormField
-                        control={form.control}
-                        name="notes"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel>Notes</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Ajouter des notes sur l'entraîneur"
-                                className="resize-y min-h-[100px]"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                  <div className="overflow-y-auto pr-6 -mr-6 max-h-[calc(90vh-180px)]">
+                    <div className="px-1 py-4 space-y-6">
+                      <div className="flex flex-col items-center gap-4">
+                        <Avatar className="h-24 w-24 border">
+                          <AvatarImage src={photoPreview || undefined} alt="Aperçu de l'entraîneur" data-ai-hint="coach photo"/>
+                          <AvatarFallback className="bg-muted">
+                            <Camera className="h-8 w-8 text-muted-foreground" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <FormField
+                          control={form.control}
+                          name="photo"
+                          render={({ field }) => (
+                            <FormItem className="w-full max-w-sm">
+                              <FormLabel>URL de la photo</FormLabel>
+                              <FormControl>
+                                <Input type="text" placeholder="https://example.com/photo.jpg" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nom complet</FormLabel>
+                              <FormControl><Input placeholder="ex: Alain Prost" {...field} required /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="specialization"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Spécialité</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une spécialité" /></SelectTrigger></FormControl>
+                                <SelectContent>
+                                  <SelectItem value="Entraîneur Principal">Entraîneur Principal</SelectItem>
+                                  <SelectItem value="Entraîneur Adjoint">Entraîneur Adjoint</SelectItem>
+                                  <SelectItem value="Entraîneur des Gardiens">Entraîneur des Gardiens</SelectItem>
+                                  <SelectItem value="Préparateur Physique">Préparateur Physique</SelectItem>
+                                  <SelectItem value="Analyste Vidéo">Analyste Vidéo</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Téléphone</FormLabel>
+                              <FormControl><Input placeholder="ex: 0612345678" {...field} required /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl><Input type="email" placeholder="ex: email@exemple.com" {...field} required /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="experience"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Expérience (années)</FormLabel>
+                              <FormControl><Input type="number" placeholder="ex: 5" {...field} required /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                         <FormField
+                          control={form.control}
+                          name="notes"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel>Notes</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Ajouter des notes sur l'entraîneur"
+                                  className="resize-y min-h-[100px]"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
                   </div>
-                <DialogFooter className="pt-4 border-t sticky bottom-0 bg-background">
+                <DialogFooter className="pt-4 border-t">
                   <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                   <Button type="submit">Mettre à jour</Button>
                 </DialogFooter>
@@ -344,5 +346,3 @@ export function CoachDetailClient({ id }: { id: string }) {
     </div>
   );
 }
-
-    
