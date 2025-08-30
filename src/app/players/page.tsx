@@ -139,21 +139,21 @@ export default function PlayersPage() {
     };
     
     const getCategoryStyle = (category: string) => {
-        const baseStyle = "border-b-2 transition-colors ";
-        switch (category) {
-            case 'Sénior': return `${baseStyle} border-transparent data-[state=active]:border-red-500`;
-            case 'U23': return `${baseStyle} border-transparent data-[state=active]:border-blue-500`;
-            case 'U19': return `${baseStyle} border-transparent data-[state=active]:border-green-500`;
-            case 'U18': return `${baseStyle} border-transparent data-[state=active]:border-yellow-500`;
-            case 'U17': return `${baseStyle} border-transparent data-[state=active]:border-purple-500`;
-            case 'U16': return `${baseStyle} border-transparent data-[state=active]:border-pink-500`;
-            case 'U15': return `${baseStyle} border-transparent data-[state=active]:border-indigo-500`;
-            case 'U13': return `${baseStyle} border-transparent data-[state=active]:border-teal-500`;
-            case 'U11': return `${baseStyle} border-transparent data-[state=active]:border-orange-500`;
-            case 'U9': return `${baseStyle} border-transparent data-[state=active]:border-cyan-500`;
-            case 'U7': return `${baseStyle} border-transparent data-[state=active]:border-lime-500`;
-            default: return `${baseStyle} border-transparent data-[state=active]:border-gray-500`;
-        }
+      const baseStyle = "transition-colors text-white data-[state=active]:text-white data-[state=active]:shadow-inner";
+      switch (category) {
+        case 'Sénior': return `${baseStyle} bg-red-500/80 hover:bg-red-500 data-[state=active]:bg-red-500 data-[state=active]:border-red-700`;
+        case 'U23': return `${baseStyle} bg-blue-500/80 hover:bg-blue-500 data-[state=active]:bg-blue-500 data-[state=active]:border-blue-700`;
+        case 'U19': return `${baseStyle} bg-green-500/80 hover:bg-green-500 data-[state=active]:bg-green-500 data-[state=active]:border-green-700`;
+        case 'U18': return `${baseStyle} bg-yellow-500/80 hover:bg-yellow-500 data-[state=active]:bg-yellow-500 data-[state=active]:border-yellow-700`;
+        case 'U17': return `${baseStyle} bg-purple-500/80 hover:bg-purple-500 data-[state=active]:bg-purple-500 data-[state=active]:border-purple-700`;
+        case 'U16': return `${baseStyle} bg-pink-500/80 hover:bg-pink-500 data-[state=active]:bg-pink-500 data-[state=active]:border-pink-700`;
+        case 'U15': return `${baseStyle} bg-indigo-500/80 hover:bg-indigo-500 data-[state=active]:bg-indigo-500 data-[state=active]:border-indigo-700`;
+        case 'U13': return `${baseStyle} bg-teal-500/80 hover:bg-teal-500 data-[state=active]:bg-teal-500 data-[state=active]:border-teal-700`;
+        case 'U11': return `${baseStyle} bg-orange-500/80 hover:bg-orange-500 data-[state=active]:bg-orange-500 data-[state=active]:border-orange-700`;
+        case 'U9': return `${baseStyle} bg-cyan-500/80 hover:bg-cyan-500 data-[state=active]:bg-cyan-500 data-[state=active]:border-cyan-700`;
+        case 'U7': return `${baseStyle} bg-lime-500/80 hover:bg-lime-500 data-[state=active]:bg-lime-500 data-[state=active]:border-lime-700`;
+        default: return `${baseStyle} bg-gray-500/80 hover:bg-gray-500 data-[state=active]:bg-gray-500 data-[state=active]:border-gray-700`;
+      }
     };
 
     const handleStatusChange = async (player: Player, newStatus: string) => {
@@ -578,9 +578,9 @@ export default function PlayersPage() {
                 ))
             ) : Object.keys(groupedPlayers).length > 0 ? (
                 <Tabs defaultValue={defaultCategory} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
+                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
                          {Object.keys(groupedPlayers).map((category) => (
-                            <TabsTrigger key={category} value={category} className={cn("data-[state=active]:shadow-none", getCategoryStyle(category))}>{category}</TabsTrigger>
+                            <TabsTrigger key={category} value={category} className={cn("data-[state=active]:shadow-none data-[state=active]:border-2", getCategoryStyle(category))}>{category}</TabsTrigger>
                         ))}
                     </TabsList>
                     {Object.entries(groupedPlayers).map(([category, postes]) => (
