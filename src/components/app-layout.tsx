@@ -107,7 +107,7 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
             <Sidebar>
             <SidebarHeader>
                 <div className="flex items-center gap-2">
-                <ClubLogo src={clubInfo.logoUrl} className="size-8 shrink-0" />
+                <ClubLogo src={clubInfo.logoUrl} className="size-10 shrink-0" />
                 <span className="text-lg font-semibold truncate">{clubInfo.name}</span>
                 </div>
             </SidebarHeader>
@@ -163,7 +163,7 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
                 </DropdownMenu>
             </SidebarFooter>
             </Sidebar>
-            <main className="flex w-full flex-1 flex-col overflow-auto">
+            <main className="flex-1 overflow-auto w-full">
                 <MobileHeader />
                 {children}
             </main>
