@@ -8,7 +8,7 @@ interface ClubLogoProps extends React.SVGProps<SVGSVGElement> {
 }
 
 export function ClubLogo({ className, src, ...props }: ClubLogoProps) {
-  const finalSrc = src || "https://image.noelshack.com/fichiers/2024/29/7/1721579720-2024-07-21-17h34-1.png";
+  const finalSrc = src || "https://image.noelshack.com/fichiers/2025/35/6/1756565561-football-logo-design-template-bebebf8ff1c25b66b504d37afaee99f0-screen.jpg";
 
   if (finalSrc) {
       return <Image src={finalSrc} alt="Club Logo" width={40} height={40} className={cn("rounded-full", className)} data-ai-hint="club logo" />
