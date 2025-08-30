@@ -2,24 +2,19 @@
 "use client";
 
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useResultsContext, NewResult, Result, PerformanceDetail } from "@/context/results-context";
-import { Edit, PlusCircle, Trash2, X, FilterX } from "lucide-react";
+import { Edit, PlusCircle, Trash2, X, FilterX, Eye } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -27,7 +22,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { usePlayersContext } from "@/context/players-context";
 import type { Player } from "@/lib/data";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical'];
@@ -44,8 +38,11 @@ export default function ResultsPage() {
   const { players, loading: playersLoading } = playersContext;
 
   const [open, setOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingResult, setEditingResult] = useState<Result | null>(null);
+  const [selectedResult, setSelectedResult] = useState<Result | null>(null);
+
 
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [opponentFilter, setOpponentFilter] = useState('all');
@@ -131,6 +128,7 @@ export default function ResultsPage() {
   };
 
   const openEditDialog = (result: Result) => {
+    setDetailsOpen(false); // Close details modal if open
     setIsEditing(true);
     setEditingResult(result);
     setNewResult({
@@ -150,6 +148,11 @@ export default function ResultsPage() {
   const handleDelete = async (id: string) => {
     await deleteResult(id);
   }
+
+  const handleShowDetails = (result: Result) => {
+    setSelectedResult(result);
+    setDetailsOpen(true);
+  }
   
   const opponentOptions = useMemo(() => {
     const opponents = new Set(results.map(r => r.opponent));
@@ -158,7 +161,7 @@ export default function ResultsPage() {
 
   const filteredResults = useMemo(() => {
     return results.filter(result => {
-      const categoryMatch = categoryFilter === 'all' || result.category === categoryFilter;
+      const categoryMatch = categoryFilter === 'all' || result.teamCategory === categoryFilter;
       const opponentMatch = opponentFilter === 'all' || result.opponent === opponentFilter;
       return categoryMatch && opponentMatch;
     });
@@ -174,12 +177,20 @@ export default function ResultsPage() {
     if (!items || !Array.isArray(items) || items.length === 0) {
       return "Aucun";
     }
-    return items.map(item => `${item.playerName}${item.count ? ` (${item.count})` : ''}`).join(", ");
+    return items.map(item => `${item.playerName}${item.count > 1 ? ` (${item.count})` : ''}`).join(", ");
   };
 
   const resetFilters = () => {
     setCategoryFilter('all');
     setOpponentFilter('all');
+  }
+  
+  const getMatchOutcome = (score: string) => {
+    const parts = score.split('-').map(s => parseInt(s.trim()));
+    if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return 'bg-gray-500';
+    if (parts[0] > parts[1]) return 'bg-green-500'; // Victoire
+    if (parts[0] < parts[1]) return 'bg-red-500'; // Défaite
+    return 'bg-yellow-500'; // Nul
   }
 
   return (
@@ -286,7 +297,7 @@ export default function ResultsPage() {
                           </div>
                       </div>
                     </div>
-                  <DialogFooter className="pt-4 border-t">
+                  <DialogFooter className="pt-4 border-t sticky bottom-0 bg-background">
                       <Button type="submit">Sauvegarder</Button>
                   </DialogFooter>
                 </form>
@@ -294,20 +305,20 @@ export default function ResultsPage() {
         </Dialog>
       </div>
 
-       <div className="flex items-center gap-4 my-4">
+       <div className="flex flex-col sm:flex-row items-center gap-4 my-4">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-full sm:w-[200px]">
                     <SelectValue placeholder="Filtrer par catégorie" />
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem value="all">Toutes les catégories</SelectItem>
-                    {matchCategories.map(cat => (
+                    {playerCategories.map(cat => (
                         <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                     ))}
                 </SelectContent>
             </Select>
             <Select value={opponentFilter} onValueChange={setOpponentFilter}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-full sm:w-[200px]">
                     <SelectValue placeholder="Filtrer par adversaire" />
                 </SelectTrigger>
                 <SelectContent>
@@ -317,62 +328,66 @@ export default function ResultsPage() {
                     ))}
                 </SelectContent>
             </Select>
-            <Button variant="ghost" onClick={resetFilters} className="text-muted-foreground">
-                <FilterX className="mr-2 h-4 w-4"/>
-                Réinitialiser
-            </Button>
+            {(categoryFilter !== 'all' || opponentFilter !== 'all') && (
+                <Button variant="ghost" onClick={resetFilters} className="text-muted-foreground">
+                    <FilterX className="mr-2 h-4 w-4"/>
+                    Réinitialiser
+                </Button>
+            )}
         </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Résultats des Matchs</CardTitle>
-          <CardDescription>
-            Consultez les résultats des matchs passés de votre club.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading || playersLoading ? (
-             <div className="space-y-4">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          ) : (
-            <Accordion type="single" collapsible className="w-full">
-              {filteredResults.map((result) => (
-                <AccordionItem key={result.id} value={`item-${result.id}`}>
-                  <AccordionTrigger>
-                    <div className="flex justify-between w-full pr-4 items-center">
-                      <div className="flex-1 text-left flex items-center gap-4">
-                        <Badge variant="outline">{result.teamCategory || 'N/A'}</Badge>
-                        <Badge variant="secondary">{result.category}</Badge>
-                        <span>
-                          Club vs {result.opponent} -{" "}
-                          <span className="text-muted-foreground">{result.date}{result.time ? ` à ${result.time}` : ''}</span>
-                        </span>
+        {loading || playersLoading ? (
+             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({length: 4}).map((_, cardIndex) => (
+                <Card key={cardIndex}>
+                  <CardHeader>
+                      <div className="flex items-center justify-between">
+                          <Skeleton className="h-6 w-3/5" />
+                          <Skeleton className="h-8 w-1/4 rounded-md" />
                       </div>
-                       <span className="font-bold text-primary mx-4">{result.score}</span>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="space-y-2 px-4">
-                      <p>
-                        <strong>Lieu :</strong> {result.location || "Non spécifié"}
-                      </p>
-                      <p>
-                        <strong>Buteurs :</strong> {formatPerformance(result.scorers)}
-                      </p>
-                       <p>
-                        <strong>Passeurs :</strong> {formatPerformance(result.assists)}
-                      </p>
-                       <div className="flex justify-end gap-2 pt-2">
-                          <Button variant="outline" size="sm" onClick={() => openEditDialog(result)}>
-                              <Edit className="mr-2 h-4 w-4" /> Modifier
-                          </Button>
-                          <AlertDialog>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-4/5" />
+                  </CardContent>
+                   <CardFooter className="justify-end gap-2">
+                        <Skeleton className="h-8 w-20" />
+                        <Skeleton className="h-8 w-20" />
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          ) : filteredResults.length > 0 ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredResults.map((result) => (
+                <Card key={result.id} className="flex flex-col">
+                    <CardHeader>
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                                <CardTitle className="text-lg">vs {result.opponent}</CardTitle>
+                                <CardDescription>{result.date}</CardDescription>
+                            </div>
+                            <div className={`text-2xl font-bold p-2 rounded-md text-white ${getMatchOutcome(result.score)}`}>
+                                {result.score}
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="flex-grow space-y-2">
+                        <Badge variant="secondary">{result.teamCategory}</Badge>
+                        <Badge variant="outline">{result.category}</Badge>
+                        <p className="text-sm text-muted-foreground pt-2">{result.location}</p>
+                    </CardContent>
+                    <CardFooter className="justify-end gap-2">
+                         <Button variant="outline" size="sm" onClick={() => handleShowDetails(result)}>
+                            <Eye className="mr-2 h-4 w-4" /> Détails
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => openEditDialog(result)}>
+                            <Edit className="mr-2 h-4 w-4" /> Modifier
+                        </Button>
+                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button variant="destructive" size="sm">
-                                  <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                  <Trash2 className="h-4 w-4" />
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
@@ -388,18 +403,43 @@ export default function ResultsPage() {
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
+                    </CardFooter>
+                </Card>
               ))}
-                {filteredResults.length === 0 && (
-                    <p className="text-center text-muted-foreground py-8">Aucun résultat trouvé.</p>
+            </div>
+             ) : (
+                <div className="text-center py-10 col-span-full">
+                    <p className="text-muted-foreground">Aucun résultat trouvé pour les filtres sélectionnés.</p>
+                </div>
+            )}
+        
+        <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Détails du match vs {selectedResult?.opponent}</DialogTitle>
+                     <DialogDescription>
+                        {selectedResult?.date} - Score final : {selectedResult?.score}
+                    </DialogDescription>
+                </DialogHeader>
+                {selectedResult && (
+                    <div className="space-y-4 py-4">
+                      <p>
+                        <strong>Lieu :</strong> {selectedResult.location || "Non spécifié"}
+                      </p>
+                      <p>
+                        <strong>Buteurs :</strong> {formatPerformance(selectedResult.scorers)}
+                      </p>
+                       <p>
+                        <strong>Passeurs :</strong> {formatPerformance(selectedResult.assists)}
+                      </p>
+                    </div>
                 )}
-            </Accordion>
-          )}
-        </CardContent>
-      </Card>
+                <DialogFooter>
+                    <Button onClick={() => setDetailsOpen(false)}>Fermer</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
     </div>
   );
 }
