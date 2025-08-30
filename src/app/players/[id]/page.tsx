@@ -1,10 +1,16 @@
 
 "use client";
+import { useParams } from 'next/navigation';
 import { PlayerDetailClient } from './player-detail-client';
 
-// The page component is a server component, so we can access params directly
-// and pass them to the client component. This avoids the "params should be awaited" error.
-export default function PlayerDetailPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function PlayerDetailPage() {
+  const params = useParams();
+  const id = typeof params.id === 'string' ? params.id : '';
+
+  if (!id) {
+    // Optionnel: afficher un état de chargement ou un message d'erreur si l'ID n'est pas disponible
+    return <div>Chargement...</div>;
+  }
+
   return <PlayerDetailClient id={id} />;
 }
