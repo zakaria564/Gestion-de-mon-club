@@ -208,8 +208,8 @@ export default function ResultsPage() {
                     <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un résultat</DialogTitle>
                     <DialogDescription>Remplissez les détails du match ci-dessous.</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit}>
-                   <div className="overflow-y-auto pr-6 -mr-6 max-h-[calc(90vh-180px)]">
+                <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+                   <div className="overflow-y-auto pr-6 -mr-6 flex-1">
                     <div className="grid gap-4 py-4 px-1">
                          <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
@@ -297,7 +297,8 @@ export default function ResultsPage() {
                           </div>
                       </div>
                     </div>
-                  <DialogFooter className="pt-4 border-t sticky bottom-0 bg-background">
+                  <DialogFooter className="pt-4 border-t">
+                      <Button type="button" variant="secondary" onClick={() => setOpen(false)}>Annuler</Button>
                       <Button type="submit">Sauvegarder</Button>
                   </DialogFooter>
                 </form>
