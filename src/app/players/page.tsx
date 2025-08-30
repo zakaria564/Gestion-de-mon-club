@@ -219,8 +219,8 @@ export default function PlayersPage() {
                   </DialogDescription>
               </DialogHeader>
                <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <div className="overflow-y-auto pr-6 -mr-6 max-h-[calc(90vh-180px)]">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
+                    <div className="overflow-y-auto pr-6 -mr-6 flex-1">
                         <div className="space-y-6 py-4 px-1">
                         <div className="flex flex-col items-center gap-4">
                             <Avatar className="h-24 w-24 border">
@@ -560,14 +560,11 @@ export default function PlayersPage() {
                             <span className={getCategoryStyle(category).color}>{category}</span>
                         </AccordionTrigger>
                         <AccordionContent className="p-2">
-                            <Accordion type="multiple" className="w-full space-y-2">
+                            <Accordion type="multiple" className="w-full space-y-2" defaultValue={Object.keys(postes)}>
                                 {Object.entries(postes).map(([poste, playersInPoste]) => (
                                     <AccordionItem value={`${category}-${poste}`} key={`${category}-${poste}`} className="border rounded-md">
                                         <AccordionTrigger className="px-4 text-base font-semibold hover:no-underline">
-                                            {playersInPoste.length === 1
-                                              ? `${poste}: ${playersInPoste[0].name}`
-                                              : `${poste} (${playersInPoste.length} joueur${playersInPoste.length > 1 ? 's' : ''})`
-                                            }
+                                           {`${poste} (${playersInPoste.length} joueur${playersInPoste.length > 1 ? 's' : ''})`}
                                         </AccordionTrigger>
                                         <AccordionContent className="p-2">
                                             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
