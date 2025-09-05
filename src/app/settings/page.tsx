@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Download, Upload, AlertCircle, Info, User, Key, Database } from "lucide-react";
+import { Download, Upload, AlertCircle, Info, User, Key, Database, Palette } from "lucide-react";
 import { useClubContext } from "@/context/club-context";
 import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +24,7 @@ import { useCoachesContext } from "@/context/coaches-context";
 import { useCalendarContext } from "@/context/calendar-context";
 import { useFinancialContext } from "@/context/financial-context";
 import { useResultsContext } from "@/context/results-context";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export default function SettingsPage() {
   const { 
@@ -248,6 +249,16 @@ export default function SettingsPage() {
             <CardFooter>
               <Button onClick={handleSaveInfo} disabled={isSavingInfo}>{isSavingInfo ? "Enregistrement..." : "Enregistrer"}</Button>
             </CardFooter>
+          </Card>
+
+           <Card className="lg:col-span-1 xl:col-span-1">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Palette />Apparence</CardTitle>
+              <CardDescription>Personnalisez l'apparence de l'application.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ThemeSwitcher />
+            </CardContent>
           </Card>
 
           <Card className="lg:col-span-1 xl:col-span-1">

@@ -15,6 +15,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { usePathname, useRouter } from "next/navigation";
 import "./globals.css";
 import { ClubLogo } from "@/components/club-logo";
+import { ThemeProvider } from "@/components/theme-provider";
+
 
 const inter = Inter({
   subsets: ["latin"],
@@ -84,16 +86,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={inter.variable}>
+    <html lang="fr" className={inter.variable} suppressHydrationWarning>
        <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0ea5e9" />
       </head>
       <body>
-        <AuthProvider>
-          <AppProviders>{children}</AppProviders>
-        </AuthProvider>
-        <Toaster />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <AuthProvider>
+              <AppProviders>{children}</AppProviders>
+            </AuthProvider>
+            <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
