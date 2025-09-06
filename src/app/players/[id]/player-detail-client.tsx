@@ -52,6 +52,17 @@ const playerSchema = z.object({
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
 
+const documentOptions = [
+  "Certificat Médical",
+  "Carte d'identité",
+  "Passeport",
+  "Photo d'identité",
+  "Autorisation Parentale",
+  "Fiche de renseignements",
+  "Justificatif de domicile",
+  "Autre"
+];
+
 export function PlayerDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -481,11 +492,20 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 name={`documents.${index}.name`}
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Nom du document</FormLabel>
+                                  <FormLabel>Nom du document</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                    <Input placeholder="ex: Certificat Médical" {...field} />
+                                        <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner un type de document" />
+                                        </SelectTrigger>
                                     </FormControl>
-                                    <FormMessage />
+                                    <SelectContent>
+                                        {documentOptions.map(option => (
+                                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                    </Select>
+                                  <FormMessage />
                                 </FormItem>
                                 )}
                             />
@@ -659,3 +679,5 @@ export function PlayerDetailClient({ id }: { id: string }) {
     </div>
   );
 }
+
+    

@@ -102,6 +102,17 @@ const defaultValues: PlayerFormValues = {
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
+const documentOptions = [
+  "Certificat Médical",
+  "Carte d'identité",
+  "Passeport",
+  "Photo d'identité",
+  "Autorisation Parentale",
+  "Fiche de renseignements",
+  "Justificatif de domicile",
+  "Autre"
+];
+
 export default function PlayersPage() {
     const context = usePlayersContext();
     const { toast } = useToast();
@@ -147,7 +158,7 @@ export default function PlayersPage() {
     };
     
     const getCategoryStyle = (category: string) => {
-      const baseStyle = "transition-colors text-white data-[state=active]:text-white data-[state=active]:shadow-inner";
+      const baseStyle = "transition-colors text-white data-[state=active]:text-white data-[state=active]:shadow-inner data-[state=active]:border-2";
       switch (category) {
         case 'Sénior': return `${baseStyle} bg-red-500/80 hover:bg-red-500 data-[state=active]:bg-red-500 data-[state=active]:border-red-700`;
         case 'U23': return `${baseStyle} bg-blue-500/80 hover:bg-blue-500 data-[state=active]:bg-blue-500 data-[state=active]:border-blue-700`;
@@ -410,17 +421,26 @@ export default function PlayersPage() {
                                       <X className="h-4 w-4" />
                                     </Button>
                                     <FormField
-                                        control={form.control}
-                                        name={`documents.${index}.name`}
-                                        render={({ field }) => (
+                                      control={form.control}
+                                      name={`documents.${index}.name`}
+                                      render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Nom du document</FormLabel>
+                                          <FormLabel>Nom du document</FormLabel>
+                                          <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
-                                            <Input placeholder="ex: Certificat Médical" {...field} />
+                                              <SelectTrigger>
+                                                <SelectValue placeholder="Sélectionner un type de document" />
+                                              </SelectTrigger>
                                             </FormControl>
-                                            <FormMessage />
+                                            <SelectContent>
+                                              {documentOptions.map(option => (
+                                                <SelectItem key={option} value={option}>{option}</SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                          <FormMessage />
                                         </FormItem>
-                                        )}
+                                      )}
                                     />
                                     <FormField
                                         control={form.control}
@@ -616,9 +636,9 @@ export default function PlayersPage() {
                 ))
             ) : Object.keys(groupedPlayers).length > 0 ? (
                 <Tabs defaultValue={defaultCategory} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
+                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 h-auto p-1 bg-muted rounded-md text-muted-foreground justify-start items-center flex-wrap">
                          {Object.keys(groupedPlayers).map((category) => (
-                            <TabsTrigger key={category} value={category} className={cn("data-[state=active]:shadow-none data-[state=active]:border-2", getCategoryStyle(category))}>{category}</TabsTrigger>
+                            <TabsTrigger key={category} value={category} className={cn("data-[state=active]:shadow-none", getCategoryStyle(category))}>{category}</TabsTrigger>
                         ))}
                     </TabsList>
                     {Object.entries(groupedPlayers).map(([category, postes]) => (
@@ -627,10 +647,10 @@ export default function PlayersPage() {
                                 {Object.entries(postes).map(([poste, playersInPoste]) => (
                                     <AccordionItem value={`${category}-${poste}`} key={`${category}-${poste}`} className="border rounded-md">
                                         <AccordionTrigger className="px-4 text-base font-semibold hover:no-underline">
-                                        {playersInPoste.length === 1
-                                            ? `${poste} (${playersInPoste[0].name})`
-                                            : `${poste} (${playersInPoste.length} joueur${playersInPoste.length > 1 ? 's' : ''})`
-                                        }
+                                            {playersInPoste.length === 1
+                                                ? `${poste} (${playersInPoste[0].name})`
+                                                : `${poste} (${playersInPoste.length} joueur${playersInPoste.length > 1 ? 's' : ''})`
+                                            }
                                         </AccordionTrigger>
                                         <AccordionContent className="p-2">
                                             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -707,3 +727,5 @@ export default function PlayersPage() {
     </div>
     );
 }
+
+    
