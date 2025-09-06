@@ -78,6 +78,7 @@ const playerSchema = z.object({
   documents: z.array(documentSchema).optional(),
 });
 
+
 type PlayerFormValues = z.infer<typeof playerSchema>;
 
 const defaultValues: PlayerFormValues = {
@@ -739,5 +740,3 @@ export default function PlayersPage() {
     </div>
     );
 }
-
-    
