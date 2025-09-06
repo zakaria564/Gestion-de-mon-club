@@ -86,7 +86,7 @@ const defaultValues: PlayerFormValues = {
     address: '',
     phone: '',
     email: '',
-    country: '',
+    country: 'Marocaine',
     poste: 'Milieu Central',
     jerseyNumber: 10,
     photo: '',
@@ -739,5 +739,7 @@ export default function PlayersPage() {
     </div>
     );
 }
+
+    
 
     

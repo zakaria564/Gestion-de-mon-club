@@ -74,7 +74,7 @@ const defaultValues: Omit<CoachFormValues, 'status' | 'category'> = {
     phone: '',
     email: '',
     address: '',
-    country: '',
+    country: 'Marocaine',
     experience: 0,
     photo: '',
     documents: [],
@@ -499,5 +499,7 @@ export default function CoachesPage() {
     </div>
   );
 }
+
+    
 
     
