@@ -36,7 +36,6 @@ const coachSchema = z.object({
   phone: z.string().min(1, "Le téléphone est requis."),
   email: z.string().email("L'adresse email est invalide."),
   experience: z.coerce.number().min(0, "L'expérience ne peut être négative."),
-  notes: z.string().optional(),
   photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
   documents: z.array(documentSchema).optional(),
 });
@@ -212,12 +211,6 @@ export function CoachDetailClient({ id }: { id: string }) {
                     <a href={`tel:${coach.phone}`} className="hover:underline">{coach.phone}</a>
                 </div>
             </div>
-            {coach.notes && (
-              <div className="space-y-4 mt-6 md:col-span-2">
-                  <h3 className="font-semibold text-lg">Notes</h3>
-                  <p className="text-muted-foreground whitespace-pre-wrap">{coach.notes}</p>
-              </div>
-            )}
             {coach.documents && coach.documents.length > 0 && (
                 <div className="space-y-4 mt-6 md:col-span-2">
                     <h3 className="font-semibold text-lg">Documents</h3>
@@ -362,23 +355,6 @@ export function CoachDetailClient({ id }: { id: string }) {
                             <FormItem>
                               <FormLabel>Expérience (années)</FormLabel>
                               <FormControl><Input type="number" placeholder="ex: 5" {...field} required /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                         <FormField
-                          control={form.control}
-                          name="notes"
-                          render={({ field }) => (
-                            <FormItem className="md:col-span-2">
-                              <FormLabel>Notes</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Ajouter des notes sur l'entraîneur"
-                                  className="resize-y min-h-[100px]"
-                                  {...field}
-                                />
-                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
