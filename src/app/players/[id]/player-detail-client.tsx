@@ -66,6 +66,8 @@ const documentOptions = [
   "Autre"
 ];
 
+const countries = ["France", "Maroc", "Algérie", "Tunisie", "Sénégal", "Côte d'Ivoire", "Cameroun", "Belgique", "Suisse", "Canada", "Brésil", "Argentine", "Espagne", "Portugal", "Allemagne", "Italie", "Pays-Bas", "Angleterre"];
+
 export function PlayerDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -431,9 +433,16 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Pays</FormLabel>
-                                    <FormControl>
-                                    <Input placeholder="ex: France" {...field} required />
-                                    </FormControl>
+                                     <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                                        <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Sélectionner un pays" />
+                                        </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                        {countries.map(country => <SelectItem key={country} value={country}>{country}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                                 )}
