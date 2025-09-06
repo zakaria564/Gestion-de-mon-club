@@ -50,20 +50,22 @@ export default function Dashboard() {
       acc[category] = (acc[category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-
-    return Object.entries(counts).map(([category, count]) => ({
+  
+    const sortedCategories = Object.keys(counts).sort((a, b) => a.localeCompare(b));
+  
+    return sortedCategories.map((category, index) => ({
       name: category,
-      value: count,
-      fill: `hsl(var(--chart-${Object.keys(counts).indexOf(category) + 1}))`
-    })).sort((a,b) => a.name.localeCompare(b.name));
+      value: counts[category],
+      fill: `hsl(var(--chart-${index + 1}))`
+    }));
   }, [players]);
 
   const chartConfig = useMemo(() => {
     const config: ChartConfig = {};
-    playersByCategory.forEach((item, index) => {
+    playersByCategory.forEach((item) => {
       config[item.name] = {
         label: item.name,
-        color: `hsl(var(--chart-${index + 1}))`,
+        color: item.fill,
       };
     });
     return config;
