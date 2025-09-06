@@ -124,11 +124,12 @@ export default function PlayersPage() {
       throw new Error("PlayersPage must be used within a PlayersProvider");
     }
 
-    const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
     const { players, loading, addPlayer, updatePlayer } = context;
     const [dialogOpen, setDialogOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterKey, setFilterKey] = useState("name");
+
+    const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
     const form = useForm<PlayerFormValues>({
       resolver: zodResolver(playerSchema),
@@ -694,7 +695,7 @@ export default function PlayersPage() {
                                                                             value={player.category}
                                                                             onValueChange={(newCategory) => handleCategoryChange(player, newCategory)}
                                                                         >
-                                                                            {playerCategories.map(cat => <DropdownMenuRadioItem key={cat} value={cat}>{cat}</SelectItem>)}
+                                                                            {playerCategories.map(cat => <DropdownMenuRadioItem key={cat} value={cat}>{cat}</DropdownMenuRadioItem>)}
                                                                         </DropdownMenuRadioGroup>
                                                                     </DropdownMenuContent>
                                                                 </DropdownMenu>
