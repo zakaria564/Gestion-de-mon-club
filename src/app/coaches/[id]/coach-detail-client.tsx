@@ -225,7 +225,9 @@ export function CoachDetailClient({ id }: { id: string }) {
                 </div>
                  <div className="flex items-center gap-4">
                     <MapPin className="h-5 w-5 text-muted-foreground" />
-                    <span>{coach.address}</span>
+                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coach.address)}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                        {coach.address}
+                    </a>
                 </div>
             </div>
             {coach.documents && coach.documents.length > 0 && (
@@ -492,3 +494,5 @@ export function CoachDetailClient({ id }: { id: string }) {
     
 
       
+
+    
