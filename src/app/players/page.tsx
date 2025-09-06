@@ -100,8 +100,6 @@ const defaultValues: PlayerFormValues = {
     documents: [],
 };
 
-const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
-
 const documentOptions = [
   "Certificat Médical",
   "Carte d'identité",
@@ -126,6 +124,7 @@ export default function PlayersPage() {
       throw new Error("PlayersPage must be used within a PlayersProvider");
     }
 
+    const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
     const { players, loading, addPlayer, updatePlayer } = context;
     const [dialogOpen, setDialogOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -241,7 +240,7 @@ export default function PlayersPage() {
         }
 
         return sortedGroups;
-    }, [filteredPlayers]);
+    }, [filteredPlayers, playerCategories]);
 
 
     const photoPreview = form.watch('photo');
@@ -739,7 +738,5 @@ export default function PlayersPage() {
     </div>
     );
 }
-
-    
 
     
