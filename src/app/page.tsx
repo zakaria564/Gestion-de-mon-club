@@ -19,6 +19,21 @@ import Link from "next/link";
 import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell, Legend } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent, ChartLegendContent } from "@/components/ui/chart";
 
+const categoryColors: Record<string, string> = {
+  'Sénior': 'hsl(var(--chart-1))',
+  'U23': 'hsl(var(--chart-2))',
+  'U19': 'hsl(var(--chart-3))',
+  'U18': 'hsl(var(--chart-4))',
+  'U17': 'hsl(var(--chart-5))',
+  'U16': 'hsl(var(--chart-6))',
+  'U15': 'hsl(var(--chart-7))',
+  'U13': 'hsl(var(--chart-8))',
+  'U9': 'hsl(25 60% 45%)', // Brown color for U9
+  'U11': 'hsl(var(--chart-10))',
+  'U7': 'hsl(var(--chart-11))',
+};
+
+
 export default function Dashboard() {
   const playersContext = usePlayersContext();
   const coachesContext = useCoachesContext();
@@ -51,13 +66,13 @@ export default function Dashboard() {
       return acc;
     }, {} as Record<string, number>);
   
-    const sortedCategories = Object.keys(counts).sort((a, b) => a.localeCompare(b));
-  
-    return sortedCategories.map((category, index) => ({
-      name: category,
-      value: counts[category],
-      fill: `hsl(var(--chart-${index + 1}))`
-    }));
+    return Object.keys(counts)
+      .sort((a, b) => a.localeCompare(b))
+      .map(category => ({
+        name: category,
+        value: counts[category],
+        fill: categoryColors[category] || 'hsl(var(--chart-1))',
+      }));
   }, [players]);
 
   const chartConfig = useMemo(() => {
