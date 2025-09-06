@@ -35,6 +35,7 @@ import { useFinancialContext } from "@/context/financial-context";
 import { usePlayersContext } from "@/context/players-context";
 import { useCoachesContext } from "@/context/coaches-context";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format } from 'date-fns';
 
 
 export default function FinancesPage() {
@@ -148,6 +149,18 @@ export default function FinancesPage() {
 
   const loading = financialLoading || playersLoading || coachesLoading;
 
+  const openPlayerDialog = () => {
+    const currentDate = format(new Date(), 'yyyy-MM-dd');
+    setNewPlayerPaymentData(prev => ({ ...prev, dueDate: currentDate }));
+    setPlayerPaymentOpen(true);
+  };
+  
+  const openCoachDialog = () => {
+    const currentMonth = format(new Date(), 'yyyy-MM');
+    setNewCoachSalaryData(prev => ({ ...prev, dueDate: currentMonth }));
+    setCoachSalaryOpen(true);
+  }
+
   return (
     <div className="flex-1 space-y-8 p-4 md:p-8 pt-6">
       <div>
@@ -155,7 +168,7 @@ export default function FinancesPage() {
             <h2 className="text-2xl font-bold tracking-tight flex items-center"><Users className="mr-2 h-7 w-7 text-primary" /> Joueurs (Cotisations)</h2>
             <Dialog open={playerPaymentOpen} onOpenChange={setPlayerPaymentOpen}>
               <DialogTrigger asChild>
-                <Button size="sm">
+                <Button size="sm" onClick={openPlayerDialog}>
                   <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un paiement
                 </Button>
               </DialogTrigger>
@@ -259,7 +272,7 @@ export default function FinancesPage() {
             <h2 className="text-2xl font-bold tracking-tight flex items-center"><UserCheck className="mr-2 h-7 w-7 text-primary" /> Entraîneurs (Salaires)</h2>
              <Dialog open={coachSalaryOpen} onOpenChange={setCoachSalaryOpen}>
               <DialogTrigger asChild>
-                <Button size="sm">
+                <Button size="sm" onClick={openCoachDialog}>
                   <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un salaire
                 </Button>
               </DialogTrigger>
@@ -360,3 +373,4 @@ export default function FinancesPage() {
     </div>
   );
 }
+
