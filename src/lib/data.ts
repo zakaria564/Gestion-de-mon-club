@@ -40,6 +40,7 @@ export type Coach = {
   photo?: string;
   status: 'Actif' | 'Inactif';
   category: 'Sénior' | 'U23' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
+  documents?: PlayerDocument[];
 }
 
 export type CalendarEvent = {

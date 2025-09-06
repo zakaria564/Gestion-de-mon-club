@@ -7,7 +7,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Mail, Phone, Award, Users, Edit, Trash2, Camera } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Award, Users, Edit, Trash2, Camera, FileText, ExternalLink, PlusCircle, X } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -16,12 +16,19 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCoachesContext } from '@/context/coaches-context';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { format, isValid, parseISO } from 'date-fns';
+
+const documentSchema = z.object({
+  name: z.string().min(1, "Le nom du document est requis."),
+  url: z.string().url("Veuillez entrer une URL valide.").min(1, "L'URL est requise."),
+  expirationDate: z.string().optional(),
+});
 
 const coachSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
@@ -31,10 +38,20 @@ const coachSchema = z.object({
   experience: z.coerce.number().min(0, "L'expérience ne peut être négative."),
   notes: z.string().optional(),
   photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
+  documents: z.array(documentSchema).optional(),
 });
 
 type CoachFormValues = z.infer<typeof coachSchema>;
 
+const documentOptions = [
+  "Contrat",
+  "Diplôme",
+  "Certificat de Formation",
+  "Carte d'identité",
+  "Passeport",
+  "Assurance",
+  "Autre"
+];
 
 export function CoachDetailClient({ id }: { id: string }) {
   const router = useRouter();
@@ -56,11 +73,22 @@ export function CoachDetailClient({ id }: { id: string }) {
     defaultValues: {},
   });
 
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "documents",
+  });
+
   useEffect(() => {
     if (coach && dialogOpen) {
+      const documents = coach.documents?.map(doc => ({
+        ...doc,
+        expirationDate: doc.expirationDate && isValid(parseISO(doc.expirationDate)) ? format(parseISO(doc.expirationDate), 'yyyy-MM-dd') : ''
+      })) || [];
+
       form.reset({
         ...coach,
         photo: coach.photo || '',
+        documents,
       });
     } else if (!dialogOpen) {
         form.reset();
@@ -189,6 +217,29 @@ export function CoachDetailClient({ id }: { id: string }) {
                   <h3 className="font-semibold text-lg">Notes</h3>
                   <p className="text-muted-foreground whitespace-pre-wrap">{coach.notes}</p>
               </div>
+            )}
+            {coach.documents && coach.documents.length > 0 && (
+                <div className="space-y-4 mt-6 md:col-span-2">
+                    <h3 className="font-semibold text-lg">Documents</h3>
+                    <ul className="space-y-2">
+                        {coach.documents.map((doc, index) => (
+                            <li key={index} className="flex items-center justify-between p-2 rounded-md border">
+                                <div className="flex items-center gap-2">
+                                    <FileText className="h-5 w-5 text-muted-foreground" />
+                                    <div>
+                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="font-medium hover:underline">{doc.name}</a>
+                                        {doc.expirationDate && isValid(parseISO(doc.expirationDate)) && (
+                                            <p className="text-xs text-muted-foreground">Expire le: {format(parseISO(doc.expirationDate), 'dd/MM/yyyy')}</p>
+                                        )}
+                                    </div>
+                                </div>
+                                <Button variant="ghost" size="icon" asChild>
+                                  <a href={doc.url} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a>
+                                </Button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             )}
         </CardContent>
          <CardFooter className="justify-end gap-2">
@@ -333,6 +384,73 @@ export function CoachDetailClient({ id }: { id: string }) {
                           )}
                         />
                       </div>
+                       <div className="space-y-4">
+                        <h4 className="text-lg font-medium border-b pb-2">Documents</h4>
+                          {fields.map((field, index) => (
+                           <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
+                             <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)}>
+                               <X className="h-4 w-4" />
+                             </Button>
+                              <FormField
+                                control={form.control}
+                                name={`documents.${index}.name`}
+                                render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Nom du document</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner un type de document" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {documentOptions.map(option => (
+                                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                    </Select>
+                                  <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name={`documents.${index}.url`}
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>URL du document</FormLabel>
+                                    <FormControl>
+                                    <Input type="url" placeholder="https://example.com/document.pdf" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name={`documents.${index}.expirationDate`}
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Date d'expiration (optionnel)</FormLabel>
+                                    <FormControl>
+                                    <Input type="date" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                           </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => append({ name: "", url: "", expirationDate: ""})}
+                        >
+                           <PlusCircle className="mr-2 h-4 w-4" />
+                          Ajouter un document
+                        </Button>
+                    </div>
                     </div>
                   </div>
                 <DialogFooter className="pt-4 border-t">

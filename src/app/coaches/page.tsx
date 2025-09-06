@@ -14,7 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Coach } from "@/lib/data";
-import { PlusCircle, Camera, Search } from "lucide-react";
+import { PlusCircle, Camera, Search, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -42,13 +42,19 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCoachesContext } from "@/context/coaches-context";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+
+const documentSchema = z.object({
+  name: z.string().min(1, "Le nom du document est requis."),
+  url: z.string().url("Veuillez entrer une URL valide.").min(1, "L'URL est requise."),
+  expirationDate: z.string().optional(),
+});
 
 const coachSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
@@ -58,11 +64,12 @@ const coachSchema = z.object({
   experience: z.coerce.number().min(0, "L'expérience ne peut être négative."),
   notes: z.string().optional(),
   photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
+  documents: z.array(documentSchema).optional(),
 });
 
 type CoachFormValues = z.infer<typeof coachSchema>;
 
-const defaultValues: CoachFormValues = {
+const defaultValues: Omit<CoachFormValues, 'status' | 'category'> = {
     name: '',
     specialization: 'Entraîneur Principal',
     phone: '',
@@ -70,7 +77,18 @@ const defaultValues: CoachFormValues = {
     experience: 0,
     notes: '',
     photo: '',
+    documents: [],
 };
+
+const documentOptions = [
+  "Contrat",
+  "Diplôme",
+  "Certificat de Formation",
+  "Carte d'identité",
+  "Passeport",
+  "Assurance",
+  "Autre"
+];
 
 export default function CoachesPage() {
   const context = useCoachesContext();
@@ -89,6 +107,11 @@ export default function CoachesPage() {
   const form = useForm<CoachFormValues>({
     resolver: zodResolver(coachSchema),
     defaultValues,
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "documents",
   });
 
   useEffect(() => {
@@ -142,7 +165,7 @@ export default function CoachesPage() {
         status: 'Actif',
         category: 'Sénior'
       }
-    await addCoach(coachData);
+    await addCoach(coachData as any);
     setDialogOpen(false);
   };
 
@@ -274,6 +297,73 @@ export default function CoachesPage() {
                           )}
                         />
                       </div>
+                       <div className="space-y-4">
+                        <h4 className="text-lg font-medium border-b pb-2">Documents</h4>
+                          {fields.map((field, index) => (
+                           <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
+                             <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)}>
+                               <X className="h-4 w-4" />
+                             </Button>
+                              <FormField
+                                control={form.control}
+                                name={`documents.${index}.name`}
+                                render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Nom du document</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner un type de document" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {documentOptions.map(option => (
+                                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                    </Select>
+                                  <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name={`documents.${index}.url`}
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>URL du document</FormLabel>
+                                    <FormControl>
+                                    <Input type="url" placeholder="https://example.com/document.pdf" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name={`documents.${index}.expirationDate`}
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Date d'expiration (optionnel)</FormLabel>
+                                    <FormControl>
+                                    <Input type="date" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                           </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => append({ name: "", url: "", expirationDate: ""})}
+                        >
+                           <PlusCircle className="mr-2 h-4 w-4" />
+                          Ajouter un document
+                        </Button>
+                    </div>
                     </div>
                 </div>
                 <DialogFooter className="pt-4 border-t">
