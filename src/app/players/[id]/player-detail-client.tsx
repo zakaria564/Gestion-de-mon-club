@@ -39,7 +39,7 @@ const playerSchema = z.object({
   poste: z.string().min(1, "Le poste est requis."),
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
-  country: z.string().min(1, "Le pays est requis."),
+  country: z.string().min(1, "La nationalité est requise."),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
   tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
@@ -66,7 +66,7 @@ const documentOptions = [
   "Autre"
 ];
 
-const countries = ["France", "Maroc", "Algérie", "Tunisie", "Sénégal", "Côte d'Ivoire", "Cameroun", "Belgique", "Suisse", "Canada", "Brésil", "Argentine", "Espagne", "Portugal", "Allemagne", "Italie", "Pays-Bas", "Angleterre"];
+const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise"];
 
 export function PlayerDetailClient({ id }: { id: string }) {
   const router = useRouter();
@@ -432,15 +432,15 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 name="country"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Pays</FormLabel>
+                                    <FormLabel>Nationalité</FormLabel>
                                      <Select onValueChange={field.onChange} defaultValue={field.value} required>
                                         <FormControl>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Sélectionner un pays" />
+                                            <SelectValue placeholder="Sélectionner une nationalité" />
                                         </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                        {countries.map(country => <SelectItem key={country} value={country}>{country}</SelectItem>)}
+                                        {nationalities.map(nationality => <SelectItem key={nationality} value={nationality}>{nationality}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />

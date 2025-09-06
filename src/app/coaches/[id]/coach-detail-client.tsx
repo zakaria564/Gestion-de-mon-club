@@ -52,7 +52,7 @@ const documentOptions = [
   "Autre"
 ];
 
-const countries = ["France", "Maroc", "Algérie", "Tunisie", "Sénégal", "Côte d'Ivoire", "Cameroun", "Belgique", "Suisse", "Canada", "Brésil", "Argentine", "Espagne", "Portugal", "Allemagne", "Italie", "Pays-Bas", "Angleterre"];
+const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise"];
 
 export function CoachDetailClient({ id }: { id: string }) {
   const router = useRouter();
@@ -382,7 +382,7 @@ export function CoachDetailClient({ id }: { id: string }) {
                                     </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                    {countries.map(country => <SelectItem key={country} value={country}>{country}</SelectItem>)}
+                                    {nationalities.map(nationality => <SelectItem key={nationality} value={nationality}>{nationality}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
