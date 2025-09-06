@@ -56,10 +56,13 @@ const documentOptions = [
   "Certificat Médical",
   "Carte d'identité",
   "Passeport",
+  "Extrait de naissance",
   "Photo d'identité",
   "Autorisation Parentale",
   "Fiche de renseignements",
   "Justificatif de domicile",
+  "Licence sportive",
+  "Assurance",
   "Autre"
 ];
 
@@ -680,4 +683,5 @@ export function PlayerDetailClient({ id }: { id: string }) {
   );
 }
 
+    
     
