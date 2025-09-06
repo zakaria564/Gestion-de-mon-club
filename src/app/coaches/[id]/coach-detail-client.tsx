@@ -82,12 +82,19 @@ export function CoachDetailClient({ id }: { id: string }) {
   useEffect(() => {
     if (coach && dialogOpen) {
       const documents = coach.documents?.map(doc => ({
-        ...doc,
+        name: doc.name || '',
+        url: doc.url || '',
         expirationDate: doc.expirationDate && isValid(parseISO(doc.expirationDate)) ? format(parseISO(doc.expirationDate), 'yyyy-MM-dd') : ''
       })) || [];
 
       form.reset({
-        ...coach,
+        name: coach.name || '',
+        specialization: coach.specialization || '',
+        phone: coach.phone || '',
+        email: coach.email || '',
+        address: coach.address || '',
+        country: coach.country || 'Marocaine',
+        experience: coach.experience || 0,
         photo: coach.photo || '',
         documents,
       });
@@ -483,3 +490,5 @@ export function CoachDetailClient({ id }: { id: string }) {
 }
 
     
+
+      

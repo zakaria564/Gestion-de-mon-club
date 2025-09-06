@@ -93,34 +93,31 @@ export function PlayerDetailClient({ id }: { id: string }) {
 
    useEffect(() => {
     if (player && dialogOpen) {
-      const birthDate = player.birthDate && isValid(parseISO(player.birthDate)) 
-        ? format(parseISO(player.birthDate), 'yyyy-MM-dd') 
-        : '';
-      const entryDate = player.entryDate && isValid(parseISO(player.entryDate)) 
-        ? format(parseISO(player.entryDate), 'yyyy-MM-dd') 
-        : '';
-       const exitDate = player.exitDate && isValid(parseISO(player.exitDate)) 
-        ? format(parseISO(player.exitDate), 'yyyy-MM-dd') 
-        : '';
-      
       const documents = player.documents?.map(doc => ({
-        ...doc,
+        name: doc.name || '',
+        url: doc.url || '',
         expirationDate: doc.expirationDate && isValid(parseISO(doc.expirationDate)) ? format(parseISO(doc.expirationDate), 'yyyy-MM-dd') : ''
       })) || [];
 
-
       form.reset({
         ...player,
-        birthDate,
-        entryDate,
-        exitDate,
-        documents,
+        name: player.name || '',
+        birthDate: player.birthDate && isValid(parseISO(player.birthDate)) ? format(parseISO(player.birthDate), 'yyyy-MM-dd') : '',
+        phone: player.phone || '',
         email: player.email || '',
+        address: player.address || '',
+        poste: player.poste || '',
+        jerseyNumber: player.jerseyNumber || 0,
         photo: player.photo || '',
-        country: player.country || '',
+        country: player.country || 'Marocaine',
         tutorName: player.tutorName || '',
         tutorPhone: player.tutorPhone || '',
         tutorEmail: player.tutorEmail || '',
+        status: player.status || 'Actif',
+        category: player.category || 'Sénior',
+        entryDate: player.entryDate && isValid(parseISO(player.entryDate)) ? format(parseISO(player.entryDate), 'yyyy-MM-dd') : '',
+        exitDate: player.exitDate && isValid(parseISO(player.exitDate)) ? format(parseISO(player.exitDate), 'yyyy-MM-dd') : '',
+        documents,
       });
     } else if (!dialogOpen) {
       form.reset();
@@ -696,3 +693,5 @@ export function PlayerDetailClient({ id }: { id: string }) {
     
 
     
+
+      
