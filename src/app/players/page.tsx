@@ -70,7 +70,7 @@ const playerSchema = z.object({
   photo: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
-  tutorEmail: zstring().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
+  tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
   category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
   entryDate: z.string().optional(),
