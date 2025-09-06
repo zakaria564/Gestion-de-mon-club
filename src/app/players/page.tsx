@@ -116,7 +116,7 @@ const documentOptions = [
   "Autre"
 ];
 
-const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise"];
+const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise", "Américaine", "Russe", "Japonaise", "Chinoise", "Indienne", "Turque", "Égyptienne", "Nigériane", "Sud-africaine", "Ghanéenne"];
 
 export default function PlayersPage() {
     const context = usePlayersContext();
@@ -695,7 +695,7 @@ export default function PlayersPage() {
                                                                             value={player.category}
                                                                             onValueChange={(newCategory) => handleCategoryChange(player, newCategory)}
                                                                         >
-                                                                            {playerCategories.map(cat => <DropdownMenuRadioItem key={cat} value={cat}>{cat}</DropdownMenuRadioItem>)}
+                                                                            {playerCategories.map(cat => <DropdownMenuRadioItem key={cat} value={cat}>{cat}</SelectItem>)}
                                                                         </DropdownMenuRadioGroup>
                                                                     </DropdownMenuContent>
                                                                 </DropdownMenu>
@@ -741,4 +741,6 @@ export default function PlayersPage() {
 }
 
     
+    
+
     
