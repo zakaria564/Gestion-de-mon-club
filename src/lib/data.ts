@@ -1,5 +1,11 @@
 
 
+export type PlayerDocument = {
+  name: string;
+  url: string;
+  expirationDate?: string;
+};
+
 export type Player = {
   id: string;
   uid: string;
@@ -19,8 +25,7 @@ export type Player = {
   category: 'Sénior' | 'U23' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
   entryDate?: string;
   exitDate?: string;
-  medicalCertificateUrl?: string;
-  medicalCertificateExpiration?: string;
+  documents?: PlayerDocument[];
 }
 
 export type Coach = {

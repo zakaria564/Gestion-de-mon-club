@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Player } from "@/lib/data";
-import { PlusCircle, Camera, Search } from "lucide-react";
+import { PlusCircle, Camera, Search, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -43,7 +43,7 @@ import React from 'react';
 import { usePlayersContext } from "@/context/players-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -52,6 +52,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
+const documentSchema = z.object({
+  name: z.string().min(1, "Le nom du document est requis."),
+  url: z.string().url("Veuillez entrer une URL valide.").min(1, "L'URL est requise."),
+  expirationDate: z.string().optional(),
+});
 
 const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
@@ -70,8 +75,7 @@ const playerSchema = z.object({
   category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
-  medicalCertificateUrl: z.string().url("URL de certificat invalide.").optional().or(z.literal('')),
-  medicalCertificateExpiration: z.string().optional(),
+  documents: z.array(documentSchema).optional(),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -93,8 +97,7 @@ const defaultValues: PlayerFormValues = {
     category: 'Sénior',
     entryDate: '',
     exitDate: '',
-    medicalCertificateUrl: '',
-    medicalCertificateExpiration: '',
+    documents: [],
 };
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
@@ -115,6 +118,11 @@ export default function PlayersPage() {
     const form = useForm<PlayerFormValues>({
       resolver: zodResolver(playerSchema),
       defaultValues,
+    });
+
+    const { fields, append, remove } = useFieldArray({
+      control: form.control,
+      name: "documents",
     });
     
     const onSubmit = async (data: PlayerFormValues) => {
@@ -395,34 +403,64 @@ export default function PlayersPage() {
                             </div>
 
                             <div className="space-y-4">
-                                <h4 className="text-lg font-medium border-b pb-2">Informations Médicales</h4>
-                                <FormField
-                                    control={form.control}
-                                    name="medicalCertificateUrl"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>URL du Certificat Médical</FormLabel>
-                                        <FormControl>
-                                        <Input type="text" placeholder="https://example.com/certificat.pdf" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="medicalCertificateExpiration"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Date d'expiration du certificat</FormLabel>
-                                        <FormControl>
-                                        <Input type="date" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
+                                <h4 className="text-lg font-medium border-b pb-2">Documents</h4>
+                                {fields.map((field, index) => (
+                                <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
+                                    <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)}>
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                    <FormField
+                                        control={form.control}
+                                        name={`documents.${index}.name`}
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Nom du document</FormLabel>
+                                            <FormControl>
+                                            <Input placeholder="ex: Certificat Médical" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name={`documents.${index}.url`}
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>URL du document</FormLabel>
+                                            <FormControl>
+                                            <Input type="url" placeholder="https://example.com/document.pdf" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name={`documents.${index}.expirationDate`}
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Date d'expiration (optionnel)</FormLabel>
+                                            <FormControl>
+                                            <Input type="date" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                ))}
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => append({ name: "", url: "", expirationDate: ""})}
+                                >
+                                  <PlusCircle className="mr-2 h-4 w-4" />
+                                  Ajouter un document
+                                </Button>
                             </div>
+
 
                             <div className="space-y-4">
                                 <h4 className="text-lg font-medium border-b pb-2">Informations Sportives</h4>
