@@ -181,7 +181,7 @@ export function CoachDetailClient({ id }: { id: string }) {
                 </div>
                 <div className="flex items-center gap-4">
                     <Phone className="h-5 w-5 text-muted-foreground" />
-                    <span>{coach.phone}</span>
+                    <a href={`tel:${coach.phone}`} className="hover:underline">{coach.phone}</a>
                 </div>
             </div>
             {coach.notes && (
