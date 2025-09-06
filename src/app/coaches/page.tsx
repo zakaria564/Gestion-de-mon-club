@@ -59,6 +59,8 @@ const coachSchema = z.object({
   specialization: z.string().min(1, "La spécialité est requise."),
   phone: z.string().min(1, "Le téléphone est requis."),
   email: z.string().email("L'adresse email est invalide."),
+  address: z.string().min(1, "L'adresse est requise."),
+  country: z.string().min(1, "La nationalité est requise."),
   experience: z.coerce.number().min(0, "L'expérience ne peut être négative."),
   photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
   documents: z.array(documentSchema).optional(),
@@ -71,6 +73,8 @@ const defaultValues: Omit<CoachFormValues, 'status' | 'category'> = {
     specialization: 'Entraîneur Principal',
     phone: '',
     email: '',
+    address: '',
+    country: '',
     experience: 0,
     photo: '',
     documents: [],
@@ -265,10 +269,32 @@ export default function CoachesPage() {
                           )}
                         />
                          <FormField
+                            control={form.control}
+                            name="address"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Adresse</FormLabel>
+                                <FormControl><Input placeholder="ex: 123 Rue de la Paix" {...field} required /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="country"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Nationalité</FormLabel>
+                                <FormControl><Input placeholder="ex: Maroc" {...field} required /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                         <FormField
                           control={form.control}
                           name="experience"
                           render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="md:col-span-2">
                               <FormLabel>Expérience (années)</FormLabel>
                               <FormControl><Input type="number" placeholder="ex: 5" {...field} required /></FormControl>
                               <FormMessage />

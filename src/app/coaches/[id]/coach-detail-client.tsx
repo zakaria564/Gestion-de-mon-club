@@ -7,7 +7,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Mail, Phone, Award, Users, Edit, Trash2, Camera, FileText, ExternalLink, PlusCircle, X } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Award, Users, Edit, Trash2, Camera, FileText, ExternalLink, PlusCircle, X, MapPin, Flag } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -33,6 +33,8 @@ const coachSchema = z.object({
   specialization: z.string().min(1, "La spécialité est requise."),
   phone: z.string().min(1, "Le téléphone est requis."),
   email: z.string().email("L'adresse email est invalide."),
+  address: z.string().min(1, "L'adresse est requise."),
+  country: z.string().min(1, "La nationalité est requise."),
   experience: z.coerce.number().min(0, "L'expérience ne peut être négative."),
   photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
   documents: z.array(documentSchema).optional(),
@@ -197,6 +199,10 @@ export function CoachDetailClient({ id }: { id: string }) {
                     <Users className="h-5 w-5 text-muted-foreground" />
                     <span>{coach.experience} ans d'expérience</span>
                 </div>
+                 <div className="flex items-center gap-4">
+                    <Flag className="h-5 w-5 text-muted-foreground" />
+                    <span>{coach.country}</span>
+                </div>
             </div>
             <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Contact</h3>
@@ -207,6 +213,10 @@ export function CoachDetailClient({ id }: { id: string }) {
                 <div className="flex items-center gap-4">
                     <Phone className="h-5 w-5 text-muted-foreground" />
                     <a href={`tel:${coach.phone}`} className="hover:underline">{coach.phone}</a>
+                </div>
+                 <div className="flex items-center gap-4">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                    <span>{coach.address}</span>
                 </div>
             </div>
             {coach.documents && coach.documents.length > 0 && (
@@ -346,11 +356,33 @@ export function CoachDetailClient({ id }: { id: string }) {
                             </FormItem>
                           )}
                         />
+                         <FormField
+                            control={form.control}
+                            name="address"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Adresse</FormLabel>
+                                <FormControl><Input placeholder="ex: 123 Rue de la Paix" {...field} required /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="country"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Nationalité</FormLabel>
+                                <FormControl><Input placeholder="ex: Maroc" {...field} required /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
                         <FormField
                           control={form.control}
                           name="experience"
                           render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="md:col-span-2">
                               <FormLabel>Expérience (années)</FormLabel>
                               <FormControl><Input type="number" placeholder="ex: 5" {...field} required /></FormControl>
                               <FormMessage />

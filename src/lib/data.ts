@@ -35,6 +35,8 @@ export type Coach = {
   specialization: string;
   phone: string;
   email: string;
+  address: string;
+  country: string;
   experience: number;
   photo?: string;
   status: 'Actif' | 'Inactif';
