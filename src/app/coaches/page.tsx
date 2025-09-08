@@ -63,6 +63,7 @@ const coachSchema = z.object({
   country: z.string().min(1, "La nationalité est requise."),
   experience: z.coerce.number().min(0, "L'expérience ne peut être négative."),
   photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
+  cin: z.string().optional(),
   documents: z.array(documentSchema).optional(),
 });
 
@@ -77,6 +78,7 @@ const defaultValues: Omit<CoachFormValues, 'status' | 'category'> = {
     country: 'Marocaine',
     experience: 0,
     photo: '',
+    cin: '',
     documents: [],
 };
 
@@ -224,6 +226,17 @@ export default function CoachesPage() {
                             <FormItem>
                               <FormLabel>Nom complet</FormLabel>
                               <FormControl><Input placeholder="ex: Alain Prost" {...field} required /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                         <FormField
+                          control={form.control}
+                          name="cin"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>N° CIN</FormLabel>
+                              <FormControl><Input placeholder="ex: A123456" {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}

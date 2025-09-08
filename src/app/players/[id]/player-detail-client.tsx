@@ -8,7 +8,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield, Mail, MapPin, FileText, PlusCircle, X, ExternalLink } from "lucide-react";
+import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield, Mail, MapPin, FileText, PlusCircle, X, ExternalLink, VenetianMask, UserSquare } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -40,9 +40,12 @@ const playerSchema = z.object({
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
   country: z.string().min(1, "La nationalité est requise."),
+  cin: z.string().optional(),
+  gender: z.enum(['Masculin', 'Féminin']).optional(),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
   tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
+  tutorCin: z.string().optional(),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
   category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
   entryDate: z.string().optional(),
@@ -110,9 +113,12 @@ export function PlayerDetailClient({ id }: { id: string }) {
         jerseyNumber: player.jerseyNumber || 0,
         photo: player.photo || '',
         country: player.country || 'Marocaine',
+        cin: player.cin || '',
+        gender: player.gender || 'Masculin',
         tutorName: player.tutorName || '',
         tutorPhone: player.tutorPhone || '',
         tutorEmail: player.tutorEmail || '',
+        tutorCin: player.tutorCin || '',
         status: player.status || 'Actif',
         category: player.category || 'Sénior',
         entryDate: player.entryDate && isValid(parseISO(player.entryDate)) ? format(parseISO(player.entryDate), 'yyyy-MM-dd') : '',
@@ -224,9 +230,19 @@ export function PlayerDetailClient({ id }: { id: string }) {
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Informations Personnelles</h3>
                  <div className="flex items-center gap-4">
+                    <VenetianMask className="h-5 w-5 text-muted-foreground" />
+                    <span>{player.gender || 'Non spécifié'}</span>
+                </div>
+                 <div className="flex items-center gap-4">
                     <Cake className="h-5 w-5 text-muted-foreground" />
                     <span>{formattedBirthDate}</span>
                 </div>
+                 {player.cin && (
+                  <div className="flex items-center gap-4">
+                    <UserSquare className="h-5 w-5 text-muted-foreground" />
+                    <span>{player.cin}</span>
+                  </div>
+                 )}
                 <div className="flex items-center gap-4">
                     <Phone className="h-5 w-5 text-muted-foreground" />
                     <a href={`tel:${player.phone}`} className="hover:underline">{player.phone}</a>
@@ -256,6 +272,12 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <div className="flex items-center gap-4">
                         <Shield className="h-5 w-5 text-muted-foreground" />
                         <span>{player.tutorName}</span>
+                    </div>
+                  )}
+                  {player.tutorCin && (
+                     <div className="flex items-center gap-4">
+                        <UserSquare className="h-5 w-5 text-muted-foreground" />
+                        <span>{player.tutorCin}</span>
                     </div>
                   )}
                   {player.tutorPhone && (
@@ -373,6 +395,23 @@ export function PlayerDetailClient({ id }: { id: string }) {
                               )}
                             />
                             <FormField
+                                control={form.control}
+                                name="gender"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Genre</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un genre" /></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="Masculin">Masculin</SelectItem>
+                                            <SelectItem value="Féminin">Féminin</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
                               control={form.control}
                               name="birthDate"
                               render={({ field }) => (
@@ -385,6 +424,19 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 </FormItem>
                               )}
                             />
+                             <FormField
+                                control={form.control}
+                                name="cin"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>N° CIN</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="ex: A123456" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
                              <FormField
                                 control={form.control}
                                 name="phone"
@@ -455,6 +507,19 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 <FormLabel>Nom du tuteur</FormLabel>
                                 <FormControl>
                                   <Input placeholder="ex: Marie Dupont" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="tutorCin"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>N° CIN du tuteur</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="ex: B654321" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

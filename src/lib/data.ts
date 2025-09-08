@@ -18,9 +18,12 @@ export type Player = {
   poste: string;
   jerseyNumber: number;
   photo?: string;
+  cin?: string;
+  gender?: 'Masculin' | 'Féminin';
   tutorName?: string;
   tutorPhone?: string;
   tutorEmail?: string;
+  tutorCin?: string;
   status: 'Actif' | 'Blessé' | 'Suspendu' | 'Inactif';
   category: 'Sénior' | 'U23' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
   entryDate?: string;
@@ -39,6 +42,7 @@ export type Coach = {
   country: string;
   experience: number;
   photo?: string;
+  cin?: string;
   status: 'Actif' | 'Inactif';
   category: 'Sénior' | 'U23' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
   documents?: PlayerDocument[];

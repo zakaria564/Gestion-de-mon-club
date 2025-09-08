@@ -7,7 +7,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Mail, Phone, Award, Users, Edit, Trash2, Camera, FileText, ExternalLink, PlusCircle, X, MapPin, Flag } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Award, Users, Edit, Trash2, Camera, FileText, ExternalLink, PlusCircle, X, MapPin, Flag, UserSquare } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -37,6 +37,7 @@ const coachSchema = z.object({
   country: z.string().min(1, "La nationalité est requise."),
   experience: z.coerce.number().min(0, "L'expérience ne peut être négative."),
   photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
+  cin: z.string().optional(),
   documents: z.array(documentSchema).optional(),
 });
 
@@ -96,6 +97,7 @@ export function CoachDetailClient({ id }: { id: string }) {
         country: coach.country || 'Marocaine',
         experience: coach.experience || 0,
         photo: coach.photo || '',
+        cin: coach.cin || '',
         documents,
       });
     } else if (!dialogOpen) {
@@ -204,6 +206,12 @@ export function CoachDetailClient({ id }: { id: string }) {
                     <Award className="h-5 w-5 text-muted-foreground" />
                     <span>{coach.specialization}</span>
                 </div>
+                 {coach.cin && (
+                  <div className="flex items-center gap-4">
+                    <UserSquare className="h-5 w-5 text-muted-foreground" />
+                    <span>{coach.cin}</span>
+                  </div>
+                 )}
                 <div className="flex items-center gap-4">
                     <Users className="h-5 w-5 text-muted-foreground" />
                     <span>{coach.experience} ans d'expérience</span>
@@ -321,6 +329,17 @@ export function CoachDetailClient({ id }: { id: string }) {
                             <FormItem>
                               <FormLabel>Nom complet</FormLabel>
                               <FormControl><Input placeholder="ex: Alain Prost" {...field} required /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="cin"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>N° CIN</FormLabel>
+                              <FormControl><Input placeholder="ex: A123456" {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}

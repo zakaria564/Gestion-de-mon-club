@@ -67,9 +67,12 @@ const playerSchema = z.object({
   poste: z.string().min(1, "Le poste est requis."),
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   photo: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
+  cin: z.string().optional(),
+  gender: z.enum(['Masculin', 'Féminin']).optional(),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
   tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
+  tutorCin: z.string().optional(),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
   category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
   entryDate: z.string().optional(),
@@ -90,9 +93,12 @@ const defaultValues: PlayerFormValues = {
     poste: 'Milieu Central',
     jerseyNumber: 10,
     photo: '',
+    cin: '',
+    gender: 'Masculin',
     tutorName: '',
     tutorPhone: '',
     tutorEmail: '',
+    tutorCin: '',
     status: 'Actif',
     category: 'Sénior',
     entryDate: '',
@@ -119,6 +125,7 @@ const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "
 export default function PlayersPage() {
     const context = usePlayersContext();
     const { toast } = useToast();
+    const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
     
     if (!context) {
       throw new Error("PlayersPage must be used within a PlayersProvider");
@@ -129,7 +136,6 @@ export default function PlayersPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterKey, setFilterKey] = useState("name");
 
-    const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
     const form = useForm<PlayerFormValues>({
       resolver: zodResolver(playerSchema),
@@ -307,6 +313,23 @@ export default function PlayersPage() {
                                         </FormItem>
                                     )}
                                     />
+                                     <FormField
+                                        control={form.control}
+                                        name="gender"
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Genre</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un genre" /></SelectTrigger></FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="Masculin">Masculin</SelectItem>
+                                                    <SelectItem value="Féminin">Féminin</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
                                     <FormField
                                     control={form.control}
                                     name="birthDate"
@@ -321,6 +344,19 @@ export default function PlayersPage() {
                                     )}
                                     />
                                     <FormField
+                                        control={form.control}
+                                        name="cin"
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>N° CIN</FormLabel>
+                                            <FormControl>
+                                            <Input placeholder="ex: A123456" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
+                                     <FormField
                                     control={form.control}
                                     name="phone"
                                     render={({ field }) => (
@@ -395,6 +431,19 @@ export default function PlayersPage() {
                                         <FormMessage />
                                         </FormItem>
                                     )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="tutorCin"
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>N° CIN du tuteur</FormLabel>
+                                            <FormControl>
+                                            <Input placeholder="ex: B654321" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
                                     />
                                     <FormField
                                     control={form.control}
