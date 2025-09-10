@@ -117,6 +117,12 @@ export default function FinancesPage() {
     }
   };
   
+  const openAddPaymentDialog = (type: 'player' | 'coach', memberName: string) => {
+    setPaymentType(type);
+    setNewPaymentData(prev => ({ ...prev, member: memberName }));
+    setOpen(true);
+  }
+
   const renderTable = (data: Payment[], type: 'players' | 'coaches') => {
     const linkPath = type === 'players' ? 'cotisations' : 'coaches';
     return (
@@ -179,6 +185,9 @@ export default function FinancesPage() {
                             <Eye className="h-4 w-4" />
                         </Link>
                       </Button>
+                      <Button variant="ghost" size="icon" onClick={() => openAddPaymentDialog(type === 'players' ? 'player' : 'coach', payment.member)}>
+                        <PlusCircle className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
@@ -218,7 +227,7 @@ export default function FinancesPage() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label>Type de paiement</Label>
-                   <Select onValueChange={(value) => setPaymentType(value as 'player' | 'coach')} defaultValue={paymentType}>
+                   <Select onValueChange={(value) => setPaymentType(value as 'player' | 'coach')} value={paymentType}>
                     <SelectTrigger>
                         <SelectValue placeholder="Sélectionner le type" />
                     </SelectTrigger>
@@ -230,7 +239,7 @@ export default function FinancesPage() {
                 </div>
                  <div className="grid gap-2">
                   <Label htmlFor="member">Membre</Label>
-                  <Select name="member" onValueChange={(value) => setNewPaymentData(prev => ({ ...prev, member: value }))} required>
+                  <Select name="member" onValueChange={(value) => setNewPaymentData(prev => ({ ...prev, member: value }))} value={newPaymentData.member} required>
                     <SelectTrigger>
                         <SelectValue placeholder="Sélectionner un membre" />
                     </SelectTrigger>
@@ -345,4 +354,6 @@ export default function FinancesPage() {
     </div>
   );
 }
+    
+
     
