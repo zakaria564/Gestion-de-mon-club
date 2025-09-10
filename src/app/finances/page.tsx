@@ -79,13 +79,37 @@ export default function FinancesPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredPlayerPayments = useMemo(() => {
-    return playerPayments.filter(p => p.member.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [playerPayments, searchQuery]);
+  const aggregatedPlayerPayments = useMemo(() => {
+    const memberData: { [key: string]: { totalPaid: number; paymentCount: number; id: string } } = {};
+    playerPayments.forEach(p => {
+        if (!memberData[p.member]) {
+            memberData[p.member] = { totalPaid: 0, paymentCount: 0, id: p.id };
+        }
+        memberData[p.member].totalPaid += p.paidAmount;
+        memberData[p.member].paymentCount += 1;
+    });
+    return Object.entries(memberData).map(([member, data]) => ({ member, ...data }));
+  }, [playerPayments]);
 
-  const filteredCoachSalaries = useMemo(() => {
-    return coachSalaries.filter(s => s.member.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [coachSalaries, searchQuery]);
+  const aggregatedCoachSalaries = useMemo(() => {
+      const memberData: { [key: string]: { totalPaid: number; paymentCount: number; id: string } } = {};
+      coachSalaries.forEach(s => {
+          if (!memberData[s.member]) {
+              memberData[s.member] = { totalPaid: 0, paymentCount: 0, id: s.id };
+          }
+          memberData[s.member].totalPaid += s.paidAmount;
+          memberData[s.member].paymentCount += 1;
+      });
+      return Object.entries(memberData).map(([member, data]) => ({ member, ...data }));
+  }, [coachSalaries]);
+
+  const filteredPlayerMembers = useMemo(() => {
+    return aggregatedPlayerPayments.filter(p => p.member.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [aggregatedPlayerPayments, searchQuery]);
+
+  const filteredCoachMembers = useMemo(() => {
+    return aggregatedCoachSalaries.filter(s => s.member.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [aggregatedCoachSalaries, searchQuery]);
 
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -103,19 +127,6 @@ export default function FinancesPage() {
       setNewPaymentData({ member: '', totalAmount: '', initialPaidAmount: '', dueDate: '' });
     }
   };
-
-  const getBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'payé':
-        return 'default';
-      case 'non payé':
-        return 'destructive';
-      case 'partiel':
-        return 'secondary';
-      default:
-        return 'outline';
-    }
-  };
   
   const openAddPaymentDialog = (type: 'player' | 'coach', memberName: string) => {
     setPaymentType(type);
@@ -123,7 +134,7 @@ export default function FinancesPage() {
     setOpen(true);
   }
 
-  const renderTable = (data: Payment[], type: 'players' | 'coaches') => {
+  const renderTable = (data: { member: string; totalPaid: number; paymentCount: number; id: string }[], type: 'players' | 'coaches') => {
     const linkPath = type === 'players' ? 'cotisations' : 'coaches';
     return (
      <Card>
@@ -147,11 +158,8 @@ export default function FinancesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Membre</TableHead>
-                <TableHead className="hidden md:table-cell">Montant Total</TableHead>
-                <TableHead className="hidden md:table-cell">Montant Payé</TableHead>
-                <TableHead className="hidden md:table-cell">Reste à payer</TableHead>
-                <TableHead>Échéance</TableHead>
-                <TableHead>Statut</TableHead>
+                <TableHead>Montant Total Payé</TableHead>
+                <TableHead>Paiements Effectués</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -160,32 +168,24 @@ export default function FinancesPage() {
                 Array.from({length: 5}).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell><Skeleton className="h-5 w-24"/></TableCell>
-                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
-                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
-                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
-                    <TableCell><Skeleton className="h-5 w-24"/></TableCell>
-                    <TableCell><Skeleton className="h-8 w-16 rounded-full"/></TableCell>
+                    <TableCell><Skeleton className="h-5 w-20"/></TableCell>
+                    <TableCell><Skeleton className="h-5 w-20"/></TableCell>
                     <TableCell className="text-right"><Skeleton className="h-8 w-8 rounded-md"/></TableCell>
                   </TableRow>
                 ))
               ) : (
-                data.map((payment) => (
-                  <TableRow key={payment.id}>
-                    <TableCell className="font-medium">{payment.member}</TableCell>
-                    <TableCell className="hidden md:table-cell">{payment.totalAmount.toFixed(2)} DH</TableCell>
-                    <TableCell className="hidden md:table-cell">{payment.paidAmount.toFixed(2)} DH</TableCell>
-                    <TableCell className="hidden md:table-cell">{payment.remainingAmount.toFixed(2)} DH</TableCell>
-                    <TableCell>{payment.dueDate}</TableCell>
-                    <TableCell>
-                      <Badge variant={getBadgeVariant(payment.status)}>{payment.status}</Badge>
-                    </TableCell>
+                data.map((item) => (
+                  <TableRow key={item.member}>
+                    <TableCell className="font-medium">{item.member}</TableCell>
+                    <TableCell>{item.totalPaid.toFixed(2)} DH</TableCell>
+                    <TableCell>{item.paymentCount}</TableCell>
                     <TableCell className="text-right">
                        <Button asChild variant="ghost" size="icon">
-                        <Link href={`/finances/${linkPath}/${payment.id}`}>
+                        <Link href={`/finances/${linkPath}/${item.id}`}>
                             <Eye className="h-4 w-4" />
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => openAddPaymentDialog(type === 'players' ? 'player' : 'coach', payment.member)}>
+                      <Button variant="ghost" size="icon" onClick={() => openAddPaymentDialog(type === 'players' ? 'player' : 'coach', item.member)}>
                         <PlusCircle className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -330,7 +330,7 @@ export default function FinancesPage() {
               </CardContent>
             </Card>
           </div>
-          {renderTable(filteredPlayerPayments, 'players')}
+          {renderTable(filteredPlayerMembers, 'players')}
         </TabsContent>
 
         <TabsContent value="coaches" className="space-y-4">
@@ -363,16 +363,12 @@ export default function FinancesPage() {
               </CardContent>
             </Card>
           </div>
-          {renderTable(filteredCoachSalaries, 'coaches')}
+          {renderTable(filteredCoachMembers, 'coaches')}
         </TabsContent>
       </Tabs>
     </div>
   );
 }
     
-
-    
-
-
 
     
