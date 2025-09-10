@@ -108,7 +108,10 @@ body {
     -ms-user-select: none; /* Internet Explorer/Edge */
     user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
   }
-  .pdf-export-black-text, .pdf-export-black-text * {
+  .pdf-export .logo-container {
+    background-color: black !important;
+  }
+  .pdf-export, .pdf-export * {
     color: black !important;
   }
 }

@@ -160,9 +160,9 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
     if (!input || !payment) return;
 
     const originalWidth = input.style.width;
-    input.style.width = '210mm'; // A4 width
+    input.style.width = '210mm';
     
-    input.classList.add('pdf-export-black-text');
+    input.classList.add('pdf-export');
     
     html2canvas(input, { 
         scale: 2,
@@ -171,22 +171,14 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
       
       const imgWidth = pdfWidth;
       const imgHeight = canvas.height * imgWidth / canvas.width;
       
-      let height = imgHeight;
-      let position = 0;
-
-      if (height > pdfHeight) {
-        height = pdfHeight;
-      }
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
       pdf.save(`recu-cotisation-${payment.member.replace(/[\s/]/g, '-')}.pdf`);
 
-      input.classList.remove('pdf-export-black-text');
+      input.classList.remove('pdf-export');
       input.style.width = originalWidth;
     });
   };
@@ -212,7 +204,9 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
                 <CardHeader>
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
-                        <ClubLogo src={clubInfo.logoUrl} containerClassName="size-16" />
+                        <div className="logo-container">
+                          <ClubLogo src={clubInfo.logoUrl} containerClassName="size-16" />
+                        </div>
                         <div>
                             <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
                             <p className="text-muted-foreground">Reçu de Cotisation</p>
