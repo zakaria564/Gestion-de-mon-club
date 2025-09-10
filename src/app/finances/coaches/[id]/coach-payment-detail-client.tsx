@@ -147,6 +147,9 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
     const input = receiptRef.current;
     if (!input || !payment) return;
 
+    const originalWidth = input.style.width;
+    input.style.width = '210mm'; // A4 width
+    
     input.classList.add('pdf-export-black-text');
     
     html2canvas(input, { 
@@ -172,6 +175,7 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
       pdf.save(`recu-salaire-${payment.member.replace(/[\s/]/g, '-')}.pdf`);
       
       input.classList.remove('pdf-export-black-text');
+      input.style.width = originalWidth;
     });
   };
 
