@@ -26,7 +26,7 @@ import {
   Settings,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { ClubImage } from "./club-image";
+import { ClubLogo } from "./club-logo";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   DropdownMenu,
@@ -92,7 +92,7 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
   if (loading || clubLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
-          <ClubImage className="size-12" imageClassName="animate-pulse" />
+          <ClubLogo className="size-12" imageClassName="animate-pulse" />
       </div>
     );
   }
@@ -107,7 +107,7 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
             <Sidebar>
             <SidebarHeader>
                 <div className="flex items-center gap-2">
-                <ClubImage className="size-10 shrink-0" />
+                <ClubLogo className="size-10 shrink-0" />
                 <span className="text-lg font-semibold truncate">{clubInfo.name}</span>
                 </div>
             </SidebarHeader>

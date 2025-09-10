@@ -26,7 +26,7 @@ import { useFinancialContext } from "@/context/financial-context";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClubContext } from "@/context/club-context";
-import { ClubImage } from "@/components/club-image";
+import { ClubLogo } from "@/components/club-logo";
 
 export function CoachPaymentDetailClient({ id }: { id: string }) {
   const context = useFinancialContext();
@@ -193,7 +193,7 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
             <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
                         <div className="logo-container size-16">
-                          <ClubImage />
+                          <ClubLogo />
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold">{clubInfo.name}</h1>

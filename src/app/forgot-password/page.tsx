@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ClubImage } from '@/components/club-image';
+import { ClubLogo } from '@/components/club-logo';
 import { ChevronLeft, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { useState, FormEvent } from 'react';
@@ -57,7 +57,7 @@ export default function ForgotPasswordPage() {
             </Link>
           </div>
           <div className="text-center pt-4">
-             <ClubImage className="mx-auto h-12 w-12" />
+             <ClubLogo className="mx-auto h-12 w-12" />
             <CardTitle className="mt-4 text-2xl">Mot de passe oublié?</CardTitle>
             { !submitted ? (
               <CardDescription>

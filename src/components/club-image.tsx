@@ -7,12 +7,12 @@ import Image from "next/image"
 import { useClubContext } from "@/context/club-context"
 import { Skeleton } from "./ui/skeleton"
 
-interface ClubImageProps {
+interface ClubLogoProps {
     className?: string;
     imageClassName?: string;
 }
 
-export function ClubImage({ className, imageClassName }: ClubImageProps) {
+export function ClubLogo({ className, imageClassName }: ClubLogoProps) {
   const { clubInfo, loading: clubLoading } = useClubContext();
   const [isClient, setIsClient] = React.useState(false);
 
