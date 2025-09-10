@@ -360,7 +360,9 @@ export default function ResultsPage() {
             </div>
           ) : filteredResults.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredResults.map((result) => (
+              {filteredResults.map((result) => {
+                const isPast = new Date(result.date) < new Date();
+                return (
                 <Card key={result.id} className="flex flex-col">
                     <CardHeader>
                         <div className="flex items-start justify-between gap-4">
@@ -382,31 +384,35 @@ export default function ResultsPage() {
                          <Button variant="outline" size="sm" onClick={() => handleShowDetails(result)}>
                             <Eye className="mr-2 h-4 w-4" /> Détails
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => openEditDialog(result)}>
-                            <Edit className="mr-2 h-4 w-4" /> Modifier
-                        </Button>
-                         <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="destructive" size="icon" className="h-9 w-9">
-                                  <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Cette action ne peut pas être annulée. Cela supprimera définitivement ce résultat.
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete(result.id)}>Supprimer</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                        {!isPast && (
+                          <>
+                            <Button variant="outline" size="sm" onClick={() => openEditDialog(result)}>
+                                <Edit className="mr-2 h-4 w-4" /> Modifier
+                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="destructive" size="icon" className="h-9 w-9">
+                                      <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                    <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Cette action ne peut pas être annulée. Cela supprimera définitivement ce résultat.
+                                    </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDelete(result.id)}>Supprimer</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                          </>
+                        )}
                     </CardFooter>
                 </Card>
-              ))}
+              )})}
             </div>
              ) : (
                 <div className="text-center py-10 col-span-full">
