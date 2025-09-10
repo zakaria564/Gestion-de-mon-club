@@ -199,11 +199,24 @@ export default function FinancesPage() {
   )};
 
   const memberOptions = paymentType === 'player' ? players : coaches;
+  
   const remainingAmount = useMemo(() => {
     const total = parseFloat(newPaymentData.totalAmount) || 0;
     const paid = parseFloat(newPaymentData.initialPaidAmount) || 0;
     return (total - paid).toFixed(2);
   }, [newPaymentData.totalAmount, newPaymentData.initialPaidAmount]);
+
+  const membersWithPaymentForMonth = useMemo(() => {
+    if (!newPaymentData.dueDate) return new Set();
+
+    const collection = paymentType === 'player' ? playerPayments : coachSalaries;
+
+    return new Set(
+        collection
+            .filter(p => p.dueDate === newPaymentData.dueDate)
+            .map(p => p.member)
+    );
+  }, [newPaymentData.dueDate, playerPayments, coachSalaries, paymentType]);
 
 
   return (
@@ -238,14 +251,20 @@ export default function FinancesPage() {
                   </Select>
                 </div>
                  <div className="grid gap-2">
+                  <Label htmlFor="dueDate">Mois de la cotisation/paie</Label>
+                  <Input id="dueDate" type="month" value={newPaymentData.dueDate} onChange={(e) => setNewPaymentData(p => ({...p, dueDate: e.target.value}))} required/>
+                </div>
+                 <div className="grid gap-2">
                   <Label htmlFor="member">Membre</Label>
                   <Select name="member" onValueChange={(value) => setNewPaymentData(prev => ({ ...prev, member: value }))} value={newPaymentData.member} required>
-                    <SelectTrigger>
+                    <SelectTrigger disabled={!newPaymentData.dueDate}>
                         <SelectValue placeholder="Sélectionner un membre" />
                     </SelectTrigger>
                     <SelectContent>
                       {memberOptions.map(member => (
-                          <SelectItem key={member.id} value={member.name}>{member.name}</SelectItem>
+                          <SelectItem key={member.id} value={member.name} disabled={membersWithPaymentForMonth.has(member.name)}>
+                            {member.name}
+                          </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -261,10 +280,6 @@ export default function FinancesPage() {
                  <div className="grid gap-2">
                   <Label htmlFor="remainingAmount">Reste à payer (DH)</Label>
                   <Input id="remainingAmount" type="number" value={remainingAmount} readOnly className="bg-muted" />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="dueDate">Mois de la cotisation/paie</Label>
-                  <Input id="dueDate" type="month" value={newPaymentData.dueDate} onChange={(e) => setNewPaymentData(p => ({...p, dueDate: e.target.value}))} required/>
                 </div>
               </div>
               <DialogFooter>
@@ -357,3 +372,4 @@ export default function FinancesPage() {
     
 
     
+
