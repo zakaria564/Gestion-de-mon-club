@@ -159,7 +159,7 @@ export default function FinancesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Membre</TableHead>
-                <TableHead className="hidden md:table-cell">Montant Total Payé</TableHead>
+                <TableHead className="hidden md:table-cell">Total Payé</TableHead>
                 <TableHead className="hidden md:table-cell">Mois Payés</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -171,7 +171,10 @@ export default function FinancesPage() {
                     <TableCell><Skeleton className="h-5 w-24"/></TableCell>
                     <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
                     <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-8 w-8 rounded-md"/></TableCell>
+                    <TableCell className="text-right flex justify-end gap-2">
+                        <Skeleton className="h-8 w-8 rounded-md"/>
+                        <Skeleton className="h-8 w-8 rounded-md"/>
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
@@ -370,3 +373,5 @@ export default function FinancesPage() {
     </div>
   );
 }
+
+    
