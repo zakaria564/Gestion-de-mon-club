@@ -195,7 +195,7 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
         </Button>
       </div>
 
-      <Card ref={receiptRef} className="p-4 bg-background">
+      <Card ref={receiptRef} className="p-4 bg-white text-black">
         <CardHeader>
            <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
@@ -234,12 +234,12 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
                 <div className="flex items-center gap-4 text-lg">
                     <CheckCircle className="h-6 w-6 text-green-500" />
                     <span>Montant payé:</span>
-                    <span className="font-bold ml-auto text-green-600 dark:text-green-400">{payment.paidAmount.toFixed(2)} DH</span>
+                    <span className="font-bold ml-auto text-green-600">{payment.paidAmount.toFixed(2)} DH</span>
                 </div>
                  <div className="flex items-center gap-4 text-lg">
                     <XCircle className="h-6 w-6 text-red-500" />
                     <span>Reste à payer:</span>
-                    <span className="font-bold ml-auto text-red-600 dark:text-red-400">{payment.remainingAmount.toFixed(2)} DH</span>
+                    <span className="font-bold ml-auto text-red-600">{payment.remainingAmount.toFixed(2)} DH</span>
                 </div>
                  <div className="flex items-center gap-4 text-lg">
                     <CalendarIcon className="h-6 w-6 text-muted-foreground" />
@@ -303,5 +303,3 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
     </div>
   );
 }
-
-    
