@@ -136,15 +136,10 @@ export function PlayerDetailClient({ id }: { id: string }) {
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <Skeleton className="h-8 w-48" />
         <Card>
-          <CardHeader className="flex flex-col md:flex-row md:items-start gap-6">
+          <CardHeader className="flex flex-row items-center gap-6">
             <Skeleton className="h-32 w-32 rounded-full" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-8 w-1/2" />
-              <Skeleton className="h-6 w-1/3" />
-              <div className="flex flex-wrap gap-2 mt-4">
-                <Skeleton className="h-6 w-20 rounded-full" />
-                <Skeleton className="h-6 w-20 rounded-full" />
-              </div>
             </div>
           </CardHeader>
           <CardContent className="pt-6">
@@ -211,7 +206,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
       </div>
 
       <Card>
-        <CardHeader className="flex flex-col md:flex-row md:items-start gap-6">
+        <CardHeader className="flex flex-row items-center gap-6">
           <Avatar className="h-32 w-32 border">
             <AvatarImage src={player.photo || undefined} alt={player.name} data-ai-hint="player photo" />
             <AvatarFallback className="text-4xl">{player.name.substring(0, 2)}</AvatarFallback>
