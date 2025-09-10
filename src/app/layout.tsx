@@ -14,7 +14,7 @@ import { AppLayout } from "@/components/app-layout";
 import { Toaster } from "@/components/ui/toaster";
 import { usePathname, useRouter } from "next/navigation";
 import "./globals.css";
-import { ClubLogo } from "@/components/club-logo";
+import { ClubImage } from "@/components/club-image";
 import { ThemeProvider } from "@/components/theme-provider";
 
 
@@ -46,7 +46,7 @@ function AppProviders({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
-        <ClubLogo className="size-12" imageClassName="animate-pulse" />
+        <ClubImage className="size-12" imageClassName="animate-pulse" />
       </div>
     );
   }
@@ -75,7 +75,7 @@ function AppProviders({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen w-full items-center justify-center">
-        <ClubLogo className="size-12" imageClassName="animate-pulse" />
+        <ClubImage className="size-12" imageClassName="animate-pulse" />
     </div>
   );
 }

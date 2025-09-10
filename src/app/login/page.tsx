@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -11,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ClubLogo } from '@/components/club-logo';
+import { ClubImage } from '@/components/club-image';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import { useState, FormEvent } from 'react';
@@ -52,7 +53,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="mx-auto w-full max-w-sm">
         <CardHeader className="text-center">
-          <ClubLogo className="mx-auto h-12 w-12" />
+          <ClubImage className="mx-auto h-12 w-12" />
           <CardTitle className="mt-4 text-2xl">Connexion</CardTitle>
           <CardDescription>
             Entrez votre email ci-dessous pour vous connecter à votre compte
