@@ -99,7 +99,9 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <AuthProvider>
-              <AppProviders>{children}</AppProviders>
+              <ClubProvider>
+                <AppProviders>{children}</AppProviders>
+              </ClubProvider>
             </AuthProvider>
             <Toaster />
         </ThemeProvider>

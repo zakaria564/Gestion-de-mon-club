@@ -107,7 +107,7 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
             <Sidebar>
             <SidebarHeader>
                 <div className="flex items-center gap-2">
-                <ClubLogo src={clubInfo.logoUrl} className="size-10 shrink-0" />
+                <ClubLogo className="size-10 shrink-0" />
                 <span className="text-lg font-semibold truncate">{clubInfo.name}</span>
                 </div>
             </SidebarHeader>
