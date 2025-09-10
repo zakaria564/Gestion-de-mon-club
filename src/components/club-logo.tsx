@@ -13,8 +13,15 @@ export function ClubLogo({ className, src, containerClassName, ...props }: ClubL
 
   if (finalSrc) {
       return (
-        <div className={cn("relative flex items-center justify-center bg-white rounded-full", containerClassName)}>
-            <Image src={finalSrc} alt="Club Logo" width={40} height={40} className={cn("rounded-full", className)} data-ai-hint="club logo" />
+        <div className={cn("relative flex items-center justify-center rounded-full", containerClassName)}>
+            <Image 
+              src={finalSrc} 
+              alt="Club Logo" 
+              width={40} 
+              height={40} 
+              className={cn("rounded-full bg-white", className)} 
+              data-ai-hint="club logo" 
+            />
         </div>
       )
   }
