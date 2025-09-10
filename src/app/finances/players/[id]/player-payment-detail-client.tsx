@@ -170,21 +170,17 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       
-      const canvasWidth = canvas.width;
-      const canvasHeight = canvas.height;
-      const ratio = canvasWidth / canvasHeight;
-      let width = pdfWidth;
-      let height = width / ratio;
+      const imgWidth = pdfWidth;
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+      
+      let height = imgHeight;
+      let position = 0;
 
       if (height > pdfHeight) {
-          height = pdfHeight;
-          width = height * ratio;
+        height = pdfHeight;
       }
-      
-      const x = (pdfWidth - width) / 2;
-      const y = 0;
 
-      pdf.addImage(imgData, 'PNG', x, y, width, height);
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
       pdf.save(`recu-cotisation-${payment.member.replace(/[\s/]/g, '-')}.pdf`);
 
       input.classList.remove('pdf-export-black-text');
