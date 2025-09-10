@@ -147,13 +147,11 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
     const input = receiptRef.current;
     if (!input || !payment) return;
 
-    // Temporairement changer la couleur de fond de la carte pour le PDF
-    const originalBackgroundColor = input.style.backgroundColor;
-    input.style.backgroundColor = 'white';
+    input.classList.add('pdf-export-black-text');
     
     html2canvas(input, { 
         scale: 2,
-        backgroundColor: '#ffffff' // S'assurer que le fond est blanc
+        backgroundColor: '#ffffff'
     }).then(canvas => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -176,9 +174,8 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
 
       pdf.addImage(imgData, 'PNG', x, y, width, height);
       pdf.save(`recu-salaire-${payment.member.replace(/[\s/]/g, '-')}.pdf`);
-
-      // Restaurer la couleur de fond originale
-      input.style.backgroundColor = originalBackgroundColor;
+      
+      input.classList.remove('pdf-export-black-text');
     });
   };
 
