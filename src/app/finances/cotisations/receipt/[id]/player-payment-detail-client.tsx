@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -31,6 +31,7 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
   const context = useFinancialContext();
   const { clubInfo } = useClubContext();
   const receiptRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   
   if (!context) {
     throw new Error("PlayerPaymentDetailClient must be used within a FinancialProvider");
@@ -103,6 +104,8 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
   if (!payment) {
     return notFound();
   }
+  
+  const historyLink = `/finances/cotisations/${encodeURIComponent(payment.member)}`;
 
   const getBadgeVariant = (status: string) => {
     switch (status) {
@@ -164,7 +167,7 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
       const imgHeight = canvas.height * imgWidth / canvas.width;
       
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      pdf.save(`recu-cotisation-${payment.member.replace(/[\s/]/g, '-')}.pdf`);
+      pdf.save(`recu-cotisation-${payment.member.replace(/[\s/]/g, '-')}-${payment.dueDate}.pdf`);
 
       input.classList.remove('pdf-export');
       input.style.width = originalWidth;
@@ -176,10 +179,10 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <Link href="/finances" className="flex items-center text-sm text-muted-foreground hover:underline">
+        <Button variant="ghost" onClick={() => router.push(historyLink)} className="flex items-center text-sm text-muted-foreground hover:underline p-0 h-auto">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour aux finances
-        </Link>
+          Retour à l'historique
+        </Button>
          <Button variant="outline" onClick={handleDownloadPDF}>
             <Download className="mr-2 h-4 w-4"/>
             Télécharger le reçu

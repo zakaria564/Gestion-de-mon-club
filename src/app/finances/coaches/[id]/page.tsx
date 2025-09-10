@@ -1,12 +1,14 @@
 
-import { CoachPaymentDetailClient } from './coach-payment-detail-client';
+import { CoachPaymentHistoryClient } from './coach-payment-history-client';
 
-export default function CoachPaymentDetailPage({ params }: { params: { id: string } }) {
-  const id = params.id;
+export default function CoachPaymentHistoryPage({ params }: { params: { id: string } }) {
+  const memberName = params.id;
 
-  if (!id) {
+  if (!memberName) {
     return <div>Chargement...</div>;
   }
 
-  return <CoachPaymentDetailClient id={id} />;
+  return <CoachPaymentHistoryClient memberName={decodeURIComponent(memberName)} />;
 }
+
+    

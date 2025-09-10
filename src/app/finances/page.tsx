@@ -37,13 +37,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Banknote, PlusCircle, Users, UserCheck, Eye, Search } from "lucide-react";
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useFinancialContext } from "@/context/financial-context";
 import { usePlayersContext } from "@/context/players-context";
 import { useCoachesContext } from "@/context/coaches-context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Payment } from "@/lib/financial-data";
+import { cn } from "@/lib/utils";
 
 
 export default function FinancesPage() {
@@ -59,6 +60,12 @@ export default function FinancesPage() {
     initialPaidAmount: '',
     dueDate: '',
   });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState('players');
+
+  useEffect(() => {
+    setSearchQuery("");
+  }, [activeTab]);
 
   if (!financialContext || !playersContext || !coachesContext) {
     throw new Error("FinancesPage must be used within all required providers");
@@ -77,31 +84,25 @@ export default function FinancesPage() {
   const { players, loading: playersLoading } = playersContext;
   const { coaches, loading: coachesLoading } = coachesContext;
 
-  const [searchQuery, setSearchQuery] = useState("");
-
   const aggregatedPlayerPayments = useMemo(() => {
-    const memberData: { [key: string]: { totalPaid: number; paymentCount: number; id: string } } = {};
-    playerPayments.forEach(p => {
-        if (!memberData[p.member]) {
-            memberData[p.member] = { totalPaid: 0, paymentCount: 0, id: p.id };
-        }
-        memberData[p.member].totalPaid += p.paidAmount;
-        memberData[p.member].paymentCount += 1;
+    return players.map(player => {
+        const payments = playerPayments.filter(p => p.member === player.name);
+        const totalPaid = payments.reduce((acc, p) => acc + p.paidAmount, 0);
+        const paymentCount = payments.length;
+        const lastPayment = payments.sort((a,b) => b.dueDate.localeCompare(a.dueDate))[0];
+        return { member: player.name, totalPaid, paymentCount, id: lastPayment?.id || player.id };
     });
-    return Object.entries(memberData).map(([member, data]) => ({ member, ...data }));
-  }, [playerPayments]);
+  }, [playerPayments, players]);
 
   const aggregatedCoachSalaries = useMemo(() => {
-      const memberData: { [key: string]: { totalPaid: number; paymentCount: number; id: string } } = {};
-      coachSalaries.forEach(s => {
-          if (!memberData[s.member]) {
-              memberData[s.member] = { totalPaid: 0, paymentCount: 0, id: s.id };
-          }
-          memberData[s.member].totalPaid += s.paidAmount;
-          memberData[s.member].paymentCount += 1;
+      return coaches.map(coach => {
+        const salaries = coachSalaries.filter(s => s.member === coach.name);
+        const totalPaid = salaries.reduce((acc, s) => acc + s.paidAmount, 0);
+        const paymentCount = salaries.length;
+        const lastPayment = salaries.sort((a,b) => b.dueDate.localeCompare(a.dueDate))[0];
+        return { member: coach.name, totalPaid, paymentCount, id: lastPayment?.id || coach.id };
       });
-      return Object.entries(memberData).map(([member, data]) => ({ member, ...data }));
-  }, [coachSalaries]);
+  }, [coachSalaries, coaches]);
 
   const filteredPlayerMembers = useMemo(() => {
     return aggregatedPlayerPayments.filter(p => p.member.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -128,14 +129,20 @@ export default function FinancesPage() {
     }
   };
   
-  const openAddPaymentDialog = (type: 'player' | 'coach', memberName: string) => {
+  const openAddPaymentDialog = (type: 'player' | 'coach', memberName?: string) => {
     setPaymentType(type);
-    setNewPaymentData(prev => ({ ...prev, member: memberName }));
+    setNewPaymentData({
+      member: memberName || '',
+      totalAmount: '',
+      initialPaidAmount: '',
+      dueDate: '',
+    });
     setOpen(true);
   }
 
   const renderTable = (data: { member: string; totalPaid: number; paymentCount: number; id: string }[], type: 'players' | 'coaches') => {
     const linkPath = type === 'players' ? 'cotisations' : 'coaches';
+    
     return (
      <Card>
       <CardHeader>
@@ -158,8 +165,8 @@ export default function FinancesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Membre</TableHead>
-                <TableHead>Montant Total Payé</TableHead>
-                <TableHead>Paiements Effectués</TableHead>
+                <TableHead className="hidden md:table-cell">Montant Total Payé</TableHead>
+                <TableHead className="hidden md:table-cell">Paiements Effectués</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -168,8 +175,8 @@ export default function FinancesPage() {
                 Array.from({length: 5}).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell><Skeleton className="h-5 w-24"/></TableCell>
-                    <TableCell><Skeleton className="h-5 w-20"/></TableCell>
-                    <TableCell><Skeleton className="h-5 w-20"/></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
                     <TableCell className="text-right"><Skeleton className="h-8 w-8 rounded-md"/></TableCell>
                   </TableRow>
                 ))
@@ -177,8 +184,8 @@ export default function FinancesPage() {
                 data.map((item) => (
                   <TableRow key={item.member}>
                     <TableCell className="font-medium">{item.member}</TableCell>
-                    <TableCell>{item.totalPaid.toFixed(2)} DH</TableCell>
-                    <TableCell>{item.paymentCount}</TableCell>
+                    <TableCell className="hidden md:table-cell">{item.totalPaid.toFixed(2)} DH</TableCell>
+                    <TableCell className="hidden md:table-cell">{item.paymentCount}</TableCell>
                     <TableCell className="text-right">
                        <Button asChild variant="ghost" size="icon">
                         <Link href={`/finances/${linkPath}/${item.id}`}>
@@ -225,7 +232,7 @@ export default function FinancesPage() {
         <h2 className="text-3xl font-bold tracking-tight">Gestion Financière</h2>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button onClick={() => openAddPaymentDialog('player')}>
               <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un paiement
             </Button>
           </DialogTrigger>
@@ -290,7 +297,7 @@ export default function FinancesPage() {
         </Dialog>
       </div>
 
-      <Tabs defaultValue="players" className="space-y-4">
+      <Tabs defaultValue="players" className="space-y-4" onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="players">
              <Users className="mr-2 h-4 w-4" /> Cotisations Joueurs
@@ -369,6 +376,8 @@ export default function FinancesPage() {
     </div>
   );
 }
+    
+
     
 
     

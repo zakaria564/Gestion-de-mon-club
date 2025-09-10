@@ -1,12 +1,14 @@
 
-import { PlayerPaymentDetailClient } from './player-payment-detail-client';
+import { PlayerPaymentHistoryClient } from './player-payment-history-client';
 
-export default function PlayerPaymentDetailPage({ params }: { params: { id: string } }) {
-  const id = params.id;
+export default function PlayerPaymentHistoryPage({ params }: { params: { id: string } }) {
+  const memberName = params.id;
 
-  if (!id) {
+  if (!memberName) {
     return <div>Chargement...</div>;
   }
 
-  return <PlayerPaymentDetailClient id={id} />;
+  return <PlayerPaymentHistoryClient memberName={decodeURIComponent(memberName)} />;
 }
+
+    
