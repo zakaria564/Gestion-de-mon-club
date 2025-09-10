@@ -190,11 +190,9 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
             <div ref={receiptRef} className="p-4 bg-white text-black">
                 <CardHeader>
                 <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-4">
-                        <div>
-                            <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
-                            <p className="text-muted-foreground">Reçu de Cotisation</p>
-                        </div>
+                    <div>
+                        <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
+                        <p className="text-muted-foreground">Reçu de Cotisation</p>
                     </div>
                     <div className="text-right">
                         <p className="text-sm">Reçu n°: {payment.id.substring(0,8)}</p>

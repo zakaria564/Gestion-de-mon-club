@@ -190,7 +190,7 @@ export default function FinancesPage() {
   const memberOptions = paymentType === 'player' ? players : coaches;
   const remainingAmount = useMemo(() => {
     const total = parseFloat(newPaymentData.totalAmount) || 0;
-    const paid = parseFloat(newPaymentData.paidAmount) || 0;
+    const paid = parseFloat(newPaymentData.initialPaidAmount) || 0;
     return (total - paid).toFixed(2);
   }, [newPaymentData.totalAmount, newPaymentData.initialPaidAmount]);
 
@@ -252,7 +252,7 @@ export default function FinancesPage() {
                   <Input id="remainingAmount" type="number" value={remainingAmount} readOnly className="bg-muted" />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="dueDate">Date d'échéance</Label>
+                  <Label htmlFor="dueDate">Mois de la cotisation/paie</Label>
                   <Input id="dueDate" type="month" value={newPaymentData.dueDate} onChange={(e) => setNewPaymentData(p => ({...p, dueDate: e.target.value}))} required/>
                 </div>
               </div>
@@ -343,5 +343,4 @@ export default function FinancesPage() {
     </div>
   );
 }
-
     
