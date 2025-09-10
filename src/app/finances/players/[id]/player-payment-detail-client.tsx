@@ -27,7 +27,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO } from 'date-fns';
 import { useClubContext } from "@/context/club-context";
-import { ClubLogo } from "@/components/club-logo";
 
 export function PlayerPaymentDetailClient({ id }: { id: string }) {
   const context = useFinancialContext();
@@ -204,9 +203,6 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
                 <CardHeader>
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
-                        <div className="logo-container size-16">
-                          <ClubLogo />
-                        </div>
                         <div>
                             <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
                             <p className="text-muted-foreground">Reçu de Cotisation</p>
