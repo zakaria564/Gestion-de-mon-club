@@ -63,6 +63,12 @@ export function PlayerPaymentsClient({ playerId }: { playerId: string }) {
     }, { totalPaid: 0, totalDue: 0 });
   }, [paymentsForPlayer]);
 
+  const remainingAmount = useMemo(() => {
+    const total = parseFloat(newPaymentData.totalAmount) || 0;
+    const paid = parseFloat(newPaymentData.paidAmount) || 0;
+    return (total - paid).toFixed(2);
+  }, [newPaymentData.totalAmount, newPaymentData.paidAmount]);
+
   const loading = playersLoading || financialLoading;
 
   if (loading) {
@@ -99,13 +105,6 @@ export function PlayerPaymentsClient({ playerId }: { playerId: string }) {
         setNewPaymentData({ totalAmount: '', paidAmount: '', dueDate: '' });
     }
   };
-
-  const remainingAmount = useMemo(() => {
-    const total = parseFloat(newPaymentData.totalAmount) || 0;
-    const paid = parseFloat(newPaymentData.paidAmount) || 0;
-    return (total - paid).toFixed(2);
-  }, [newPaymentData.totalAmount, newPaymentData.paidAmount]);
-
 
   const getBadgeVariant = (status: string) => {
     switch (status) {
@@ -242,4 +241,3 @@ export function PlayerPaymentsClient({ playerId }: { playerId: string }) {
     </div>
   );
 }
-
