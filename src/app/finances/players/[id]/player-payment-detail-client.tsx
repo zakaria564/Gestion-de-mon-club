@@ -158,31 +158,42 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
   const handleDownloadPDF = () => {
     const input = receiptRef.current;
     if (!input || !payment) return;
+  
+    // Temporairement changer la couleur de fond de la carte pour le PDF
+    const originalBackgroundColor = input.style.backgroundColor;
+    input.style.backgroundColor = 'white';
 
-    html2canvas(input, { scale: 2 }).then(canvas => {
+    html2canvas(input, { 
+      scale: 2, 
+      backgroundColor: '#ffffff' // S'assurer que le fond est blanc
+    }).then(canvas => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
+      
       const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
       const ratio = canvasWidth / canvasHeight;
-      const width = pdfWidth - 20; // with margin
-      const height = width / ratio;
+      let width = pdfWidth;
+      let height = width / ratio;
 
-      let position = 10;
-      if (height > pdfHeight - 20) {
-        // If content is too tall, it might need to be split, but for a receipt, we'll scale it down.
-        const newHeight = pdfHeight - 20;
-        const newWidth = newHeight * ratio;
-        pdf.addImage(imgData, 'PNG', (pdfWidth - newWidth) / 2, position, newWidth, newHeight);
-      } else {
-        pdf.addImage(imgData, 'PNG', 10, position, width, height);
+      if (height > pdfHeight) {
+          height = pdfHeight;
+          width = height * ratio;
       }
       
-      pdf.save(`recu-cotisation-${payment.member.replace(' ', '-')}.pdf`);
+      const x = (pdfWidth - width) / 2;
+      const y = 0;
+
+      pdf.addImage(imgData, 'PNG', x, y, width, height);
+      pdf.save(`recu-cotisation-${payment.member.replace(/[\s/]/g, '-')}.pdf`);
+
+      // Restaurer la couleur de fond originale
+      input.style.backgroundColor = originalBackgroundColor;
     });
   };
+
 
   const canAddComplement = payment.status === 'partiel' || payment.status === 'non payé';
 
@@ -199,7 +210,7 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
         </Button>
       </div>
 
-        <Card ref={receiptRef} className="p-4">
+        <Card ref={receiptRef} className="p-4 bg-background">
             <CardHeader>
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
