@@ -1,11 +1,13 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { notFound } from "next/navigation";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Banknote, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, UserCheck, PlusCircle, History } from "lucide-react";
+import { ArrowLeft, Banknote, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, UserCheck, PlusCircle, History, Download } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -23,10 +25,14 @@ import { Label } from "@/components/ui/label";
 import { useFinancialContext } from "@/context/financial-context";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useClubContext } from "@/context/club-context";
+import { ClubLogo } from "@/components/club-logo";
 
 export function CoachPaymentDetailClient({ id }: { id: string }) {
   const context = useFinancialContext();
-  
+  const { clubInfo } = useClubContext();
+  const receiptRef = useRef<HTMLDivElement>(null);
+
   if (!context) {
     throw new Error("CoachPaymentDetailClient must be used within a FinancialProvider");
   }
@@ -44,7 +50,7 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
       setFormattedTransactions(
         payment.transactions.map(tx => ({
           ...tx,
-          date: new Date(tx.date).toLocaleString(),
+          date: new Date(tx.date).toLocaleString('fr-FR'),
         }))
       );
     }
@@ -136,6 +142,34 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
     setComplementAmount('');
     setOpen(false);
   };
+  
+  const handleDownloadPDF = () => {
+    const input = receiptRef.current;
+    if (!input || !payment) return;
+
+    html2canvas(input, { scale: 2 }).then(canvas => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      const ratio = canvasWidth / canvasHeight;
+      const width = pdfWidth - 20; // with margin
+      const height = width / ratio;
+
+      let position = 10;
+       if (height > pdfHeight - 20) {
+        const newHeight = pdfHeight - 20;
+        const newWidth = newHeight * ratio;
+        pdf.addImage(imgData, 'PNG', (pdfWidth - newWidth) / 2, position, newWidth, newHeight);
+      } else {
+        pdf.addImage(imgData, 'PNG', 10, position, width, height);
+      }
+      
+      pdf.save(`recu-salaire-${payment.member.replace(' ', '-')}.pdf`);
+    });
+  };
 
   const canAddComplement = payment.status === 'partiel' || payment.status === 'non payé';
 
@@ -146,10 +180,27 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Retour aux finances
         </Link>
+         <Button variant="outline" onClick={handleDownloadPDF}>
+            <Download className="mr-2 h-4 w-4"/>
+            Télécharger en PDF
+        </Button>
       </div>
 
-      <Card>
+      <Card ref={receiptRef} className="p-4">
         <CardHeader>
+           <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                    <ClubLogo src={clubInfo.logoUrl} className="size-16" />
+                    <div>
+                        <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
+                        <p className="text-muted-foreground">Reçu de Salaire</p>
+                    </div>
+                </div>
+                <div className="text-right">
+                    <p className="text-sm">Reçu n°: {payment.id.substring(0,8)}</p>
+                    <p className="text-sm">Date: {new Date().toLocaleDateString('fr-FR')}</p>
+                </div>
+            </div>
           <div className="flex items-center justify-between">
             <div>
                 <CardTitle className="text-3xl font-bold flex items-center"><UserCheck className="mr-3 h-8 w-8" />{payment.member}</CardTitle>
