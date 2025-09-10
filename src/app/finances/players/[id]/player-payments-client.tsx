@@ -62,6 +62,12 @@ export function PlayerPaymentsClient({ playerId }: { playerId: string }) {
         return acc;
     }, { totalPaid: 0, totalDue: 0 });
   }, [paymentsForPlayer]);
+  
+  const remainingAmount = useMemo(() => {
+    const total = parseFloat(newPaymentData.totalAmount) || 0;
+    const paid = parseFloat(newPaymentData.paidAmount) || 0;
+    return (total - paid).toFixed(2);
+  }, [newPaymentData.totalAmount, newPaymentData.paidAmount]);
 
   const loading = playersLoading || financialLoading;
 
@@ -82,12 +88,6 @@ export function PlayerPaymentsClient({ playerId }: { playerId: string }) {
   if (!player) {
     return notFound();
   }
-
-  const remainingAmount = useMemo(() => {
-    const total = parseFloat(newPaymentData.totalAmount) || 0;
-    const paid = parseFloat(newPaymentData.paidAmount) || 0;
-    return (total - paid).toFixed(2);
-  }, [newPaymentData.totalAmount, newPaymentData.paidAmount]);
 
   const handleAddPayment = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
