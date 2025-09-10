@@ -190,7 +190,7 @@ export default function FinancesPage() {
   const memberOptions = paymentType === 'player' ? players : coaches;
   const remainingAmount = useMemo(() => {
     const total = parseFloat(newPaymentData.totalAmount) || 0;
-    const paid = parseFloat(newPaymentData.initialPaidAmount) || 0;
+    const paid = parseFloat(newPaymentData.paidAmount) || 0;
     return (total - paid).toFixed(2);
   }, [newPaymentData.totalAmount, newPaymentData.initialPaidAmount]);
 
