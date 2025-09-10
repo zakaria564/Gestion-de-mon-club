@@ -46,7 +46,7 @@ function AppProviders({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
-        <ClubLogo className="size-12 animate-pulse" />
+        <ClubLogo containerClassName="size-12" className="animate-pulse" />
       </div>
     );
   }
@@ -75,7 +75,7 @@ function AppProviders({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen w-full items-center justify-center">
-        <ClubLogo className="size-12 animate-pulse" />
+        <ClubLogo containerClassName="size-12" className="animate-pulse" />
     </div>
   );
 }

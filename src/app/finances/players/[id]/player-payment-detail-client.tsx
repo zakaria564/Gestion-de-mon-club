@@ -207,82 +207,84 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
         </Button>
       </div>
 
-        <Card ref={receiptRef} className="p-4 bg-white text-black">
-            <CardHeader>
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                    <ClubLogo src={clubInfo.logoUrl} className="size-16" />
+        <Card>
+            <div ref={receiptRef} className="p-4 bg-white text-black">
+                <CardHeader>
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                        <ClubLogo src={clubInfo.logoUrl} containerClassName="size-16" />
+                        <div>
+                            <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
+                            <p className="text-muted-foreground">Reçu de Cotisation</p>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-sm">Reçu n°: {payment.id.substring(0,8)}</p>
+                        <p className="text-sm">Date: {new Date().toLocaleDateString('fr-FR')}</p>
+                    </div>
+                </div>
+                <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
-                        <p className="text-muted-foreground">Reçu de Cotisation</p>
+                        <CardTitle className="text-3xl font-bold flex items-center"><User className="mr-3 h-8 w-8" />{payment.member}</CardTitle>
+                        <CardDescription className="text-lg text-muted-foreground mt-1">Détails de la Cotisation</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {getStatusIcon(payment.status)}
+                        <Badge variant={getBadgeVariant(payment.status) as any} className="text-lg">
+                            {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                        </Badge>
                     </div>
                 </div>
-                <div className="text-right">
-                    <p className="text-sm">Reçu n°: {payment.id.substring(0,8)}</p>
-                    <p className="text-sm">Date: {new Date().toLocaleDateString('fr-FR')}</p>
-                </div>
-            </div>
-            <div className="flex items-center justify-between">
-                <div>
-                    <CardTitle className="text-3xl font-bold flex items-center"><User className="mr-3 h-8 w-8" />{payment.member}</CardTitle>
-                    <CardDescription className="text-lg text-muted-foreground mt-1">Détails de la Cotisation</CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                    {getStatusIcon(payment.status)}
-                    <Badge variant={getBadgeVariant(payment.status) as any} className="text-lg">
-                        {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                    </Badge>
-                </div>
-            </div>
-            </CardHeader>
-            <Separator />
-            <CardContent className="pt-6">
-                <div className="grid md:grid-cols-2 gap-x-8 gap-y-6">
-                    <div className="flex items-center gap-4 text-lg">
-                        <Banknote className="h-6 w-6 text-muted-foreground" />
-                        <span>Montant total:</span>
-                        <span className="font-bold ml-auto">{payment.totalAmount.toFixed(2)} DH</span>
+                </CardHeader>
+                <Separator />
+                <CardContent className="pt-6">
+                    <div className="grid md:grid-cols-2 gap-x-8 gap-y-6">
+                        <div className="flex items-center gap-4 text-lg">
+                            <Banknote className="h-6 w-6 text-muted-foreground" />
+                            <span>Montant total:</span>
+                            <span className="font-bold ml-auto">{payment.totalAmount.toFixed(2)} DH</span>
+                        </div>
+                        <div className="flex items-center gap-4 text-lg">
+                            <CheckCircle className="h-6 w-6 text-green-500" />
+                            <span>Montant payé:</span>
+                            <span className="font-bold ml-auto text-green-600">{payment.paidAmount.toFixed(2)} DH</span>
+                        </div>
+                        <div className="flex items-center gap-4 text-lg">
+                            <XCircle className="h-6 w-6 text-red-500" />
+                            <span>Reste à payer:</span>
+                            <span className="font-bold ml-auto text-red-600">{payment.remainingAmount.toFixed(2)} DH</span>
+                        </div>
+                        <div className="flex items-center gap-4 text-lg">
+                            <CalendarIcon className="h-6 w-6 text-muted-foreground" />
+                            <span>Date d'échéance:</span>
+                            <span className="font-bold ml-auto">{formattedDueDate}</span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-4 text-lg">
-                        <CheckCircle className="h-6 w-6 text-green-500" />
-                        <span>Montant payé:</span>
-                        <span className="font-bold ml-auto text-green-600">{payment.paidAmount.toFixed(2)} DH</span>
-                    </div>
-                    <div className="flex items-center gap-4 text-lg">
-                        <XCircle className="h-6 w-6 text-red-500" />
-                        <span>Reste à payer:</span>
-                        <span className="font-bold ml-auto text-red-600">{payment.remainingAmount.toFixed(2)} DH</span>
-                    </div>
-                    <div className="flex items-center gap-4 text-lg">
-                        <CalendarIcon className="h-6 w-6 text-muted-foreground" />
-                        <span>Date d'échéance:</span>
-                        <span className="font-bold ml-auto">{formattedDueDate}</span>
-                    </div>
-                </div>
 
-                {formattedTransactions.length > 0 && (
-                    <div className="mt-8">
-                        <h3 className="text-xl font-bold mb-4 flex items-center"><History className="mr-2 h-6 w-6" />Historique des transactions</h3>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Date et Heure</TableHead>
-                                    <TableHead className="text-right">Montant (DH)</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {formattedTransactions.map(tx => (
-                                    <TableRow key={tx.id}>
-                                        <TableCell>{tx.date}</TableCell>
-                                        <TableCell className="text-right font-medium">{tx.amount.toFixed(2)}</TableCell>
+                    {formattedTransactions.length > 0 && (
+                        <div className="mt-8">
+                            <h3 className="text-xl font-bold mb-4 flex items-center"><History className="mr-2 h-6 w-6" />Historique des transactions</h3>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Date et Heure</TableHead>
+                                        <TableHead className="text-right">Montant (DH)</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                )}
+                                </TableHeader>
+                                <TableBody>
+                                    {formattedTransactions.map(tx => (
+                                        <TableRow key={tx.id}>
+                                            <TableCell>{tx.date}</TableCell>
+                                            <TableCell className="text-right font-medium">{tx.amount.toFixed(2)}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
 
-            </CardContent>
+                </CardContent>
+            </div>
             {canAddComplement && (
                 <CardFooter className="justify-end">
                     <Dialog open={open} onOpenChange={setOpen}>
