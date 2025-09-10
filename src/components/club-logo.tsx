@@ -5,21 +5,21 @@ import Image from "next/image"
 
 interface ClubLogoProps extends Omit<React.SVGProps<SVGSVGElement>, 'src'> {
     src?: string | null;
-    containerClassName?: string;
+    imageClassName?: string;
 }
 
-export function ClubLogo({ className, src, containerClassName, ...props }: ClubLogoProps) {
+export function ClubLogo({ className, src, imageClassName, ...props }: ClubLogoProps) {
   const finalSrc = src || "https://image.noelshack.com/fichiers/2025/35/6/1756565561-football-logo-design-template-bebebf8ff1c25b66b504d37afaee99f0-screen.jpg";
 
   if (finalSrc) {
       return (
-        <div className={cn("relative flex items-center justify-center rounded-full", containerClassName)}>
+        <div className={cn("relative flex items-center justify-center rounded-full", className)}>
             <Image 
               src={finalSrc} 
               alt="Club Logo" 
               width={40} 
               height={40} 
-              className={cn("rounded-full bg-white", className)} 
+              className={cn("rounded-full bg-white", imageClassName)} 
               data-ai-hint="club logo" 
             />
         </div>

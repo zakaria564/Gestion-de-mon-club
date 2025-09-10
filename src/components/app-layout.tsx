@@ -92,7 +92,7 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
   if (loading || clubLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
-          <ClubLogo containerClassName="size-12" className="animate-pulse" />
+          <ClubLogo className="size-12" imageClassName="animate-pulse" />
       </div>
     );
   }
@@ -107,7 +107,7 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
             <Sidebar>
             <SidebarHeader>
                 <div className="flex items-center gap-2">
-                <ClubLogo src={clubInfo.logoUrl} containerClassName="size-10" className="shrink-0" />
+                <ClubLogo src={clubInfo.logoUrl} className="size-10 shrink-0" />
                 <span className="text-lg font-semibold truncate">{clubInfo.name}</span>
                 </div>
             </SidebarHeader>

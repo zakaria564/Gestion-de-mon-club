@@ -204,9 +204,7 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
                 <CardHeader>
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
-                        <div className="logo-container">
-                          <ClubLogo src={clubInfo.logoUrl} containerClassName="size-16" />
-                        </div>
+                        <ClubLogo src={clubInfo.logoUrl} className="logo-container size-16" />
                         <div>
                             <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
                             <p className="text-muted-foreground">Reçu de Cotisation</p>
