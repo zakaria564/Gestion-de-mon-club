@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -253,31 +254,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <span>{player.country}</span>
                 </div>
             </div>
-             <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Informations Club</h3>
-                <div className="flex items-center gap-4">
-                  <Shirt className="h-5 w-5 text-muted-foreground" />
-                  <span>{player.poste} - <Badge variant="outline">#{player.jerseyNumber}</Badge></span>
-                </div>
-                 <div className="flex items-center gap-4">
-                    <Home className="h-5 w-5 text-muted-foreground" />
-                    <span>Catégorie : <Badge variant="secondary">{playerCategory}</Badge></span>
-                </div>
-                <div className="flex items-center gap-4">
-                    <Shirt className="h-5 w-5 text-muted-foreground" />
-                    <span>Statut : <Badge variant={getBadgeVariant(playerStatus) as any}>{playerStatus}</Badge></span>
-                </div>
-                 <div className="flex items-center gap-4">
-                    <LogIn className="h-5 w-5 text-muted-foreground" />
-                    <span>Entrée : {formattedEntryDate}</span>
-                </div>
-                {player.exitDate && (
-                  <div className="flex items-center gap-4">
-                      <LogOut className="h-5 w-5 text-muted-foreground" />
-                      <span>Sortie : {formattedExitDate}</span>
-                  </div>
-                )}
-            </div>
             
             {(player.tutorName || player.tutorPhone || player.tutorEmail) && (
               <div className="space-y-4">
@@ -308,6 +284,32 @@ export function PlayerDetailClient({ id }: { id: string }) {
                   )}
               </div>
             )}
+
+            <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Informations Club</h3>
+                <div className="flex items-center gap-4">
+                  <Shirt className="h-5 w-5 text-muted-foreground" />
+                  <span>{player.poste} - <Badge variant="outline">#{player.jerseyNumber}</Badge></span>
+                </div>
+                 <div className="flex items-center gap-4">
+                    <Home className="h-5 w-5 text-muted-foreground" />
+                    <span>Catégorie : <Badge variant="secondary">{playerCategory}</Badge></span>
+                </div>
+                <div className="flex items-center gap-4">
+                    <Shirt className="h-5 w-5 text-muted-foreground" />
+                    <span>Statut : <Badge variant={getBadgeVariant(playerStatus) as any}>{playerStatus}</Badge></span>
+                </div>
+                 <div className="flex items-center gap-4">
+                    <LogIn className="h-5 w-5 text-muted-foreground" />
+                    <span>Entrée : {formattedEntryDate}</span>
+                </div>
+                {player.exitDate && (
+                  <div className="flex items-center gap-4">
+                      <LogOut className="h-5 w-5 text-muted-foreground" />
+                      <span>Sortie : {formattedExitDate}</span>
+                  </div>
+                )}
+            </div>
 
             {player.documents && player.documents.length > 0 && (
                 <div className="space-y-4 md:col-span-full">
