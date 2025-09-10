@@ -11,7 +11,11 @@ export function ClubLogo({ className, src, ...props }: ClubLogoProps) {
   const finalSrc = src || "https://image.noelshack.com/fichiers/2025/35/6/1756565561-football-logo-design-template-bebebf8ff1c25b66b504d37afaee99f0-screen.jpg";
 
   if (finalSrc) {
-      return <Image src={finalSrc} alt="Club Logo" width={40} height={40} className={cn("rounded-full", className)} data-ai-hint="club logo" />
+      return (
+        <div className={cn("relative flex items-center justify-center bg-white rounded-full", className)}>
+            <Image src={finalSrc} alt="Club Logo" width={40} height={40} className="rounded-full" data-ai-hint="club logo" />
+        </div>
+      )
   }
   
   return (
