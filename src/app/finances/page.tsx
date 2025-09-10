@@ -117,7 +117,9 @@ export default function FinancesPage() {
     }
   };
   
-  const renderTable = (data: Payment[], type: 'players' | 'coaches') => (
+  const renderTable = (data: Payment[], type: 'players' | 'coaches') => {
+    const linkPath = type === 'players' ? 'cotisations' : 'coaches';
+    return (
      <Card>
       <CardHeader>
         <CardTitle>Liste des {type === 'players' ? 'cotisations' : 'salaires'}</CardTitle>
@@ -173,7 +175,7 @@ export default function FinancesPage() {
                     </TableCell>
                     <TableCell className="text-right">
                        <Button asChild variant="ghost" size="icon">
-                        <Link href={`/finances/${type}/${payment.id}`}>
+                        <Link href={`/finances/${linkPath}/${payment.id}`}>
                             <Eye className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -185,12 +187,12 @@ export default function FinancesPage() {
           </Table>
       </CardContent>
     </Card>
-  )
+  )};
 
   const memberOptions = paymentType === 'player' ? players : coaches;
   const remainingAmount = useMemo(() => {
     const total = parseFloat(newPaymentData.totalAmount) || 0;
-    const paid = parseFloat(newPaymentData.initialPaidAmount) || 0;
+    const paid = parseFloat(newPaymentData.paidAmount) || 0;
     return (total - paid).toFixed(2);
   }, [newPaymentData.totalAmount, newPaymentData.initialPaidAmount]);
 
