@@ -12,9 +12,7 @@ export function ClubLogo({ className, src, ...props }: ClubLogoProps) {
 
   if (finalSrc) {
       return (
-        <div className={cn("relative flex items-center justify-center bg-white rounded-full", className)}>
-            <Image src={finalSrc} alt="Club Logo" width={40} height={40} className="rounded-full" data-ai-hint="club logo" />
-        </div>
+        <Image src={finalSrc} alt="Club Logo" width={40} height={40} className={cn("rounded-full bg-white", className)} data-ai-hint="club logo" />
       )
   }
   
