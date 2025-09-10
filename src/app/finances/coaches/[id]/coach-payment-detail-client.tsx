@@ -294,3 +294,5 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
     </div>
   );
 }
+
+    

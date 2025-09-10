@@ -309,3 +309,5 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
     </div>
   );
 }
+
+    
