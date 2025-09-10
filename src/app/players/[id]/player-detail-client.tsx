@@ -8,7 +8,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield, Mail, MapPin, FileText, PlusCircle, X, ExternalLink, VenetianMask, UserSquare } from "lucide-react";
+import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield, Mail, MapPin, FileText, PlusCircle, X, ExternalLink, VenetianMask, UserSquare, Calendar, LogIn, LogOut } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -194,6 +194,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
   };
   
   const formattedBirthDate = player.birthDate && isValid(parseISO(player.birthDate)) ? format(parseISO(player.birthDate), 'dd/MM/yyyy') : 'N/A';
+  const formattedEntryDate = player.entryDate && isValid(parseISO(player.entryDate)) ? format(parseISO(player.entryDate), 'dd/MM/yyyy') : 'N/A';
+  const formattedExitDate = player.exitDate && isValid(parseISO(player.exitDate)) ? format(parseISO(player.exitDate), 'dd/MM/yyyy') : 'N/A';
   const playerStatus = player.status || 'Actif';
   const playerCategory = player.category || 'Sénior';
 
@@ -263,6 +265,27 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <Flag className="h-5 w-5 text-muted-foreground" />
                     <span>{player.country}</span>
                 </div>
+            </div>
+             <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Informations Club</h3>
+                 <div className="flex items-center gap-4">
+                    <Home className="h-5 w-5 text-muted-foreground" />
+                    <span>Catégorie : {playerCategory}</span>
+                </div>
+                <div className="flex items-center gap-4">
+                    <Shirt className="h-5 w-5 text-muted-foreground" />
+                    <span>Statut : {playerStatus}</span>
+                </div>
+                 <div className="flex items-center gap-4">
+                    <LogIn className="h-5 w-5 text-muted-foreground" />
+                    <span>Entrée : {formattedEntryDate}</span>
+                </div>
+                {player.exitDate && (
+                  <div className="flex items-center gap-4">
+                      <LogOut className="h-5 w-5 text-muted-foreground" />
+                      <span>Sortie : {formattedExitDate}</span>
+                  </div>
+                )}
             </div>
             
             {(player.tutorName || player.tutorPhone || player.tutorEmail) && (
@@ -498,133 +521,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                             />
                         </div>
                         <div className="space-y-4">
-                          <h4 className="text-lg font-medium border-b pb-2">Tuteur Légal (si mineur)</h4>
-                          <FormField
-                            control={form.control}
-                            name="tutorName"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Nom du tuteur</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="ex: Marie Dupont" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="tutorCin"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>N° CIN du tuteur</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="ex: B654321" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="tutorPhone"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Téléphone du tuteur</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="ex: 0712345678" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                              control={form.control}
-                              name="tutorEmail"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Email du tuteur</FormLabel>
-                                  <FormControl>
-                                    <Input type="email" placeholder="ex: tuteur@exemple.com" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-4">
-                        <h4 className="text-lg font-medium border-b pb-2">Documents</h4>
-                        {fields.map((field, index) => (
-                           <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
-                             <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)}>
-                               <X className="h-4 w-4" />
-                             </Button>
-                              <FormField
-                                control={form.control}
-                                name={`documents.${index}.name`}
-                                render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Nom du document</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner un type de document" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {documentOptions.map(option => (
-                                        <SelectItem key={option} value={option}>{option}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                    </Select>
-                                  <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                             <FormField
-                                control={form.control}
-                                name={`documents.${index}.url`}
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>URL du document</FormLabel>
-                                    <FormControl>
-                                    <Input type="url" placeholder="https://example.com/document.pdf" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                             <FormField
-                                control={form.control}
-                                name={`documents.${index}.expirationDate`}
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Date d'expiration (optionnel)</FormLabel>
-                                    <FormControl>
-                                    <Input type="date" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                           </div>
-                        ))}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => append({ name: "", url: "", expirationDate: ""})}
-                        >
-                           <PlusCircle className="mr-2 h-4 w-4" />
-                          Ajouter un document
-                        </Button>
-                    </div>
-
-                     <div className="space-y-4">
-                        <h4 className="text-lg font-medium border-b pb-2">Informations Sportives</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <h4 className="text-lg font-medium border-b pb-2">Informations Sportives</h4>
                             <FormField
                               control={form.control}
                               name="poste"
@@ -667,7 +564,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 </FormItem>
                               )}
                             />
-                            <FormField
+                             <FormField
                                   control={form.control}
                                   name="status"
                                   render={({ field }) => (
@@ -739,7 +636,130 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                     )}
                                 />
                         </div>
-                     </div>
+                    </div>
+                     <div className="space-y-4">
+                          <h4 className="text-lg font-medium border-b pb-2">Tuteur Légal (si mineur)</h4>
+                          <FormField
+                            control={form.control}
+                            name="tutorName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Nom du tuteur</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="ex: Marie Dupont" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="tutorCin"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>N° CIN du tuteur</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="ex: B654321" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="tutorPhone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Téléphone du tuteur</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="ex: 0712345678" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                              control={form.control}
+                              name="tutorEmail"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Email du tuteur</FormLabel>
+                                  <FormControl>
+                                    <Input type="email" placeholder="ex: tuteur@exemple.com" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                        </div>
+
+                    <div className="space-y-4">
+                        <h4 className="text-lg font-medium border-b pb-2">Documents</h4>
+                        {fields.map((field, index) => (
+                           <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
+                             <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)}>
+                               <X className="h-4 w-4" />
+                             </Button>
+                              <FormField
+                                control={form.control}
+                                name={`documents.${index}.name`}
+                                render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Nom du document</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner un type de document" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {documentOptions.map(option => (
+                                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                    </Select>
+                                  <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name={`documents.${index}.url`}
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>URL du document</FormLabel>
+                                    <FormControl>
+                                    <Input type="url" placeholder="https://example.com/document.pdf" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name={`documents.${index}.expirationDate`}
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Date d'expiration (optionnel)</FormLabel>
+                                    <FormControl>
+                                    <Input type="date" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                           </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => append({ name: "", url: "", expirationDate: ""})}
+                        >
+                           <PlusCircle className="mr-2 h-4 w-4" />
+                          Ajouter un document
+                        </Button>
+                    </div>
                   </div>
               </div>
               <DialogFooter className="pt-4 border-t">
@@ -760,3 +780,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
     
 
       
+
+
+    
