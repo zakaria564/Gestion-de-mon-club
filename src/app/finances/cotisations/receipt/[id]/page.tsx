@@ -1,7 +1,7 @@
 
 import { PlayerPaymentDetailClient } from './player-payment-detail-client';
 
-export default function PlayerPaymentDetailPage({ params }: { params: { id: string } }) {
+export default function PlayerPaymentReceiptPage({ params }: { params: { id: string } }) {
   const id = params.id;
 
   if (!id) {
@@ -10,5 +10,3 @@ export default function PlayerPaymentDetailPage({ params }: { params: { id: stri
 
   return <PlayerPaymentDetailClient id={id} />;
 }
-
-    

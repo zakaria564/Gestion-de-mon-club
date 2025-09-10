@@ -10,5 +10,3 @@ export default function PlayerPaymentHistoryPage({ params }: { params: { id: str
 
   return <PlayerPaymentHistoryClient memberName={decodeURIComponent(memberName)} />;
 }
-
-    

@@ -68,7 +68,28 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
   }
 
   if (memberPayments.length === 0 && !loading) {
-    return notFound();
+     return (
+        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+             <Link href="/finances" className="flex items-center text-sm text-muted-foreground hover:underline mb-4">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Retour aux finances
+            </Link>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center text-2xl">
+                        <UserCheck className="mr-3 h-7 w-7" />
+                        {memberName}
+                    </CardTitle>
+                    <CardDescription>
+                        Historique des salaires mensuels.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground">Aucun historique de paiement trouvé pour cet entraîneur.</p>
+                </CardContent>
+            </Card>
+        </div>
+    )
   }
 
   const getBadgeVariant = (status: string) => {
@@ -140,5 +161,3 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
     </div>
   );
 }
-
-    

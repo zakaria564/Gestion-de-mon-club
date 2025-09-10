@@ -31,7 +31,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,9 +42,6 @@ import { usePlayersContext } from "@/context/players-context";
 import { useCoachesContext } from "@/context/coaches-context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Payment } from "@/lib/financial-data";
-import { cn } from "@/lib/utils";
-
 
 export default function FinancesPage() {
   const financialContext = useFinancialContext();
@@ -89,8 +85,7 @@ export default function FinancesPage() {
         const payments = playerPayments.filter(p => p.member === player.name);
         const totalPaid = payments.reduce((acc, p) => acc + p.paidAmount, 0);
         const paymentCount = payments.length;
-        const lastPayment = payments.sort((a,b) => b.dueDate.localeCompare(a.dueDate))[0];
-        return { member: player.name, totalPaid, paymentCount, id: lastPayment?.id || player.id };
+        return { member: player.name, totalPaid, paymentCount };
     });
   }, [playerPayments, players]);
 
@@ -99,8 +94,7 @@ export default function FinancesPage() {
         const salaries = coachSalaries.filter(s => s.member === coach.name);
         const totalPaid = salaries.reduce((acc, s) => acc + s.paidAmount, 0);
         const paymentCount = salaries.length;
-        const lastPayment = salaries.sort((a,b) => b.dueDate.localeCompare(a.dueDate))[0];
-        return { member: coach.name, totalPaid, paymentCount, id: lastPayment?.id || coach.id };
+        return { member: coach.name, totalPaid, paymentCount };
       });
   }, [coachSalaries, coaches]);
 
@@ -140,7 +134,7 @@ export default function FinancesPage() {
     setOpen(true);
   }
 
-  const renderTable = (data: { member: string; totalPaid: number; paymentCount: number; id: string }[], type: 'players' | 'coaches') => {
+  const renderTable = (data: { member: string; totalPaid: number; paymentCount: number }[], type: 'players' | 'coaches') => {
     const linkPath = type === 'players' ? 'cotisations' : 'coaches';
     
     return (
@@ -166,7 +160,7 @@ export default function FinancesPage() {
               <TableRow>
                 <TableHead>Membre</TableHead>
                 <TableHead className="hidden md:table-cell">Montant Total Payé</TableHead>
-                <TableHead className="hidden md:table-cell">Paiements Effectués</TableHead>
+                <TableHead className="hidden md:table-cell">Mois Payés</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -188,7 +182,7 @@ export default function FinancesPage() {
                     <TableCell className="hidden md:table-cell">{item.paymentCount}</TableCell>
                     <TableCell className="text-right">
                        <Button asChild variant="ghost" size="icon">
-                        <Link href={`/finances/${linkPath}/${item.id}`}>
+                        <Link href={`/finances/${linkPath}/${encodeURIComponent(item.member)}`}>
                             <Eye className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -232,7 +226,7 @@ export default function FinancesPage() {
         <h2 className="text-3xl font-bold tracking-tight">Gestion Financière</h2>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => openAddPaymentDialog('player')}>
+            <Button>
               <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un paiement
             </Button>
           </DialogTrigger>
@@ -376,8 +370,3 @@ export default function FinancesPage() {
     </div>
   );
 }
-    
-
-    
-
-    

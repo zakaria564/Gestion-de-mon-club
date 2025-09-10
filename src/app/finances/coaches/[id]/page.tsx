@@ -10,5 +10,3 @@ export default function CoachPaymentHistoryPage({ params }: { params: { id: stri
 
   return <CoachPaymentHistoryClient memberName={decodeURIComponent(memberName)} />;
 }
-
-    
