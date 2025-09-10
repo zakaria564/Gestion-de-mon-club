@@ -1,9 +1,9 @@
 
 "use client";
 import { useParams } from 'next/navigation';
-import { PlayerPaymentsClient } from './player-payments-client';
+import { PlayerPaymentDetailClient } from './player-payment-detail-client';
 
-export default function PlayerPaymentsPage() {
+export default function PlayerPaymentDetailPage() {
   const params = useParams();
   const id = typeof params.id === 'string' ? params.id : '';
 
@@ -11,7 +11,7 @@ export default function PlayerPaymentsPage() {
     return <div>Chargement...</div>;
   }
 
-  return <PlayerPaymentsClient playerId={id} />;
+  return <PlayerPaymentDetailClient id={id} />;
 }
 
-
+    

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { notFound, useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -25,38 +25,20 @@ import { Label } from "@/components/ui/label";
 import { useFinancialContext } from "@/context/financial-context";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, parse, isValid } from 'date-fns';
 import { useClubContext } from "@/context/club-context";
-import { usePlayersContext } from "@/context/players-context";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Trash2 } from "lucide-react";
 
-
-export function PlayerPaymentDetailClient({ paymentId, playerId }: { paymentId: string, playerId: string }) {
-  const router = useRouter();
+export function PlayerPaymentDetailClient({ id }: { id: string }) {
   const context = useFinancialContext();
   const { clubInfo } = useClubContext();
-  const { getPlayerById } = usePlayersContext();
   const receiptRef = useRef<HTMLDivElement>(null);
   
   if (!context) {
     throw new Error("PlayerPaymentDetailClient must be used within a FinancialProvider");
   }
 
-  const { loading, updatePlayerPayment, getPlayerPaymentById, deletePlayerPayment } = context;
+  const { loading, updatePlayerPayment, getPlayerPaymentById } = context;
 
-  const payment = useMemo(() => getPlayerPaymentById(paymentId), [paymentId, getPlayerPaymentById]);
-  const player = useMemo(() => getPlayerById(playerId), [playerId, getPlayerById]);
+  const payment = useMemo(() => getPlayerPaymentById(id), [id, getPlayerPaymentById]);
 
   const [open, setOpen] = useState(false);
   const [complementAmount, setComplementAmount] = useState('');
@@ -70,20 +52,6 @@ export function PlayerPaymentDetailClient({ paymentId, playerId }: { paymentId: 
           date: new Date(tx.date).toLocaleString('fr-FR'),
         }))
       );
-    }
-  }, [payment]);
-
-  const formattedDueDate = useMemo(() => {
-    if (!payment?.dueDate) return '';
-    try {
-        // Handle yyyy-MM and yyyy-MM-dd formats
-        if (payment.dueDate.length === 7) {
-            return format(parse(payment.dueDate, 'yyyy-MM', new Date()), 'MMMM yyyy');
-        }
-        return format(parse(payment.dueDate, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy');
-    } catch (error) {
-      console.error("Error formatting due date:", error);
-      return payment.dueDate;
     }
   }, [payment]);
 
@@ -132,7 +100,7 @@ export function PlayerPaymentDetailClient({ paymentId, playerId }: { paymentId: 
     );
   }
 
-  if (!payment || !player) {
+  if (!payment) {
     return notFound();
   }
 
@@ -167,8 +135,8 @@ export function PlayerPaymentDetailClient({ paymentId, playerId }: { paymentId: 
     const amount = parseFloat(complementAmount);
     if (!amount || amount <= 0 || !payment) return;
 
-    if (typeof paymentId === 'string') {
-        await updatePlayerPayment(paymentId, amount);
+    if (typeof id === 'string') {
+        await updatePlayerPayment(id, amount);
     }
     
     setComplementAmount('');
@@ -203,46 +171,19 @@ export function PlayerPaymentDetailClient({ paymentId, playerId }: { paymentId: 
     });
   };
 
-  const handleDelete = async () => {
-    await deletePlayerPayment(payment.id);
-    router.push(`/finances/players/${playerId}`);
-  };
-
-
   const canAddComplement = payment.status === 'partiel' || payment.status === 'non payé';
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <Link href={`/finances/players/${playerId}`} className="flex items-center text-sm text-muted-foreground hover:underline">
+        <Link href="/finances" className="flex items-center text-sm text-muted-foreground hover:underline">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour à la liste des paiements
+          Retour aux finances
         </Link>
-        <div className="flex items-center gap-2">
-            <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="icon">
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Cette action ne peut pas être annulée. Cela supprimera définitivement ce paiement.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete}>Supprimer</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-            <Button variant="outline" onClick={handleDownloadPDF}>
-                <Download className="mr-2 h-4 w-4"/>
-                Télécharger le reçu
-            </Button>
-         </div>
+         <Button variant="outline" onClick={handleDownloadPDF}>
+            <Download className="mr-2 h-4 w-4"/>
+            Télécharger le reçu
+        </Button>
       </div>
 
         <Card>
@@ -294,7 +235,7 @@ export function PlayerPaymentDetailClient({ paymentId, playerId }: { paymentId: 
                         <div className="flex items-center gap-4 text-lg">
                             <CalendarIcon className="h-6 w-6 text-muted-foreground" />
                             <span>Mois de la cotisation:</span>
-                            <span className="font-bold ml-auto">{formattedDueDate}</span>
+                            <span className="font-bold ml-auto">{payment.dueDate}</span>
                         </div>
                     </div>
 
@@ -357,3 +298,4 @@ export function PlayerPaymentDetailClient({ paymentId, playerId }: { paymentId: 
   );
 }
 
+    

@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, updateDoc, doc, runTransaction, getDocs, query, deleteDoc } from "firebase/firestore";
+import { collection, addDoc, updateDoc, doc, runTransaction, getDocs, query } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Payment, NewPayment, Transaction, Overview } from "@/lib/financial-data";
 
@@ -15,7 +15,6 @@ interface FinancialContextType {
   addCoachSalary: (payment: NewPayment) => Promise<void>;
   updatePlayerPayment: (id: string, newAmount: number) => Promise<void>;
   updateCoachSalary: (id: string, newAmount: number) => Promise<void>;
-  deletePlayerPayment: (id: string) => Promise<void>;
   playerPaymentsOverview: Overview;
   coachSalariesOverview: Overview;
   getPlayerPaymentById: (id: string) => Payment | undefined;
@@ -153,17 +152,6 @@ export function FinancialProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const deletePlayerPayment = async (id: string) => {
-      if (!user) return;
-      try {
-          const paymentDoc = doc(db, "users", user.uid, "playerPayments", id);
-          await deleteDoc(paymentDoc);
-          await fetchFinancialData();
-      } catch (err) {
-          console.error("Error deleting player payment: ", err);
-      }
-  };
-
   const addPlayerPayment = (payment: NewPayment) => addPayment(getPlayerPaymentsCollection(), payment);
   const addCoachSalary = (payment: NewPayment) => addPayment(getCoachSalariesCollection(), payment);
   const updatePlayerPayment = (id: string, newAmount: number) => updatePayment('playerPayments', id, newAmount);
@@ -195,7 +183,6 @@ export function FinancialProvider({ children }: { children: ReactNode }) {
       addCoachSalary,
       updatePlayerPayment,
       updateCoachSalary,
-      deletePlayerPayment,
       playerPaymentsOverview: calculateOverview(playerPayments),
       coachSalariesOverview: calculateOverview(coachSalaries),
       getPlayerPaymentById,
@@ -213,3 +200,5 @@ export const useFinancialContext = () => {
     }
     return context;
 };
+
+    
