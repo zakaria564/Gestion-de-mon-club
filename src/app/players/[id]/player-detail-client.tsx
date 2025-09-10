@@ -218,14 +218,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
           </Avatar>
           <div className="flex-1">
             <CardTitle className="text-3xl font-bold">{player.name}</CardTitle>
-            <CardDescription className="text-lg text-muted-foreground mt-1 flex items-center">
-              {player.poste}
-              <Badge variant="outline" className="ml-2 text-lg">#{player.jerseyNumber}</Badge>
-            </CardDescription>
-            <div className="flex flex-wrap gap-2 mt-4">
-              <Badge variant={getBadgeVariant(playerStatus) as any}>{playerStatus}</Badge>
-              <Badge variant="secondary">{playerCategory}</Badge>
-            </div>
           </div>
         </CardHeader>
         <CardContent className="pt-6 grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
@@ -268,13 +260,17 @@ export function PlayerDetailClient({ id }: { id: string }) {
             </div>
              <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Informations Club</h3>
+                <div className="flex items-center gap-4">
+                  <Shirt className="h-5 w-5 text-muted-foreground" />
+                  <span>{player.poste} - <Badge variant="outline">#{player.jerseyNumber}</Badge></span>
+                </div>
                  <div className="flex items-center gap-4">
                     <Home className="h-5 w-5 text-muted-foreground" />
-                    <span>Catégorie : {playerCategory}</span>
+                    <span>Catégorie : <Badge variant="secondary">{playerCategory}</Badge></span>
                 </div>
                 <div className="flex items-center gap-4">
                     <Shirt className="h-5 w-5 text-muted-foreground" />
-                    <span>Statut : {playerStatus}</span>
+                    <span>Statut : <Badge variant={getBadgeVariant(playerStatus) as any}>{playerStatus}</Badge></span>
                 </div>
                  <div className="flex items-center gap-4">
                     <LogIn className="h-5 w-5 text-muted-foreground" />
@@ -773,13 +769,3 @@ export function PlayerDetailClient({ id }: { id: string }) {
     </div>
   );
 }
-
-    
-    
-
-    
-
-      
-
-
-    
