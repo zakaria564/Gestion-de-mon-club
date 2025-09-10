@@ -141,9 +141,9 @@ export default function FinancesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Membre</TableHead>
-                <TableHead>Montant Total</TableHead>
-                <TableHead>Montant Payé</TableHead>
-                <TableHead>Reste à payer</TableHead>
+                <TableHead className="hidden md:table-cell">Montant Total</TableHead>
+                <TableHead className="hidden md:table-cell">Montant Payé</TableHead>
+                <TableHead className="hidden md:table-cell">Reste à payer</TableHead>
                 <TableHead>Échéance</TableHead>
                 <TableHead>Statut</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -154,9 +154,9 @@ export default function FinancesPage() {
                 Array.from({length: 5}).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell><Skeleton className="h-5 w-24"/></TableCell>
-                    <TableCell><Skeleton className="h-5 w-20"/></TableCell>
-                    <TableCell><Skeleton className="h-5 w-20"/></TableCell>
-                    <TableCell><Skeleton className="h-5 w-20"/></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
                     <TableCell><Skeleton className="h-5 w-24"/></TableCell>
                     <TableCell><Skeleton className="h-8 w-16 rounded-full"/></TableCell>
                     <TableCell className="text-right"><Skeleton className="h-8 w-8 rounded-md"/></TableCell>
@@ -165,10 +165,10 @@ export default function FinancesPage() {
               ) : (
                 data.map((payment) => (
                   <TableRow key={payment.id}>
-                    <TableCell>{payment.member}</TableCell>
-                    <TableCell>{payment.totalAmount.toFixed(2)} DH</TableCell>
-                    <TableCell>{payment.paidAmount.toFixed(2)} DH</TableCell>
-                    <TableCell>{payment.remainingAmount.toFixed(2)} DH</TableCell>
+                    <TableCell className="font-medium">{payment.member}</TableCell>
+                    <TableCell className="hidden md:table-cell">{payment.totalAmount.toFixed(2)} DH</TableCell>
+                    <TableCell className="hidden md:table-cell">{payment.paidAmount.toFixed(2)} DH</TableCell>
+                    <TableCell className="hidden md:table-cell">{payment.remainingAmount.toFixed(2)} DH</TableCell>
                     <TableCell>{payment.dueDate}</TableCell>
                     <TableCell>
                       <Badge variant={getBadgeVariant(payment.status)}>{payment.status}</Badge>
