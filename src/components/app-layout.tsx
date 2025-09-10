@@ -26,7 +26,7 @@ import {
   Settings,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { ClubLogo } from "./club-logo";
+import { ClubLogo } from "@/components/club-logo";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   DropdownMenu,
