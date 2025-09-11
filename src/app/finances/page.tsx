@@ -157,9 +157,7 @@ export default function FinancesPage() {
     
     const hasPaymentForCurrentMonth = (memberName: string) => {
         return rawPayments.some(p => {
-          // Normalize dueDate to yyyy-MM for comparison
-          const paymentMonth = format(parseISO(p.date), 'yyyy-MM');
-          return p.member === memberName && paymentMonth === currentMonth;
+          return p.member === memberName && p.dueDate === currentMonth;
         });
     };
 
