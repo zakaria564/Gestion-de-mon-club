@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 export function PlayerPaymentHistoryClient({ memberName }: { memberName: string }) {
   const context = useFinancialContext();
@@ -151,7 +152,12 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
                   <TableCell className="font-medium">{payment.dueDate}</TableCell>
                   <TableCell>{payment.totalAmount.toFixed(2)} DH</TableCell>
                   <TableCell className="text-green-600">{payment.paidAmount.toFixed(2)} DH</TableCell>
-                  <TableCell className="text-red-600">{payment.remainingAmount.toFixed(2)} DH</TableCell>
+                   <TableCell className={cn(
+                      payment.remainingAmount > 0 ? "text-red-600" : "text-green-600"
+                    )}
+                  >
+                      {payment.remainingAmount.toFixed(2)} DH
+                  </TableCell>
                   <TableCell>
                     <Badge variant={getBadgeVariant(payment.status) as any}>
                       {payment.status}
