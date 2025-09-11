@@ -42,6 +42,7 @@ import { usePlayersContext } from "@/context/players-context";
 import { useCoachesContext } from "@/context/coaches-context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format } from 'date-fns';
 
 export default function FinancesPage() {
   const financialContext = useFinancialContext();
@@ -136,7 +137,13 @@ export default function FinancesPage() {
 
   const renderTable = (data: { member: string; totalPaid: number; paymentCount: number }[], type: 'players' | 'coaches') => {
     const linkPath = type === 'players' ? 'cotisations' : 'coaches';
+    const currentMonth = format(new Date(), 'yyyy-MM');
+    const paymentCollection = type === 'players' ? playerPayments : coachSalaries;
     
+    const hasPaymentForCurrentMonth = (memberName: string) => {
+        return paymentCollection.some(p => p.member === memberName && p.dueDate === currentMonth);
+    };
+
     return (
      <Card>
       <CardHeader>
@@ -189,7 +196,7 @@ export default function FinancesPage() {
                             <Eye className="h-4 w-4" />
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => openAddPaymentDialog(type === 'players' ? 'player' : 'coach', item.member)}>
+                      <Button variant="ghost" size="icon" onClick={() => openAddPaymentDialog(type === 'players' ? 'player' : 'coach', item.member)} disabled={hasPaymentForCurrentMonth(item.member)} >
                         <PlusCircle className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -373,5 +380,3 @@ export default function FinancesPage() {
     </div>
   );
 }
-
-    
