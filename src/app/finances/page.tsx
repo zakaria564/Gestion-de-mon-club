@@ -150,9 +150,9 @@ export default function FinancesPage() {
   const renderTable = (data: { member: string; totalPaid: number; paymentCount: number, status: MemberStatus }[], type: 'players' | 'coaches') => {
     const linkPath = type === 'players' ? 'cotisations' : 'coaches';
     const currentMonth = format(new Date(), 'yyyy-MM');
-    const paymentCollection = type === 'players' ? playerPayments : coachSalaries;
     
     const hasPaymentForCurrentMonth = (memberName: string) => {
+        const paymentCollection = type === 'players' ? playerPayments : coachSalaries;
         return paymentCollection.some(p => p.member === memberName && p.dueDate === currentMonth);
     };
 
