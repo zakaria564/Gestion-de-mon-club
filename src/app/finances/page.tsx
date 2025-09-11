@@ -147,13 +147,16 @@ export default function FinancesPage() {
     setOpen(true);
   }
 
-  const renderTable = (data: { member: string; totalPaid: number; paymentCount: number, status: MemberStatus }[], type: 'players' | 'coaches') => {
+  const renderTable = (
+    data: { member: string; totalPaid: number; paymentCount: number, status: MemberStatus }[], 
+    type: 'players' | 'coaches',
+    rawPayments: Payment[]
+  ) => {
     const linkPath = type === 'players' ? 'cotisations' : 'coaches';
     const currentMonth = format(new Date(), 'yyyy-MM');
     
     const hasPaymentForCurrentMonth = (memberName: string) => {
-        const paymentCollection = type === 'players' ? playerPayments : coachSalaries;
-        return paymentCollection.some(p => p.member === memberName && p.dueDate === currentMonth);
+        return rawPayments.some(p => p.member === memberName && p.dueDate === currentMonth);
     };
 
     const getBadgeVariant = (status: MemberStatus): 'default' | 'secondary' => {
@@ -370,7 +373,7 @@ export default function FinancesPage() {
               </CardContent>
             </Card>
           </div>
-          {renderTable(filteredPlayerMembers, 'players')}
+          {renderTable(filteredPlayerMembers, 'players', playerPayments)}
         </TabsContent>
 
         <TabsContent value="coaches" className="space-y-4">
@@ -403,7 +406,7 @@ export default function FinancesPage() {
               </CardContent>
             </Card>
           </div>
-          {renderTable(filteredCoachMembers, 'coaches')}
+          {renderTable(filteredCoachMembers, 'coaches', coachSalaries)}
         </TabsContent>
       </Tabs>
     </div>
