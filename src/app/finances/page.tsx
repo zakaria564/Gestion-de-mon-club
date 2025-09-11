@@ -56,7 +56,7 @@ export default function FinancesPage() {
     member: '',
     totalAmount: '',
     initialPaidAmount: '',
-    dueDate: '',
+    dueDate: format(new Date(), 'yyyy-MM'),
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState('players');
@@ -126,7 +126,7 @@ export default function FinancesPage() {
         await addCoachSalary({ ...newPaymentData, totalAmount, initialPaidAmount });
       }
       setOpen(false);
-      setNewPaymentData({ member: '', totalAmount: '', initialPaidAmount: '', dueDate: '' });
+      setNewPaymentData({ member: '', totalAmount: '', initialPaidAmount: '', dueDate: format(new Date(), 'yyyy-MM') });
     }
   };
   
@@ -136,7 +136,7 @@ export default function FinancesPage() {
       member: memberName || '',
       totalAmount: '',
       initialPaidAmount: '',
-      dueDate: '',
+      dueDate: format(new Date(), 'yyyy-MM'),
     });
     setOpen(true);
   }
@@ -269,7 +269,7 @@ export default function FinancesPage() {
                 </div>
                  <div className="grid gap-2">
                   <Label htmlFor="dueDate">Mois de la cotisation/paie</Label>
-                  <Input id="dueDate" type="month" value={newPaymentData.dueDate} onChange={(e) => setNewPaymentData(p => ({...p, dueDate: e.target.value}))} required/>
+                  <Input id="dueDate" type="month" value={newPaymentData.dueDate} onChange={(e) => setNewPaymentData(p => ({...p, dueDate: e.target.value}))} required readOnly />
                 </div>
                  <div className="grid gap-2">
                   <Label htmlFor="member">Membre</Label>
@@ -386,3 +386,5 @@ export default function FinancesPage() {
     </div>
   );
 }
+
+    
