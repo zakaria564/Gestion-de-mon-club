@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, updateDoc, doc, runTransaction, getDocs, query } from "firebase/firestore";
+import { collection, addDoc, updateDoc, doc, runTransaction, getDocs, query, deleteDoc } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Payment, NewPayment, Transaction, Overview } from "@/lib/financial-data";
 
@@ -15,6 +15,8 @@ interface FinancialContextType {
   addCoachSalary: (payment: NewPayment) => Promise<void>;
   updatePlayerPayment: (id: string, newAmount: number) => Promise<void>;
   updateCoachSalary: (id: string, newAmount: number) => Promise<void>;
+  deletePlayerPayment: (id: string) => Promise<void>;
+  deleteCoachSalary: (id: string) => Promise<void>;
   playerPaymentsOverview: Overview;
   coachSalariesOverview: Overview;
   getPlayerPaymentById: (id: string) => Payment | undefined;
@@ -152,10 +154,23 @@ export function FinancialProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const deletePayment = async (collectionName: 'playerPayments' | 'coachSalaries', id: string) => {
+    if (!user) return;
+    try {
+        const docRef = doc(db, "users", user.uid, collectionName, id);
+        await deleteDoc(docRef);
+        await fetchFinancialData();
+    } catch (err) {
+        console.error(`Error deleting ${collectionName}:`, err);
+    }
+  };
+
   const addPlayerPayment = (payment: NewPayment) => addPayment(getPlayerPaymentsCollection(), payment);
   const addCoachSalary = (payment: NewPayment) => addPayment(getCoachSalariesCollection(), payment);
   const updatePlayerPayment = (id: string, newAmount: number) => updatePayment('playerPayments', id, newAmount);
   const updateCoachSalary = (id: string, newAmount: number) => updatePayment('coachSalaries', id, newAmount);
+  const deletePlayerPayment = (id: string) => deletePayment('playerPayments', id);
+  const deleteCoachSalary = (id: string) => deletePayment('coachSalaries', id);
 
   const calculateOverview = (payments: Payment[]): Overview => {
     return payments.reduce((acc, p) => {
@@ -183,6 +198,8 @@ export function FinancialProvider({ children }: { children: ReactNode }) {
       addCoachSalary,
       updatePlayerPayment,
       updateCoachSalary,
+      deletePlayerPayment,
+      deleteCoachSalary,
       playerPaymentsOverview: calculateOverview(playerPayments),
       coachSalariesOverview: calculateOverview(coachSalaries),
       getPlayerPaymentById,

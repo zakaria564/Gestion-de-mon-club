@@ -7,25 +7,37 @@ import { useFinancialContext } from "@/context/financial-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, User } from "lucide-react";
+import { ArrowLeft, User, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 export function PlayerPaymentHistoryClient({ memberName }: { memberName: string }) {
   const context = useFinancialContext();
+  const { toast } = useToast();
 
   if (!context) {
     throw new Error("PlayerPaymentHistoryClient must be used within a FinancialProvider");
   }
 
-  const { loading, playerPayments } = context;
+  const { loading, playerPayments, deletePlayerPayment } = context;
 
   const memberPayments = useMemo(() => {
     return playerPayments
       .filter(p => p.member === memberName)
       .sort((a, b) => b.dueDate.localeCompare(a.dueDate));
   }, [memberName, playerPayments]);
+
+  const handleDelete = async (id: string) => {
+    await deletePlayerPayment(id);
+    toast({
+        variant: "destructive",
+        title: "Paiement supprimé",
+        description: "L'entrée de paiement a été supprimée avec succès.",
+    });
+  }
 
   if (loading) {
     return (
@@ -130,7 +142,7 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
                 <TableHead>Montant Payé</TableHead>
                 <TableHead>Reste à payer</TableHead>
                 <TableHead>Statut</TableHead>
-                <TableHead className="text-right">Reçu</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -145,12 +157,29 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
                       {payment.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right space-x-2">
                     <Button asChild variant="outline" size="sm">
                        <Link href={`/finances/cotisations/receipt/${payment.id}`}>
-                        Voir
+                        Voir Reçu
                       </Link>
                     </Button>
+                     <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                           <Button variant="destructive" size="sm">Supprimer</Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Cette action ne peut pas être annulée. Cela supprimera définitivement ce paiement.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDelete(payment.id)}>Supprimer</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))}
