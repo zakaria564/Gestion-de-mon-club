@@ -42,7 +42,7 @@ import { usePlayersContext } from "@/context/players-context";
 import { useCoachesContext } from "@/context/coaches-context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import type { Payment } from "@/lib/financial-data";
 import { Badge } from "@/components/ui/badge";
 
@@ -156,7 +156,11 @@ export default function FinancesPage() {
     const currentMonth = format(new Date(), 'yyyy-MM');
     
     const hasPaymentForCurrentMonth = (memberName: string) => {
-        return rawPayments.some(p => p.member === memberName && p.dueDate === currentMonth);
+        return rawPayments.some(p => {
+          // Normalize dueDate to yyyy-MM for comparison
+          const paymentMonth = format(parseISO(p.date), 'yyyy-MM');
+          return p.member === memberName && paymentMonth === currentMonth;
+        });
     };
 
     const getBadgeVariant = (status: MemberStatus): 'default' | 'secondary' => {
@@ -412,3 +416,4 @@ export default function FinancesPage() {
     </div>
   );
 }
+

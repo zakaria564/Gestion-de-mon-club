@@ -13,7 +13,8 @@ export type Payment = {
     paidAmount: number;
     remainingAmount: number;
     status: 'payé' | 'non payé' | 'partiel';
-    dueDate: string;
+    dueDate: string; // The month for which the payment is due (e.g., "2024-09")
+    date: string; // The actual date the payment entry was created or paid
     transactions: Transaction[];
 };
 

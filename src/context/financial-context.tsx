@@ -107,6 +107,7 @@ export function FinancialProvider({ children }: { children: ReactNode }) {
         remainingAmount: totalAmount - initialPaidAmount,
         status,
         dueDate,
+        date: new Date().toISOString(), // Add the current date for the payment
         transactions: initialPaidAmount > 0 ? [newTransaction] : []
       };
 
@@ -218,4 +219,3 @@ export const useFinancialContext = () => {
     return context;
 };
 
-    
