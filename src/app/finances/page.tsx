@@ -44,6 +44,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from 'date-fns';
 import type { Payment } from "@/lib/financial-data";
+import { Badge } from "@/components/ui/badge";
+
+type MemberStatus = 'À jour' | 'Paiement en attente';
 
 export default function FinancesPage() {
   const financialContext = useFinancialContext();
@@ -83,14 +86,17 @@ export default function FinancesPage() {
   const { coaches, loading: coachesLoading } = coachesContext;
 
   const aggregatePayments = (payments: Payment[]) => {
-      const memberSummary: { [key: string]: { member: string; totalPaid: number; paymentCount: number } } = {};
+      const memberSummary: { [key: string]: { member: string; totalPaid: number; paymentCount: number, status: MemberStatus } } = {};
 
       payments.forEach(p => {
           if (!memberSummary[p.member]) {
-              memberSummary[p.member] = { member: p.member, totalPaid: 0, paymentCount: 0 };
+              memberSummary[p.member] = { member: p.member, totalPaid: 0, paymentCount: 0, status: 'À jour' };
           }
           memberSummary[p.member].totalPaid += p.paidAmount;
           memberSummary[p.member].paymentCount += 1;
+          if (p.status === 'partiel' || p.status === 'non payé') {
+            memberSummary[p.member].status = 'Paiement en attente';
+          }
       });
 
       return Object.values(memberSummary);
@@ -141,7 +147,7 @@ export default function FinancesPage() {
     setOpen(true);
   }
 
-  const renderTable = (data: { member: string; totalPaid: number; paymentCount: number }[], type: 'players' | 'coaches') => {
+  const renderTable = (data: { member: string; totalPaid: number; paymentCount: number, status: MemberStatus }[], type: 'players' | 'coaches') => {
     const linkPath = type === 'players' ? 'cotisations' : 'coaches';
     const currentMonth = format(new Date(), 'yyyy-MM');
     const paymentCollection = type === 'players' ? playerPayments : coachSalaries;
@@ -149,6 +155,18 @@ export default function FinancesPage() {
     const hasPaymentForCurrentMonth = (memberName: string) => {
         return paymentCollection.some(p => p.member === memberName && p.dueDate === currentMonth);
     };
+
+    const getBadgeVariant = (status: MemberStatus): 'default' | 'secondary' => {
+        switch (status) {
+            case 'À jour':
+                return 'default';
+            case 'Paiement en attente':
+                return 'secondary';
+            default:
+                return 'default';
+        }
+    };
+
 
     return (
      <Card>
@@ -174,6 +192,7 @@ export default function FinancesPage() {
                 <TableHead>Membre</TableHead>
                 <TableHead className="hidden sm:table-cell">Total Payé</TableHead>
                 <TableHead className="hidden sm:table-cell">Mois Payés</TableHead>
+                <TableHead>Statut</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -184,6 +203,7 @@ export default function FinancesPage() {
                     <TableCell><Skeleton className="h-5 w-24"/></TableCell>
                     <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
                     <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
+                    <TableCell><Skeleton className="h-6 w-24 rounded-full"/></TableCell>
                     <TableCell className="text-right flex justify-end gap-2">
                         <Skeleton className="h-8 w-8 rounded-md"/>
                         <Skeleton className="h-8 w-8 rounded-md"/>
@@ -196,6 +216,9 @@ export default function FinancesPage() {
                     <TableCell className="font-medium">{item.member}</TableCell>
                     <TableCell className="hidden sm:table-cell">{item.totalPaid.toFixed(2)} DH</TableCell>
                     <TableCell className="hidden sm:table-cell">{item.paymentCount}</TableCell>
+                    <TableCell>
+                        <Badge variant={getBadgeVariant(item.status)}>{item.status}</Badge>
+                    </TableCell>
                     <TableCell className="text-right">
                        <Button asChild variant="ghost" size="icon">
                         <Link href={`/finances/${linkPath}/${encodeURIComponent(item.member)}`}>
@@ -386,5 +409,3 @@ export default function FinancesPage() {
     </div>
   );
 }
-
-    
