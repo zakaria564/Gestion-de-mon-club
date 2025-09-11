@@ -43,6 +43,7 @@ import { useCoachesContext } from "@/context/coaches-context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from 'date-fns';
+import type { Payment } from "@/lib/financial-data";
 
 export default function FinancesPage() {
   const financialContext = useFinancialContext();
@@ -81,23 +82,28 @@ export default function FinancesPage() {
   const { players, loading: playersLoading } = playersContext;
   const { coaches, loading: coachesLoading } = coachesContext;
 
+  const aggregatePayments = (payments: Payment[]) => {
+      const memberSummary: { [key: string]: { member: string; totalPaid: number; paymentCount: number } } = {};
+
+      payments.forEach(p => {
+          if (!memberSummary[p.member]) {
+              memberSummary[p.member] = { member: p.member, totalPaid: 0, paymentCount: 0 };
+          }
+          memberSummary[p.member].totalPaid += p.paidAmount;
+          memberSummary[p.member].paymentCount += 1;
+      });
+
+      return Object.values(memberSummary);
+  };
+
   const aggregatedPlayerPayments = useMemo(() => {
-    return players.map(player => {
-        const payments = playerPayments.filter(p => p.member === player.name);
-        const totalPaid = payments.reduce((acc, p) => acc + p.paidAmount, 0);
-        const paymentCount = payments.length;
-        return { member: player.name, totalPaid, paymentCount };
-    });
-  }, [playerPayments, players]);
+    return aggregatePayments(playerPayments);
+  }, [playerPayments]);
 
   const aggregatedCoachSalaries = useMemo(() => {
-      return coaches.map(coach => {
-        const salaries = coachSalaries.filter(s => s.member === coach.name);
-        const totalPaid = salaries.reduce((acc, s) => acc + s.paidAmount, 0);
-        const paymentCount = salaries.length;
-        return { member: coach.name, totalPaid, paymentCount };
-      });
-  }, [coachSalaries, coaches]);
+      return aggregatePayments(coachSalaries);
+  }, [coachSalaries]);
+
 
   const filteredPlayerMembers = useMemo(() => {
     return aggregatedPlayerPayments.filter(p => p.member.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -166,8 +172,8 @@ export default function FinancesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Membre</TableHead>
-                <TableHead className="hidden md:table-cell">Total Payé</TableHead>
-                <TableHead className="hidden md:table-cell">Mois Payés</TableHead>
+                <TableHead className="hidden sm:table-cell">Total Payé</TableHead>
+                <TableHead className="hidden sm:table-cell">Mois Payés</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -176,8 +182,8 @@ export default function FinancesPage() {
                 Array.from({length: 5}).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell><Skeleton className="h-5 w-24"/></TableCell>
-                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
-                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
+                    <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
+                    <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-20"/></TableCell>
                     <TableCell className="text-right flex justify-end gap-2">
                         <Skeleton className="h-8 w-8 rounded-md"/>
                         <Skeleton className="h-8 w-8 rounded-md"/>
@@ -188,8 +194,8 @@ export default function FinancesPage() {
                 data.map((item) => (
                   <TableRow key={item.member}>
                     <TableCell className="font-medium">{item.member}</TableCell>
-                    <TableCell className="hidden md:table-cell">{item.totalPaid.toFixed(2)} DH</TableCell>
-                    <TableCell className="hidden md:table-cell">{item.paymentCount}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{item.totalPaid.toFixed(2)} DH</TableCell>
+                    <TableCell className="hidden sm:table-cell">{item.paymentCount}</TableCell>
                     <TableCell className="text-right">
                        <Button asChild variant="ghost" size="icon">
                         <Link href={`/finances/${linkPath}/${encodeURIComponent(item.member)}`}>
