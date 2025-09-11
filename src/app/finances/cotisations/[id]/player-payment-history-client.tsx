@@ -7,17 +7,18 @@ import { useFinancialContext } from "@/context/financial-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, User, Trash2, PlusCircle } from "lucide-react";
+import { ArrowLeft, User, PlusCircle, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { Payment } from "@/lib/financial-data";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 
 export function PlayerPaymentHistoryClient({ memberName }: { memberName: string }) {
@@ -194,34 +195,44 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
                       {payment.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button asChild variant="outline" size="sm">
-                       <Link href={`/finances/cotisations/receipt/${payment.id}`}>
-                        Voir Reçu
-                      </Link>
-                    </Button>
-                    {(payment.status === 'partiel' || payment.status === 'non payé') && (
-                        <Button variant="outline" size="sm" onClick={() => handleOpenComplementDialog(payment)}>
-                            <PlusCircle className="mr-2 h-4 w-4" /> Compléter
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Ouvrir le menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
                         </Button>
-                    )}
-                     <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                           <Button variant="destructive" size="sm">Supprimer</Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                            <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Cette action ne peut pas être annulée. Cela supprimera définitivement ce paiement.
-                            </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                            <AlertDialogCancel>Annuler</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDelete(payment.id)}>Supprimer</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                         <DropdownMenuItem asChild>
+                            <Link href={`/finances/cotisations/receipt/${payment.id}`}>
+                              Voir Reçu
+                            </Link>
+                         </DropdownMenuItem>
+                         {(payment.status === 'partiel' || payment.status === 'non payé') && (
+                            <DropdownMenuItem onClick={() => handleOpenComplementDialog(payment)}>
+                                Compléter le paiement
+                            </DropdownMenuItem>
+                        )}
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                               <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Supprimer</DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Cette action ne peut pas être annulée. Cela supprimera définitivement ce paiement.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(payment.id)}>Supprimer</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
