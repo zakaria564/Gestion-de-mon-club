@@ -10,17 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Banknote, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, UserCheck, PlusCircle, History, Download } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useFinancialContext } from "@/context/financial-context";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,12 +25,10 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
     throw new Error("CoachPaymentDetailClient must be used within a FinancialProvider");
   }
 
-  const { loading, updateCoachSalary, getCoachSalaryById } = context;
+  const { loading, getCoachSalaryById } = context;
   
   const payment = useMemo(() => getCoachSalaryById(id), [id, getCoachSalaryById]);
   
-  const [open, setOpen] = useState(false);
-  const [complementAmount, setComplementAmount] = useState('');
   const [formattedTransactions, setFormattedTransactions] = useState<{ id: number; date: string; amount: number; }[]>([]);
 
   useEffect(() => {
@@ -130,19 +117,6 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
             return null;
     }
   }
-
-  const handleAddComplement = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const amount = parseFloat(complementAmount);
-    if (!amount || amount <= 0 || !payment) return;
-
-    if (typeof id === 'string') {
-        await updateCoachSalary(id, amount);
-    }
-    
-    setComplementAmount('');
-    setOpen(false);
-  };
   
   const handleDownloadPDF = () => {
     const input = receiptRef.current;
@@ -171,9 +145,6 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
       input.style.width = originalWidth;
     });
   };
-
-
-  const canAddComplement = payment.status === 'partiel' || payment.status === 'non payé';
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -263,36 +234,6 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
                 )}
             </CardContent>
         </div>
-         {canAddComplement && (
-            <CardFooter className="justify-end">
-                <Dialog open={open} onOpenChange={setOpen}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un complément
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <form onSubmit={handleAddComplement}>
-                      <DialogHeader>
-                        <DialogTitle>Ajouter un paiement complémentaire</DialogTitle>
-                        <DialogDescription>
-                          Le montant restant à payer est de {payment.remainingAmount.toFixed(2)} DH.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                          <Label htmlFor="complementAmount">Montant du complément (DH)</Label>
-                          <Input id="complementAmount" type="number" placeholder={payment.remainingAmount.toFixed(2)} value={complementAmount} onChange={(e) => setComplementAmount(e.target.value)} max={payment.remainingAmount.toString()} min="0.01" step="0.01" />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button type="submit">Sauvegarder</Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-            </CardFooter>
-        )}
       </Card>
     </div>
   );

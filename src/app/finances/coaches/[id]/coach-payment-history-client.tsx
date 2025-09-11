@@ -1,19 +1,23 @@
 
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { notFound } from "next/navigation";
 import { useFinancialContext } from "@/context/financial-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, UserCheck, Trash2 } from "lucide-react";
+import { ArrowLeft, UserCheck, Trash2, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import type { Payment } from "@/lib/financial-data";
 
 export function CoachPaymentHistoryClient({ memberName }: { memberName: string }) {
   const context = useFinancialContext();
@@ -23,7 +27,11 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
     throw new Error("CoachPaymentHistoryClient must be used within a FinancialProvider");
   }
 
-  const { loading, coachSalaries, deleteCoachSalary } = context;
+  const { loading, coachSalaries, deleteCoachSalary, updateCoachSalary } = context;
+
+  const [openComplementDialog, setOpenComplementDialog] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [complementAmount, setComplementAmount] = useState('');
 
   const memberPayments = useMemo(() => {
     return coachSalaries
@@ -39,6 +47,28 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
         description: "L'entrée de paiement a été supprimée avec succès.",
     });
   }
+
+  const handleOpenComplementDialog = (payment: Payment) => {
+    setSelectedPayment(payment);
+    setComplementAmount('');
+    setOpenComplementDialog(true);
+  }
+  
+  const handleAddComplement = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const amount = parseFloat(complementAmount);
+    if (!amount || amount <= 0 || !selectedPayment) return;
+
+    await updateCoachSalary(selectedPayment.id, amount);
+    
+    setComplementAmount('');
+    setSelectedPayment(null);
+    setOpenComplementDialog(false);
+    toast({
+        title: "Paiement mis à jour",
+        description: "Le complément a été ajouté avec succès."
+    });
+  };
 
   if (loading) {
     return (
@@ -169,6 +199,11 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
                         Voir Reçu
                       </Link>
                     </Button>
+                    {(payment.status === 'partiel' || payment.status === 'non payé') && (
+                        <Button variant="outline" size="sm" onClick={() => handleOpenComplementDialog(payment)}>
+                            <PlusCircle className="mr-2 h-4 w-4" /> Compléter
+                        </Button>
+                    )}
                      <AlertDialog>
                         <AlertDialogTrigger asChild>
                            <Button variant="destructive" size="sm">Supprimer</Button>
@@ -193,6 +228,29 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={openComplementDialog} onOpenChange={setOpenComplementDialog}>
+        <DialogContent className="sm:max-w-md">
+            <form onSubmit={handleAddComplement}>
+            <DialogHeader>
+                <DialogTitle>Ajouter un paiement complémentaire</DialogTitle>
+                <DialogDescription>
+                Le montant restant à payer est de {selectedPayment?.remainingAmount.toFixed(2)} DH.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                <Label htmlFor="complementAmount">Montant du complément (DH)</Label>
+                <Input id="complementAmount" type="number" placeholder={selectedPayment?.remainingAmount.toFixed(2)} value={complementAmount} onChange={(e) => setComplementAmount(e.target.value)} max={selectedPayment?.remainingAmount.toString()} min="0.01" step="0.01" />
+                </div>
+            </div>
+            <DialogFooter>
+                <Button type="submit">Sauvegarder</Button>
+            </DialogFooter>
+            </form>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
