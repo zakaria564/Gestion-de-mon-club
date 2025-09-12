@@ -1,49 +1,19 @@
 {
   "name": "Gestion de mon Club",
   "short_name": "Gestion Club",
-  "description": "Une application pour gérer votre club de football.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0ea5e9",
+  "description": "Une application pour gérer votre club de sport.",
   "icons": [
     {
-      "src": "https://image.noelshack.com/fichiers/2024/48/4/1732809873-icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png"
-    },
-    {
-      "src": "https://image.noelshack.com/fichiers/2024/48/4/1732809873-icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png"
-    },
-    {
-      "src": "https://image.noelshack.com/fichiers/2024/48/4/1732809873-icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png"
-    },
-    {
-      "src": "https://image.noelshack.com/fichiers/2024/48/4/1732809873-icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png"
-    },
-    {
-      "src": "https://image.noelshack.com/fichiers/2024/48/4/1732809873-icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png"
-    },
-    {
-      "src": "https://image.noelshack.com/fichiers/2024/48/4/1732809873-icon-192x192.png",
+      "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://image.noelshack.com/fichiers/2024/48/4/1732809873-icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png"
-    },
-    {
-      "src": "https://image.noelshack.com/fichiers/2024/48/4/1732809873-icon-512x512.png",
+      "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
