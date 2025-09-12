@@ -1,11 +1,11 @@
 {
-  "name": "Gestion de mon Club",
+  "name": "Gestion De Mon Club",
   "short_name": "Gestion Club",
+  "description": "Une application pour gérer votre club de sport.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0ea5e9",
-  "description": "Une application pour gérer votre club de sport.",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",

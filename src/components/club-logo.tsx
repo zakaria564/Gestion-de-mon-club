@@ -27,13 +27,13 @@ export function ClubLogo({ className, imageClassName }: ClubLogoProps) {
   }
 
   return (
-    <div className={cn("relative flex items-center justify-center rounded-full bg-white", className)}>
+    <div className={cn("relative flex items-center justify-center rounded-full bg-transparent p-1", className)}>
         <Image 
           src={finalSrc} 
           alt="Club Logo" 
           width={40} 
           height={40} 
-          className={cn("rounded-full", imageClassName)} 
+          className={cn("rounded-full object-contain", imageClassName)} 
           data-ai-hint="club logo" 
         />
     </div>
