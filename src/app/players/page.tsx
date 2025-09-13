@@ -697,7 +697,7 @@ export default function PlayersPage() {
                 ))
             ) : Object.keys(groupedPlayers).length > 0 ? (
                 <Tabs defaultValue={defaultCategory} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 h-auto p-1 bg-muted rounded-md text-muted-foreground justify-start items-center flex-wrap">
+                    <TabsList className="h-auto p-1 bg-muted rounded-md text-muted-foreground justify-start items-center flex-wrap">
                          {Object.keys(groupedPlayers).map((category) => (
                             <TabsTrigger key={category} value={category} className={cn("data-[state=active]:shadow-none", getCategoryStyle(category))}>{category}</TabsTrigger>
                         ))}
