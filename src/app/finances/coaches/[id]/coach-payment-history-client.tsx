@@ -85,9 +85,9 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
               <TableHeader>
                 <TableRow>
                   <TableHead><Skeleton className="h-5 w-24" /></TableHead>
-                  <TableHead><Skeleton className="h-5 w-24" /></TableHead>
-                  <TableHead><Skeleton className="h-5 w-24" /></TableHead>
-                  <TableHead><Skeleton className="h-5 w-24" /></TableHead>
+                  <TableHead className="hidden sm:table-cell"><Skeleton className="h-5 w-24" /></TableHead>
+                  <TableHead className="hidden sm:table-cell"><Skeleton className="h-5 w-24" /></TableHead>
+                  <TableHead className="hidden sm:table-cell"><Skeleton className="h-5 w-24" /></TableHead>
                   <TableHead><Skeleton className="h-5 w-20" /></TableHead>
                   <TableHead className="text-right"><Skeleton className="h-5 w-20" /></TableHead>
                 </TableRow>
@@ -96,9 +96,9 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
                 {Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell><Skeleton className="h-5 w-full" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-full" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-full" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+                    <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-full" /></TableCell>
+                    <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-full" /></TableCell>
+                    <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-full" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-full" /></TableCell>
                     <TableCell className="text-right"><Skeleton className="h-8 w-8" /></TableCell>
                   </TableRow>
@@ -170,9 +170,9 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
             <TableHeader>
               <TableRow>
                 <TableHead>Mois</TableHead>
-                <TableHead>Montant Total</TableHead>
-                <TableHead>Montant Payé</TableHead>
-                <TableHead>Reste à payer</TableHead>
+                <TableHead className="hidden sm:table-cell">Montant Total</TableHead>
+                <TableHead className="hidden sm:table-cell">Montant Payé</TableHead>
+                <TableHead className="hidden sm:table-cell">Reste à payer</TableHead>
                 <TableHead>Statut</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -181,9 +181,10 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
               {memberPayments.map(payment => (
                 <TableRow key={payment.id}>
                   <TableCell className="font-medium">{payment.dueDate}</TableCell>
-                  <TableCell>{payment.totalAmount.toFixed(2)} DH</TableCell>
-                  <TableCell className="text-green-600">{payment.paidAmount.toFixed(2)} DH</TableCell>
+                  <TableCell className="hidden sm:table-cell">{payment.totalAmount.toFixed(2)} DH</TableCell>
+                  <TableCell className="hidden sm:table-cell text-green-600">{payment.paidAmount.toFixed(2)} DH</TableCell>
                   <TableCell className={cn(
+                      "hidden sm:table-cell",
                       payment.remainingAmount > 0 ? "text-red-600" : "text-green-600"
                     )}
                   >
