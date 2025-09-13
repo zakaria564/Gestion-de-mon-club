@@ -7,7 +7,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Mail, Phone, Award, Users, Edit, Trash2, Camera, FileText, ExternalLink, PlusCircle, X, MapPin, Flag, UserSquare } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Award, Users, Edit, Trash2, Camera, FileText, ExternalLink, PlusCircle, X, MapPin, Flag, UserSquare, Home } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -188,37 +188,17 @@ export function CoachDetailClient({ id }: { id: string }) {
           </Avatar>
           <div className="flex-1">
             <CardTitle className="text-3xl font-bold">{coach.name}</CardTitle>
-            <CardDescription className="text-lg text-muted-foreground mt-1">{coach.specialization}</CardDescription>
-            <div className="flex flex-wrap gap-2 mt-4">
-              <Badge variant={getBadgeVariant(coach.status) as any}>{coach.status}</Badge>
-              <Badge variant="secondary">{coach.category}</Badge>
-            </div>
           </div>
         </CardHeader>
-        <CardContent className="grid md:grid-cols-2 gap-6 pt-6">
+        <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 pt-6">
             <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Informations</h3>
-                <div className="flex items-center gap-4">
-                    <Award className="h-5 w-5 text-muted-foreground" />
-                    <span>{coach.specialization}</span>
-                </div>
+                <h3 className="font-semibold text-lg">Informations Personnelles</h3>
                  {coach.cin && (
                   <div className="flex items-center gap-4">
                     <UserSquare className="h-5 w-5 text-muted-foreground" />
                     <span>{coach.cin}</span>
                   </div>
                  )}
-                <div className="flex items-center gap-4">
-                    <Users className="h-5 w-5 text-muted-foreground" />
-                    <span>{coach.experience} ans d'expérience</span>
-                </div>
-                 <div className="flex items-center gap-4">
-                    <Flag className="h-5 w-5 text-muted-foreground" />
-                    <span>{coach.country}</span>
-                </div>
-            </div>
-            <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Contact</h3>
                  <div className="flex items-center gap-4">
                     <Mail className="h-5 w-5 text-muted-foreground" />
                     <a href={`mailto:${coach.email}`} className="hover:underline">{coach.email}</a>
@@ -233,9 +213,32 @@ export function CoachDetailClient({ id }: { id: string }) {
                         {coach.address}
                     </a>
                 </div>
+                 <div className="flex items-center gap-4">
+                    <Flag className="h-5 w-5 text-muted-foreground" />
+                    <span>{coach.country}</span>
+                </div>
+            </div>
+             <div className="space-y-4">
+                <h3 className="font-semibold text-lg">Informations Sportives</h3>
+                <div className="flex items-center gap-4">
+                    <Award className="h-5 w-5 text-muted-foreground" />
+                    <span>{coach.specialization}</span>
+                </div>
+                <div className="flex items-center gap-4">
+                    <Users className="h-5 w-5 text-muted-foreground" />
+                    <span>{coach.experience} ans d'expérience</span>
+                </div>
+                 <div className="flex items-center gap-4">
+                    <Home className="h-5 w-5 text-muted-foreground" />
+                    <span><Badge variant="secondary">{coach.category}</Badge></span>
+                </div>
+                <div className="flex items-center gap-4">
+                    <Award className="h-5 w-5 text-muted-foreground" />
+                    <span><Badge variant={getBadgeVariant(coach.status) as any}>{coach.status}</Badge></span>
+                </div>
             </div>
             {coach.documents && coach.documents.length > 0 && (
-                <div className="space-y-4 mt-6 md:col-span-2">
+                <div className="space-y-4 mt-6 md:col-span-2 lg:col-span-3">
                     <h3 className="font-semibold text-lg">Documents</h3>
                     <ul className="space-y-2">
                         {coach.documents.map((doc, index) => (
@@ -511,3 +514,4 @@ export function CoachDetailClient({ id }: { id: string }) {
       
 
     
+
