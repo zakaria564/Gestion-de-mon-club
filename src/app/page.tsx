@@ -34,6 +34,32 @@ const categoryColors: Record<string, string> = {
 };
 
 
+const CustomLegend = ({ payload }: any) => {
+  if (!payload) return null;
+
+  const half = Math.ceil(payload.length / 2);
+  const topPayload = payload.slice(0, half);
+  const bottomPayload = payload.slice(half);
+
+  const renderLegendItems = (items: any[]) => (
+    <div className="flex items-center justify-center flex-wrap gap-x-4 gap-y-1">
+      {items.map((entry, index) => (
+        <div key={`item-${index}`} className="flex items-center gap-1.5 text-xs">
+          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
+          <span>{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-2">
+      {renderLegendItems(topPayload)}
+      {renderLegendItems(bottomPayload)}
+    </div>
+  );
+};
+
 export default function Dashboard() {
   const playersContext = usePlayersContext();
   const coachesContext = useCoachesContext();
@@ -185,7 +211,7 @@ export default function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
-             <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[250px] sm:h-[300px]">
+             <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[250px] sm:h-[350px]">
                 <ResponsiveContainer>
                     <PieChart>
                         <Tooltip
@@ -207,7 +233,7 @@ export default function Dashboard() {
                                 <Cell key={`cell-${index}`} fill={entry.fill} />
                             ))}
                         </Pie>
-                         <Legend content={<ChartLegendContent />} />
+                         <Legend content={<CustomLegend />} />
                     </PieChart>
                 </ResponsiveContainer>
             </ChartContainer>
