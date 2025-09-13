@@ -161,14 +161,14 @@ export default function FinancesPage() {
         });
     };
 
-    const getBadgeVariant = (status: MemberStatus): 'default' | 'secondary' => {
+    const getBadgeStyle = (status: MemberStatus): React.CSSProperties => {
         switch (status) {
             case 'À jour':
-                return 'default';
+                return { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' };
             case 'Paiement en attente':
-                return 'secondary';
+                return { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' };
             default:
-                return 'default';
+                return {};
         }
     };
 
@@ -222,7 +222,7 @@ export default function FinancesPage() {
                     <TableCell className="hidden sm:table-cell">{item.totalPaid.toFixed(2)} DH</TableCell>
                     <TableCell className="hidden sm:table-cell">{item.paymentCount}</TableCell>
                     <TableCell>
-                        <Badge variant={getBadgeVariant(item.status)}>{item.status}</Badge>
+                        <Badge style={getBadgeStyle(item.status)}>{item.status}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
                        <Button asChild variant="ghost" size="icon">
@@ -414,4 +414,5 @@ export default function FinancesPage() {
     </div>
   );
 }
+
 
