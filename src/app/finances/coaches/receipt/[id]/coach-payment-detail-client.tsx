@@ -99,7 +99,7 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
       case 'non payé':
         return 'destructive';
       case 'partiel':
-        return 'secondary';
+        return 'accent';
       default:
         return 'outline';
     }
@@ -162,26 +162,26 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
       <Card>
         <div ref={receiptRef} className="p-4 bg-white text-black">
             <CardHeader>
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col sm:flex-row items-start justify-between mb-8 gap-4">
                     <div className="flex items-center gap-4">
                         <div>
                             <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
                             <p className="text-muted-foreground">Reçu de Salaire</p>
                         </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-left sm:text-right">
                         <p className="text-sm">Reçu n°: {payment.id.substring(0,8)}</p>
                         <p className="text-sm">Date: {new Date().toLocaleDateString('fr-FR')}</p>
                     </div>
                 </div>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                 <div>
-                    <CardTitle className="text-3xl font-bold flex items-center"><UserCheck className="mr-3 h-8 w-8" />{payment.member}</CardTitle>
-                    <CardDescription className="text-lg text-muted-foreground mt-1">Détails du Salaire</CardDescription>
+                    <CardTitle className="text-2xl md:text-3xl font-bold flex items-center"><UserCheck className="mr-3 h-8 w-8" />{payment.member}</CardTitle>
+                    <CardDescription className="text-base md:text-lg text-muted-foreground mt-1">Détails du Salaire</CardDescription>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 self-start sm:self-center">
                     {getStatusIcon(payment.status)}
-                    <Badge variant={getBadgeVariant(payment.status) as any} className="text-lg">
+                    <Badge variant={getBadgeVariant(payment.status) as any} className="text-base md:text-lg">
                         {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
                     </Badge>
                 </div>
@@ -189,23 +189,23 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
             </CardHeader>
             <Separator />
             <CardContent className="pt-6">
-                <div className="grid md:grid-cols-2 gap-x-8 gap-y-6">
-                    <div className="flex items-center gap-4 text-lg">
+                <div className="grid md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div className="flex items-center gap-4 text-base md:text-lg">
                         <Banknote className="h-6 w-6 text-muted-foreground" />
                         <span>Salaire Total:</span>
                         <span className="font-bold ml-auto">{payment.totalAmount.toFixed(2)} DH</span>
                     </div>
-                    <div className="flex items-center gap-4 text-lg">
+                    <div className="flex items-center gap-4 text-base md:text-lg">
                         <CheckCircle className="h-6 w-6 text-green-500" />
                         <span>Montant payé:</span>
                         <span className="font-bold ml-auto text-green-600">{payment.paidAmount.toFixed(2)} DH</span>
                     </div>
-                    <div className="flex items-center gap-4 text-lg">
+                    <div className="flex items-center gap-4 text-base md:text-lg">
                         <XCircle className="h-6 w-6 text-red-500" />
                         <span>Reste à payer:</span>
                         <span className="font-bold ml-auto text-red-600">{payment.remainingAmount.toFixed(2)} DH</span>
                     </div>
-                    <div className="flex items-center gap-4 text-lg">
+                    <div className="flex items-center gap-4 text-base md:text-lg">
                         <CalendarIcon className="h-6 w-6 text-muted-foreground" />
                         <span>Mois de paie:</span>
                         <span className="font-bold ml-auto">{payment.dueDate}</span>
@@ -214,22 +214,24 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
                 {formattedTransactions.length > 0 && (
                     <div className="mt-8">
                         <h3 className="text-xl font-bold mb-4 flex items-center"><History className="mr-2 h-6 w-6" />Historique des transactions</h3>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Date et Heure</TableHead>
-                                    <TableHead className="text-right">Montant (DH)</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {formattedTransactions.map(tx => (
-                                    <TableRow key={tx.id}>
-                                        <TableCell>{tx.date}</TableCell>
-                                        <TableCell className="text-right font-medium">{tx.amount.toFixed(2)}</TableCell>
+                         <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Date et Heure</TableHead>
+                                        <TableHead className="text-right">Montant (DH)</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {formattedTransactions.map(tx => (
+                                        <TableRow key={tx.id}>
+                                            <TableCell>{tx.date}</TableCell>
+                                            <TableCell className="text-right font-medium">{tx.amount.toFixed(2)}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </div>
                 )}
             </CardContent>
