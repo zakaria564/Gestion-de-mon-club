@@ -185,7 +185,7 @@ export default function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
-             <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[300px]">
+             <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[250px] sm:h-[300px]">
                 <ResponsiveContainer>
                     <PieChart>
                         <Tooltip
