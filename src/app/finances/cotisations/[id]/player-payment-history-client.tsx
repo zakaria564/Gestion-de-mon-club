@@ -215,24 +215,24 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
                                 Compléter le paiement
                             </DropdownMenuItem>
                         )}
-                        {(payment.status === 'partiel' || payment.status === 'non payé') && payment.paidAmount > 0 && (
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Supprimer</DropdownMenuItem>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                    <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        Cette action ne peut pas être annulée. Cela supprimera définitivement ce paiement.
-                                    </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDelete(payment.id)}>Supprimer</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
+                        {(payment.status === 'partiel' || (payment.status === 'non payé' && payment.paidAmount > 0)) && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Supprimer</DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Cette action ne peut pas être annulée. Cela supprimera définitivement ce paiement.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(payment.id)}>Supprimer</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -268,5 +268,3 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
     </div>
   );
 }
-
-    

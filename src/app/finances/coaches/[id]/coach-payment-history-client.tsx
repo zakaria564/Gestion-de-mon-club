@@ -22,7 +22,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 export function CoachPaymentHistoryClient({ memberName }: { memberName: string }) {
   const context = useFinancialContext();
-  const { toast } } from useToast();
+  const { toast } = useToast();
 
   if (!context) {
     throw new Error("CoachPaymentHistoryClient must be used within a FinancialProvider");
@@ -214,7 +214,7 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
                                 Compléter le paiement
                             </DropdownMenuItem>
                         )}
-                        {(payment.status === 'partiel' || payment.status === 'non payé') && payment.paidAmount > 0 && (
+                        {(payment.status === 'partiel' || (payment.status === 'non payé' && payment.paidAmount > 0)) && (
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                 <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Supprimer</DropdownMenuItem>
@@ -268,5 +268,3 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
     </div>
   );
 }
-
-    
