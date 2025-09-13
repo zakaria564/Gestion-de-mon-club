@@ -215,7 +215,7 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
                                 Compléter le paiement
                             </DropdownMenuItem>
                         )}
-                        {(payment.status === 'partiel' || payment.status === 'non payé') && (
+                        {(payment.status === 'partiel' || payment.status === 'non payé') && payment.paidAmount > 0 && (
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                 <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Supprimer</DropdownMenuItem>
