@@ -156,9 +156,8 @@ export default function FinancesPage() {
     const currentMonth = format(new Date(), 'yyyy-MM');
     
     const hasPaymentForCurrentMonth = (memberName: string) => {
-        return rawPayments.some(p => {
-          return p.member === memberName && p.dueDate === currentMonth;
-        });
+      if (!rawPayments) return false;
+      return rawPayments.some(p => p.member === memberName && p.dueDate === currentMonth);
     };
 
     const getBadgeStyle = (status: MemberStatus): React.CSSProperties => {
@@ -222,7 +221,15 @@ export default function FinancesPage() {
                     <TableCell className="hidden sm:table-cell">{item.totalPaid.toFixed(2)} DH</TableCell>
                     <TableCell className="hidden sm:table-cell">{item.paymentCount}</TableCell>
                     <TableCell>
-                        <Badge style={getBadgeStyle(item.status)}>{item.status}</Badge>
+                      <Badge style={getBadgeStyle(item.status)} className="h-auto">
+                        {item.status === 'Paiement en attente' ? (
+                          <span className="text-center leading-tight">
+                            Paiement en<br />attente
+                          </span>
+                        ) : (
+                          item.status
+                        )}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                        <Button asChild variant="ghost" size="icon">
@@ -414,5 +421,6 @@ export default function FinancesPage() {
     </div>
   );
 }
+
 
 
