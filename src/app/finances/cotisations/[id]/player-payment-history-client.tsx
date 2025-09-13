@@ -137,16 +137,16 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
     )
   }
 
-  const getBadgeVariant = (status: string) => {
+  const getBadgeStyle = (status: string): React.CSSProperties => {
     switch (status) {
       case 'payé':
-        return 'default';
+        return { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' };
       case 'non payé':
-        return 'destructive';
+        return { backgroundColor: 'hsl(var(--destructive))', color: 'hsl(var(--destructive-foreground))' };
       case 'partiel':
-        return 'accent';
+        return { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' };
       default:
-        return 'outline';
+        return {};
     }
   };
 
@@ -192,7 +192,7 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
                       {payment.remainingAmount.toFixed(2)} DH
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getBadgeVariant(payment.status) as any}>
+                    <Badge style={getBadgeStyle(payment.status)}>
                       {payment.status}
                     </Badge>
                   </TableCell>
