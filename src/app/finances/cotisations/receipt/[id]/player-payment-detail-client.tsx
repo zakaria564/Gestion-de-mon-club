@@ -152,7 +152,7 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={() => router.push(historyLink)} className="flex items-center text-sm text-muted-foreground hover:underline p-0 h-auto">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour à l'historique de {payment.member}
+          Retour
         </Button>
          <Button variant="outline" onClick={handleDownloadPDF}>
             <Download className="mr-2 h-4 w-4"/>
@@ -241,3 +241,6 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
     </div>
   );
 }
+
+
+    
