@@ -144,7 +144,7 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
       case 'non payé':
         return 'destructive';
       case 'partiel':
-        return 'secondary';
+        return 'accent';
       default:
         return 'outline';
     }
