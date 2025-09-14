@@ -47,7 +47,6 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
@@ -704,78 +703,71 @@ export default function PlayersPage() {
                     </TabsList>
                     {Object.entries(groupedPlayers).map(([category, postes]) => (
                         <TabsContent value={category} key={category} className="mt-4">
-                            <Accordion type="multiple" className="w-full space-y-2" defaultValue={Object.keys(postes)}>
+                            <div className="space-y-6">
                                 {Object.entries(postes).map(([poste, playersInPoste]) => (
-                                    <AccordionItem value={`${category}-${poste}`} key={`${category}-${poste}`} className="border rounded-md">
-                                        <AccordionTrigger className="px-4 text-base font-semibold hover:no-underline">
-                                            {playersInPoste.length === 1
-                                                ? `${poste} (${playersInPoste[0].name})`
-                                                : `${poste} (${playersInPoste.length} joueur${playersInPoste.length > 1 ? 's' : ''})`
-                                            }
-                                        </AccordionTrigger>
-                                        <AccordionContent className="p-2">
-                                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                                {playersInPoste.map((player) => (
-                                                    <Card key={player.id} className="flex flex-col w-full hover:shadow-lg transition-shadow h-full group">
-                                                        <Link href={`/players/${player.id}`} className="flex flex-col h-full">
-                                                            <CardHeader className="p-4">
-                                                                <div className="flex items-center gap-4">
-                                                                    <Avatar className="h-16 w-16">
-                                                                        <AvatarImage src={player.photo ?? undefined} alt={player.name} data-ai-hint="player photo" />
-                                                                        <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
-                                                                    </Avatar>
-                                                                    <div className="flex-1">
-                                                                        <CardTitle className="text-base font-bold">{player.name}</CardTitle>
-                                                                        <CardDescription>{player.poste}</CardDescription>
-                                                                    </div>
+                                    <div key={`${category}-${poste}`}>
+                                        <h3 className="text-xl font-semibold mb-3">{poste} ({playersInPoste.length})</h3>
+                                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                            {playersInPoste.map((player) => (
+                                                <Card key={player.id} className="flex flex-col w-full hover:shadow-lg transition-shadow h-full group">
+                                                    <Link href={`/players/${player.id}`} className="flex flex-col h-full">
+                                                        <CardHeader className="p-4">
+                                                            <div className="flex items-center gap-4">
+                                                                <Avatar className="h-16 w-16">
+                                                                    <AvatarImage src={player.photo ?? undefined} alt={player.name} data-ai-hint="player photo" />
+                                                                    <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
+                                                                </Avatar>
+                                                                <div className="flex-1">
+                                                                    <CardTitle className="text-base font-bold">{player.name}</CardTitle>
+                                                                    <CardDescription>{player.poste}</CardDescription>
                                                                 </div>
-                                                            </CardHeader>
-                                                        </Link>
-                                                        <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
-                                                            <div className="flex justify-between items-center">
-                                                                <DropdownMenu>
-                                                                    <DropdownMenuTrigger asChild>
-                                                                        <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
-                                                                            <Badge variant="outline" className="text-xs cursor-pointer">{player.category || 'Sénior'}</Badge>
-                                                                        </Button>
-                                                                    </DropdownMenuTrigger>
-                                                                    <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
-                                                                        <DropdownMenuRadioGroup
-                                                                            value={player.category}
-                                                                            onValueChange={(newCategory) => handleCategoryChange(player, newCategory)}
-                                                                        >
-                                                                            {playerCategories.map(cat => <DropdownMenuRadioItem key={cat} value={cat}>{cat}</DropdownMenuRadioItem>)}
-                                                                        </DropdownMenuRadioGroup>
-                                                                    </DropdownMenuContent>
-                                                                </DropdownMenu>
-                                                                
-                                                                <DropdownMenu>
-                                                                    <DropdownMenuTrigger asChild>
-                                                                        <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
-                                                                            <Badge variant={getBadgeVariant(player.status || 'Actif') as any} className="text-xs cursor-pointer">{player.status || 'Actif'}</Badge>
-                                                                        </Button>
-                                                                    </DropdownMenuTrigger>
-                                                                    <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
-                                                                        <DropdownMenuRadioGroup
-                                                                            value={player.status}
-                                                                            onValueChange={(newStatus) => handleStatusChange(player, newStatus)}
-                                                                        >
-                                                                            <DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem>
-                                                                            <DropdownMenuRadioItem value="Blessé">Blessé</DropdownMenuRadioItem>
-                                                                            <DropdownMenuRadioItem value="Suspendu">Suspendu</DropdownMenuRadioItem>
-                                                                            <DropdownMenuRadioItem value="Inactif">Inactif</DropdownMenuRadioItem>
-                                                                        </DropdownMenuRadioGroup>
-                                                                    </DropdownMenuContent>
-                                                                </DropdownMenu>
                                                             </div>
-                                                        </CardContent>
-                                                    </Card>
-                                                ))}
-                                            </div>
-                                        </AccordionContent>
-                                    </AccordionItem>
+                                                        </CardHeader>
+                                                    </Link>
+                                                    <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
+                                                        <div className="flex justify-between items-center">
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
+                                                                        <Badge variant="outline" className="text-xs cursor-pointer">{player.category || 'Sénior'}</Badge>
+                                                                    </Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
+                                                                    <DropdownMenuRadioGroup
+                                                                        value={player.category}
+                                                                        onValueChange={(newCategory) => handleCategoryChange(player, newCategory)}
+                                                                    >
+                                                                        {playerCategories.map(cat => <DropdownMenuRadioItem key={cat} value={cat}>{cat}</DropdownMenuRadioItem>)}
+                                                                    </DropdownMenuRadioGroup>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                            
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
+                                                                        <Badge variant={getBadgeVariant(player.status || 'Actif') as any} className="text-xs cursor-pointer">{player.status || 'Actif'}</Badge>
+                                                                    </Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
+                                                                    <DropdownMenuRadioGroup
+                                                                        value={player.status}
+                                                                        onValueChange={(newStatus) => handleStatusChange(player, newStatus)}
+                                                                    >
+                                                                        <DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem>
+                                                                        <DropdownMenuRadioItem value="Blessé">Blessé</DropdownMenuRadioItem>
+                                                                        <DropdownMenuRadioItem value="Suspendu">Suspendu</DropdownMenuRadioItem>
+                                                                        <DropdownMenuRadioItem value="Inactif">Inactif</DropdownMenuRadioItem>
+                                                                    </DropdownMenuRadioGroup>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                    </div>
                                 ))}
-                            </Accordion>
+                            </div>
                         </TabsContent>
                     ))}
                 </Tabs>
