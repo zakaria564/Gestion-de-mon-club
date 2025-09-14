@@ -47,6 +47,9 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from "@/hooks/use-toast";
+import type { Player } from "@/lib/data";
+
+const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
 const documentSchema = z.object({
   name: z.string().min(1, "Le nom du document est requis."),
@@ -64,12 +67,13 @@ const coachSchema = z.object({
   experience: z.coerce.number().min(0, "L'expérience ne peut être négative."),
   photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
   cin: z.string().optional(),
+  category: z.enum(playerCategories),
   documents: z.array(documentSchema).optional(),
 });
 
 type CoachFormValues = z.infer<typeof coachSchema>;
 
-const defaultValues: Omit<CoachFormValues, 'status' | 'category'> = {
+const defaultValues: Omit<CoachFormValues, 'status'> = {
     name: '',
     specialization: 'Entraîneur Principal',
     phone: '',
@@ -79,6 +83,7 @@ const defaultValues: Omit<CoachFormValues, 'status' | 'category'> = {
     experience: 0,
     photo: '',
     cin: '',
+    category: 'Sénior',
     documents: [],
 };
 
@@ -167,7 +172,6 @@ export default function CoachesPage() {
      const coachData = {
         ...data,
         status: 'Actif',
-        category: 'Sénior'
       }
     await addCoach(coachData as any);
     setDialogOpen(false);
@@ -255,6 +259,22 @@ export default function CoachesPage() {
                                   <SelectItem value="Entraîneur des Gardiens">Entraîneur des Gardiens</SelectItem>
                                   <SelectItem value="Préparateur Physique">Préparateur Physique</SelectItem>
                                   <SelectItem value="Analyste Vidéo">Analyste Vidéo</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="category"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Catégorie</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une catégorie" /></SelectTrigger></FormControl>
+                                <SelectContent>
+                                  {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
