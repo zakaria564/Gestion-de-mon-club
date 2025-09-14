@@ -7,7 +7,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Mail, Phone, Award, Users, Edit, Trash2, Camera, FileText, ExternalLink, PlusCircle, X, MapPin, Flag, UserSquare, Home } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Award, Users, Edit, Trash2, Camera, FileText, ExternalLink, PlusCircle, X, MapPin, Flag, UserSquare, Home, VenetianMask } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -43,6 +43,7 @@ const coachSchema = z.object({
   cin: z.string().optional(),
   category: z.enum(playerCategories),
   documents: z.array(documentSchema).optional(),
+  gender: z.enum(['Masculin', 'Féminin']).optional(),
 });
 
 type CoachFormValues = z.infer<typeof coachSchema>;
@@ -104,6 +105,7 @@ export function CoachDetailClient({ id }: { id: string }) {
         cin: coach.cin || '',
         category: coach.category || 'Sénior',
         documents,
+        gender: coach.gender || 'Masculin',
       });
     } else if (!dialogOpen) {
         form.reset();
@@ -204,6 +206,10 @@ export function CoachDetailClient({ id }: { id: string }) {
                     <span>{coach.cin}</span>
                   </div>
                  )}
+                 <div className="flex items-center gap-4">
+                    <VenetianMask className="h-5 w-5 text-muted-foreground" />
+                    <span>{coach.gender || 'Non spécifié'}</span>
+                </div>
                  <div className="flex items-center gap-4">
                     <Mail className="h-5 w-5 text-muted-foreground" />
                     <a href={`mailto:${coach.email}`} className="hover:underline">{coach.email}</a>
@@ -347,6 +353,23 @@ export function CoachDetailClient({ id }: { id: string }) {
                               <FormMessage />
                             </FormItem>
                           )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="gender"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Genre</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un genre" /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Masculin">Masculin</SelectItem>
+                                        <SelectItem value="Féminin">Féminin</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                            )}
                         />
                         <FormField
                           control={form.control}

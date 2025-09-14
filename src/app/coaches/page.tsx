@@ -69,6 +69,7 @@ const coachSchema = z.object({
   cin: z.string().optional(),
   category: z.enum(playerCategories),
   documents: z.array(documentSchema).optional(),
+  gender: z.enum(['Masculin', 'Féminin']).optional(),
 });
 
 type CoachFormValues = z.infer<typeof coachSchema>;
@@ -85,6 +86,7 @@ const defaultValues: Omit<CoachFormValues, 'status'> = {
     cin: '',
     category: 'Sénior',
     documents: [],
+    gender: 'Masculin',
 };
 
 const documentOptions = [
@@ -244,6 +246,23 @@ export default function CoachesPage() {
                               <FormMessage />
                             </FormItem>
                           )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="gender"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Genre</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un genre" /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Masculin">Masculin</SelectItem>
+                                        <SelectItem value="Féminin">Féminin</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                            )}
                         />
                         <FormField
                           control={form.control}
@@ -536,3 +555,4 @@ export default function CoachesPage() {
     
 
     
+
