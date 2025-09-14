@@ -147,6 +147,15 @@ export default function PlayersPage() {
     });
     
     const onSubmit = async (data: PlayerFormValues) => {
+      const existingPlayer = players.find(p => p.name.trim().toLowerCase() === data.name.trim().toLowerCase());
+      if (existingPlayer) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: `Un joueur avec le nom "${data.name}" existe déjà.`,
+        });
+        return;
+      }
       await addPlayer(data);
       setDialogOpen(false);
       toast({ title: "Joueur ajouté", description: "Le nouveau joueur a été ajouté avec succès." });
@@ -780,7 +789,5 @@ export default function PlayersPage() {
     </div>
     );
 }
-
-    
 
     

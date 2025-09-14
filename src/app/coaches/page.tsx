@@ -171,6 +171,15 @@ export default function CoachesPage() {
   }, {} as Record<string, typeof coaches>);
 
   const onSubmit = async (data: CoachFormValues) => {
+     const existingCoach = coaches.find(c => c.name.trim().toLowerCase() === data.name.trim().toLowerCase());
+      if (existingCoach) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: `Un entraîneur avec le nom "${data.name}" existe déjà.`,
+        });
+        return;
+      }
      const coachData = {
         ...data,
         status: 'Actif',
@@ -553,6 +562,3 @@ export default function CoachesPage() {
 }
 
     
-
-    
-
