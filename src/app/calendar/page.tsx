@@ -86,8 +86,15 @@ export default function CalendarPage() {
   }
 
   const handleEventClick = (event: CalendarEvent) => {
-    setSelectedEvent(event);
-    setDetailsOpen(true);
+    const isMatch = event.type.toLowerCase().includes('match');
+    const hasPassed = isPast(parseISO(event.date));
+
+    if (isMatch && hasPassed) {
+        handleAddResult(event);
+    } else {
+        setSelectedEvent(event);
+        setDetailsOpen(true);
+    }
   };
   
   const openAddDialog = (selectedDate: Date) => {
