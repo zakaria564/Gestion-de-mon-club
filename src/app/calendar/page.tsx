@@ -18,15 +18,17 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { fr } from 'date-fns/locale';
-import { format, parse, parseISO } from 'date-fns';
+import { format, parse, parseISO, isPast } from 'date-fns';
 import { CalendarEvent, NewCalendarEvent, useCalendarContext } from '@/context/calendar-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Player } from '@/lib/data';
+import { useRouter } from 'next/navigation';
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
 export default function CalendarPage() {
   const context = useCalendarContext();
+  const router = useRouter();
 
   if (!context) {
     throw new Error("CalendarPage must be used within a CalendarProvider");
@@ -126,6 +128,18 @@ export default function CalendarPage() {
     await deleteEvent(eventId);
     setDetailsOpen(false);
     setSelectedEvent(null);
+  }
+
+  const handleAddResult = (event: CalendarEvent) => {
+    const query = new URLSearchParams({
+      opponent: event.opponent,
+      date: event.date,
+      time: event.time,
+      location: event.location,
+      teamCategory: event.teamCategory,
+      category: event.type
+    }).toString();
+    router.push(`/results?${query}`);
   }
 
   const eventsByDate = calendarEvents.reduce((acc, event) => {
@@ -386,12 +400,20 @@ export default function CalendarPage() {
                   {selectedEvent.opponent && <p><strong>Adversaire:</strong> {selectedEvent.opponent}</p>}
               </div>
               <DialogFooter className="justify-end gap-2">
-                  <Button variant="outline" onClick={() => openEditDialog(selectedEvent)}>
-                      <Edit className="mr-2 h-4 w-4" /> Modifier
-                  </Button>
-                  <Button variant="destructive" onClick={() => handleDeleteEvent(selectedEvent.id)}>
-                       <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                  </Button>
+                 {isPast(parseISO(selectedEvent.date)) && selectedEvent.type.toLowerCase().includes("match") ? (
+                    <Button variant="outline" onClick={() => handleAddResult(selectedEvent)}>
+                      <PlusCircle className="mr-2 h-4 w-4" /> Ajouter le score final
+                    </Button>
+                  ) : (
+                    <>
+                      <Button variant="outline" onClick={() => openEditDialog(selectedEvent)}>
+                          <Edit className="mr-2 h-4 w-4" /> Modifier
+                      </Button>
+                      <Button variant="destructive" onClick={() => handleDeleteEvent(selectedEvent.id)}>
+                          <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                      </Button>
+                    </>
+                  )}
               </DialogFooter>
             </>
           )}

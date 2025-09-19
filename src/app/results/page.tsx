@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { usePlayersContext } from "@/context/players-context";
 import type { Player } from "@/lib/data";
+import { useSearchParams, useRouter } from 'next/navigation';
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical'];
@@ -29,6 +30,9 @@ const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical'];
 export default function ResultsPage() {
   const context = useResultsContext();
   const playersContext = usePlayersContext();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
 
   if (!context || !playersContext) {
     throw new Error("ResultsPage must be used within a ResultsProvider and PlayersProvider");
@@ -58,6 +62,29 @@ export default function ResultsPage() {
     category: 'Match Championnat',
     teamCategory: 'Sénior',
   });
+  
+  useEffect(() => {
+    const opponent = searchParams.get('opponent');
+    if (opponent) {
+      setNewResult({
+        opponent: opponent,
+        date: searchParams.get('date') || '',
+        time: searchParams.get('time') || '',
+        location: searchParams.get('location') || '',
+        teamCategory: searchParams.get('teamCategory') as Player['category'] || 'Sénior',
+        category: searchParams.get('category') || 'Match Championnat',
+        score: '',
+        scorers: [],
+        assists: [],
+      });
+      setOpen(true);
+      
+      // Clean up URL
+      router.replace('/results', undefined);
+
+    }
+  }, [searchParams, router]);
+
 
   useEffect(() => {
     if (!open) {
