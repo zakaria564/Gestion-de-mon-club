@@ -21,6 +21,9 @@ import { fr } from 'date-fns/locale';
 import { format, parse, parseISO } from 'date-fns';
 import { CalendarEvent, NewCalendarEvent, useCalendarContext } from '@/context/calendar-context';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { Player } from '@/lib/data';
+
+const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
 export default function CalendarPage() {
   const context = useCalendarContext();
@@ -42,6 +45,7 @@ export default function CalendarPage() {
     date: '',
     time: '',
     location: '',
+    teamCategory: 'Sénior',
   });
 
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -52,8 +56,8 @@ export default function CalendarPage() {
     setNewEvent(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleSelectChange = (value: string) => {
-    setNewEvent(prev => ({ ...prev, type: value }));
+  const handleSelectChange = (field: 'type' | 'teamCategory', value: string) => {
+    setNewEvent(prev => ({ ...prev, [field]: value as any }));
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -73,7 +77,7 @@ export default function CalendarPage() {
   };
 
   const resetForm = () => {
-    setNewEvent({ type: '', opponent: '', date: '', time: '', location: '' });
+    setNewEvent({ type: '', opponent: '', date: '', time: '', location: '', teamCategory: 'Sénior' });
     setOpen(false);
     setIsEditing(false);
     setEditingEvent(null);
@@ -92,7 +96,8 @@ export default function CalendarPage() {
         opponent: '', 
         date: format(selectedDate, 'yyyy-MM-dd'), 
         time: '', 
-        location: '' 
+        location: '',
+        teamCategory: 'Sénior'
     });
     setOpen(true);
   }
@@ -112,6 +117,7 @@ export default function CalendarPage() {
       date: format(parseISO(event.date), 'yyyy-MM-dd'),
       time: event.time,
       location: event.location,
+      teamCategory: event.teamCategory || 'Sénior',
     });
     setOpen(true);
   }
@@ -213,7 +219,7 @@ export default function CalendarPage() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="type">Type d'événement</Label>
-                  <Select name="type" onValueChange={handleSelectChange} value={newEvent.type} required>
+                  <Select name="type" onValueChange={(v) => handleSelectChange('type', v)} value={newEvent.type} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner un type" />
                     </SelectTrigger>
@@ -228,6 +234,19 @@ export default function CalendarPage() {
                       <SelectItem value="Événement Spécial">Événement Spécial</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                 <div className="grid gap-2">
+                    <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
+                    <Select onValueChange={(v) => handleSelectChange('teamCategory', v)} value={newEvent.teamCategory} required>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner une catégorie" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {playerCategories.map(cat => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="opponent">Adversaire (si match)</Label>
@@ -321,7 +340,10 @@ export default function CalendarPage() {
                 <div className="space-y-4">
                   {eventsForSelectedDate.map((event) => (
                     <div key={event.id} onClick={() => handleEventClick(event)} className="p-4 rounded-md border flex flex-col items-center gap-2 cursor-pointer hover:bg-muted/50">
-                        <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
+                        <div className='flex gap-2 items-center'>
+                            <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
+                            {event.teamCategory && <Badge variant="secondary">{event.teamCategory}</Badge>}
+                        </div>
                         <div className="text-center">
                             <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `vs ${event.opponent}` : ''}</p>
                             <p className="text-sm text-muted-foreground">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
@@ -357,6 +379,7 @@ export default function CalendarPage() {
           {selectedEvent && (
             <>
               <div className="grid gap-4 py-4">
+                  {selectedEvent.teamCategory && <p><strong>Catégorie:</strong> {selectedEvent.teamCategory}</p>}
                   <p><strong>Date:</strong> {format(parseISO(selectedEvent.date), 'dd/MM/yyyy')}</p>
                   <p><strong>Heure:</strong> {selectedEvent.time}</p>
                   <p><strong>Lieu:</strong> {selectedEvent.location}</p>
