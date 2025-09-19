@@ -78,6 +78,7 @@ export default function CalendarPage() {
   // State for Event Details Dialog
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   
   const handleEventInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -160,6 +161,7 @@ export default function CalendarPage() {
     await deleteEvent(eventId);
     setDetailsOpen(false);
     setSelectedEvent(null);
+    setDeleteConfirmationOpen(false);
   }
 
   const openAddResultDialog = (event: CalendarEvent) => {
@@ -500,7 +502,7 @@ export default function CalendarPage() {
                       <Button variant="outline" onClick={() => openEditEventDialog(selectedEvent)}>
                           <Edit className="mr-2 h-4 w-4" /> Modifier
                       </Button>
-                      <AlertDialog>
+                      <AlertDialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
                           <AlertDialogTrigger asChild>
                               <Button variant="destructive">
                                   <Trash2 className="mr-2 h-4 w-4" /> Supprimer
