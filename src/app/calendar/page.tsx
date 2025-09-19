@@ -25,6 +25,8 @@ import { usePlayersContext } from '@/context/players-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Player } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
@@ -498,9 +500,25 @@ export default function CalendarPage() {
                       <Button variant="outline" onClick={() => openEditEventDialog(selectedEvent)}>
                           <Edit className="mr-2 h-4 w-4" /> Modifier
                       </Button>
-                      <Button variant="destructive" onClick={() => handleDeleteEvent(selectedEvent.id)}>
-                          <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                      </Button>
+                      <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                              <Button variant="destructive">
+                                  <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                              </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                              <AlertDialogHeader>
+                              <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                  Cette action ne peut pas être annulée. Cela supprimera définitivement cet événement.
+                              </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                              <AlertDialogCancel>Annuler</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteEvent(selectedEvent.id)}>Supprimer</AlertDialogAction>
+                              </AlertDialogFooter>
+                          </AlertDialogContent>
+                      </AlertDialog>
                     </>
                   )}
               </DialogFooter>
@@ -572,6 +590,8 @@ export default function CalendarPage() {
   );
 }
 
+
+    
 
     
 
