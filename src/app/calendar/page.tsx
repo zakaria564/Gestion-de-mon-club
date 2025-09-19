@@ -12,7 +12,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit, PlusCircle, Trash2 } from 'lucide-react';
+import { Edit, PlusCircle, Trash2, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -20,27 +20,36 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { fr } from 'date-fns/locale';
 import { format, parse, parseISO, isPast } from 'date-fns';
 import { CalendarEvent, NewCalendarEvent, useCalendarContext } from '@/context/calendar-context';
+import { useResultsContext, NewResult, PerformanceDetail } from '@/context/results-context';
+import { usePlayersContext } from '@/context/players-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Player } from '@/lib/data';
-import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
 export default function CalendarPage() {
-  const context = useCalendarContext();
-  const router = useRouter();
+  const calendarContext = useCalendarContext();
+  const resultsContext = useResultsContext();
+  const playersContext = usePlayersContext();
+  const { toast } = useToast();
 
-  if (!context) {
-    throw new Error("CalendarPage must be used within a CalendarProvider");
+  if (!calendarContext || !resultsContext || !playersContext) {
+    throw new Error("CalendarPage must be used within all required providers");
   }
 
-  const { calendarEvents, loading, addEvent, updateEvent, deleteEvent } = context;
+  const { calendarEvents, loading: calendarLoading, addEvent, updateEvent, deleteEvent } = calendarContext;
+  const { addResult, loading: resultsLoading } = resultsContext;
+  const { players, loading: playersLoading } = playersContext;
+
+  const loading = calendarLoading || resultsLoading || playersLoading;
 
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [open, setOpen] = useState(false);
+  
+  // State for Add/Edit Event Dialog
+  const [eventDialogOpen, setEventDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
-  
   const [newEvent, setNewEvent] = useState<NewCalendarEvent>({
     type: '',
     opponent: '',
@@ -50,19 +59,34 @@ export default function CalendarPage() {
     teamCategory: 'Sénior',
   });
 
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
+  // State for Add Result Dialog
+  const [resultDialogOpen, setResultDialogOpen] = useState(false);
+  const [newResult, setNewResult] = useState<NewResult>({
+      opponent: '',
+      date: '',
+      time: '',
+      location: '',
+      score: '',
+      scorers: [],
+      assists: [],
+      category: 'Match Championnat',
+      teamCategory: 'Sénior',
+  });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // State for Event Details Dialog
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  
+  const handleEventInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setNewEvent(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleSelectChange = (field: 'type' | 'teamCategory', value: string) => {
+  const handleEventSelectChange = (field: 'type' | 'teamCategory', value: string) => {
     setNewEvent(prev => ({ ...prev, [field]: value as any }));
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleEventSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
     if (isEditing && editingEvent) {
@@ -70,17 +94,16 @@ export default function CalendarPage() {
         id: editingEvent.id,
         ...newEvent,
        });
-
     } else {
       await addEvent(newEvent);
     }
     
-    resetForm();
+    resetEventForm();
   };
 
-  const resetForm = () => {
+  const resetEventForm = () => {
     setNewEvent({ type: '', opponent: '', date: '', time: '', location: '', teamCategory: 'Sénior' });
-    setOpen(false);
+    setEventDialogOpen(false);
     setIsEditing(false);
     setEditingEvent(null);
   }
@@ -90,14 +113,14 @@ export default function CalendarPage() {
     const hasPassed = isPast(parseISO(event.date));
 
     if (isMatch && hasPassed) {
-        handleAddResult(event);
+        openAddResultDialog(event);
     } else {
         setSelectedEvent(event);
         setDetailsOpen(true);
     }
   };
   
-  const openAddDialog = (selectedDate: Date) => {
+  const openAddEventDialog = (selectedDate: Date) => {
     setIsEditing(false);
     setEditingEvent(null);
     setNewEvent({ 
@@ -108,7 +131,7 @@ export default function CalendarPage() {
         location: '',
         teamCategory: 'Sénior'
     });
-    setOpen(true);
+    setEventDialogOpen(true);
   }
   
   const handleDayClick = (day: Date | undefined) => {
@@ -116,7 +139,7 @@ export default function CalendarPage() {
     setDate(day);
   };
 
-  const openEditDialog = (event: CalendarEvent) => {
+  const openEditEventDialog = (event: CalendarEvent) => {
     setDetailsOpen(false);
     setIsEditing(true);
     setEditingEvent(event);
@@ -128,7 +151,7 @@ export default function CalendarPage() {
       location: event.location,
       teamCategory: event.teamCategory || 'Sénior',
     });
-    setOpen(true);
+    setEventDialogOpen(true);
   }
 
   const handleDeleteEvent = async (eventId: string) => {
@@ -137,17 +160,77 @@ export default function CalendarPage() {
     setSelectedEvent(null);
   }
 
-  const handleAddResult = (event: CalendarEvent) => {
-    const query = new URLSearchParams({
-      opponent: event.opponent,
-      date: event.date,
-      time: event.time,
-      location: event.location,
-      teamCategory: event.teamCategory,
-      category: event.type
-    }).toString();
-    router.push(`/results?${query}`);
-  }
+  const openAddResultDialog = (event: CalendarEvent) => {
+     setNewResult({
+        opponent: event.opponent,
+        date: event.date,
+        time: event.time,
+        location: event.location,
+        teamCategory: event.teamCategory,
+        category: event.type, // 'Match Amical', etc.
+        score: '',
+        scorers: [],
+        assists: [],
+      });
+      setResultDialogOpen(true);
+  };
+
+  const handleResultInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setNewResult(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleDynamicListChange = (
+    listName: 'scorers' | 'assists',
+    index: number,
+    field: 'playerName' | 'count',
+    value: string | number
+  ) => {
+    const list = [...newResult[listName]];
+    const currentItem = { ...list[index] };
+    
+    if (field === 'count') {
+        currentItem.count = Number(value) < 1 ? 1 : Number(value);
+    } else {
+        currentItem.playerName = value as string;
+    }
+
+    list[index] = currentItem;
+    setNewResult(prev => ({ ...prev, [listName]: list }));
+  };
+
+  const addDynamicListItem = (listName: 'scorers' | 'assists') => {
+    const list = [...newResult[listName], { playerName: '', count: 1 }];
+    setNewResult(prev => ({ ...prev, [listName]: list }));
+  };
+
+  const removeDynamicListItem = (listName: 'scorers' | 'assists', index: number) => {
+    const list = newResult[listName].filter((_, i) => i !== index);
+    setNewResult(prev => ({ ...prev, [listName]: list }));
+  };
+
+  const resetResultForm = () => {
+    setNewResult({ opponent: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior' });
+    setResultDialogOpen(false);
+  };
+
+  const handleResultSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const finalResult = {
+        ...newResult,
+        scorers: newResult.scorers.filter(s => s.playerName),
+        assists: newResult.assists.filter(a => a.playerName)
+    };
+    await addResult(finalResult);
+    toast({ title: "Résultat ajouté", description: "Le résultat du match a été enregistré." });
+    resetResultForm();
+  };
+
+  const filteredPlayerOptions = useMemo(() => {
+    return players
+      .filter(p => p.category === newResult.teamCategory)
+      .map(p => ({ value: p.name, label: p.name }));
+  }, [players, newResult.teamCategory]);
 
   const eventsByDate = calendarEvents.reduce((acc, event) => {
     const eventDate = format(parseISO(event.date), 'yyyy-MM-dd');
@@ -188,7 +271,6 @@ export default function CalendarPage() {
     return { backgroundColor: 'hsl(var(--secondary))', color: 'hsl(var(--secondary-foreground))' };
   };
 
-
   if (loading || !date) {
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -223,14 +305,14 @@ export default function CalendarPage() {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Calendrier</h2>
-        <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); else setOpen(true);}}>
+        <Dialog open={eventDialogOpen} onOpenChange={(isOpen) => { if (!isOpen) resetEventForm(); else setEventDialogOpen(true);}}>
           <DialogTrigger asChild>
-            <Button onClick={() => openAddDialog(date)}>
+            <Button onClick={() => openAddEventDialog(date)}>
               <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un événement
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleEventSubmit}>
               <DialogHeader>
                 <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un événement</DialogTitle>
                 <DialogDescription>
@@ -240,7 +322,7 @@ export default function CalendarPage() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="type">Type d'événement</Label>
-                  <Select name="type" onValueChange={(v) => handleSelectChange('type', v)} value={newEvent.type} required>
+                  <Select name="type" onValueChange={(v) => handleEventSelectChange('type', v)} value={newEvent.type} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner un type" />
                     </SelectTrigger>
@@ -258,7 +340,7 @@ export default function CalendarPage() {
                 </div>
                  <div className="grid gap-2">
                     <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
-                    <Select onValueChange={(v) => handleSelectChange('teamCategory', v)} value={newEvent.teamCategory} required>
+                    <Select onValueChange={(v) => handleEventSelectChange('teamCategory', v)} value={newEvent.teamCategory} required>
                         <SelectTrigger>
                             <SelectValue placeholder="Sélectionner une catégorie" />
                         </SelectTrigger>
@@ -271,21 +353,21 @@ export default function CalendarPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="opponent">Adversaire (si match)</Label>
-                  <Input id="opponent" placeholder="Nom de l'équipe adverse" value={newEvent.opponent} onChange={handleInputChange} />
+                  <Input id="opponent" placeholder="Nom de l'équipe adverse" value={newEvent.opponent} onChange={handleEventInputChange} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="date">Date</Label>
-                    <Input id="date" type="date" value={newEvent.date} onChange={handleInputChange} required/>
+                    <Input id="date" type="date" value={newEvent.date} onChange={handleEventInputChange} required/>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="time">Heure</Label>
-                    <Input id="time" type="time" value={newEvent.time} onChange={handleInputChange} required/>
+                    <Input id="time" type="time" value={newEvent.time} onChange={handleEventInputChange} required/>
                   </div>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="location">Lieu</Label>
-                  <Input id="location" placeholder="Stade ou lieu" value={newEvent.location} onChange={handleInputChange} required/>
+                  <Input id="location" placeholder="Stade ou lieu" value={newEvent.location} onChange={handleEventInputChange} required/>
                 </div>
               </div>
               <DialogFooter>
@@ -318,7 +400,7 @@ export default function CalendarPage() {
                           className="absolute top-1 right-1 h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
-                            openAddDialog(dayDate);
+                            openAddEventDialog(dayDate);
                           }}
                         />
                         <span>{dayDate.getDate()}</span>
@@ -408,12 +490,12 @@ export default function CalendarPage() {
               </div>
               <DialogFooter className="justify-end gap-2">
                  {isPast(parseISO(selectedEvent.date)) && selectedEvent.type.toLowerCase().includes("match") ? (
-                    <Button variant="outline" onClick={() => handleAddResult(selectedEvent)}>
+                    <Button variant="outline" onClick={() => openAddResultDialog(selectedEvent)}>
                       <PlusCircle className="mr-2 h-4 w-4" /> Ajouter le score final
                     </Button>
                   ) : (
                     <>
-                      <Button variant="outline" onClick={() => openEditDialog(selectedEvent)}>
+                      <Button variant="outline" onClick={() => openEditEventDialog(selectedEvent)}>
                           <Edit className="mr-2 h-4 w-4" /> Modifier
                       </Button>
                       <Button variant="destructive" onClick={() => handleDeleteEvent(selectedEvent.id)}>
@@ -426,6 +508,69 @@ export default function CalendarPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={resultDialogOpen} onOpenChange={setResultDialogOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+            <DialogHeader>
+                <DialogTitle>Ajouter un résultat</DialogTitle>
+                <DialogDescription>
+                    Match du {newResult.date} contre {newResult.opponent}
+                </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleResultSubmit} className="flex-1 flex flex-col overflow-hidden">
+                <div className="overflow-y-auto pr-6 -mr-6 flex-1">
+                    <div className="grid gap-4 py-4 px-1">
+                        <div className="grid gap-2">
+                            <Label htmlFor="score">Score final (ex: 3-1)</Label>
+                            <Input id="score" value={newResult.score} onChange={handleResultInputChange} required />
+                        </div>
+
+                        <div className="space-y-4">
+                            <Label>Buteurs</Label>
+                            {newResult.scorers.map((scorer, index) => (
+                                <div key={index} className="flex items-center gap-2">
+                                    <Select onValueChange={(value) => handleDynamicListChange('scorers', index, 'playerName', value)} value={scorer.playerName}>
+                                        <SelectTrigger><SelectValue placeholder="Choisir un joueur..." /></SelectTrigger>
+                                        <SelectContent>
+                                            {filteredPlayerOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                    <Input type="number" min="1" value={scorer.count} onChange={(e) => handleDynamicListChange('scorers', index, 'count', e.target.value)} className="w-20" />
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeDynamicListItem('scorers', index)}><X className="h-4 w-4" /></Button>
+                                </div>
+                            ))}
+                            <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('scorers')}>Ajouter un buteur</Button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <Label>Passeurs décisifs</Label>
+                            {newResult.assists.map((assist, index) => (
+                                <div key={index} className="flex items-center gap-2">
+                                    <Select onValueChange={(value) => handleDynamicListChange('assists', index, 'playerName', value)} value={assist.playerName}>
+                                        <SelectTrigger><SelectValue placeholder="Choisir un joueur..." /></SelectTrigger>
+                                        <SelectContent>
+                                            {filteredPlayerOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                    <Input type="number" min="1" value={assist.count} onChange={(e) => handleDynamicListChange('assists', index, 'count', e.target.value)} className="w-20" />
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeDynamicListItem('assists', index)}><X className="h-4 w-4" /></Button>
+                                </div>
+                            ))}
+                            <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('assists')}>Ajouter un passeur</Button>
+                        </div>
+                    </div>
+                </div>
+                <DialogFooter className="pt-4 border-t">
+                    <Button type="button" variant="secondary" onClick={() => resetResultForm()}>Annuler</Button>
+                    <Button type="submit">Sauvegarder le Résultat</Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+    </Dialog>
+
     </div>
   );
 }
+
+
+    
