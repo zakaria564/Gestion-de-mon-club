@@ -165,6 +165,7 @@ export default function CalendarPage() {
   }
 
   const openAddResultDialog = (event: CalendarEvent) => {
+     setDetailsOpen(false);
      setNewResult({
         opponent: event.opponent,
         date: event.date,
@@ -591,10 +592,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-
-
-    
-
-    
-
-    
