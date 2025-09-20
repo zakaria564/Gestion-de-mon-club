@@ -456,7 +456,7 @@ export default function CalendarPage() {
                                 <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
                                 {event.teamCategory && <Badge variant="secondary">{event.teamCategory}</Badge>}
                             </div>
-                            <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `${clubInfo.name} vs ${event.opponent}` : event.type}</p>
+                            <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `USDS vs ${event.opponent}` : event.type}</p>
                             <p className="text-sm text-muted-foreground">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
                             <p className="text-sm text-muted-foreground">{event.location}</p>
                         </div>
