@@ -26,6 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { Player } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useClubContext } from '@/context/club-context';
 
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
@@ -34,6 +35,7 @@ export default function CalendarPage() {
   const calendarContext = useCalendarContext();
   const resultsContext = useResultsContext();
   const playersContext = usePlayersContext();
+  const { clubInfo } = useClubContext();
   const { toast } = useToast();
 
   if (!calendarContext || !resultsContext || !playersContext) {
@@ -454,7 +456,7 @@ export default function CalendarPage() {
                                 <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
                                 {event.teamCategory && <Badge variant="secondary">{event.teamCategory}</Badge>}
                             </div>
-                            <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `vs ${event.opponent}` : ''}</p>
+                            <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `${clubInfo.name} vs ${event.opponent}` : event.type}</p>
                             <p className="text-sm text-muted-foreground">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
                             <p className="text-sm text-muted-foreground">{event.location}</p>
                         </div>
@@ -596,5 +598,7 @@ export default function CalendarPage() {
     </div>
   );
 }
+
+    
 
     
