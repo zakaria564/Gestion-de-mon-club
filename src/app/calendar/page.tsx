@@ -12,7 +12,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit, PlusCircle, Trash2, X } from 'lucide-react';
+import { Edit, PlusCircle, Trash2, X, Eye } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { fr } from 'date-fns/locale';
 import { format, parse, parseISO, isPast } from 'date-fns';
 import { CalendarEvent, NewCalendarEvent, useCalendarContext } from '@/context/calendar-context';
-import { useResultsContext, NewResult, PerformanceDetail } from '@/context/results-context';
+import { useResultsContext, NewResult, Result, PerformanceDetail } from '@/context/results-context';
 import { usePlayersContext } from '@/context/players-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Player } from '@/lib/data';
@@ -43,7 +43,7 @@ export default function CalendarPage() {
   }
 
   const { calendarEvents, loading: calendarLoading, addEvent, updateEvent, deleteEvent } = calendarContext;
-  const { addResult, loading: resultsLoading } = resultsContext;
+  const { results, addResult, loading: resultsLoading } = resultsContext;
   const { players, loading: playersLoading } = playersContext;
 
   const loading = calendarLoading || resultsLoading || playersLoading;
@@ -81,6 +81,8 @@ export default function CalendarPage() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
+  const [resultDetailsOpen, setResultDetailsOpen] = useState(false);
+  const [selectedResult, setSelectedResult] = useState<Result | null>(null);
   
   const handleEventInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -118,7 +120,16 @@ export default function CalendarPage() {
     const hasPassed = isPast(parseISO(event.date));
 
     if (isMatch && hasPassed) {
-        openAddResultDialog(event);
+        const existingResult = results.find(
+            (r) => r.date === event.date && r.opponent === event.opponent && r.teamCategory === event.teamCategory
+        );
+
+        if (existingResult) {
+            setSelectedResult(existingResult);
+            setResultDetailsOpen(true);
+        } else {
+            openAddResultDialog(event);
+        }
     } else {
         setSelectedEvent(event);
         setDetailsOpen(true);
@@ -232,6 +243,13 @@ export default function CalendarPage() {
     await addResult(finalResult);
     toast({ title: "Résultat ajouté", description: "Le résultat du match a été enregistré." });
     resetResultForm();
+  };
+
+  const formatPerformance = (items: PerformanceDetail[] | undefined): string => {
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return "Aucun";
+    }
+    return items.map(item => `${item.playerName}${item.count > 1 ? ` (${item.count})` : ''}`).join(", ");
   };
 
   const filteredPlayerOptions = useMemo(() => {
@@ -456,7 +474,7 @@ export default function CalendarPage() {
                                 <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
                                 {event.teamCategory && <Badge variant="secondary">{event.teamCategory}</Badge>}
                             </div>
-                            <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `USDS vs ${event.opponent}` : event.type}</p>
+                            <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `${clubInfo.name || 'USDS'} vs ${event.opponent}` : event.type}</p>
                             <p className="text-sm text-muted-foreground">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
                             <p className="text-sm text-muted-foreground">{event.location}</p>
                         </div>
@@ -592,10 +610,35 @@ export default function CalendarPage() {
         </DialogContent>
     </Dialog>
 
+    <Dialog open={resultDetailsOpen} onOpenChange={setResultDetailsOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Détails du match {clubInfo.name || 'USDS'} vs {selectedResult?.opponent}</DialogTitle>
+                    <DialogDescription>
+                    {selectedResult?.date} - Score final : {selectedResult?.score}
+                </DialogDescription>
+            </DialogHeader>
+            {selectedResult && (
+                <div className="space-y-4 py-4">
+                    <p>
+                    <strong>Lieu :</strong> {selectedResult.location || "Non spécifié"}
+                    </p>
+                    <p>
+                    <strong>Buteurs :</strong> {formatPerformance(selectedResult.scorers)}
+                    </p>
+                    <p>
+                    <strong>Passeurs :</strong> {formatPerformance(selectedResult.assists)}
+                    </p>
+                </div>
+            )}
+            <DialogFooter>
+                <Button onClick={() => setResultDetailsOpen(false)}>Fermer</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
     </div>
   );
 }
-
-    
 
     
