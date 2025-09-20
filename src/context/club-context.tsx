@@ -22,7 +22,7 @@ const ClubContext = createContext<ClubContextType | undefined>(undefined);
 
 export function ClubProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [clubInfo, setClubInfo] = useState<ClubInfo>({ name: "Gestion Club", logoUrl: "https://img.logoipsum.com/289.svg" });
+  const [clubInfo, setClubInfo] = useState<ClubInfo>({ name: "Gestion Club", logoUrl: "https://img.logoipsum.com/327.svg" });
   const [loading, setLoading] = useState(true);
 
   const getClubInfoDocRef = useCallback(() => {
@@ -33,7 +33,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
   const fetchClubInfo = useCallback(async () => {
     const docRef = getClubInfoDocRef();
     if (!docRef) {
-      setClubInfo({ name: "Gestion Club", logoUrl: "https://img.logoipsum.com/289.svg" });
+      setClubInfo({ name: "Gestion Club", logoUrl: "https://img.logoipsum.com/327.svg" });
       setLoading(false);
       return;
     }
@@ -43,7 +43,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
       if (docSnap.exists()) {
         setClubInfo(docSnap.data() as ClubInfo);
       } else {
-        const defaultInfo = { name: "Gestion Club", logoUrl: "https://img.logoipsum.com/289.svg" };
+        const defaultInfo = { name: "Gestion Club", logoUrl: "https://img.logoipsum.com/327.svg" };
         await setDoc(docRef, defaultInfo);
         setClubInfo(defaultInfo);
       }
@@ -58,7 +58,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
     if (user) {
       fetchClubInfo();
     } else {
-      setClubInfo({ name: "Gestion Club", logoUrl: "https://img.logoipsum.com/289.svg" });
+      setClubInfo({ name: "Gestion Club", logoUrl: "https://img.logoipsum.com/327.svg" });
       setLoading(false);
     }
   }, [user, fetchClubInfo]);
