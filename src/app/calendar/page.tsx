@@ -460,9 +460,6 @@ export default function CalendarPage() {
                             <p className="text-sm text-muted-foreground">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
                             <p className="text-sm text-muted-foreground">{event.location}</p>
                         </div>
-                        <Button variant="ghost" size="icon" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => openEditEventDialog(event, e)}>
-                            <Edit className="h-4 w-4" />
-                        </Button>
                     </div>
                   ))}
                 </div>
