@@ -142,7 +142,8 @@ export default function CalendarPage() {
     setDate(day);
   };
 
-  const openEditEventDialog = (event: CalendarEvent) => {
+  const openEditEventDialog = (event: CalendarEvent, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setDetailsOpen(false);
     setIsEditing(true);
     setEditingEvent(event);
@@ -447,16 +448,19 @@ export default function CalendarPage() {
               <CardContent>
                 <div className="space-y-4">
                   {eventsForSelectedDate.map((event) => (
-                    <div key={event.id} onClick={() => handleEventClick(event)} className="p-4 rounded-md border flex flex-col items-center gap-2 cursor-pointer hover:bg-muted/50">
-                        <div className='flex gap-2 items-center'>
-                            <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
-                            {event.teamCategory && <Badge variant="secondary">{event.teamCategory}</Badge>}
-                        </div>
-                        <div className="text-center">
+                    <div key={event.id} onClick={() => handleEventClick(event)} className="p-4 rounded-md border flex items-center gap-2 cursor-pointer hover:bg-muted/50 relative group">
+                        <div className="flex flex-col flex-1 text-center">
+                            <div className='flex gap-2 items-center justify-center mb-2'>
+                                <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
+                                {event.teamCategory && <Badge variant="secondary">{event.teamCategory}</Badge>}
+                            </div>
                             <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `vs ${event.opponent}` : ''}</p>
                             <p className="text-sm text-muted-foreground">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
                             <p className="text-sm text-muted-foreground">{event.location}</p>
                         </div>
+                        <Button variant="ghost" size="icon" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => openEditEventDialog(event, e)}>
+                            <Edit className="h-4 w-4" />
+                        </Button>
                     </div>
                   ))}
                 </div>
@@ -500,7 +504,7 @@ export default function CalendarPage() {
                     </Button>
                   ) : (
                     <>
-                      <Button variant="outline" onClick={() => openEditEventDialog(selectedEvent)}>
+                      <Button variant="outline" onClick={(e) => openEditEventDialog(selectedEvent, e)}>
                           <Edit className="mr-2 h-4 w-4" /> Modifier
                       </Button>
                       <AlertDialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
@@ -592,3 +596,5 @@ export default function CalendarPage() {
     </div>
   );
 }
+
+    
