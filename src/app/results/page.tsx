@@ -317,7 +317,7 @@ export default function ResultsPage() {
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Détails du match vs {selectedResult?.opponent}</DialogTitle>
+                    <DialogTitle>Détails du match USDS vs {selectedResult?.opponent}</DialogTitle>
                      <DialogDescription>
                         {selectedResult?.date} - Score final : {selectedResult?.score}
                     </DialogDescription>
@@ -448,6 +448,8 @@ export default function ResultsPage() {
   );
 }
 
+
+    
 
     
 
