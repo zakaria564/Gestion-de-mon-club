@@ -261,7 +261,7 @@ export default function ResultsPage() {
                     <CardHeader>
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
-                                <CardTitle className="text-lg">vs {result.opponent}</CardTitle>
+                                <CardTitle className="text-lg">USDS vs {result.opponent}</CardTitle>
                                 <CardDescription>{result.date}</CardDescription>
                             </div>
                             <div className={`text-2xl font-bold p-2 rounded-md text-white ${getMatchOutcome(result.score)}`}>
@@ -448,5 +448,7 @@ export default function ResultsPage() {
   );
 }
 
+
+    
 
     
