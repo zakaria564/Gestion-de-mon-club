@@ -26,6 +26,20 @@ import type { Player } from "@/lib/data";
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical'];
 
+const categoryColors: Record<string, string> = {
+  'Sénior': 'hsl(var(--chart-1))',
+  'U23': 'hsl(var(--chart-2))',
+  'U19': 'hsl(var(--chart-3))',
+  'U18': 'hsl(var(--chart-4))',
+  'U17': 'hsl(var(--chart-5))',
+  'U16': 'hsl(var(--chart-6))',
+  'U15': 'hsl(var(--chart-7))',
+  'U13': 'hsl(var(--chart-8))',
+  'U9': 'hsl(25 60% 45%)',
+  'U11': 'hsl(var(--chart-10))',
+  'U7': 'hsl(var(--chart-11))',
+};
+
 export default function ResultsPage() {
   const context = useResultsContext();
   const playersContext = usePlayersContext();
@@ -270,7 +284,12 @@ export default function ResultsPage() {
                         </div>
                     </CardHeader>
                     <CardContent className="flex-grow space-y-2">
-                        <Badge variant="secondary">{result.teamCategory}</Badge>
+                        <Badge 
+                            style={{ backgroundColor: categoryColors[result.teamCategory], color: 'white' }} 
+                            className="border-transparent"
+                        >
+                            {result.teamCategory}
+                        </Badge>
                         <Badge variant="outline">{result.category}</Badge>
                         <p className="text-sm text-muted-foreground pt-2">{result.location}</p>
                     </CardContent>

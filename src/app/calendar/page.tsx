@@ -31,6 +31,20 @@ import { useClubContext } from '@/context/club-context';
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
+const categoryColors: Record<string, string> = {
+  'Sénior': 'hsl(var(--chart-1))',
+  'U23': 'hsl(var(--chart-2))',
+  'U19': 'hsl(var(--chart-3))',
+  'U18': 'hsl(var(--chart-4))',
+  'U17': 'hsl(var(--chart-5))',
+  'U16': 'hsl(var(--chart-6))',
+  'U15': 'hsl(var(--chart-7))',
+  'U13': 'hsl(var(--chart-8))',
+  'U9': 'hsl(25 60% 45%)',
+  'U11': 'hsl(var(--chart-10))',
+  'U7': 'hsl(var(--chart-11))',
+};
+
 export default function CalendarPage() {
   const calendarContext = useCalendarContext();
   const resultsContext = useResultsContext();
@@ -472,7 +486,7 @@ export default function CalendarPage() {
                         <div className="flex flex-col flex-1 text-center">
                             <div className='flex gap-2 items-center justify-center mb-2'>
                                 <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
-                                {event.teamCategory && <Badge variant="secondary">{event.teamCategory}</Badge>}
+                                {event.teamCategory && <Badge style={{backgroundColor: categoryColors[event.teamCategory], color: 'white'}} className="border-transparent">{event.teamCategory}</Badge>}
                             </div>
                             <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `USDS vs ${event.opponent}` : event.type}</p>
                             <p className="text-sm text-muted-foreground">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>

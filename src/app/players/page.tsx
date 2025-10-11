@@ -121,6 +121,20 @@ const documentOptions = [
 
 const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise", "Américaine", "Russe", "Japonaise", "Chinoise", "Indienne", "Turque", "Égyptienne", "Nigériane", "Sud-africaine", "Ghanéenne"];
 
+const categoryColors: Record<string, string> = {
+  'Sénior': 'hsl(var(--chart-1))',
+  'U23': 'hsl(var(--chart-2))',
+  'U19': 'hsl(var(--chart-3))',
+  'U18': 'hsl(var(--chart-4))',
+  'U17': 'hsl(var(--chart-5))',
+  'U16': 'hsl(var(--chart-6))',
+  'U15': 'hsl(var(--chart-7))',
+  'U13': 'hsl(var(--chart-8))',
+  'U9': 'hsl(25 60% 45%)',
+  'U11': 'hsl(var(--chart-10))',
+  'U7': 'hsl(var(--chart-11))',
+};
+
 export default function PlayersPage() {
     const context = usePlayersContext();
     const { toast } = useToast();
@@ -178,20 +192,11 @@ export default function PlayersPage() {
     
     const getCategoryStyle = (category: string) => {
       const baseStyle = "transition-colors text-white data-[state=active]:text-white data-[state=active]:shadow-inner data-[state=active]:border-2";
-      switch (category) {
-        case 'Sénior': return `${baseStyle} bg-red-500/80 hover:bg-red-500 data-[state=active]:bg-red-500 data-[state=active]:border-red-700`;
-        case 'U23': return `${baseStyle} bg-blue-500/80 hover:bg-blue-500 data-[state=active]:bg-blue-500 data-[state=active]:border-blue-700`;
-        case 'U19': return `${baseStyle} bg-green-500/80 hover:bg-green-500 data-[state=active]:bg-green-500 data-[state=active]:border-green-700`;
-        case 'U18': return `${baseStyle} bg-yellow-500/80 hover:bg-yellow-500 data-[state=active]:bg-yellow-500 data-[state=active]:border-yellow-700`;
-        case 'U17': return `${baseStyle} bg-purple-500/80 hover:bg-purple-500 data-[state=active]:bg-purple-500 data-[state=active]:border-purple-700`;
-        case 'U16': return `${baseStyle} bg-pink-500/80 hover:bg-pink-500 data-[state=active]:bg-pink-500 data-[state=active]:border-pink-700`;
-        case 'U15': return `${baseStyle} bg-indigo-500/80 hover:bg-indigo-500 data-[state=active]:bg-indigo-500 data-[state=active]:border-indigo-700`;
-        case 'U13': return `${baseStyle} bg-teal-500/80 hover:bg-teal-500 data-[state=active]:bg-teal-500 data-[state=active]:border-teal-700`;
-        case 'U11': return `${baseStyle} bg-orange-500/80 hover:bg-orange-500 data-[state=active]:bg-orange-500 data-[state=active]:border-orange-700`;
-        case 'U9': return `${baseStyle} bg-cyan-500/80 hover:bg-cyan-500 data-[state=active]:bg-cyan-500 data-[state=active]:border-cyan-700`;
-        case 'U7': return `${baseStyle} bg-lime-500/80 hover:bg-lime-500 data-[state=active]:bg-lime-500 data-[state=active]:border-lime-700`;
-        default: return `${baseStyle} bg-gray-500/80 hover:bg-gray-500 data-[state=active]:bg-gray-500 data-[state=active]:border-gray-700`;
+      const color = categoryColors[category] || 'bg-gray-500/80 hover:bg-gray-500 data-[state=active]:bg-gray-500 data-[state=active]:border-gray-700';
+      if (color.startsWith('hsl')) {
+          return `${baseStyle} hover:brightness-110 data-[state=active]:brightness-110`;
       }
+      return `${baseStyle} ${color}`;
     };
 
     const handleStatusChange = async (player: Player, newStatus: string) => {
@@ -707,7 +712,7 @@ export default function PlayersPage() {
                 <Tabs defaultValue={defaultCategory} className="w-full">
                     <TabsList className="h-auto p-1 bg-muted rounded-md text-muted-foreground justify-start items-center flex-wrap">
                          {Object.keys(groupedPlayers).map((category) => (
-                            <TabsTrigger key={category} value={category} className={cn("data-[state=active]:shadow-none", getCategoryStyle(category))}>{category}</TabsTrigger>
+                            <TabsTrigger key={category} value={category} style={{ backgroundColor: categoryColors[category] }} className={cn("data-[state=active]:shadow-none", getCategoryStyle(category))}>{category}</TabsTrigger>
                         ))}
                     </TabsList>
                     {Object.entries(groupedPlayers).map(([category, postes]) => (
@@ -738,7 +743,12 @@ export default function PlayersPage() {
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild>
                                                                     <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
-                                                                        <Badge variant="outline" className="text-xs cursor-pointer">{player.category || 'Sénior'}</Badge>
+                                                                        <Badge 
+                                                                            style={{ backgroundColor: categoryColors[player.category], color: 'white' }}
+                                                                            className="text-xs cursor-pointer border-transparent"
+                                                                        >
+                                                                            {player.category || 'Sénior'}
+                                                                        </Badge>
                                                                     </Button>
                                                                 </DropdownMenuTrigger>
                                                                 <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
