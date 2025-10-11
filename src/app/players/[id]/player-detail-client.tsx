@@ -72,6 +72,20 @@ const documentOptions = [
 
 const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise", "Américaine", "Russe", "Japonaise", "Chinoise", "Indienne", "Turque", "Égyptienne", "Nigériane", "Sud-africaine", "Ghanéenne"];
 
+const categoryColors: Record<string, string> = {
+  'Sénior': 'hsl(var(--chart-1))',
+  'U23': 'hsl(var(--chart-2))',
+  'U19': 'hsl(var(--chart-3))',
+  'U18': 'hsl(var(--chart-4))',
+  'U17': 'hsl(var(--chart-5))',
+  'U16': 'hsl(var(--chart-6))',
+  'U15': 'hsl(var(--chart-7))',
+  'U13': 'hsl(var(--chart-8))',
+  'U9': 'hsl(25 60% 45%)',
+  'U11': 'hsl(var(--chart-10))',
+  'U7': 'hsl(var(--chart-11))',
+};
+
 export function PlayerDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -293,7 +307,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                 </div>
                  <div className="flex items-center gap-4">
                     <Home className="h-5 w-5 text-muted-foreground" />
-                    <span>Catégorie : <Badge variant="secondary">{playerCategory}</Badge></span>
+                    <span>Catégorie : <Badge style={{ backgroundColor: categoryColors[playerCategory], color: 'white' }} className="border-transparent">{playerCategory}</Badge></span>
                 </div>
                 <div className="flex items-center gap-4">
                     <Shirt className="h-5 w-5 text-muted-foreground" />
