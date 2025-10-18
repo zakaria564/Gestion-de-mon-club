@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { Payment } from "@/lib/financial-data";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 
 export function PlayerPaymentHistoryClient({ memberName }: { memberName: string }) {
@@ -215,6 +215,26 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
                                 Compléter le paiement
                             </DropdownMenuItem>
                         )}
+                        <DropdownMenuSeparator />
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                                    Supprimer
+                                </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Cette action ne peut pas être annulée. Cela supprimera définitivement cette entrée de paiement.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(payment.id)}>Supprimer</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
