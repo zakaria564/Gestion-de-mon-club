@@ -7,7 +7,6 @@ const withPWA = require('@ducanh2912/next-pwa').default({
   register: true,
   skipWaiting: true,
   cacheStartUrl: false,
-  buildExcludes: [/manifest.webmanifest$/],
 });
 
 
