@@ -137,7 +137,8 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
     
     html2canvas(input, { 
         scale: 2,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        useCORS: true
     }).then(canvas => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
