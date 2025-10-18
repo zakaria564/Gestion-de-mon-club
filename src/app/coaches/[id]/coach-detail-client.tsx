@@ -25,6 +25,20 @@ import type { Player } from "@/lib/data";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
+const categoryColors: Record<string, string> = {
+  'Sénior': 'hsl(var(--chart-1))',
+  'U23': 'hsl(var(--chart-2))',
+  'U19': 'hsl(var(--chart-3))',
+  'U18': 'hsl(var(--chart-4))',
+  'U17': 'hsl(var(--chart-5))',
+  'U16': 'hsl(var(--chart-6))',
+  'U15': 'hsl(var(--chart-7))',
+  'U13': 'hsl(var(--chart-8))',
+  'U9': 'hsl(25 60% 45%)',
+  'U11': 'hsl(var(--chart-10))',
+  'U7': 'hsl(var(--chart-11))',
+};
+
 const documentSchema = z.object({
   name: z.string().min(1, "Le nom du document est requis."),
   url: z.string().url("Veuillez entrer une URL valide.").min(1, "L'URL est requise."),
@@ -241,7 +255,7 @@ export function CoachDetailClient({ id }: { id: string }) {
                 </div>
                  <div className="flex items-center gap-4">
                     <Home className="h-5 w-5 text-muted-foreground" />
-                    <span><Badge variant="secondary">{coach.category}</Badge></span>
+                    <span><Badge style={{ backgroundColor: categoryColors[coach.category], color: 'white' }} className="border-transparent">{coach.category}</Badge></span>
                 </div>
                 <div className="flex items-center gap-4">
                     <Award className="h-5 w-5 text-muted-foreground" />
@@ -556,5 +570,7 @@ export function CoachDetailClient({ id }: { id: string }) {
     
 
       
+
+    
 
     
