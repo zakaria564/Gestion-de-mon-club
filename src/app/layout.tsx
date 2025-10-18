@@ -90,7 +90,8 @@ export default function RootLayout({
        <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0ea5e9" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png"></link>
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="icon" href="https://img.logoipsum.com/288.svg" type="image/svg+xml" />
       </head>
       <body>
           <ThemeProvider
