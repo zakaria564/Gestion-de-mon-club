@@ -7,27 +7,34 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Banknote, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, UserCheck, PlusCircle, History, Download } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { useFinancialContext } from "@/context/financial-context";
+import { useCoachesContext } from "@/context/coaches-context";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClubContext } from "@/context/club-context";
 
 export function CoachPaymentDetailClient({ id }: { id: string }) {
-  const context = useFinancialContext();
+  const financialCtx = useFinancialContext();
+  const coachesCtx = useCoachesContext();
   const { clubInfo } = useClubContext();
   const receiptRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  if (!context) {
-    throw new Error("CoachPaymentDetailClient must be used within a FinancialProvider");
+  if (!financialCtx || !coachesCtx) {
+    throw new Error("CoachPaymentDetailClient must be used within FinancialProvider and CoachesProvider");
   }
 
-  const { loading, getCoachSalaryById } = context;
+  const { loading: financialLoading, getCoachSalaryById } = financialCtx;
+  const { loading: coachesLoading, coaches } = coachesCtx;
   
   const payment = useMemo(() => getCoachSalaryById(id), [id, getCoachSalaryById]);
+  const coach = useMemo(() => coaches.find(c => c.name === payment?.member), [coaches, payment]);
+
+  const loading = financialLoading || coachesLoading;
   
   const [formattedTransactions, setFormattedTransactions] = useState<{ id: number; date: string; amount: number; }[]>([]);
 
@@ -164,6 +171,10 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
             <CardHeader>
             <div className="flex flex-col sm:flex-row items-start justify-between mb-8 gap-4">
                     <div className="flex items-center gap-4">
+                        <Avatar className="h-16 w-16 border bg-white p-1">
+                           <AvatarImage src={clubInfo.logoUrl || undefined} alt="Club Logo" />
+                           <AvatarFallback>{clubInfo.name.substring(0, 2)}</AvatarFallback>
+                        </Avatar>
                         <div>
                             <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
                             <p className="text-muted-foreground">Reçu de Salaire</p>
@@ -175,9 +186,17 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
                     </div>
                 </div>
             <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                <div>
-                    <CardTitle className="text-2xl md:text-3xl font-bold flex items-center"><UserCheck className="mr-3 h-8 w-8" />{payment.member}</CardTitle>
-                    <CardDescription className="text-base md:text-lg text-muted-foreground mt-1">Détails du Salaire</CardDescription>
+                <div className="flex items-center gap-4">
+                    {coach && (
+                      <Avatar className="h-20 w-20 border">
+                        <AvatarImage src={coach.photo || undefined} alt={coach.name} />
+                        <AvatarFallback className="text-2xl">{coach.name.substring(0, 2)}</AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div>
+                        <CardTitle className="text-2xl md:text-3xl font-bold flex items-center"><UserCheck className="mr-3 h-8 w-8" />{payment.member}</CardTitle>
+                        <CardDescription className="text-base md:text-lg text-muted-foreground mt-1">Détails du Salaire</CardDescription>
+                    </div>
                 </div>
                 <div className="flex items-center gap-2 self-start sm:self-center">
                     {getStatusIcon(payment.status)}
@@ -246,6 +265,3 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
     </div>
   );
 }
-
-
-    

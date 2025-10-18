@@ -7,27 +7,34 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Banknote, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, User, History, Download } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { useFinancialContext } from "@/context/financial-context";
+import { usePlayersContext } from "@/context/players-context";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClubContext } from "@/context/club-context";
 
 export function PlayerPaymentDetailClient({ id }: { id: string }) {
-  const context = useFinancialContext();
+  const financialCtx = useFinancialContext();
+  const playersCtx = usePlayersContext();
   const { clubInfo } = useClubContext();
   const receiptRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   
-  if (!context) {
-    throw new Error("PlayerPaymentDetailClient must be used within a FinancialProvider");
+  if (!financialCtx || !playersCtx) {
+    throw new Error("PlayerPaymentDetailClient must be used within a FinancialProvider and PlayersProvider");
   }
 
-  const { loading, getPlayerPaymentById } = context;
+  const { loading: financialLoading, getPlayerPaymentById } = financialCtx;
+  const { players, loading: playersLoading } = playersCtx;
 
   const payment = useMemo(() => getPlayerPaymentById(id), [id, getPlayerPaymentById]);
+  const player = useMemo(() => players.find(p => p.name === payment?.member), [players, payment]);
+
+  const loading = financialLoading || playersLoading;
 
   const [formattedTransactions, setFormattedTransactions] = useState<{ id: number; date: string; amount: number; }[]>([]);
 
@@ -164,9 +171,15 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
             <div ref={receiptRef} className="p-4 bg-white text-black">
                 <CardHeader>
                 <div className="flex flex-col sm:flex-row items-start justify-between mb-8 gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
-                        <p className="text-muted-foreground">Reçu de Cotisation</p>
+                     <div className="flex items-center gap-4">
+                        <Avatar className="h-16 w-16 border bg-white p-1">
+                           <AvatarImage src={clubInfo.logoUrl || undefined} alt="Club Logo" />
+                           <AvatarFallback>{clubInfo.name.substring(0, 2)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
+                            <p className="text-muted-foreground">Reçu de Cotisation</p>
+                        </div>
                     </div>
                     <div className="text-left sm:text-right">
                         <p className="text-sm">Reçu n°: {payment.id.substring(0,8)}</p>
@@ -174,9 +187,17 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
                     </div>
                 </div>
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                    <div>
-                        <CardTitle className="text-2xl md:text-3xl font-bold flex items-center"><User className="mr-3 h-8 w-8" />{payment.member}</CardTitle>
-                        <CardDescription className="text-base md:text-lg text-muted-foreground mt-1">Détails de la Cotisation</CardDescription>
+                    <div className="flex items-center gap-4">
+                       {player && (
+                        <Avatar className="h-20 w-20 border">
+                            <AvatarImage src={player.photo || undefined} alt={player.name} />
+                            <AvatarFallback className="text-2xl">{player.name.substring(0, 2)}</AvatarFallback>
+                        </Avatar>
+                       )}
+                        <div>
+                            <CardTitle className="text-2xl md:text-3xl font-bold flex items-center"><User className="mr-3 h-8 w-8" />{payment.member}</CardTitle>
+                            <CardDescription className="text-base md:text-lg text-muted-foreground mt-1">Détails de la Cotisation</CardDescription>
+                        </div>
                     </div>
                     <div className="flex items-center gap-2 self-start sm:self-center">
                         {getStatusIcon(payment.status)}
