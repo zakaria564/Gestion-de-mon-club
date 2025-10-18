@@ -80,11 +80,11 @@ function AppProviders({ children }: { children: React.ReactNode }) {
 
 function AppHead() {
     const { clubInfo } = useClubContext();
-    const logo = clubInfo?.logoUrl || "/icons/icon-192x192.png";
+    const logo = clubInfo?.logoUrl || "/icon-192x192.png";
 
     return (
         <head>
-            <link rel="manifest" href="/manifest.json" />
+            <link rel="manifest" href="/manifest.webmanifest" />
             <meta name="theme-color" content="#0ea5e9" />
             <link rel="apple-touch-icon" href={logo} />
             <link rel="icon" href={logo} type="image/png" sizes="any" />

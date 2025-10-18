@@ -6,6 +6,8 @@ const withPWA = require('@ducanh2912/next-pwa').default({
   disable: process.env.NODE_ENV === 'development',
   register: true,
   skipWaiting: true,
+  cacheStartUrl: false,
+  buildExcludes: [/manifest.webmanifest$/],
 });
 
 
