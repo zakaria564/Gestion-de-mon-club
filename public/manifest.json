@@ -1,19 +1,19 @@
 {
-  "name": "Gestion de mon club",
-  "short_name": "Club App",
-  "description": "Une application pour gérer votre club de sport.",
+  "name": "Gestion Club",
+  "short_name": "Gestion Club",
+  "description": "Une application pour gérer tous les aspects de votre club de sport.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0ea5e9",
   "icons": [
     {
-      "src": "/icons/football club managemant.png",
+      "src": "https://firebasestorage.googleapis.com/v0/b/gestion-de-mon-club.appspot.com/o/logo.png?alt=media&token=24225576-96b6-4558-89f5-3739b7a48332",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icons/football club managemant.png",
+      "src": "https://firebasestorage.googleapis.com/v0/b/gestion-de-mon-club.appspot.com/o/logo.png?alt=media&token=24225576-96b6-4558-89f5-3739b7a48332",
       "sizes": "512x512",
       "type": "image/png"
     }

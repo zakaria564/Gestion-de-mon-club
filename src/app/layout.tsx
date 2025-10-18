@@ -9,7 +9,7 @@ import { CoachesProvider } from "@/context/coaches-context";
 import { CalendarProvider } from "@/context/calendar-context";
 import { FinancialProvider } from "@/context/financial-context";
 import { ResultsProvider } from "@/context/results-context";
-import { ClubProvider } from "@/context/club-context";
+import { ClubProvider, useClubContext } from "@/context/club-context";
 import { AppLayout } from "@/components/app-layout";
 import { Toaster } from "@/components/ui/toaster";
 import { usePathname, useRouter } from "next/navigation";
@@ -58,9 +58,7 @@ function AppProviders({ children }: { children: React.ReactNode }) {
             <CalendarProvider>
               <FinancialProvider>
                   <ResultsProvider>
-                    <ClubProvider>
-                        <AppLayout>{children}</AppLayout>
-                    </ClubProvider>
+                    <AppLayout>{children}</AppLayout>
                   </ResultsProvider>
               </FinancialProvider>
             </CalendarProvider>
@@ -80,6 +78,20 @@ function AppProviders({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AppHead() {
+    const { clubInfo } = useClubContext();
+    const logo = clubInfo?.logoUrl || "/icons/icon-192x192.png";
+
+    return (
+        <head>
+            <link rel="manifest" href="/manifest.json" />
+            <meta name="theme-color" content="#0ea5e9" />
+            <link rel="apple-touch-icon" href={logo} />
+            <link rel="icon" href={logo} type="image/png" sizes="any" />
+      </head>
+    )
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -87,12 +99,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={inter.variable} suppressHydrationWarning>
-       <head>
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#0ea5e9" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <link rel="icon" href="/icons/favicon.ico" type="image/x-icon" />
-      </head>
       <body>
           <ThemeProvider
             attribute="class"
@@ -102,6 +108,7 @@ export default function RootLayout({
           >
             <AuthProvider>
               <ClubProvider>
+                <AppHead />
                 <AppProviders>{children}</AppProviders>
               </ClubProvider>
             </AuthProvider>
