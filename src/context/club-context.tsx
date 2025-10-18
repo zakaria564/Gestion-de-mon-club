@@ -22,7 +22,7 @@ const ClubContext = createContext<ClubContextType | undefined>(undefined);
 
 export function ClubProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [clubInfo, setClubInfo] = useState<ClubInfo>({ name: "Gestion Club", logoUrl: "https://firebasestorage.googleapis.com/v0/b/gestion-de-mon-club.appspot.com/o/logo.png?alt=media&token=24225576-96b6-4558-89f5-3739b7a48332" });
+  const [clubInfo, setClubInfo] = useState<ClubInfo>({ name: "Gestion Club", logoUrl: "https://cdn-icons-png.flaticon.com/512/889/889442.png" });
   const [loading, setLoading] = useState(true);
 
   const getClubInfoDocRef = useCallback(() => {
@@ -33,7 +33,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
   const fetchClubInfo = useCallback(async () => {
     const docRef = getClubInfoDocRef();
     if (!docRef) {
-      setClubInfo({ name: "Gestion Club", logoUrl: "https://firebasestorage.googleapis.com/v0/b/gestion-de-mon-club.appspot.com/o/logo.png?alt=media&token=24225576-96b6-4558-89f5-3739b7a48332" });
+      setClubInfo({ name: "Gestion Club", logoUrl: "https://cdn-icons-png.flaticon.com/512/889/889442.png" });
       setLoading(false);
       return;
     }
@@ -43,7 +43,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
       if (docSnap.exists()) {
         setClubInfo(docSnap.data() as ClubInfo);
       } else {
-        const defaultInfo = { name: "Gestion Club", logoUrl: "https://firebasestorage.googleapis.com/v0/b/gestion-de-mon-club.appspot.com/o/logo.png?alt=media&token=24225576-96b6-4558-89f5-3739b7a48332" };
+        const defaultInfo = { name: "Gestion Club", logoUrl: "https://cdn-icons-png.flaticon.com/512/889/889442.png" };
         await setDoc(docRef, defaultInfo);
         setClubInfo(defaultInfo);
       }
@@ -58,7 +58,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
     if (user) {
       fetchClubInfo();
     } else {
-      setClubInfo({ name: "Gestion Club", logoUrl: "https://firebasestorage.googleapis.com/v0/b/gestion-de-mon-club.appspot.com/o/logo.png?alt=media&token=24225576-96b6-4558-89f5-3739b7a48332" });
+      setClubInfo({ name: "Gestion Club", logoUrl: "https://cdn-icons-png.flaticon.com/512/889/889442.png" });
       setLoading(false);
     }
   }, [user, fetchClubInfo]);
