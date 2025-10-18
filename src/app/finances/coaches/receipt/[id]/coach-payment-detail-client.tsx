@@ -201,9 +201,15 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
                         <span className="font-bold ml-auto text-green-600">{payment.paidAmount.toFixed(2)} DH</span>
                     </div>
                     <div className="flex items-center gap-4 text-base md:text-lg">
-                        <XCircle className="h-6 w-6 text-red-500" />
+                       {payment.remainingAmount > 0 ? (
+                            <XCircle className="h-6 w-6 text-red-500" />
+                        ) : (
+                            <CheckCircle className="h-6 w-6 text-green-500" />
+                        )}
                         <span>Reste à payer:</span>
-                        <span className="font-bold ml-auto text-red-600">{payment.remainingAmount.toFixed(2)} DH</span>
+                        <span className={`font-bold ml-auto ${payment.remainingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                            {payment.remainingAmount.toFixed(2)} DH
+                        </span>
                     </div>
                     <div className="flex items-center gap-4 text-base md:text-lg">
                         <CalendarIcon className="h-6 w-6 text-muted-foreground" />
