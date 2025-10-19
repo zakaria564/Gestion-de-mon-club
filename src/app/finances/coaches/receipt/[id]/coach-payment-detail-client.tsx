@@ -171,15 +171,9 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
         <div ref={receiptRef} className="p-4 bg-white text-black">
             <CardHeader>
             <div className="flex flex-col sm:flex-row items-start justify-between mb-8 gap-4">
-                    <div className="flex items-center gap-4">
-                        <Avatar className="h-16 w-16 border bg-white p-1">
-                           <AvatarImage src={clubInfo.logoUrl || undefined} alt="Club Logo" />
-                           <AvatarFallback>{clubInfo.name.substring(0, 2)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
-                            <p className="text-muted-foreground">Reçu de Salaire</p>
-                        </div>
+                    <div>
+                        <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
+                        <p className="text-muted-foreground">Reçu de Salaire</p>
                     </div>
                     <div className="text-left sm:text-right">
                         <p className="text-sm">Reçu n°: {payment.id.substring(0,8)}</p>
@@ -187,17 +181,9 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
                     </div>
                 </div>
             <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    {coach && (
-                      <Avatar className="h-20 w-20 border">
-                        <AvatarImage src={coach.photo || undefined} alt={coach.name} />
-                        <AvatarFallback className="text-2xl">{coach.name.substring(0, 2)}</AvatarFallback>
-                      </Avatar>
-                    )}
-                    <div>
-                        <CardTitle className="text-2xl md:text-3xl font-bold flex items-center"><UserCheck className="mr-3 h-8 w-8" />{payment.member}</CardTitle>
-                        <CardDescription className="text-base md:text-lg text-muted-foreground mt-1">Détails du Salaire</CardDescription>
-                    </div>
+                <div>
+                    <CardTitle className="text-2xl md:text-3xl font-bold flex items-center"><UserCheck className="mr-3 h-8 w-8" />{payment.member}</CardTitle>
+                    <CardDescription className="text-base md:text-lg text-muted-foreground mt-1">Détails du Salaire</CardDescription>
                 </div>
                 <div className="flex items-center gap-2 self-start sm:self-center">
                     {getStatusIcon(payment.status)}
