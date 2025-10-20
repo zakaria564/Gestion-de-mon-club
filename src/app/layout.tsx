@@ -77,7 +77,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
 }
 
 function AppHead() {
-    const logo = "https://image.noelshack.com/fichiers/2025/43/1/1760985967-football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34-screen.jpg";
+    const logo = "https://image.noelshack.com/fichiers/2025/42/6/1760815420-football-logo-design-template-bebebf8ff1c25b66b504d37afaee99f0-screen.jpg";
 
     return (
         <head>
