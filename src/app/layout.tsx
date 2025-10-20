@@ -4,11 +4,11 @@
 import * as React from "react";
 import { Inter } from "next/font/google";
 import { AuthProvider, useAuth } from "@/context/auth-context";
-import { PlayersProvider } from "@/context/players-context";
-import { CoachesProvider } from "@/context/coaches-context";
-import { CalendarProvider } from "@/context/calendar-context";
-import { FinancialProvider } from "@/context/financial-context";
-import { ResultsProvider } from "@/context/results-context";
+import { PlayersProvider, usePlayersContext } from "@/context/players-context";
+import { CoachesProvider, useCoachesContext } from "@/context/coaches-context";
+import { CalendarProvider, useCalendarContext } from "@/context/calendar-context";
+import { FinancialProvider, useFinancialContext } from "@/context/financial-context";
+import { ResultsProvider, useResultsContext } from "@/context/results-context";
 import { ClubProvider, useClubContext } from "@/context/club-context";
 import { AppLayout } from "@/components/app-layout";
 import { Toaster } from "@/components/ui/toaster";
@@ -24,14 +24,23 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-function AppProviders({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+function AppContent({ children }: { children: React.ReactNode }) {
+  const { user, loading: authLoading } = useAuth();
+  const { loading: clubLoading } = useClubContext();
+  const { loading: playersLoading } = usePlayersContext();
+  const { loading: coachesLoading } = useCoachesContext();
+  const { loading: calendarLoading } = useCalendarContext();
+  const { loading: financialLoading } = useFinancialContext();
+  const { loading: resultsLoading } = useResultsContext();
+  
   const pathname = usePathname();
   const router = useRouter();
   const isAuthPage = ["/login", "/signup", "/forgot-password"].includes(pathname);
 
+  const isLoading = authLoading || clubLoading || playersLoading || coachesLoading || calendarLoading || financialLoading || resultsLoading;
+
   React.useEffect(() => {
-    if (loading) return; 
+    if (authLoading) return; 
 
     if (user && isAuthPage) {
       router.push('/');
@@ -40,10 +49,10 @@ function AppProviders({ children }: { children: React.ReactNode }) {
     if (!user && !isAuthPage) {
       router.push('/login');
     }
-  }, [user, loading, isAuthPage, pathname, router]);
+  }, [user, authLoading, isAuthPage, pathname, router]);
 
-
-  if (loading) {
+  // Global loading state for the whole app
+  if (isLoading && !isAuthPage) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <ClubLogo className="size-12" imageClassName="animate-pulse" />
@@ -59,6 +68,7 @@ function AppProviders({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
+  // Fallback for edge cases, e.g. initial load before routing logic kicks in
   return (
     <div className="flex h-screen w-full items-center justify-center">
         <ClubLogo className="size-12" imageClassName="animate-pulse" />
@@ -102,7 +112,7 @@ export default function RootLayout({
                         <FinancialProvider>
                             <ResultsProvider>
                               <AppHead />
-                              <AppProviders>{children}</AppProviders>
+                              <AppContent>{children}</AppContent>
                             </ResultsProvider>
                         </FinancialProvider>
                       </CalendarProvider>
