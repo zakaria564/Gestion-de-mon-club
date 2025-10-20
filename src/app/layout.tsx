@@ -50,21 +50,9 @@ function AppProviders({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-
+  
   if (user && !isAuthPage) {
-    return (
-        <PlayersProvider>
-          <CoachesProvider>
-            <CalendarProvider>
-              <FinancialProvider>
-                  <ResultsProvider>
-                    <AppLayout>{children}</AppLayout>
-                  </ResultsProvider>
-              </FinancialProvider>
-            </CalendarProvider>
-          </CoachesProvider>
-        </PlayersProvider>
-    );
+    return <AppLayout>{children}</AppLayout>;
   }
   
   if (!user && isAuthPage) {
@@ -107,10 +95,20 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <AuthProvider>
-              <ClubProvider>
-                <AppHead />
-                <AppProviders>{children}</AppProviders>
-              </ClubProvider>
+                <ClubProvider>
+                  <PlayersProvider>
+                    <CoachesProvider>
+                      <CalendarProvider>
+                        <FinancialProvider>
+                            <ResultsProvider>
+                              <AppHead />
+                              <AppProviders>{children}</AppProviders>
+                            </ResultsProvider>
+                        </FinancialProvider>
+                      </CalendarProvider>
+                    </CoachesProvider>
+                  </PlayersProvider>
+                </ClubProvider>
             </AuthProvider>
             <Toaster />
         </ThemeProvider>
