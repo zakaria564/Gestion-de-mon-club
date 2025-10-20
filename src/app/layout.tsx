@@ -77,8 +77,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
 }
 
 function AppHead() {
-    const { clubInfo } = useClubContext();
-    const logo = clubInfo?.logoUrl || "/icon-192x192.png";
+    const logo = "https://image.noelshack.com/fichiers/2025/43/1/1760985967-football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34-screen.jpg";
 
     return (
         <head>

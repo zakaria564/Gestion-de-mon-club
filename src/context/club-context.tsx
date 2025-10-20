@@ -22,7 +22,7 @@ const ClubContext = createContext<ClubContextType | undefined>(undefined);
 
 export function ClubProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [clubInfo, setClubInfo] = useState<ClubInfo>({ name: "Gestion Club", logoUrl: "https://image.noelshack.com/fichiers/2025/43/1/1760985967-football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34-screen.jpg" });
+  const [clubInfo, setClubInfo] = useState<ClubInfo>({ name: "Gestion Club", logoUrl: "https://img.logoipsum.com/289.svg" });
   const [loading, setLoading] = useState(true);
 
   const getClubInfoDocRef = useCallback(() => {
@@ -33,7 +33,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
   const fetchClubInfo = useCallback(async () => {
     const docRef = getClubInfoDocRef();
     if (!docRef) {
-      setClubInfo({ name: "Gestion Club", logoUrl: "https://image.noelshack.com/fichiers/2025/43/1/1760985967-football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34-screen.jpg" });
+      setClubInfo({ name: "Gestion Club", logoUrl: "https://img.logoipsum.com/289.svg" });
       setLoading(false);
       return;
     }
@@ -43,7 +43,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
       if (docSnap.exists()) {
         setClubInfo(docSnap.data() as ClubInfo);
       } else {
-        const defaultInfo = { name: "Gestion Club", logoUrl: "https://image.noelshack.com/fichiers/2025/43/1/1760985967-football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34-screen.jpg" };
+        const defaultInfo = { name: "Gestion Club", logoUrl: "https://img.logoipsum.com/289.svg" };
         await setDoc(docRef, defaultInfo);
         setClubInfo(defaultInfo);
       }
@@ -58,7 +58,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
     if (user) {
       fetchClubInfo();
     } else {
-      setClubInfo({ name: "Gestion Club", logoUrl: "https://image.noelshack.com/fichiers/2025/43/1/1760985967-football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34-screen.jpg" });
+      setClubInfo({ name: "Gestion Club", logoUrl: "https://img.logoipsum.com/289.svg" });
       setLoading(false);
     }
   }, [user, fetchClubInfo]);
