@@ -1,24 +1,4 @@
 
-// Import the functions you need from the SDKs you need
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
-import { getAuth } from "firebase/auth";
-
-// Your web app's Firebase configuration - Hardcoded for reliability
-// IMPORTANT: For this application to work, you must configure your Firestore
-// security rules in the Firebase Console to allow read and write operations.
-// By default, all access is denied.
-const firebaseConfig = {
-  apiKey: "AIzaSyBhwLEcWSSt3G3L9sgGefVW8GKoOgPG_GA",
-  authDomain: "gestion-de-mon-club.firebaseapp.com",
-  projectId: "gestion-de-mon-club",
-  storageBucket: "gestion-de-mon-club.appspot.com",
-  messagingSenderId: "1047250842586",
-  appId: "1:1047250842586:web:2d2b9c6a12d776fdb286e3"
-};
-
-
 // #############################################################################
 // # ÉTAPES DE CONFIGURATION DE FIREBASE                                       #
 // #############################################################################
@@ -63,6 +43,25 @@ const firebaseConfig = {
 // #    }
 // #
 // #############################################################################
+
+// Import the functions you need from the SDKs you need
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+import { getAuth } from "firebase/auth";
+
+// Your web app's Firebase configuration - Hardcoded for reliability
+// IMPORTANT: For this application to work, you must configure your Firestore
+// security rules in the Firebase Console to allow read and write operations.
+// By default, all access is denied.
+const firebaseConfig = {
+  apiKey: "AIzaSyBhwLEcWSSt3G3L9sgGefVW8GKoOgPG_GA",
+  authDomain: "gestion-de-mon-club.firebaseapp.com",
+  projectId: "gestion-de-mon-club",
+  storageBucket: "gestion-de-mon-club.appspot.com",
+  messagingSenderId: "1047250842586",
+  appId: "1:1047250842586:web:2d2b9c6a12d776fdb286e3"
+};
 
 
 // Initialize Firebase
