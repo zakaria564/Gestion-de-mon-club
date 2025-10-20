@@ -96,6 +96,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={inter.variable} suppressHydrationWarning>
+      <AppHead />
       <body>
           <ThemeProvider
             attribute="class"
@@ -110,7 +111,7 @@ export default function RootLayout({
                       <CalendarProvider>
                         <FinancialProvider>
                             <ResultsProvider>
-                              <AppHead />
+                              
                               <AppContent>{children}</AppContent>
                             </ResultsProvider>
                         </FinancialProvider>
