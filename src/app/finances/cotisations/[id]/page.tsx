@@ -1,7 +1,9 @@
 
 import { PlayerPaymentHistoryClient } from './player-payment-history-client';
+import React from 'react';
 
-export default function PlayerPaymentHistoryPage({ params }: { params: { id: string } }) {
+export default function PlayerPaymentHistoryPage(props: { params: { id: string } }) {
+  const params = React.use(props.params);
   const { id: memberName } = params;
 
   if (!memberName) {
