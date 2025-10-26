@@ -96,8 +96,9 @@ export default function OpponentsPage() {
         </h2>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un adversaire
+             <Button>
+              <PlusCircle className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Ajouter un adversaire</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
