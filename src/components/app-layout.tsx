@@ -24,6 +24,7 @@ import {
   Trophy,
   Banknote,
   Settings,
+  BarChart,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { ClubLogo } from "@/components/club-logo";
@@ -49,6 +50,7 @@ const navItems = [
   { href: "/coaches", label: "Entraîneurs", icon: UserCheck },
   { href: "/calendar", label: "Calendrier", icon: Calendar },
   { href: "/results", label: "Résultats", icon: Trophy },
+  { href: "/ranking", label: "Classement", icon: BarChart },
   { href: "/finances", label: "Paiements", icon: Banknote },
   { href: "/settings", label: "Paramètres", icon: Settings },
 ];
