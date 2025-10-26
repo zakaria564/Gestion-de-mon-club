@@ -143,7 +143,9 @@ export default function CalendarPage() {
             setSelectedResult(existingResult);
             setResultDetailsOpen(true);
         } else {
-            openAddResultDialog(event);
+            // Keep details open to allow adding result, editing, or deleting
+            setSelectedEvent(event);
+            setDetailsOpen(true);
         }
     } else {
         setSelectedEvent(event);
@@ -530,37 +532,36 @@ export default function CalendarPage() {
                   <p><strong>Lieu:</strong> {selectedEvent.location}</p>
                   {selectedEvent.opponent && <p><strong>Adversaire:</strong> {selectedEvent.opponent}</p>}
               </div>
-              <DialogFooter className="justify-end gap-2">
-                 {isPast(parseISO(selectedEvent.date)) && selectedEvent.type.toLowerCase().includes("match") ? (
+              <DialogFooter className="flex-wrap justify-end gap-2">
+                 {isPast(parseISO(selectedEvent.date)) && selectedEvent.type.toLowerCase().includes("match") && (
                     <Button variant="outline" onClick={() => openAddResultDialog(selectedEvent)}>
-                      <PlusCircle className="mr-2 h-4 w-4" /> Ajouter le score final
+                      <PlusCircle className="mr-2 h-4 w-4" /> Ajouter le score
                     </Button>
-                  ) : (
-                    <>
-                      <Button variant="outline" onClick={(e) => openEditEventDialog(selectedEvent, e)}>
-                          <Edit className="mr-2 h-4 w-4" /> Modifier
-                      </Button>
-                      <AlertDialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
-                          <AlertDialogTrigger asChild>
-                              <Button variant="destructive">
-                                  <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                              </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                              <AlertDialogHeader>
-                              <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                  Cette action ne peut pas être annulée. Cela supprimera définitivement cet événement.
-                              </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                              <AlertDialogCancel>Annuler</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDeleteEvent(selectedEvent.id)}>Supprimer</AlertDialogAction>
-                              </AlertDialogFooter>
-                          </AlertDialogContent>
-                      </AlertDialog>
-                    </>
                   )}
+                  
+                  <Button variant="outline" onClick={(e) => openEditEventDialog(selectedEvent, e)}>
+                      <Edit className="mr-2 h-4 w-4" /> Modifier
+                  </Button>
+                  
+                  <AlertDialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
+                      <AlertDialogTrigger asChild>
+                          <Button variant="destructive">
+                              <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                          </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                          <AlertDialogHeader>
+                          <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                              Cette action ne peut pas être annulée. Cela supprimera définitivement cet événement.
+                          </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteEvent(selectedEvent.id)}>Supprimer</AlertDialogAction>
+                          </AlertDialogFooter>
+                      </AlertDialogContent>
+                  </AlertDialog>
               </DialogFooter>
             </>
           )}
@@ -658,5 +659,3 @@ export default function CalendarPage() {
 }
 
     
-
-  
