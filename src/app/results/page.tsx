@@ -283,14 +283,14 @@ export default function ResultsPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredResults.map((result) => {
                 const isPast = new Date(result.date) < new Date();
-                const team1 = result.homeOrAway === 'home' ? clubInfo.name : result.opponent;
-                const team2 = result.homeOrAway === 'home' ? result.opponent : clubInfo.name;
+                const homeTeam = result.homeOrAway === 'home' ? clubInfo.name : result.opponent;
+                const awayTeam = result.homeOrAway === 'home' ? result.opponent : clubInfo.name;
                 return (
                 <Card key={result.id} className="flex flex-col">
                     <CardHeader>
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
-                                <CardTitle className="text-lg">{team1} vs {team2}</CardTitle>
+                                <CardTitle className="text-lg">{homeTeam} vs {awayTeam}</CardTitle>
                                 <CardDescription>{result.date}</CardDescription>
                             </div>
                             <div className={`text-2xl font-bold p-2 rounded-md text-white ${getMatchOutcome(result)}`}>
@@ -424,11 +424,11 @@ export default function ResultsPage() {
                                 <RadioGroup defaultValue="home" value={newResult.homeOrAway} onValueChange={handleRadioChange} className="flex gap-4">
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="home" id="home" />
-                                        <Label htmlFor="home">Domicile ({clubInfo.name} vs Opponent)</Label>
+                                        <Label htmlFor="home">Domicile ({clubInfo.name} vs Adversaire)</Label>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="away" id="away" />
-                                        <Label htmlFor="away">Extérieur (Opponent vs {clubInfo.name})</Label>
+                                        <Label htmlFor="away">Extérieur (Adversaire vs {clubInfo.name})</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
