@@ -77,14 +77,15 @@ export default function RankingPage() {
         return; // Skip invalid scores
       }
 
-      const [homeGoals, awayGoals] = scoreParts;
-      const homeTeam = clubInfo.name;
-      const awayTeam = result.opponent;
+      const isHome = result.homeOrAway === 'home';
+      const homeTeam = isHome ? clubInfo.name : result.opponent;
+      const awayTeam = isHome ? result.opponent : clubInfo.name;
+      const homeGoals = scoreParts[0];
+      const awayGoals = scoreParts[1];
 
       initializeTeam(homeTeam);
       initializeTeam(awayTeam);
-
-      // Update stats for both teams
+      
       stats[homeTeam].played += 1;
       stats[awayTeam].played += 1;
       stats[homeTeam].goalsFor += homeGoals;

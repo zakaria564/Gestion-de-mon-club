@@ -23,6 +23,7 @@ export interface Result {
   assists: PerformanceDetail[];
   category: string;
   teamCategory: string;
+  homeOrAway: 'home' | 'away';
 }
 
 export type NewResult = Omit<Result, 'id' | 'uid'>;

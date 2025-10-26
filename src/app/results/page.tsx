@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { usePlayersContext } from "@/context/players-context";
 import type { Player } from "@/lib/data";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical'];
@@ -72,6 +73,7 @@ export default function ResultsPage() {
     assists: [],
     category: 'Match Championnat',
     teamCategory: 'Sénior',
+    homeOrAway: 'home',
   });
   
   useEffect(() => {
@@ -88,6 +90,10 @@ export default function ResultsPage() {
   const handleSelectChange = (field: 'category' | 'teamCategory', value: string) => {
     setNewResult(prev => ({ ...prev, [field]: value }));
   };
+
+  const handleRadioChange = (value: "home" | "away") => {
+    setNewResult(prev => ({...prev, homeOrAway: value}));
+  }
   
   const handleDynamicListChange = (
     listName: 'scorers' | 'assists',
@@ -119,7 +125,7 @@ export default function ResultsPage() {
   };
   
   const resetForm = () => {
-    setNewResult({ opponent: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior' });
+    setNewResult({ opponent: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', homeOrAway: 'home' });
     setOpen(false);
     setIsEditing(false);
     setEditingResult(null);
@@ -156,6 +162,7 @@ export default function ResultsPage() {
         teamCategory: result.teamCategory || 'Sénior',
         scorers: Array.isArray(result.scorers) ? result.scorers : [],
         assists: result.assists && Array.isArray(result.assists) ? result.assists : [],
+        homeOrAway: result.homeOrAway || 'home',
     });
     setOpen(true);
   }
@@ -200,11 +207,15 @@ export default function ResultsPage() {
     setOpponentFilter('all');
   }
   
-  const getMatchOutcome = (score: string) => {
-    const parts = score.split('-').map(s => parseInt(s.trim()));
+  const getMatchOutcome = (result: Result) => {
+    const parts = result.score.split('-').map(s => parseInt(s.trim()));
     if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return 'bg-gray-500';
-    if (parts[0] > parts[1]) return 'bg-green-500'; // Victoire
-    if (parts[0] < parts[1]) return 'bg-red-500'; // Défaite
+    
+    const usdsGoals = result.homeOrAway === 'home' ? parts[0] : parts[1];
+    const opponentGoals = result.homeOrAway === 'home' ? parts[1] : parts[0];
+
+    if (usdsGoals > opponentGoals) return 'bg-green-500'; // Victoire
+    if (usdsGoals < opponentGoals) return 'bg-red-500'; // Défaite
     return 'bg-yellow-500'; // Nul
   }
 
@@ -270,15 +281,17 @@ export default function ResultsPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredResults.map((result) => {
                 const isPast = new Date(result.date) < new Date();
+                const team1 = result.homeOrAway === 'home' ? 'USDS' : result.opponent;
+                const team2 = result.homeOrAway === 'home' ? result.opponent : 'USDS';
                 return (
                 <Card key={result.id} className="flex flex-col">
                     <CardHeader>
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
-                                <CardTitle className="text-lg">USDS vs {result.opponent}</CardTitle>
+                                <CardTitle className="text-lg">{team1} vs {team2}</CardTitle>
                                 <CardDescription>{result.date}</CardDescription>
                             </div>
-                            <div className={`text-2xl font-bold p-2 rounded-md text-white ${getMatchOutcome(result.score)}`}>
+                            <div className={`text-2xl font-bold p-2 rounded-md text-white ${getMatchOutcome(result)}`}>
                                 {result.score}
                             </div>
                         </div>
@@ -336,13 +349,16 @@ export default function ResultsPage() {
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Détails du match USDS vs {selectedResult?.opponent}</DialogTitle>
+                    <DialogTitle>Détails du match</DialogTitle>
                      <DialogDescription>
                         {selectedResult?.date} - Score final : {selectedResult?.score}
                     </DialogDescription>
                 </DialogHeader>
                 {selectedResult && (
                     <div className="space-y-4 py-4">
+                       <p>
+                        <strong>Match :</strong> {selectedResult.homeOrAway === 'home' ? `USDS vs ${selectedResult.opponent}` : `${selectedResult.opponent} vs USDS`}
+                      </p>
                       <p>
                         <strong>Lieu :</strong> {selectedResult.location || "Non spécifié"}
                       </p>
@@ -401,6 +417,19 @@ export default function ResultsPage() {
                               <Label htmlFor="opponent">Adversaire</Label>
                               <Input id="opponent" value={newResult.opponent} onChange={handleInputChange} required />
                           </div>
+                           <div className="grid gap-2">
+                                <Label>Domicile / Extérieur</Label>
+                                <RadioGroup defaultValue="home" value={newResult.homeOrAway} onValueChange={handleRadioChange} className="flex gap-4">
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="home" id="home" />
+                                        <Label htmlFor="home">Domicile (USDS vs Opponent)</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="away" id="away" />
+                                        <Label htmlFor="away">Extérieur (Opponent vs USDS)</Label>
+                                    </div>
+                                </RadioGroup>
+                            </div>
                           <div className="grid grid-cols-2 gap-4">
                               <div className="grid gap-2">
                                   <Label htmlFor="date">Date</Label>
@@ -466,10 +495,3 @@ export default function ResultsPage() {
     </div>
   );
 }
-
-
-    
-
-    
-
-    
