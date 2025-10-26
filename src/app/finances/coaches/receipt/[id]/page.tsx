@@ -1,7 +1,8 @@
 
 import { CoachPaymentDetailClient } from './coach-payment-detail-client';
 
-export default function CoachPaymentReceiptPage({ params: { id } }: { params: { id: string } }) {
+export default function CoachPaymentReceiptPage({ params }: { params: { id: string } }) {
+  const { id } = params;
 
   if (!id) {
     return <div>Chargement...</div>;

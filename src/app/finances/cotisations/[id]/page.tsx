@@ -1,7 +1,8 @@
 
 import { PlayerPaymentHistoryClient } from './player-payment-history-client';
 
-export default function PlayerPaymentHistoryPage({ params: { id: memberName } }: { params: { id: string } }) {
+export default function PlayerPaymentHistoryPage({ params }: { params: { id: string } }) {
+  const { id: memberName } = params;
 
   if (!memberName) {
     return <div>Chargement...</div>;
