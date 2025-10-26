@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useResultsContext, NewResult, Result, PerformanceDetail } from "@/context/results-context";
-import { Edit, PlusCircle, Trash2, X, FilterX, Eye } from "lucide-react";
+import { Edit, PlusCircle, Trash2, X, FilterX, Eye, MoreHorizontal } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -25,6 +25,7 @@ import type { Player } from "@/lib/data";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useClubContext } from "@/context/club-context";
 import { useOpponentsContext } from "@/context/opponents-context";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical'];
@@ -438,31 +439,45 @@ export default function ResultsPage() {
                         <p className="text-sm text-muted-foreground pt-2">{result.location}</p>
                     </CardContent>
                     <CardFooter className="justify-end gap-2">
-                         <Button variant="outline" size="sm" onClick={() => handleShowDetails(result)}>
-                            <Eye className="mr-2 h-4 w-4" /> Détails
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => openEditDialog(result)}>
-                            <Edit className="mr-2 h-4 w-4" /> Modifier
-                        </Button>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="destructive" size="icon" className="h-9 w-9">
-                                  <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Cette action ne peut pas être annulée. Cela supprimera définitivement ce résultat.
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete(result.id)}>Supprimer</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Ouvrir le menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleShowDetails(result)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Détails
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openEditDialog(result)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Modifier
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      Supprimer
+                                  </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                  <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                      Cette action ne peut pas être annulée. Cela supprimera définitivement ce résultat.
+                                  </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDelete(result.id)}>Supprimer</AlertDialogAction>
+                                  </AlertDialogFooter>
+                              </AlertDialogContent>
                           </AlertDialog>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </CardFooter>
                 </Card>
               )})}
