@@ -23,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { Player } from "@/lib/data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TeamStats {
   team: string;
@@ -37,6 +38,7 @@ interface TeamStats {
 }
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+const matchTypes = ['Match Championnat', 'Match Coupe', 'Match Tournoi'];
 
 export default function RankingPage() {
   const resultsContext = useResultsContext();
@@ -48,12 +50,13 @@ export default function RankingPage() {
 
   const { results, loading } = resultsContext;
   const { clubInfo } = clubContext;
-  const [categoryFilter, setCategoryFilter] = useState('Sénior');
+  const [teamCategoryFilter, setTeamCategoryFilter] = useState('Sénior');
+  const [activeTab, setActiveTab] = useState(matchTypes[0]);
   
   const rankings = useMemo(() => {
     const stats: { [key: string]: TeamStats } = {};
 
-    const filteredResults = results.filter(result => result.teamCategory === categoryFilter && result.category === 'Match Championnat');
+    const filteredResults = results.filter(result => result.teamCategory === teamCategoryFilter && result.category === activeTab);
 
     const initializeTeam = (teamName: string) => {
       if (!stats[teamName]) {
@@ -130,7 +133,7 @@ export default function RankingPage() {
             return b.goalsFor - a.goalsFor;
         });
 
-  }, [results, clubInfo.name, categoryFilter]);
+  }, [results, clubInfo.name, teamCategoryFilter, activeTab]);
 
   if (loading) {
      return (
@@ -174,7 +177,7 @@ export default function RankingPage() {
       </div>
 
        <div className="flex items-center gap-4">
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <Select value={teamCategoryFilter} onValueChange={setTeamCategoryFilter}>
                 <SelectTrigger className="w-full sm:w-[200px]">
                     <SelectValue placeholder="Filtrer par catégorie" />
                 </SelectTrigger>
@@ -185,57 +188,68 @@ export default function RankingPage() {
                 </SelectContent>
             </Select>
         </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Classement du Championnat</CardTitle>
-          <CardDescription>
-            Classement des équipes pour la catégorie {categoryFilter}.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[50px]">#</TableHead>
-                <TableHead>Équipe</TableHead>
-                <TableHead className="text-center">J</TableHead>
-                <TableHead className="text-center">G</TableHead>
-                <TableHead className="text-center">N</TableHead>
-                <TableHead className="text-center">P</TableHead>
-                <TableHead className="text-center hidden sm:table-cell">BP</TableHead>
-                <TableHead className="text-center hidden sm:table-cell">BC</TableHead>
-                <TableHead className="text-center hidden sm:table-cell">DB</TableHead>
-                <TableHead className="text-center">Pts</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rankings.length > 0 ? (
-                 rankings.map((stat, index) => (
-                    <TableRow key={stat.team} className={stat.team === clubInfo.name ? "bg-accent/50" : ""}>
-                        <TableCell className="font-medium">{index + 1}</TableCell>
-                        <TableCell className="font-medium">{stat.team}</TableCell>
-                        <TableCell className="text-center">{stat.played}</TableCell>
-                        <TableCell className="text-center">{stat.wins}</TableCell>
-                        <TableCell className="text-center">{stat.draws}</TableCell>
-                        <TableCell className="text-center">{stat.losses}</TableCell>
-                        <TableCell className="text-center hidden sm:table-cell">{stat.goalsFor}</TableCell>
-                        <TableCell className="text-center hidden sm:table-cell">{stat.goalsAgainst}</TableCell>
-                        <TableCell className="text-center hidden sm:table-cell">{stat.goalDifference}</TableCell>
-                        <TableCell className="text-center font-bold">{stat.points}</TableCell>
-                    </TableRow>
-                ))
-               ) : (
-                <TableRow>
-                  <TableCell colSpan={10} className="text-center">
-                    Aucun résultat de championnat trouvé pour cette catégorie.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+        
+       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList>
+            {matchTypes.map(type => (
+              <TabsTrigger key={type} value={type}>{type.replace('Match ', '')}</TabsTrigger>
+            ))}
+          </TabsList>
+          {matchTypes.map(type => (
+             <TabsContent key={type} value={type}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Classement - {type.replace('Match ', '')}</CardTitle>
+                    <CardDescription>
+                      Classement des équipes pour la catégorie {teamCategoryFilter}.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[50px]">#</TableHead>
+                          <TableHead>Équipe</TableHead>
+                          <TableHead className="text-center">J</TableHead>
+                          <TableHead className="text-center">G</TableHead>
+                          <TableHead className="text-center">N</TableHead>
+                          <TableHead className="text-center">P</TableHead>
+                          <TableHead className="text-center hidden sm:table-cell">BP</TableHead>
+                          <TableHead className="text-center hidden sm:table-cell">BC</TableHead>
+                          <TableHead className="text-center hidden sm:table-cell">DB</TableHead>
+                          <TableHead className="text-center">Pts</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {rankings.length > 0 ? (
+                          rankings.map((stat, index) => (
+                              <TableRow key={stat.team} className={stat.team === clubInfo.name ? "bg-accent/50" : ""}>
+                                  <TableCell className="font-medium">{index + 1}</TableCell>
+                                  <TableCell className="font-medium">{stat.team}</TableCell>
+                                  <TableCell className="text-center">{stat.played}</TableCell>
+                                  <TableCell className="text-center">{stat.wins}</TableCell>
+                                  <TableCell className="text-center">{stat.draws}</TableCell>
+                                  <TableCell className="text-center">{stat.losses}</TableCell>
+                                  <TableCell className="text-center hidden sm:table-cell">{stat.goalsFor}</TableCell>
+                                  <TableCell className="text-center hidden sm:table-cell">{stat.goalsAgainst}</TableCell>
+                                  <TableCell className="text-center hidden sm:table-cell">{stat.goalDifference}</TableCell>
+                                  <TableCell className="text-center font-bold">{stat.points}</TableCell>
+                              </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={10} className="text-center">
+                              Aucun résultat de type "{type.replace('Match ', '')}" trouvé pour cette catégorie.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+             </TabsContent>
+          ))}
+       </Tabs>
     </div>
   );
 }
