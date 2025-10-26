@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { usePlayersContext } from "@/context/players-context";
 import type { Player } from "@/lib/data";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useClubContext } from "@/context/club-context";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical'];
@@ -44,14 +45,15 @@ const categoryColors: Record<string, string> = {
 export default function ResultsPage() {
   const context = useResultsContext();
   const playersContext = usePlayersContext();
+  const clubContext = useClubContext();
 
-
-  if (!context || !playersContext) {
-    throw new Error("ResultsPage must be used within a ResultsProvider and PlayersProvider");
+  if (!context || !playersContext || !clubContext) {
+    throw new Error("ResultsPage must be used within a ResultsProvider, PlayersProvider and ClubProvider");
   }
 
   const { results, loading, addResult, updateResult, deleteResult } = context;
   const { players, loading: playersLoading } = playersContext;
+  const { clubInfo } = clubContext;
 
   const [open, setOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -256,7 +258,7 @@ export default function ResultsPage() {
             )}
         </div>
 
-        {loading || playersLoading ? (
+        {(loading || playersLoading) ? (
              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({length: 4}).map((_, cardIndex) => (
                 <Card key={cardIndex}>
@@ -281,8 +283,8 @@ export default function ResultsPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredResults.map((result) => {
                 const isPast = new Date(result.date) < new Date();
-                const team1 = result.homeOrAway === 'home' ? 'USDS' : result.opponent;
-                const team2 = result.homeOrAway === 'home' ? result.opponent : 'USDS';
+                const team1 = result.homeOrAway === 'home' ? clubInfo.name : result.opponent;
+                const team2 = result.homeOrAway === 'home' ? result.opponent : clubInfo.name;
                 return (
                 <Card key={result.id} className="flex flex-col">
                     <CardHeader>
@@ -357,7 +359,7 @@ export default function ResultsPage() {
                 {selectedResult && (
                     <div className="space-y-4 py-4">
                        <p>
-                        <strong>Match :</strong> {selectedResult.homeOrAway === 'home' ? `USDS vs ${selectedResult.opponent}` : `${selectedResult.opponent} vs USDS`}
+                        <strong>Match :</strong> {selectedResult.homeOrAway === 'home' ? `${clubInfo.name} vs ${selectedResult.opponent}` : `${selectedResult.opponent} vs ${clubInfo.name}`}
                       </p>
                       <p>
                         <strong>Lieu :</strong> {selectedResult.location || "Non spécifié"}
@@ -422,11 +424,11 @@ export default function ResultsPage() {
                                 <RadioGroup defaultValue="home" value={newResult.homeOrAway} onValueChange={handleRadioChange} className="flex gap-4">
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="home" id="home" />
-                                        <Label htmlFor="home">Domicile (USDS vs Opponent)</Label>
+                                        <Label htmlFor="home">Domicile ({clubInfo.name} vs Opponent)</Label>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="away" id="away" />
-                                        <Label htmlFor="away">Extérieur (Opponent vs USDS)</Label>
+                                        <Label htmlFor="away">Extérieur (Opponent vs {clubInfo.name})</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
