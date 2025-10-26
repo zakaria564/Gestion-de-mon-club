@@ -387,6 +387,7 @@ export default function CalendarPage() {
                       <SelectItem value="Match Amical">Match Amical</SelectItem>
                       <SelectItem value="Match Championnat">Match de Championnat</SelectItem>
                       <SelectItem value="Match Coupe">Match de Coupe</SelectItem>
+                      <SelectItem value="Match Tournoi">Match Tournoi</SelectItem>
                       <SelectItem value="Entraînement Physique">Entraînement Physique</SelectItem>
                       <SelectItem value="Entraînement Technique">Entraînement Technique</SelectItem>
                       <SelectItem value="Entraînement Tactique">Entraînement Tactique</SelectItem>

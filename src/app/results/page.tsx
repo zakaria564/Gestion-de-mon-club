@@ -28,7 +28,7 @@ import { useOpponentsContext } from "@/context/opponents-context";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
-const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical'];
+const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical', 'Match Tournoi'];
 
 const categoryColors: Record<string, string> = {
   'Sénior': 'hsl(var(--chart-1))',
