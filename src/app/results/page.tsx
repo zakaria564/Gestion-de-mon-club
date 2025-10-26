@@ -44,6 +44,8 @@ const categoryColors: Record<string, string> = {
   'U7': 'hsl(var(--chart-11))',
 };
 
+type GroupedResults = Record<string, Record<string, Result[]>>;
+
 export default function ResultsPage() {
   const context = useResultsContext();
   const playersContext = usePlayersContext();
@@ -209,14 +211,53 @@ export default function ResultsPage() {
     return opponents.map(op => op.name);
   }, [opponents]);
 
-  const filteredResults = useMemo(() => {
-    return results.filter(result => {
-      const categoryMatch = categoryFilter === 'all' || result.teamCategory === categoryFilter;
-      const opponentMatch = opponentFilter === 'all' || result.opponent === opponentFilter || result.homeTeam === opponentFilter || result.awayTeam === opponentFilter;
-      return categoryMatch && opponentMatch;
+  const groupedAndFilteredResults = useMemo(() => {
+    const filtered = results.filter(result => {
+        const categoryMatch = categoryFilter === 'all' || result.teamCategory === categoryFilter;
+        const opponentMatch = opponentFilter === 'all' || result.opponent === opponentFilter || result.homeTeam === opponentFilter || result.awayTeam === opponentFilter;
+        return categoryMatch && opponentMatch;
     });
+
+    const grouped: GroupedResults = {};
+
+    filtered.forEach(result => {
+        const teamCat = result.teamCategory;
+        const matchCat = result.category;
+
+        if (!grouped[teamCat]) {
+            grouped[teamCat] = {};
+        }
+        if (!grouped[teamCat][matchCat]) {
+            grouped[teamCat][matchCat] = [];
+        }
+        grouped[teamCat][matchCat].push(result);
+    });
+
+    // Sort team categories
+    const sortedTeamCategories = Object.keys(grouped).sort((a, b) => {
+      const aIndex = playerCategories.indexOf(a as Player['category']);
+      const bIndex = playerCategories.indexOf(b as Player['category']);
+      return aIndex - bIndex;
+    });
+
+    const sortedGroupedResults: GroupedResults = {};
+    for (const teamCat of sortedTeamCategories) {
+        // Sort match categories within each team category
+        const sortedMatchCategories = Object.keys(grouped[teamCat]).sort((a, b) => {
+            const aIndex = matchCategories.indexOf(a);
+            const bIndex = matchCategories.indexOf(b);
+            return aIndex - bIndex;
+        });
+        
+        sortedGroupedResults[teamCat] = {};
+        for (const matchCat of sortedMatchCategories) {
+            sortedGroupedResults[teamCat][matchCat] = grouped[teamCat][matchCat];
+        }
+    }
+    
+    return sortedGroupedResults;
   }, [results, categoryFilter, opponentFilter]);
-  
+
   const filteredPlayerOptions = useMemo(() => {
     return players
       .filter(p => p.category === newResult.teamCategory)
@@ -239,20 +280,18 @@ export default function ResultsPage() {
     const parts = result.score.split('-').map(s => parseInt(s.trim()));
     if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return 'bg-gray-500'; // Nul si score invalide
     
-    // Si c'est un match entre adversaires, il n'y a pas de victoire/défaite pour le club
     if (result.matchType === 'opponent-vs-opponent') {
-        if (parts[0] > parts[1]) return 'bg-green-500'; // Victoire équipe domicile
-        if (parts[0] < parts[1]) return 'bg-red-500'; // Victoire équipe extérieur
-        return 'bg-yellow-500'; // Nul
+        if (parts[0] > parts[1]) return 'bg-green-500'; 
+        if (parts[0] < parts[1]) return 'bg-red-500'; 
+        return 'bg-yellow-500';
     }
 
-    // Logique pour les matchs du club
     const usdsGoals = result.homeOrAway === 'home' ? parts[0] : parts[1];
     const opponentGoals = result.homeOrAway === 'home' ? parts[1] : parts[0];
 
-    if (usdsGoals > opponentGoals) return 'bg-green-500'; // Victoire
-    if (usdsGoals < opponentGoals) return 'bg-red-500'; // Défaite
-    return 'bg-yellow-500'; // Nul
+    if (usdsGoals > opponentGoals) return 'bg-green-500';
+    if (usdsGoals < opponentGoals) return 'bg-red-500';
+    return 'bg-yellow-500';
   }
 
   const getResultTitle = (result: Result) => {
@@ -263,6 +302,8 @@ export default function ResultsPage() {
     const awayTeam = result.homeOrAway === 'home' ? result.opponent : clubInfo.name;
     return `${homeTeam} vs ${awayTeam}`;
   };
+
+  const isLoading = loading || playersLoading || opponentsLoading;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -475,94 +516,114 @@ export default function ResultsPage() {
             )}
         </div>
 
-        {(loading || playersLoading || opponentsLoading) ? (
-             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {Array.from({length: 4}).map((_, cardIndex) => (
-                <Card key={cardIndex}>
-                  <CardHeader>
-                      <div className="flex items-center justify-between">
-                          <Skeleton className="h-6 w-3/5" />
-                          <Skeleton className="h-8 w-1/4 rounded-md" />
-                      </div>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-4/5" />
-                  </CardContent>
-                   <CardFooter className="justify-end gap-2">
-                        <Skeleton className="h-8 w-20" />
-                        <Skeleton className="h-8 w-20" />
-                  </CardFooter>
-                </Card>
+        {isLoading ? (
+             <div className="space-y-8">
+              {Array.from({length: 2}).map((_, groupIndex) => (
+                <div key={groupIndex}>
+                    <Skeleton className="h-8 w-1/4 mb-4" />
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {Array.from({length: 4}).map((_, cardIndex) => (
+                        <Card key={cardIndex}>
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <Skeleton className="h-6 w-3/5" />
+                                <Skeleton className="h-8 w-1/4 rounded-md" />
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-4/5" />
+                        </CardContent>
+                        <CardFooter className="justify-end gap-2">
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                        </CardFooter>
+                        </Card>
+                    ))}
+                    </div>
+                </div>
               ))}
             </div>
-          ) : filteredResults.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredResults.map((result) => (
-                <Card key={result.id} className="flex flex-col">
-                    <CardHeader>
-                        <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                                <CardTitle className="text-lg">{getResultTitle(result)}</CardTitle>
-                                <CardDescription>{result.date}</CardDescription>
-                            </div>
-                            <div className={`text-2xl font-bold p-2 rounded-md text-white ${getMatchOutcome(result)}`}>
-                                {result.score}
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="flex-grow space-y-2">
-                        <Badge 
-                            style={{ backgroundColor: categoryColors[result.teamCategory], color: 'white' }} 
-                            className="border-transparent"
-                        >
-                            {result.teamCategory}
-                        </Badge>
-                        <Badge variant="outline">{result.category}</Badge>
-                        <p className="text-sm text-muted-foreground pt-2">{result.location}</p>
-                    </CardContent>
-                    <CardFooter className="justify-end gap-2">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Ouvrir le menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleShowDetails(result)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Détails
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openEditDialog(result)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Modifier
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Supprimer
-                                  </DropdownMenuItem>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                  <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                      Cette action ne peut pas être annulée. Cela supprimera définitivement ce résultat.
-                                  </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                  <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleDelete(result.id)}>Supprimer</AlertDialogAction>
-                                  </AlertDialogFooter>
-                              </AlertDialogContent>
-                          </AlertDialog>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </CardFooter>
-                </Card>
+          ) : Object.keys(groupedAndFilteredResults).length > 0 ? (
+            <div className="space-y-8">
+              {Object.entries(groupedAndFilteredResults).map(([teamCategory, matchCategories]) => (
+                <div key={teamCategory}>
+                    <h3 className="text-2xl font-bold tracking-tight mb-4" style={{ color: categoryColors[teamCategory] }}>{teamCategory}</h3>
+                    <div className="space-y-6">
+                        {Object.entries(matchCategories).map(([matchCategory, categoryResults]) => (
+                             <div key={matchCategory}>
+                                <h4 className="text-xl font-semibold mb-3">{matchCategory}</h4>
+                                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                  {categoryResults.map((result) => (
+                                    <Card key={result.id} className="flex flex-col">
+                                        <CardHeader>
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="flex-1">
+                                                    <CardTitle className="text-lg">{getResultTitle(result)}</CardTitle>
+                                                    <CardDescription>{result.date}</CardDescription>
+                                                </div>
+                                                <div className={`text-2xl font-bold p-2 rounded-md text-white ${getMatchOutcome(result)}`}>
+                                                    {result.score}
+                                                </div>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent className="flex-grow space-y-2">
+                                            <Badge 
+                                                style={{ backgroundColor: categoryColors[result.teamCategory], color: 'white' }} 
+                                                className="border-transparent"
+                                            >
+                                                {result.teamCategory}
+                                            </Badge>
+                                            <Badge variant="outline">{result.category}</Badge>
+                                            <p className="text-sm text-muted-foreground pt-2">{result.location}</p>
+                                        </CardContent>
+                                        <CardFooter className="justify-end gap-2">
+                                          <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <span className="sr-only">Ouvrir le menu</span>
+                                                <MoreHorizontal className="h-4 w-4" />
+                                              </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                              <DropdownMenuItem onClick={() => handleShowDetails(result)}>
+                                                <Eye className="mr-2 h-4 w-4" />
+                                                Détails
+                                              </DropdownMenuItem>
+                                              <DropdownMenuItem onClick={() => openEditDialog(result)}>
+                                                <Edit className="mr-2 h-4 w-4" />
+                                                Modifier
+                                              </DropdownMenuItem>
+                                              <DropdownMenuSeparator />
+                                              <AlertDialog>
+                                                  <AlertDialogTrigger asChild>
+                                                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                                                          <Trash2 className="mr-2 h-4 w-4" />
+                                                          Supprimer
+                                                      </DropdownMenuItem>
+                                                  </AlertDialogTrigger>
+                                                  <AlertDialogContent>
+                                                      <AlertDialogHeader>
+                                                      <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                                                      <AlertDialogDescription>
+                                                          Cette action ne peut pas être annulée. Cela supprimera définitivement ce résultat.
+                                                      </AlertDialogDescription>
+                                                      </AlertDialogHeader>
+                                                      <AlertDialogFooter>
+                                                      <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                                      <AlertDialogAction onClick={() => handleDelete(result.id)}>Supprimer</AlertDialogAction>
+                                                      </AlertDialogFooter>
+                                                  </AlertDialogContent>
+                                              </AlertDialog>
+                                            </DropdownMenuContent>
+                                          </DropdownMenu>
+                                        </CardFooter>
+                                    </Card>
+                                  ))}
+                                </div>
+                             </div>
+                        ))}
+                    </div>
+                </div>
               ))}
             </div>
              ) : (
@@ -589,12 +650,16 @@ export default function ResultsPage() {
                       <p>
                         <strong>Lieu :</strong> {selectedResult.location || "Non spécifié"}
                       </p>
-                      <p>
-                        <strong>Buteurs :</strong> {formatPerformance(selectedResult.scorers)}
-                      </p>
-                       <p>
-                        <strong>Passeurs :</strong> {formatPerformance(selectedResult.assists)}
-                      </p>
+                       {(selectedResult.matchType === 'club-match' || !selectedResult.matchType) && (
+                         <>
+                            <p>
+                                <strong>Buteurs :</strong> {formatPerformance(selectedResult.scorers)}
+                            </p>
+                            <p>
+                                <strong>Passeurs :</strong> {formatPerformance(selectedResult.assists)}
+                            </p>
+                        </>
+                       )}
                     </div>
                 )}
                 <DialogFooter className="justify-end gap-2">
@@ -627,3 +692,5 @@ export default function ResultsPage() {
     </div>
   );
 }
+
+    
