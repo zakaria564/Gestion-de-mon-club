@@ -2,9 +2,8 @@
 import { PlayerDetailClient } from './player-detail-client';
 import React from 'react';
 
-export default function PlayerDetailPage(props: { params: { id: string } }) {
-  const params = React.use(props.params);
-  const { id } = params;
+export default function PlayerDetailPage({ params }: { params: { id: string } }) {
+  const { id } = React.use(params);
   if (!id) {
     return <div>Chargement...</div>;
   }
