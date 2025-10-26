@@ -217,8 +217,12 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
                         )}
                         <DropdownMenuSeparator />
                         <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                            <AlertDialogTrigger asChild disabled={payment.status === 'payé'}>
+                                <DropdownMenuItem 
+                                    onSelect={(e) => e.preventDefault()} 
+                                    className="text-red-600"
+                                    disabled={payment.status === 'payé'}
+                                >
                                     Supprimer
                                 </DropdownMenuItem>
                             </AlertDialogTrigger>
@@ -271,3 +275,4 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
 }
 
     
+
