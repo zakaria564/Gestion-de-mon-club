@@ -77,11 +77,21 @@ export default function RankingPage() {
         return; // Skip invalid scores
       }
 
-      const isHome = result.homeOrAway === 'home';
-      const homeTeam = isHome ? clubInfo.name : result.opponent;
-      const awayTeam = isHome ? result.opponent : clubInfo.name;
       const homeGoals = scoreParts[0];
       const awayGoals = scoreParts[1];
+      
+      let homeTeam: string, awayTeam: string;
+
+      if (result.matchType === 'opponent-vs-opponent') {
+          homeTeam = result.homeTeam!;
+          awayTeam = result.awayTeam!;
+      } else {
+          const isHome = result.homeOrAway === 'home';
+          homeTeam = isHome ? clubInfo.name : result.opponent;
+          awayTeam = isHome ? result.opponent : clubInfo.name;
+      }
+      
+      if (!homeTeam || !awayTeam) return;
 
       initializeTeam(homeTeam);
       initializeTeam(awayTeam);

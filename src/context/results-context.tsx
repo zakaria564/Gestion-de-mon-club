@@ -15,6 +15,8 @@ export interface Result {
   id: string;
   uid: string;
   opponent: string;
+  homeTeam?: string;
+  awayTeam?: string;
   date: string;
   time: string;
   location: string;
@@ -24,6 +26,7 @@ export interface Result {
   category: string;
   teamCategory: string;
   homeOrAway: 'home' | 'away';
+  matchType?: 'club-match' | 'opponent-vs-opponent';
 }
 
 export type NewResult = Omit<Result, 'id' | 'uid'>;

@@ -162,6 +162,9 @@ export default function OpponentsPage() {
                 <CardTitle className="text-base">{opponent.name}</CardTitle>
               </CardHeader>
               <CardFooter className="mt-auto justify-end gap-2">
+                 <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => openEditDialog(opponent)}>
+                    <Edit className="h-4 w-4" />
+                </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" size="icon" className="h-9 w-9">
