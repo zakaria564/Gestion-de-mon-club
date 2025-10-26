@@ -282,7 +282,6 @@ export default function ResultsPage() {
           ) : filteredResults.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredResults.map((result) => {
-                const isPast = new Date(result.date) < new Date();
                 const homeTeam = result.homeOrAway === 'home' ? clubInfo.name : result.opponent;
                 const awayTeam = result.homeOrAway === 'home' ? result.opponent : clubInfo.name;
                 return (
@@ -312,32 +311,28 @@ export default function ResultsPage() {
                          <Button variant="outline" size="sm" onClick={() => handleShowDetails(result)}>
                             <Eye className="mr-2 h-4 w-4" /> Détails
                         </Button>
-                        {!isPast && (
-                          <>
-                            <Button variant="outline" size="sm" onClick={() => openEditDialog(result)}>
-                                <Edit className="mr-2 h-4 w-4" /> Modifier
-                            </Button>
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="destructive" size="icon" className="h-9 w-9">
-                                      <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                    <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        Cette action ne peut pas être annulée. Cela supprimera définitivement ce résultat.
-                                    </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDelete(result.id)}>Supprimer</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                          </>
-                        )}
+                        <Button variant="outline" size="sm" onClick={() => openEditDialog(result)}>
+                            <Edit className="mr-2 h-4 w-4" /> Modifier
+                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="destructive" size="icon" className="h-9 w-9">
+                                  <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Cette action ne peut pas être annulée. Cela supprimera définitivement ce résultat.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(result.id)}>Supprimer</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                     </CardFooter>
                 </Card>
               )})}
@@ -351,15 +346,17 @@ export default function ResultsPage() {
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Détails du match</DialogTitle>
-                     <DialogDescription>
-                        {selectedResult?.date} - Score final : {selectedResult?.score}
-                    </DialogDescription>
+                     <DialogTitle>Détails du match</DialogTitle>
+                     {selectedResult && (
+                        <DialogDescription>
+                            {selectedResult.homeOrAway === 'home' ? `${clubInfo.name} vs ${selectedResult.opponent}` : `${selectedResult.opponent} vs ${clubInfo.name}`} - Score final : {selectedResult.score}
+                        </DialogDescription>
+                     )}
                 </DialogHeader>
                 {selectedResult && (
                     <div className="space-y-4 py-4">
-                       <p>
-                        <strong>Match :</strong> {selectedResult.homeOrAway === 'home' ? `${clubInfo.name} vs ${selectedResult.opponent}` : `${selectedResult.opponent} vs ${clubInfo.name}`}
+                      <p>
+                        <strong>Date :</strong> {selectedResult.date}
                       </p>
                       <p>
                         <strong>Lieu :</strong> {selectedResult.location || "Non spécifié"}
@@ -497,3 +494,5 @@ export default function ResultsPage() {
     </div>
   );
 }
+
+  

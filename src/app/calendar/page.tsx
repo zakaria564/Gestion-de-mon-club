@@ -89,6 +89,7 @@ export default function CalendarPage() {
       assists: [],
       category: 'Match Championnat',
       teamCategory: 'Sénior',
+      homeOrAway: 'home',
   });
 
   // State for Event Details Dialog
@@ -204,6 +205,7 @@ export default function CalendarPage() {
         score: '',
         scorers: [],
         assists: [],
+        homeOrAway: 'home',
       });
       setResultDialogOpen(true);
   };
@@ -243,7 +245,7 @@ export default function CalendarPage() {
   };
 
   const resetResultForm = () => {
-    setNewResult({ opponent: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior' });
+    setNewResult({ opponent: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', homeOrAway: 'home' });
     setResultDialogOpen(false);
   };
 
@@ -488,7 +490,7 @@ export default function CalendarPage() {
                                 <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
                                 {event.teamCategory && <Badge style={{backgroundColor: categoryColors[event.teamCategory], color: 'white'}} className="border-transparent">{event.teamCategory}</Badge>}
                             </div>
-                            <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `USDS vs ${event.opponent}` : event.type}</p>
+                            <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `${clubInfo.name} vs ${event.opponent}` : event.type}</p>
                             <p className="text-sm text-muted-foreground">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
                             <p className="text-sm text-muted-foreground">{event.location}</p>
                         </div>
@@ -627,7 +629,7 @@ export default function CalendarPage() {
     <Dialog open={resultDetailsOpen} onOpenChange={setResultDetailsOpen}>
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Détails du match USDS vs {selectedResult?.opponent}</DialogTitle>
+                <DialogTitle>Détails du match {clubInfo.name} vs {selectedResult?.opponent}</DialogTitle>
                     <DialogDescription>
                     {selectedResult?.date} - Score final : {selectedResult?.score}
                 </DialogDescription>
@@ -656,3 +658,5 @@ export default function CalendarPage() {
 }
 
     
+
+  
