@@ -27,6 +27,7 @@ import type { Player } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useClubContext } from '@/context/club-context';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
@@ -75,6 +76,7 @@ export default function CalendarPage() {
     time: '',
     location: '',
     teamCategory: 'Sénior',
+    homeOrAway: 'home',
   });
 
   // State for Add Result Dialog
@@ -108,6 +110,10 @@ export default function CalendarPage() {
     setNewEvent(prev => ({ ...prev, [field]: value as any }));
   };
 
+  const handleHomeAwayChange = (value: "home" | "away") => {
+    setNewEvent(prev => ({ ...prev, homeOrAway: value }));
+  };
+
   const handleEventSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
@@ -124,7 +130,7 @@ export default function CalendarPage() {
   };
 
   const resetEventForm = () => {
-    setNewEvent({ type: '', opponent: '', date: '', time: '', location: '', teamCategory: 'Sénior' });
+    setNewEvent({ type: '', opponent: '', date: '', time: '', location: '', teamCategory: 'Sénior', homeOrAway: 'home' });
     setEventDialogOpen(false);
     setIsEditing(false);
     setEditingEvent(null);
@@ -162,7 +168,8 @@ export default function CalendarPage() {
         date: format(selectedDate, 'yyyy-MM-dd'), 
         time: '', 
         location: '',
-        teamCategory: 'Sénior'
+        teamCategory: 'Sénior',
+        homeOrAway: 'home',
     });
     setEventDialogOpen(true);
   }
@@ -184,6 +191,7 @@ export default function CalendarPage() {
       time: event.time,
       location: event.location,
       teamCategory: event.teamCategory || 'Sénior',
+      homeOrAway: event.homeOrAway || 'home',
     });
     setEventDialogOpen(true);
   }
@@ -207,7 +215,7 @@ export default function CalendarPage() {
         score: '',
         scorers: [],
         assists: [],
-        homeOrAway: 'home',
+        homeOrAway: event.homeOrAway || 'home',
       });
       setResultDialogOpen(true);
   };
@@ -345,6 +353,8 @@ export default function CalendarPage() {
     )
   }
 
+  const isNewEventMatch = newEvent.type.toLowerCase().includes('match');
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -395,10 +405,27 @@ export default function CalendarPage() {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="opponent">Adversaire (si match)</Label>
-                  <Input id="opponent" placeholder="Nom de l'équipe adverse" value={newEvent.opponent} onChange={handleEventInputChange} />
-                </div>
+                {isNewEventMatch && (
+                  <>
+                    <div className="grid gap-2">
+                      <Label>Domicile / Extérieur</Label>
+                      <RadioGroup defaultValue="home" value={newEvent.homeOrAway} onValueChange={handleHomeAwayChange} className="flex gap-4">
+                          <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="home" id="home" />
+                              <Label htmlFor="home">Domicile</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="away" id="away" />
+                              <Label htmlFor="away">Extérieur</Label>
+                          </div>
+                      </RadioGroup>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="opponent">Adversaire</Label>
+                      <Input id="opponent" placeholder="Nom de l'équipe adverse" value={newEvent.opponent} onChange={handleEventInputChange} />
+                    </div>
+                  </>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="date">Date</Label>

@@ -58,6 +58,7 @@ export type CalendarEvent = {
   time: string;
   location: string;
   teamCategory: 'Sénior' | 'U23' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
+  homeOrAway?: 'home' | 'away';
 };
 
 export type Notification = {
