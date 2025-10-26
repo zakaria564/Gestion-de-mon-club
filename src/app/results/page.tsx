@@ -26,6 +26,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useClubContext } from "@/context/club-context";
 import { useOpponentsContext } from "@/context/opponents-context";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { addHours, isAfter, parse } from "date-fns";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical', 'Match Tournoi'];
@@ -303,6 +304,17 @@ export default function ResultsPage() {
     return `${homeTeam} vs ${awayTeam}`;
   };
 
+  const isMatchActionDisabled = (result: Result): boolean => {
+    try {
+        const matchDateTime = parse(`${result.date} ${result.time}`, 'yyyy-MM-dd HH:mm', new Date());
+        const twentyFourHoursAfter = addHours(matchDateTime, 24);
+        return isAfter(new Date(), twentyFourHoursAfter);
+    } catch (e) {
+        // If parsing fails, disable by default for safety
+        return true;
+    }
+  };
+
   const isLoading = loading || playersLoading || opponentsLoading;
 
   return (
@@ -553,72 +565,75 @@ export default function ResultsPage() {
                              <div key={matchCategory}>
                                 <h4 className="text-xl font-semibold mb-3">{matchCategory}</h4>
                                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                  {categoryResults.map((result) => (
-                                    <Card key={result.id} className="flex flex-col">
-                                        <CardHeader>
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="flex-1">
-                                                    <CardTitle className="text-lg">{getResultTitle(result)}</CardTitle>
-                                                    <CardDescription>{result.date}</CardDescription>
+                                  {categoryResults.map((result) => {
+                                      const disabled = isMatchActionDisabled(result);
+                                      return (
+                                        <Card key={result.id} className="flex flex-col">
+                                            <CardHeader>
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div className="flex-1">
+                                                        <CardTitle className="text-lg">{getResultTitle(result)}</CardTitle>
+                                                        <CardDescription>{result.date}</CardDescription>
+                                                    </div>
+                                                    <div className={`text-2xl font-bold p-2 rounded-md text-white ${getMatchOutcome(result)}`}>
+                                                        {result.score}
+                                                    </div>
                                                 </div>
-                                                <div className={`text-2xl font-bold p-2 rounded-md text-white ${getMatchOutcome(result)}`}>
-                                                    {result.score}
-                                                </div>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent className="flex-grow space-y-2">
-                                            <Badge 
-                                                style={{ backgroundColor: categoryColors[result.teamCategory], color: 'white' }} 
-                                                className="border-transparent"
-                                            >
-                                                {result.teamCategory}
-                                            </Badge>
-                                            <Badge variant="outline">{result.category}</Badge>
-                                            <p className="text-sm text-muted-foreground pt-2">{result.location}</p>
-                                        </CardContent>
-                                        <CardFooter className="justify-end gap-2">
-                                          <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                                <span className="sr-only">Ouvrir le menu</span>
-                                                <MoreHorizontal className="h-4 w-4" />
-                                              </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                              <DropdownMenuItem onClick={() => handleShowDetails(result)}>
-                                                <Eye className="mr-2 h-4 w-4" />
-                                                Détails
-                                              </DropdownMenuItem>
-                                              <DropdownMenuItem onClick={() => openEditDialog(result)}>
-                                                <Edit className="mr-2 h-4 w-4" />
-                                                Modifier
-                                              </DropdownMenuItem>
-                                              <DropdownMenuSeparator />
-                                              <AlertDialog>
-                                                  <AlertDialogTrigger asChild>
-                                                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
-                                                          <Trash2 className="mr-2 h-4 w-4" />
-                                                          Supprimer
-                                                      </DropdownMenuItem>
-                                                  </AlertDialogTrigger>
-                                                  <AlertDialogContent>
-                                                      <AlertDialogHeader>
-                                                      <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                                                      <AlertDialogDescription>
-                                                          Cette action ne peut pas être annulée. Cela supprimera définitivement ce résultat.
-                                                      </AlertDialogDescription>
-                                                      </AlertDialogHeader>
-                                                      <AlertDialogFooter>
-                                                      <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                                      <AlertDialogAction onClick={() => handleDelete(result.id)}>Supprimer</AlertDialogAction>
-                                                      </AlertDialogFooter>
-                                                  </AlertDialogContent>
-                                              </AlertDialog>
-                                            </DropdownMenuContent>
-                                          </DropdownMenu>
-                                        </CardFooter>
-                                    </Card>
-                                  ))}
+                                            </CardHeader>
+                                            <CardContent className="flex-grow space-y-2">
+                                                <Badge 
+                                                    style={{ backgroundColor: categoryColors[result.teamCategory], color: 'white' }} 
+                                                    className="border-transparent"
+                                                >
+                                                    {result.teamCategory}
+                                                </Badge>
+                                                <Badge variant="outline">{result.category}</Badge>
+                                                <p className="text-sm text-muted-foreground pt-2">{result.location}</p>
+                                            </CardContent>
+                                            <CardFooter className="justify-end gap-2">
+                                              <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                  <Button variant="ghost" className="h-8 w-8 p-0">
+                                                    <span className="sr-only">Ouvrir le menu</span>
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                  </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                  <DropdownMenuItem onClick={() => handleShowDetails(result)}>
+                                                    <Eye className="mr-2 h-4 w-4" />
+                                                    Détails
+                                                  </DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => openEditDialog(result)} disabled={disabled}>
+                                                    <Edit className="mr-2 h-4 w-4" />
+                                                    Modifier
+                                                  </DropdownMenuItem>
+                                                  <DropdownMenuSeparator />
+                                                  <AlertDialog>
+                                                      <AlertDialogTrigger asChild>
+                                                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600" disabled={disabled}>
+                                                              <Trash2 className="mr-2 h-4 w-4" />
+                                                              Supprimer
+                                                          </DropdownMenuItem>
+                                                      </AlertDialogTrigger>
+                                                      <AlertDialogContent>
+                                                          <AlertDialogHeader>
+                                                          <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                                                          <AlertDialogDescription>
+                                                              Cette action ne peut pas être annulée. Cela supprimera définitivement ce résultat.
+                                                          </AlertDialogDescription>
+                                                          </AlertDialogHeader>
+                                                          <AlertDialogFooter>
+                                                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                                          <AlertDialogAction onClick={() => handleDelete(result.id)}>Supprimer</AlertDialogAction>
+                                                          </AlertDialogFooter>
+                                                      </AlertDialogContent>
+                                                  </AlertDialog>
+                                                </DropdownMenuContent>
+                                              </DropdownMenu>
+                                            </CardFooter>
+                                        </Card>
+                                      )
+                                  })}
                                 </div>
                              </div>
                         ))}
@@ -663,12 +678,12 @@ export default function ResultsPage() {
                     </div>
                 )}
                 <DialogFooter className="justify-end gap-2">
-                     <Button variant="outline" onClick={() => openEditDialog(selectedResult!)}>
+                     <Button variant="outline" onClick={() => openEditDialog(selectedResult!)} disabled={selectedResult ? isMatchActionDisabled(selectedResult) : true}>
                         <Edit className="mr-2 h-4 w-4" /> Modifier
                     </Button>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button variant="destructive">
+                            <Button variant="destructive" disabled={selectedResult ? isMatchActionDisabled(selectedResult) : true}>
                                 <Trash2 className="mr-2 h-4 w-4" /> Supprimer
                             </Button>
                         </AlertDialogTrigger>
@@ -692,5 +707,3 @@ export default function ResultsPage() {
     </div>
   );
 }
-
-    
