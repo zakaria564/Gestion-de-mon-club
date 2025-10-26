@@ -25,6 +25,7 @@ import {
   Banknote,
   Settings,
   BarChart,
+  Shield,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { ClubLogo } from "@/components/club-logo";
@@ -48,6 +49,7 @@ const navItems = [
   { href: "/", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/players", label: "Joueurs", icon: Users },
   { href: "/coaches", label: "Entraîneurs", icon: UserCheck },
+  { href: "/opponents", label: "Adversaires", icon: Shield },
   { href: "/calendar", label: "Calendrier", icon: Calendar },
   { href: "/results", label: "Résultats", icon: Trophy },
   { href: "/ranking", label: "Classement", icon: BarChart },

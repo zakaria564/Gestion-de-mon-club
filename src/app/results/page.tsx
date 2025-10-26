@@ -24,6 +24,7 @@ import { usePlayersContext } from "@/context/players-context";
 import type { Player } from "@/lib/data";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useClubContext } from "@/context/club-context";
+import { useOpponentsContext } from "@/context/opponents-context";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical'];
@@ -46,14 +47,16 @@ export default function ResultsPage() {
   const context = useResultsContext();
   const playersContext = usePlayersContext();
   const clubContext = useClubContext();
+  const opponentsContext = useOpponentsContext();
 
-  if (!context || !playersContext || !clubContext) {
-    throw new Error("ResultsPage must be used within a ResultsProvider, PlayersProvider and ClubProvider");
+  if (!context || !playersContext || !clubContext || !opponentsContext) {
+    throw new Error("ResultsPage must be used within all required providers");
   }
 
   const { results, loading, addResult, updateResult, deleteResult } = context;
   const { players, loading: playersLoading } = playersContext;
   const { clubInfo } = clubContext;
+  const { opponents, loading: opponentsLoading } = opponentsContext;
 
   const [open, setOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -89,7 +92,7 @@ export default function ResultsPage() {
     setNewResult(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleSelectChange = (field: 'category' | 'teamCategory', value: string) => {
+  const handleSelectChange = (field: 'category' | 'teamCategory' | 'opponent', value: string) => {
     setNewResult(prev => ({ ...prev, [field]: value }));
   };
 
@@ -180,14 +183,13 @@ export default function ResultsPage() {
   }
   
   const opponentOptions = useMemo(() => {
-    const opponents = new Set(results.map(r => r.opponent));
-    return Array.from(opponents);
-  }, [results]);
+    return opponents.map(op => op.name);
+  }, [opponents]);
 
   const filteredResults = useMemo(() => {
     return results.filter(result => {
       const categoryMatch = categoryFilter === 'all' || result.teamCategory === categoryFilter;
-      const opponentMatch = opponentFilter === 'all' || result.opponent === opponentMatch;
+      const opponentMatch = opponentFilter === 'all' || result.opponent === opponentFilter;
       return categoryMatch && opponentMatch;
     });
   }, [results, categoryFilter, opponentFilter]);
@@ -281,7 +283,16 @@ export default function ResultsPage() {
                             </div>
                           <div className="grid gap-2">
                               <Label htmlFor="opponent">Adversaire</Label>
-                              <Input id="opponent" value={newResult.opponent} onChange={handleInputChange} required />
+                               <Select onValueChange={(v) => handleSelectChange('opponent', v)} value={newResult.opponent} required>
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Sélectionner un adversaire" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                      {opponents.map(op => (
+                                          <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>
+                                      ))}
+                                  </SelectContent>
+                              </Select>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                               <div className="grid gap-2">
@@ -377,7 +388,7 @@ export default function ResultsPage() {
             )}
         </div>
 
-        {(loading || playersLoading) ? (
+        {(loading || playersLoading || opponentsLoading) ? (
              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({length: 4}).map((_, cardIndex) => (
                 <Card key={cardIndex}>

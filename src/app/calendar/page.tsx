@@ -28,6 +28,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useClubContext } from '@/context/club-context';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useOpponentsContext } from '@/context/opponents-context';
 
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
@@ -50,18 +51,20 @@ export default function CalendarPage() {
   const calendarContext = useCalendarContext();
   const resultsContext = useResultsContext();
   const playersContext = usePlayersContext();
+  const opponentsContext = useOpponentsContext();
   const { clubInfo } = useClubContext();
   const { toast } = useToast();
 
-  if (!calendarContext || !resultsContext || !playersContext) {
+  if (!calendarContext || !resultsContext || !playersContext || !opponentsContext) {
     throw new Error("CalendarPage must be used within all required providers");
   }
 
   const { calendarEvents, loading: calendarLoading, addEvent, updateEvent, deleteEvent } = calendarContext;
   const { results, addResult, loading: resultsLoading } = resultsContext;
   const { players, loading: playersLoading } = playersContext;
+  const { opponents, loading: opponentsLoading } = opponentsContext;
 
-  const loading = calendarLoading || resultsLoading || playersLoading;
+  const loading = calendarLoading || resultsLoading || playersLoading || opponentsLoading;
 
   const [date, setDate] = useState<Date | undefined>(new Date());
   
@@ -106,7 +109,7 @@ export default function CalendarPage() {
     setNewEvent(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleEventSelectChange = (field: 'type' | 'teamCategory', value: string) => {
+  const handleEventSelectChange = (field: 'type' | 'teamCategory' | 'opponent', value: string) => {
     setNewEvent(prev => ({ ...prev, [field]: value as any }));
   };
 
@@ -422,7 +425,16 @@ export default function CalendarPage() {
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="opponent">Adversaire</Label>
-                      <Input id="opponent" placeholder="Nom de l'équipe adverse" value={newEvent.opponent} onChange={handleEventInputChange} />
+                      <Select onValueChange={(v) => handleEventSelectChange('opponent', v)} value={newEvent.opponent} required>
+                          <SelectTrigger>
+                              <SelectValue placeholder="Sélectionner un adversaire" />
+                          </SelectTrigger>
+                          <SelectContent>
+                              {opponents.map(op => (
+                                  <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>
+                              ))}
+                          </SelectContent>
+                      </Select>
                     </div>
                   </>
                 )}
@@ -684,5 +696,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-
-    
