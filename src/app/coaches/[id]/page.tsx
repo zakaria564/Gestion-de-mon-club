@@ -1,9 +1,7 @@
 
 import { CoachDetailClient } from './coach-detail-client';
 
-export default function CoachDetailPage({ params }: { params: { id: string } }) {
-  const id = params.id;
-  
+export default function CoachDetailPage({ params: { id } }: { params: { id: string } }) {
   if (!id) {
     return <div>Chargement...</div>;
   }
