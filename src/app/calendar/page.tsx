@@ -326,6 +326,16 @@ export default function CalendarPage() {
     return { backgroundColor: 'hsl(var(--secondary))', color: 'hsl(var(--secondary-foreground))' };
   };
 
+  const getMatchTitle = (event: CalendarEvent) => {
+    const isMatch = event.type.toLowerCase().includes('match');
+    if (!isMatch || !event.opponent) return event.type;
+    
+    const homeTeam = event.homeOrAway === 'home' ? clubInfo.name : event.opponent;
+    const awayTeam = event.homeOrAway === 'home' ? event.opponent : clubInfo.name;
+    
+    return `${homeTeam} vs ${awayTeam}`;
+  }
+
   if (loading || !date) {
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -532,7 +542,7 @@ export default function CalendarPage() {
                                 <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
                                 {event.teamCategory && <Badge style={{backgroundColor: categoryColors[event.teamCategory], color: 'white'}} className="border-transparent">{event.teamCategory}</Badge>}
                             </div>
-                            <p className="font-semibold">{event.type.toLowerCase().includes('match') && event.opponent ? `${clubInfo.name} vs ${event.opponent}` : event.type}</p>
+                            <p className="font-semibold">{getMatchTitle(event)}</p>
                             <p className="text-sm text-muted-foreground">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
                             <p className="text-sm text-muted-foreground">{event.location}</p>
                         </div>
@@ -697,5 +707,7 @@ export default function CalendarPage() {
     </div>
   );
 }
+
+    
 
     
