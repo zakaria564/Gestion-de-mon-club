@@ -56,7 +56,18 @@ export default function RankingPage() {
   const rankings = useMemo(() => {
     const stats: { [key: string]: TeamStats } = {};
 
-    const filteredResults = results.filter(result => result.teamCategory === teamCategoryFilter && result.category === activeTab);
+    let filteredResults: Result[];
+
+    if (activeTab === 'Match Championnat') {
+      filteredResults = results.filter(result => result.teamCategory === teamCategoryFilter && result.category === activeTab);
+    } else {
+      // For Cup and Tournament, only include matches involving our club
+      filteredResults = results.filter(result => 
+        result.teamCategory === teamCategoryFilter && 
+        result.category === activeTab &&
+        (result.matchType === 'club-match' || !result.matchType)
+      );
+    }
 
     const initializeTeam = (teamName: string) => {
       if (!stats[teamName]) {
