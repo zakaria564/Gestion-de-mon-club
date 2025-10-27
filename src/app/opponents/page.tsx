@@ -11,7 +11,7 @@ import {
   CardFooter
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Edit, Trash2, Shield, Camera } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Shield, Camera, MoreHorizontal } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,8 @@ import { useOpponentsContext, NewOpponent, Opponent } from "@/context/opponents-
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+
 
 export default function OpponentsPage() {
   const { opponents, loading, addOpponent, updateOpponent, deleteOpponent } = useOpponentsContext();
@@ -145,8 +147,7 @@ export default function OpponentsPage() {
                 <Skeleton className="h-6 w-3/4" />
               </CardHeader>
               <CardFooter className="justify-end gap-2">
-                <Skeleton className="h-9 w-20" />
-                <Skeleton className="h-9 w-9" />
+                <Skeleton className="h-8 w-8" />
               </CardFooter>
             </Card>
           ))}
@@ -155,36 +156,49 @@ export default function OpponentsPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {opponents.map((opponent) => (
             <Card key={opponent.id} className="flex flex-col">
-              <CardHeader className="flex flex-row items-center gap-4">
+              <CardHeader className="flex-grow flex flex-row items-center gap-4">
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={opponent.logoUrl || undefined} alt={opponent.name} data-ai-hint="team logo" />
                   <AvatarFallback>{opponent.name.substring(0, 2)}</AvatarFallback>
                 </Avatar>
                 <CardTitle className="text-base">{opponent.name}</CardTitle>
               </CardHeader>
-              <CardFooter className="mt-auto justify-end gap-2">
-                 <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => openEditDialog(opponent)}>
-                    <Edit className="h-4 w-4" />
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="icon" className="h-9 w-9">
-                      <Trash2 className="h-4 w-4" />
+              <CardFooter className="justify-end">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Ouvrir le menu</span>
+                      <MoreHorizontal className="h-4 w-4" />
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Cette action est irréversible. Voulez-vous vraiment supprimer cet adversaire ?
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Annuler</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDelete(opponent.id)}>Supprimer</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => openEditDialog(opponent)}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Modifier
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                     <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                           <Trash2 className="mr-2 h-4 w-4" />
+                           Supprimer
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Cette action est irréversible. Voulez-vous vraiment supprimer cet adversaire ?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(opponent.id)}>Supprimer</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </CardFooter>
             </Card>
           ))}
