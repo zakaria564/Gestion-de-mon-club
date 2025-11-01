@@ -248,44 +248,145 @@ export default function PlayersPage() {
     }, [players, searchQuery, filterKey]);
 
 
-    const groupedPlayers = useMemo(() => {
+    const { maleGroups, femaleGroups } = useMemo(() => {
         const sortedPlayers = [...filteredPlayers].sort((a, b) => a.name.localeCompare(b.name));
+        
+        const maleGroups: Record<string, Record<string, Player[]>> = {};
+        const femaleGroups: Record<string, Record<string, Player[]>> = {};
 
-        const groups = sortedPlayers.reduce((acc, player) => {
+        sortedPlayers.forEach(player => {
             const category = player.category || 'Sénior';
             const poste = player.poste || 'Non défini';
+            const isFemale = category.endsWith(' F');
+            const targetGroup = isFemale ? femaleGroups : maleGroups;
 
-            if (!acc[category]) {
-                acc[category] = {};
+            if (!targetGroup[category]) {
+                targetGroup[category] = {};
             }
-            if (!acc[category][poste]) {
-                acc[category][poste] = [];
+            if (!targetGroup[category][poste]) {
+                targetGroup[category][poste] = [];
             }
-            acc[category][poste].push(player);
-            return acc;
-        }, {} as Record<string, Record<string, Player[]>>);
-
-        // Sort categories
-        const sortedCategories = Object.keys(groups).sort((a, b) => {
-            const aIndex = playerCategories.indexOf(a);
-            const bIndex = playerCategories.indexOf(b);
-            return aIndex - bIndex;
+            targetGroup[category][poste].push(player);
         });
-
-        const sortedGroups: Record<string, Record<string, Player[]>> = {};
-        for(const category of sortedCategories) {
-            sortedGroups[category] = groups[category];
+        
+        const sortCategoryGroups = (groups: Record<string, Record<string, Player[]>>) => {
+             const sortedCategories = Object.keys(groups).sort((a, b) => {
+                const aIndex = playerCategories.indexOf(a);
+                const bIndex = playerCategories.indexOf(b);
+                return aIndex - bIndex;
+            });
+            const sortedGroups: Record<string, Record<string, Player[]>> = {};
+            for(const category of sortedCategories) {
+                sortedGroups[category] = groups[category];
+            }
+            return sortedGroups;
         }
 
-        return sortedGroups;
+        return { maleGroups: sortCategoryGroups(maleGroups), femaleGroups: sortCategoryGroups(femaleGroups) };
     }, [filteredPlayers]);
 
 
     const photoPreview = form.watch('photo');
-    const defaultCategory = useMemo(() => {
-      const categories = Object.keys(groupedPlayers);
-      return categories.length > 0 ? categories[0] : 'Sénior';
-    }, [groupedPlayers]);
+    
+    const renderCategoryTabs = (groupedData: Record<string, Record<string, Player[]>>, gender: 'male' | 'female') => {
+        const categories = Object.keys(groupedData);
+        if (categories.length === 0) {
+            return (
+                <div className="text-center py-10">
+                    <p className="text-muted-foreground">Aucun joueur trouvé pour ce genre.</p>
+                </div>
+            );
+        }
+        
+        const defaultCategory = categories[0];
+
+        return (
+            <Tabs defaultValue={defaultCategory} className="w-full mt-4">
+                <TabsList className="h-auto p-1 bg-muted rounded-md text-muted-foreground justify-start items-center flex-wrap">
+                    {categories.map((category) => (
+                        <TabsTrigger key={`${gender}-${category}`} value={category} style={{ backgroundColor: categoryColors[category.replace(' F', '')] }} className={cn("data-[state=active]:shadow-none", getCategoryStyle(category))}>
+                            {category}
+                        </TabsTrigger>
+                    ))}
+                </TabsList>
+                {Object.entries(groupedData).map(([category, postes]) => (
+                    <TabsContent value={category} key={`${gender}-${category}`} className="mt-4">
+                        <div className="space-y-6">
+                            {Object.entries(postes).map(([poste, playersInPoste]) => (
+                                <div key={`${gender}-${category}-${poste}`}>
+                                    <h3 className="text-xl font-semibold mb-3">{poste} ({playersInPoste.length})</h3>
+                                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                        {playersInPoste.map((player) => (
+                                            <Card key={player.id} className="flex flex-col w-full hover:shadow-lg transition-shadow h-full group">
+                                                <Link href={`/players/${player.id}`} className="flex flex-col h-full">
+                                                    <CardHeader className="p-4">
+                                                        <div className="flex items-center gap-4">
+                                                            <Avatar className="h-16 w-16">
+                                                                <AvatarImage src={player.photo ?? undefined} alt={player.name} data-ai-hint="player photo" />
+                                                                <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
+                                                            </Avatar>
+                                                            <div className="flex-1">
+                                                                <CardTitle className="text-base font-bold">{player.name}</CardTitle>
+                                                                <CardDescription>{player.poste}</CardDescription>
+                                                            </div>
+                                                        </div>
+                                                    </CardHeader>
+                                                </Link>
+                                                <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
+                                                    <div className="flex justify-between items-center">
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
+                                                                    <Badge 
+                                                                        style={{ backgroundColor: categoryColors[player.category.replace(' F', '')], color: 'white' }}
+                                                                        className="text-xs cursor-pointer border-transparent"
+                                                                    >
+                                                                        {player.category || 'Sénior'}
+                                                                    </Badge>
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
+                                                                <DropdownMenuRadioGroup
+                                                                    value={player.category}
+                                                                    onValueChange={(newCategory) => handleCategoryChange(player, newCategory)}
+                                                                >
+                                                                    {playerCategories.map(cat => <DropdownMenuRadioItem key={cat} value={cat}>{cat}</DropdownMenuRadioItem>)}
+                                                                </DropdownMenuRadioGroup>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                        
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
+                                                                    <Badge variant={getBadgeVariant(player.status || 'Actif') as any} className="text-xs cursor-pointer">{player.status || 'Actif'}</Badge>
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
+                                                                <DropdownMenuRadioGroup
+                                                                    value={player.status}
+                                                                    onValueChange={(newStatus) => handleStatusChange(player, newStatus)}
+                                                                >
+                                                                    <DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Blessé">Blessé</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Suspendu">Suspendu</DropdownMenuRadioItem>
+                                                                    <DropdownMenuRadioItem value="Inactif">Inactif</DropdownMenuRadioItem>
+                                                                </DropdownMenuRadioGroup>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </TabsContent>
+                ))}
+            </Tabs>
+        )
+    };
+
 
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
@@ -711,87 +812,18 @@ export default function PlayersPage() {
                         <Skeleton className="h-12 w-full" />
                     </div>
                 ))
-            ) : Object.keys(groupedPlayers).length > 0 ? (
-                <Tabs defaultValue={defaultCategory} className="w-full">
-                    <TabsList className="h-auto p-1 bg-muted rounded-md text-muted-foreground justify-start items-center flex-wrap">
-                         {Object.keys(groupedPlayers).map((category) => (
-                            <TabsTrigger key={category} value={category} style={{ backgroundColor: categoryColors[category.replace(' F', '')] }} className={cn("data-[state=active]:shadow-none", getCategoryStyle(category))}>{category}</TabsTrigger>
-                        ))}
+            ) : filteredPlayers.length > 0 ? (
+                <Tabs defaultValue="male" className="w-full">
+                     <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="male">Masculin</TabsTrigger>
+                        <TabsTrigger value="female">Féminin</TabsTrigger>
                     </TabsList>
-                    {Object.entries(groupedPlayers).map(([category, postes]) => (
-                        <TabsContent value={category} key={category} className="mt-4">
-                            <div className="space-y-6">
-                                {Object.entries(postes).map(([poste, playersInPoste]) => (
-                                    <div key={`${category}-${poste}`}>
-                                        <h3 className="text-xl font-semibold mb-3">{poste} ({playersInPoste.length})</h3>
-                                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                            {playersInPoste.map((player) => (
-                                                <Card key={player.id} className="flex flex-col w-full hover:shadow-lg transition-shadow h-full group">
-                                                    <Link href={`/players/${player.id}`} className="flex flex-col h-full">
-                                                        <CardHeader className="p-4">
-                                                            <div className="flex items-center gap-4">
-                                                                <Avatar className="h-16 w-16">
-                                                                    <AvatarImage src={player.photo ?? undefined} alt={player.name} data-ai-hint="player photo" />
-                                                                    <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
-                                                                </Avatar>
-                                                                <div className="flex-1">
-                                                                    <CardTitle className="text-base font-bold">{player.name}</CardTitle>
-                                                                    <CardDescription>{player.poste}</CardDescription>
-                                                                </div>
-                                                            </div>
-                                                        </CardHeader>
-                                                    </Link>
-                                                    <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
-                                                        <div className="flex justify-between items-center">
-                                                            <DropdownMenu>
-                                                                <DropdownMenuTrigger asChild>
-                                                                    <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
-                                                                        <Badge 
-                                                                            style={{ backgroundColor: categoryColors[player.category.replace(' F', '')], color: 'white' }}
-                                                                            className="text-xs cursor-pointer border-transparent"
-                                                                        >
-                                                                            {player.category || 'Sénior'}
-                                                                        </Badge>
-                                                                    </Button>
-                                                                </DropdownMenuTrigger>
-                                                                <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
-                                                                    <DropdownMenuRadioGroup
-                                                                        value={player.category}
-                                                                        onValueChange={(newCategory) => handleCategoryChange(player, newCategory)}
-                                                                    >
-                                                                        {playerCategories.map(cat => <DropdownMenuRadioItem key={cat} value={cat}>{cat}</DropdownMenuRadioItem>)}
-                                                                    </DropdownMenuRadioGroup>
-                                                                </DropdownMenuContent>
-                                                            </DropdownMenu>
-                                                            
-                                                            <DropdownMenu>
-                                                                <DropdownMenuTrigger asChild>
-                                                                    <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
-                                                                        <Badge variant={getBadgeVariant(player.status || 'Actif') as any} className="text-xs cursor-pointer">{player.status || 'Actif'}</Badge>
-                                                                    </Button>
-                                                                </DropdownMenuTrigger>
-                                                                <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
-                                                                    <DropdownMenuRadioGroup
-                                                                        value={player.status}
-                                                                        onValueChange={(newStatus) => handleStatusChange(player, newStatus)}
-                                                                    >
-                                                                        <DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem>
-                                                                        <DropdownMenuRadioItem value="Blessé">Blessé</DropdownMenuRadioItem>
-                                                                        <DropdownMenuRadioItem value="Suspendu">Suspendu</DropdownMenuRadioItem>
-                                                                        <DropdownMenuRadioItem value="Inactif">Inactif</DropdownMenuRadioItem>
-                                                                    </DropdownMenuRadioGroup>
-                                                                </DropdownMenuContent>
-                                                            </DropdownMenu>
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </TabsContent>
-                    ))}
+                    <TabsContent value="male">
+                        {renderCategoryTabs(maleGroups, 'male')}
+                    </TabsContent>
+                    <TabsContent value="female">
+                        {renderCategoryTabs(femaleGroups, 'female')}
+                    </TabsContent>
                 </Tabs>
             ) : (
                 <div className="text-center py-10">
@@ -802,5 +834,3 @@ export default function PlayersPage() {
     </div>
     );
 }
-
-    
