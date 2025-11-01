@@ -51,13 +51,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
+const baseCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+
+const playerCategories: string[] = baseCategories.flatMap(cat => [cat, `${cat} F`]);
+
+
 const documentSchema = z.object({
   name: z.string().min(1, "Le nom du document est requis."),
   url: z.string().url("Veuillez entrer une URL valide.").min(1, "L'URL est requise."),
   expirationDate: z.string().optional(),
 });
-
-const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
 const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
@@ -76,7 +79,7 @@ const playerSchema = z.object({
   tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
   tutorCin: z.string().optional(),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
-  category: z.enum(playerCategories),
+  category: z.string().min(1, "La catégorie est requise."),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
   documents: z.array(documentSchema).optional(),
@@ -139,6 +142,12 @@ const categoryColors: Record<string, string> = {
   'U7': 'hsl(var(--chart-11))',
 };
 
+// Add colors for female categories
+Object.keys(categoryColors).forEach(key => {
+    categoryColors[`${key} F`] = categoryColors[key];
+});
+
+
 export default function PlayersPage() {
     const context = usePlayersContext();
     const { toast } = useToast();
@@ -173,7 +182,11 @@ export default function PlayersPage() {
         });
         return;
       }
-      await addPlayer(data);
+      
+      const gender = data.category.endsWith(' F') ? 'Féminin' : 'Masculin';
+      const finalData = { ...data, gender };
+      
+      await addPlayer(finalData);
       setDialogOpen(false);
       toast({ title: "Joueur ajouté", description: "Le nouveau joueur a été ajouté avec succès." });
     };
@@ -195,7 +208,8 @@ export default function PlayersPage() {
     
     const getCategoryStyle = (category: string) => {
       const baseStyle = "transition-colors text-white data-[state=active]:text-white data-[state=active]:shadow-inner data-[state=active]:border-2";
-      const color = categoryColors[category] || 'bg-gray-500/80 hover:bg-gray-500 data-[state=active]:bg-gray-500 data-[state=active]:border-gray-700';
+      const baseCategory = category.replace(' F', '');
+      const color = categoryColors[baseCategory] || 'bg-gray-500/80 hover:bg-gray-500 data-[state=active]:bg-gray-500 data-[state=active]:border-gray-700';
       if (color.startsWith('hsl')) {
           return `${baseStyle} hover:brightness-110 data-[state=active]:brightness-110`;
       }
@@ -215,7 +229,8 @@ export default function PlayersPage() {
 
     const handleCategoryChange = async (player: Player, newCategory: string) => {
         if (player.category !== newCategory) {
-            const updatedPlayer = { ...player, category: newCategory as Player['category'] };
+            const gender = newCategory.endsWith(' F') ? 'Féminin' : 'Masculin';
+            const updatedPlayer = { ...player, category: newCategory, gender: gender };
             await updatePlayer(updatedPlayer);
             toast({
                 title: "Catégorie mise à jour",
@@ -252,8 +267,8 @@ export default function PlayersPage() {
 
         // Sort categories
         const sortedCategories = Object.keys(groups).sort((a, b) => {
-            const aIndex = playerCategories.indexOf(a as Player['category']);
-            const bIndex = playerCategories.indexOf(b as Player['category']);
+            const aIndex = playerCategories.indexOf(a);
+            const bIndex = playerCategories.indexOf(b);
             return aIndex - bIndex;
         });
 
@@ -263,7 +278,7 @@ export default function PlayersPage() {
         }
 
         return sortedGroups;
-    }, [filteredPlayers, playerCategories]);
+    }, [filteredPlayers]);
 
 
     const photoPreview = form.watch('photo');
@@ -328,23 +343,6 @@ export default function PlayersPage() {
                                         <FormMessage />
                                         </FormItem>
                                     )}
-                                    />
-                                     <FormField
-                                        control={form.control}
-                                        name="gender"
-                                        render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Genre</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                                                <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un genre" /></SelectTrigger></FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="Masculin">Masculin</SelectItem>
-                                                    <SelectItem value="Féminin">Féminin</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                        )}
                                     />
                                     <FormField
                                     control={form.control}
@@ -632,7 +630,9 @@ export default function PlayersPage() {
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une catégorie" /></SelectTrigger></FormControl>
                                             <SelectContent>
-                                                {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                                                {playerCategories.map(cat => (
+                                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />
@@ -715,7 +715,7 @@ export default function PlayersPage() {
                 <Tabs defaultValue={defaultCategory} className="w-full">
                     <TabsList className="h-auto p-1 bg-muted rounded-md text-muted-foreground justify-start items-center flex-wrap">
                          {Object.keys(groupedPlayers).map((category) => (
-                            <TabsTrigger key={category} value={category} style={{ backgroundColor: categoryColors[category] }} className={cn("data-[state=active]:shadow-none", getCategoryStyle(category))}>{category}</TabsTrigger>
+                            <TabsTrigger key={category} value={category} style={{ backgroundColor: categoryColors[category.replace(' F', '')] }} className={cn("data-[state=active]:shadow-none", getCategoryStyle(category))}>{category}</TabsTrigger>
                         ))}
                     </TabsList>
                     {Object.entries(groupedPlayers).map(([category, postes]) => (
@@ -747,7 +747,7 @@ export default function PlayersPage() {
                                                                 <DropdownMenuTrigger asChild>
                                                                     <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
                                                                         <Badge 
-                                                                            style={{ backgroundColor: categoryColors[player.category], color: 'white' }}
+                                                                            style={{ backgroundColor: categoryColors[player.category.replace(' F', '')], color: 'white' }}
                                                                             className="text-xs cursor-pointer border-transparent"
                                                                         >
                                                                             {player.category || 'Sénior'}
@@ -804,4 +804,3 @@ export default function PlayersPage() {
 }
 
     
-

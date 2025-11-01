@@ -31,7 +31,9 @@ const documentSchema = z.object({
   expirationDate: z.string().optional(),
 });
 
-const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+const baseCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+
+const playerCategories: string[] = baseCategories.flatMap(cat => [cat, `${cat} F`]);
 
 const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
@@ -50,7 +52,7 @@ const playerSchema = z.object({
   tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
   tutorCin: z.string().optional(),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
-  category: z.enum(playerCategories),
+  category: z.string().min(1, "La catégorie est requise."),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
   documents: z.array(documentSchema).optional(),
@@ -88,6 +90,10 @@ const categoryColors: Record<string, string> = {
   'U11': 'hsl(var(--chart-10))',
   'U7': 'hsl(var(--chart-11))',
 };
+
+Object.keys(categoryColors).forEach(key => {
+    categoryColors[`${key} F`] = categoryColors[key];
+});
 
 export function PlayerDetailClient({ id }: { id: string }) {
   const router = useRouter();
@@ -180,9 +186,13 @@ export function PlayerDetailClient({ id }: { id: string }) {
 
   const onSubmit = async (data: PlayerFormValues) => {
     if (!player) return;
+    
+    const gender = data.category.endsWith(' F') ? 'Féminin' : 'Masculin';
+    
     const dataToUpdate = { 
         ...player,
-        ...data, 
+        ...data,
+        gender,
         id: player.id,
         uid: player.uid
     };
@@ -310,7 +320,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                 </div>
                  <div className="flex items-center gap-4">
                     <Home className="h-5 w-5 text-muted-foreground" />
-                    <span>Catégorie : <Badge style={{ backgroundColor: categoryColors[playerCategory], color: 'white' }} className="border-transparent">{playerCategory}</Badge></span>
+                    <span>Catégorie : <Badge style={{ backgroundColor: categoryColors[playerCategory.replace(' F', '')], color: 'white' }} className="border-transparent">{playerCategory}</Badge></span>
                 </div>
                 <div className="flex items-center gap-4">
                     <Shirt className="h-5 w-5 text-muted-foreground" />
@@ -426,23 +436,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                   <FormMessage />
                                 </FormItem>
                               )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="gender"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Genre</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                                        <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un genre" /></SelectTrigger></FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="Masculin">Masculin</SelectItem>
-                                            <SelectItem value="Féminin">Féminin</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
                             />
                             <FormField
                               control={form.control}

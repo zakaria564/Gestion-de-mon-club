@@ -48,9 +48,9 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from "@/hooks/use-toast";
-import type { Player } from "@/lib/data";
 
-const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+const baseCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+const playerCategories: string[] = baseCategories.flatMap(cat => [cat, `${cat} F`]);
 
 const documentSchema = z.object({
   name: z.string().min(1, "Le nom du document est requis."),
@@ -68,7 +68,7 @@ const coachSchema = z.object({
   experience: z.coerce.number().min(0, "L'expérience ne peut être négative."),
   photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
   cin: z.string().optional(),
-  category: z.enum(playerCategories),
+  category: z.string().min(1, "La catégorie est requise."),
   documents: z.array(documentSchema).optional(),
   gender: z.enum(['Masculin', 'Féminin']),
 });
@@ -116,6 +116,11 @@ const categoryColors: Record<string, string> = {
   'U11': 'hsl(var(--chart-10))',
   'U7': 'hsl(var(--chart-11))',
 };
+
+// Add colors for female categories
+Object.keys(categoryColors).forEach(key => {
+    categoryColors[`${key} F`] = categoryColors[key];
+});
 
 export default function CoachesPage() {
   const context = useCoachesContext();
@@ -196,8 +201,11 @@ export default function CoachesPage() {
         });
         return;
       }
+      
+     const gender = data.category.endsWith(' F') ? 'Féminin' : 'Masculin';
      const coachData = {
         ...data,
+        gender,
         status: 'Actif',
       }
     await addCoach(coachData as any);
@@ -271,23 +279,6 @@ export default function CoachesPage() {
                               <FormMessage />
                             </FormItem>
                           )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="gender"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Genre</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un genre" /></SelectTrigger></FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="Masculin">Masculin</SelectItem>
-                                        <SelectItem value="Féminin">Féminin</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                            )}
                         />
                         <FormField
                           control={form.control}
@@ -544,7 +535,7 @@ export default function CoachesPage() {
                         <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
                             <div className="flex justify-between items-center">
                                 <Badge 
-                                    style={{ backgroundColor: categoryColors[coach.category], color: 'white' }}
+                                    style={{ backgroundColor: categoryColors[coach.category.replace(' F', '')], color: 'white' }}
                                     className="text-xs border-transparent"
                                 >
                                     {coach.category}
@@ -583,4 +574,3 @@ export default function CoachesPage() {
 }
 
     
-

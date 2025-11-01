@@ -22,9 +22,9 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { format, isValid, parseISO } from 'date-fns';
-import type { Player } from "@/lib/data";
 
-const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+const baseCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+const playerCategories: string[] = baseCategories.flatMap(cat => [cat, `${cat} F`]);
 
 const categoryColors: Record<string, string> = {
   'Sénior': 'hsl(var(--chart-1))',
@@ -40,6 +40,11 @@ const categoryColors: Record<string, string> = {
   'U11': 'hsl(var(--chart-10))',
   'U7': 'hsl(var(--chart-11))',
 };
+
+// Add colors for female categories
+Object.keys(categoryColors).forEach(key => {
+    categoryColors[`${key} F`] = categoryColors[key];
+});
 
 const documentSchema = z.object({
   name: z.string().min(1, "Le nom du document est requis."),
@@ -57,7 +62,7 @@ const coachSchema = z.object({
   experience: z.coerce.number().min(0, "L'expérience ne peut être négative."),
   photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
   cin: z.string().optional(),
-  category: z.enum(playerCategories),
+  category: z.string().min(1, "La catégorie est requise."),
   documents: z.array(documentSchema).optional(),
   gender: z.enum(['Masculin', 'Féminin']),
 });
@@ -164,9 +169,13 @@ export function CoachDetailClient({ id }: { id: string }) {
 
   const onSubmit = async (data: CoachFormValues) => {
     if (!coach) return;
+    
+    const gender = data.category.endsWith(' F') ? 'Féminin' : 'Masculin';
+    
     const dataToUpdate = { 
         ...coach, // keep existing fields
         ...data,
+        gender,
         id: coach.id,
         uid: coach.uid
     };
@@ -257,7 +266,7 @@ export function CoachDetailClient({ id }: { id: string }) {
                 </div>
                  <div className="flex items-center gap-4">
                     <Home className="h-5 w-5 text-muted-foreground" />
-                    <span><Badge style={{ backgroundColor: categoryColors[coach.category], color: 'white' }} className="border-transparent">{coach.category}</Badge></span>
+                    <span><Badge style={{ backgroundColor: categoryColors[coach.category.replace(' F', '')], color: 'white' }} className="border-transparent">{coach.category}</Badge></span>
                 </div>
                 <div className="flex items-center gap-4">
                     <Award className="h-5 w-5 text-muted-foreground" />
@@ -369,23 +378,6 @@ export function CoachDetailClient({ id }: { id: string }) {
                               <FormMessage />
                             </FormItem>
                           )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="gender"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Genre</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un genre" /></SelectTrigger></FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="Masculin">Masculin</SelectItem>
-                                        <SelectItem value="Féminin">Féminin</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                            )}
                         />
                         <FormField
                           control={form.control}
@@ -576,4 +568,3 @@ export function CoachDetailClient({ id }: { id: string }) {
     
 
     
-
