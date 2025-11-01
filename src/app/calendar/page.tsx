@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useContext, useEffect, useMemo } from 'react';
@@ -79,6 +80,7 @@ export default function CalendarPage() {
     time: '',
     location: '',
     teamCategory: 'Sénior',
+    gender: 'Masculin',
     homeOrAway: 'home',
   });
 
@@ -94,7 +96,9 @@ export default function CalendarPage() {
       assists: [],
       category: 'Match Championnat',
       teamCategory: 'Sénior',
+      gender: 'Masculin',
       homeOrAway: 'home',
+      matchType: 'club-match',
   });
 
   // State for Event Details Dialog
@@ -109,7 +113,7 @@ export default function CalendarPage() {
     setNewEvent(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleEventSelectChange = (field: 'type' | 'teamCategory' | 'opponent', value: string) => {
+  const handleEventSelectChange = (field: 'type' | 'teamCategory' | 'opponent' | 'gender', value: string) => {
     setNewEvent(prev => ({ ...prev, [field]: value as any }));
   };
 
@@ -133,7 +137,7 @@ export default function CalendarPage() {
   };
 
   const resetEventForm = () => {
-    setNewEvent({ type: '', opponent: '', date: '', time: '', location: '', teamCategory: 'Sénior', homeOrAway: 'home' });
+    setNewEvent({ type: '', opponent: '', date: '', time: '', location: '', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home' });
     setEventDialogOpen(false);
     setIsEditing(false);
     setEditingEvent(null);
@@ -172,6 +176,7 @@ export default function CalendarPage() {
         time: '', 
         location: '',
         teamCategory: 'Sénior',
+        gender: 'Masculin',
         homeOrAway: 'home',
     });
     setEventDialogOpen(true);
@@ -194,6 +199,7 @@ export default function CalendarPage() {
       time: event.time,
       location: event.location,
       teamCategory: event.teamCategory || 'Sénior',
+      gender: event.gender || 'Masculin',
       homeOrAway: event.homeOrAway || 'home',
     });
     setEventDialogOpen(true);
@@ -214,11 +220,13 @@ export default function CalendarPage() {
         time: event.time,
         location: event.location,
         teamCategory: event.teamCategory,
+        gender: event.gender,
         category: event.type, // 'Match Amical', etc.
         score: '',
         scorers: [],
         assists: [],
         homeOrAway: event.homeOrAway || 'home',
+        matchType: 'club-match'
       });
       setResultDialogOpen(true);
   };
@@ -258,7 +266,7 @@ export default function CalendarPage() {
   };
 
   const resetResultForm = () => {
-    setNewResult({ opponent: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', homeOrAway: 'home' });
+    setNewResult({ opponent: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
     setResultDialogOpen(false);
   };
 
@@ -283,9 +291,9 @@ export default function CalendarPage() {
 
   const filteredPlayerOptions = useMemo(() => {
     return players
-      .filter(p => p.category === newResult.teamCategory)
+      .filter(p => p.category === newResult.teamCategory && p.gender === newResult.gender)
       .map(p => ({ value: p.name, label: p.name }));
-  }, [players, newResult.teamCategory]);
+  }, [players, newResult.teamCategory, newResult.gender]);
 
   const eventsByDate = calendarEvents.reduce((acc, event) => {
     const eventDate = format(parseISO(event.date), 'yyyy-MM-dd');
@@ -406,18 +414,32 @@ export default function CalendarPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                 <div className="grid gap-2">
-                    <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
-                    <Select onValueChange={(v) => handleEventSelectChange('teamCategory', v)} value={newEvent.teamCategory} required>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner une catégorie" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {playerCategories.map(cat => (
-                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
+                        <Select onValueChange={(v) => handleEventSelectChange('teamCategory', v)} value={newEvent.teamCategory} required>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Sélectionner une catégorie" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {playerCategories.map(cat => (
+                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="gender">Genre</Label>
+                        <Select onValueChange={(v) => handleEventSelectChange('gender', v)} value={newEvent.gender} required>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Sélectionner un genre" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Masculin">Masculin</SelectItem>
+                                <SelectItem value="Féminin">Féminin</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
                 {isNewEventMatch && (
                   <>
@@ -541,6 +563,7 @@ export default function CalendarPage() {
                             <div className='flex gap-2 items-center justify-center mb-2'>
                                 <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
                                 {event.teamCategory && <Badge style={{backgroundColor: categoryColors[event.teamCategory], color: 'white'}} className="border-transparent">{event.teamCategory}</Badge>}
+                                {event.gender && <Badge variant="outline">{event.gender}</Badge>}
                             </div>
                             <p className="font-semibold">{getMatchTitle(event)}</p>
                             <p className="text-sm text-muted-foreground">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
@@ -577,6 +600,7 @@ export default function CalendarPage() {
             <>
               <div className="grid gap-4 py-4">
                   {selectedEvent.teamCategory && <p><strong>Catégorie:</strong> {selectedEvent.teamCategory}</p>}
+                  {selectedEvent.gender && <p><strong>Genre:</strong> {selectedEvent.gender}</p>}
                   <p><strong>Date:</strong> {format(parseISO(selectedEvent.date), 'dd/MM/yyyy')}</p>
                   <p><strong>Heure:</strong> {selectedEvent.time}</p>
                   <p><strong>Lieu:</strong> {selectedEvent.location}</p>

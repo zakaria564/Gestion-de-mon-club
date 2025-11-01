@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { useMemo, useState, useEffect } from 'react';
@@ -57,7 +58,7 @@ const coachSchema = z.object({
   cin: z.string().optional(),
   category: z.enum(playerCategories),
   documents: z.array(documentSchema).optional(),
-  gender: z.enum(['Masculin', 'Féminin']).optional(),
+  gender: z.enum(['Masculin', 'Féminin']),
 });
 
 type CoachFormValues = z.infer<typeof coachSchema>;
@@ -374,7 +375,7 @@ export function CoachDetailClient({ id }: { id: string }) {
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Genre</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un genre" /></SelectTrigger></FormControl>
                                     <SelectContent>
                                         <SelectItem value="Masculin">Masculin</SelectItem>

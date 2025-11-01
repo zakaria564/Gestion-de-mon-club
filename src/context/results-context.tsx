@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
@@ -25,6 +26,7 @@ export interface Result {
   assists: PerformanceDetail[];
   category: string;
   teamCategory: string;
+  gender: 'Masculin' | 'Féminin';
   homeOrAway: 'home' | 'away';
   matchType: 'club-match' | 'opponent-vs-opponent';
 }

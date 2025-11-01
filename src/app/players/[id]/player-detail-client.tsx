@@ -42,7 +42,7 @@ const playerSchema = z.object({
   photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
   country: z.string().min(1, "La nationalité est requise."),
   cin: z.string().optional(),
-  gender: z.enum(['Masculin', 'Féminin']).optional(),
+  gender: z.enum(['Masculin', 'Féminin']),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
   tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
@@ -430,7 +430,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Genre</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un genre" /></SelectTrigger></FormControl>
                                         <SelectContent>
                                             <SelectItem value="Masculin">Masculin</SelectItem>

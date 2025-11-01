@@ -19,7 +19,7 @@ export type Player = {
   jerseyNumber: number;
   photo?: string;
   cin?: string;
-  gender?: 'Masculin' | 'Féminin';
+  gender: 'Masculin' | 'Féminin';
   tutorName?: string;
   tutorPhone?: string;
   tutorEmail?: string;
@@ -46,7 +46,7 @@ export type Coach = {
   status: 'Actif' | 'Inactif';
   category: 'Sénior' | 'U23' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
   documents?: PlayerDocument[];
-  gender?: 'Masculin' | 'Féminin';
+  gender: 'Masculin' | 'Féminin';
 }
 
 export type CalendarEvent = {
@@ -58,6 +58,7 @@ export type CalendarEvent = {
   time: string;
   location: string;
   teamCategory: 'Sénior' | 'U23' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
+  gender: 'Masculin' | 'Féminin';
   homeOrAway?: 'home' | 'away';
 };
 

@@ -67,7 +67,7 @@ const playerSchema = z.object({
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   photo: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
   cin: z.string().optional(),
-  gender: z.enum(['Masculin', 'Féminin']).optional(),
+  gender: z.enum(['Masculin', 'Féminin']),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
   tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
@@ -332,7 +332,7 @@ export default function PlayersPage() {
                                         render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Genre</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                                                 <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un genre" /></SelectTrigger></FormControl>
                                                 <SelectContent>
                                                     <SelectItem value="Masculin">Masculin</SelectItem>

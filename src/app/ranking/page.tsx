@@ -51,6 +51,7 @@ export default function RankingPage() {
   const { results, loading } = resultsContext;
   const { clubInfo } = clubContext;
   const [teamCategoryFilter, setTeamCategoryFilter] = useState('Sénior');
+  const [genderFilter, setGenderFilter] = useState<'Masculin' | 'Féminin'>('Masculin');
   const [activeTab, setActiveTab] = useState(matchTypes[0]);
   
   const rankings = useMemo(() => {
@@ -59,12 +60,17 @@ export default function RankingPage() {
     let filteredResults: Result[];
 
     if (activeTab === 'Match Championnat') {
-      filteredResults = results.filter(result => result.teamCategory === teamCategoryFilter && result.category === activeTab);
+      filteredResults = results.filter(result => 
+        result.teamCategory === teamCategoryFilter && 
+        result.category === activeTab &&
+        result.gender === genderFilter
+      );
     } else {
       // For Cup and Tournament, only include matches involving our club
       filteredResults = results.filter(result => 
         result.teamCategory === teamCategoryFilter && 
         result.category === activeTab &&
+        result.gender === genderFilter &&
         (result.matchType === 'club-match' || !result.matchType)
       );
     }
@@ -144,7 +150,7 @@ export default function RankingPage() {
             return b.goalsFor - a.goalsFor;
         });
 
-  }, [results, clubInfo.name, teamCategoryFilter, activeTab]);
+  }, [results, clubInfo.name, teamCategoryFilter, genderFilter, activeTab]);
 
   if (loading) {
      return (
@@ -198,6 +204,15 @@ export default function RankingPage() {
                     ))}
                 </SelectContent>
             </Select>
+            <Select value={genderFilter} onValueChange={(v) => setGenderFilter(v as any)}>
+                <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectValue placeholder="Filtrer par genre" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="Masculin">Masculin</SelectItem>
+                    <SelectItem value="Féminin">Féminin</SelectItem>
+                </SelectContent>
+            </Select>
         </div>
         
        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -212,7 +227,7 @@ export default function RankingPage() {
                   <CardHeader>
                     <CardTitle>Classement - {type.replace('Match ', '')}</CardTitle>
                     <CardDescription>
-                      Classement des équipes pour la catégorie {teamCategoryFilter}.
+                      Classement des équipes {genderFilter === 'Féminin' ? 'féminines' : 'masculines'} pour la catégorie {teamCategoryFilter}.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -250,7 +265,7 @@ export default function RankingPage() {
                         ) : (
                           <TableRow>
                             <TableCell colSpan={10} className="text-center">
-                              Aucun résultat de type "{type.replace('Match ', '')}" trouvé pour cette catégorie.
+                              Aucun résultat de type "{type.replace('Match ', '')}" trouvé pour cette catégorie et ce genre.
                             </TableCell>
                           </TableRow>
                         )}

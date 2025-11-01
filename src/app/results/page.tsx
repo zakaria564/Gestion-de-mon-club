@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import {
@@ -86,6 +87,7 @@ export default function ResultsPage() {
     assists: [],
     category: 'Match Championnat',
     teamCategory: 'Sénior',
+    gender: 'Masculin',
     homeOrAway: 'home',
     matchType: 'club-match',
   });
@@ -106,8 +108,8 @@ export default function ResultsPage() {
     setNewResult(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleSelectChange = (field: 'category' | 'teamCategory' | 'opponent' | 'homeTeam' | 'awayTeam', value: string) => {
-    setNewResult(prev => ({ ...prev, [field]: value }));
+  const handleSelectChange = (field: 'category' | 'teamCategory' | 'opponent' | 'homeTeam' | 'awayTeam' | 'gender', value: string) => {
+    setNewResult(prev => ({ ...prev, [field]: value as any }));
   };
 
   const handleRadioChange = (value: "home" | "away") => {
@@ -144,7 +146,7 @@ export default function ResultsPage() {
   };
   
   const resetForm = () => {
-    setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', homeOrAway: 'home', matchType: 'club-match' });
+    setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
     setOpen(false);
     setIsEditing(false);
     setEditingResult(null);
@@ -190,6 +192,7 @@ export default function ResultsPage() {
         score: result.score,
         category: result.category || 'Match Championnat',
         teamCategory: result.teamCategory || 'Sénior',
+        gender: result.gender || 'Masculin',
         scorers: Array.isArray(result.scorers) ? result.scorers : [],
         assists: result.assists && Array.isArray(result.assists) ? result.assists : [],
         homeOrAway: result.homeOrAway || 'home',
@@ -261,9 +264,9 @@ export default function ResultsPage() {
 
   const filteredPlayerOptions = useMemo(() => {
     return players
-      .filter(p => p.category === newResult.teamCategory)
+      .filter(p => p.category === newResult.teamCategory && p.gender === newResult.gender)
       .map(p => ({ value: p.name, label: p.name }));
-  }, [players, newResult.teamCategory]);
+  }, [players, newResult.teamCategory, newResult.gender]);
 
   const formatPerformance = (items: PerformanceDetail[] | undefined): string => {
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -374,6 +377,18 @@ export default function ResultsPage() {
                                 </Select>
                             </div>
                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="gender">Genre</Label>
+                            <Select onValueChange={(v) => handleSelectChange('gender', v)} value={newResult.gender} required>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionner un genre" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Masculin">Masculin</SelectItem>
+                                    <SelectItem value="Féminin">Féminin</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                         
                          {matchType === 'club-match' && (
                             <>
