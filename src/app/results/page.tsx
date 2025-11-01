@@ -29,12 +29,13 @@ import { useOpponentsContext } from "@/context/opponents-context";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { addHours, isAfter, parse } from "date-fns";
 
-const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical', 'Match Tournoi'];
 
 const categoryColors: Record<string, string> = {
   'Sénior': 'hsl(var(--chart-1))',
   'U23': 'hsl(var(--chart-2))',
+  'U20': 'hsl(340, 80%, 55%)',
   'U19': 'hsl(var(--chart-3))',
   'U18': 'hsl(var(--chart-4))',
   'U17': 'hsl(var(--chart-5))',
@@ -300,10 +301,14 @@ export default function ResultsPage() {
 
   const getResultTitle = (result: Result) => {
      if (result.matchType === 'opponent-vs-opponent') {
-        return `${result.homeTeam} vs ${result.awayTeam}`;
+        const homeTeamName = result.gender === 'Féminin' ? `${result.homeTeam} (F)` : result.homeTeam;
+        const awayTeamName = result.gender === 'Féminin' ? `${result.awayTeam} (F)` : result.awayTeam;
+        return `${homeTeamName} vs ${awayTeamName}`;
     }
-    const homeTeam = result.homeOrAway === 'home' ? clubInfo.name : result.opponent;
-    const awayTeam = result.homeOrAway === 'home' ? result.opponent : clubInfo.name;
+    const clubName = result.gender === 'Féminin' ? `${clubInfo.name} (F)` : clubInfo.name;
+    const opponentName = result.gender === 'Féminin' ? `${result.opponent} (F)` : result.opponent;
+    const homeTeam = result.homeOrAway === 'home' ? clubName : opponentName;
+    const awayTeam = result.homeOrAway === 'home' ? opponentName : clubName;
     return `${homeTeam} vs ${awayTeam}`;
   };
 

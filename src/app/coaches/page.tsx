@@ -50,7 +50,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from "@/hooks/use-toast";
 import type { Player } from "@/lib/data";
 
-const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
 const documentSchema = z.object({
   name: z.string().min(1, "Le nom du document est requis."),
@@ -105,6 +105,7 @@ const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "
 const categoryColors: Record<string, string> = {
   'Sénior': 'hsl(var(--chart-1))',
   'U23': 'hsl(var(--chart-2))',
+  'U20': 'hsl(340, 80%, 55%)',
   'U19': 'hsl(var(--chart-3))',
   'U18': 'hsl(var(--chart-4))',
   'U17': 'hsl(var(--chart-5))',
@@ -582,3 +583,4 @@ export default function CoachesPage() {
 }
 
     
+

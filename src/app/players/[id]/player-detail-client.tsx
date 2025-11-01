@@ -31,6 +31,8 @@ const documentSchema = z.object({
   expirationDate: z.string().optional(),
 });
 
+const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+
 const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
   birthDate: z.string().min(1, "La date de naissance est requise."),
@@ -48,7 +50,7 @@ const playerSchema = z.object({
   tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
   tutorCin: z.string().optional(),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
-  category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
+  category: z.enum(playerCategories),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
   documents: z.array(documentSchema).optional(),
@@ -75,6 +77,7 @@ const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "
 const categoryColors: Record<string, string> = {
   'Sénior': 'hsl(var(--chart-1))',
   'U23': 'hsl(var(--chart-2))',
+  'U20': 'hsl(340, 80%, 55%)',
   'U19': 'hsl(var(--chart-3))',
   'U18': 'hsl(var(--chart-4))',
   'U17': 'hsl(var(--chart-5))',
@@ -599,17 +602,9 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une catégorie" /></SelectTrigger></FormControl>
                                         <SelectContent>
-                                          <SelectItem value="Sénior">Sénior</SelectItem>
-                                          <SelectItem value="U23">U23</SelectItem>
-                                          <SelectItem value="U19">U19</SelectItem>
-                                          <SelectItem value="U18">U18</SelectItem>
-                                          <SelectItem value="U17">U17</SelectItem>
-                                          <SelectItem value="U16">U16</SelectItem>
-                                          <SelectItem value="U15">U15</SelectItem>
-                                          <SelectItem value="U13">U13</SelectItem>
-                                          <SelectItem value="U11">U11</SelectItem>
-                                          <SelectItem value="U9">U9</SelectItem>
-                                          <SelectItem value="U7">U7</SelectItem>
+                                          {playerCategories.map(cat => (
+                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                          ))}
                                         </SelectContent>
                                       </Select>
                                       <FormMessage />

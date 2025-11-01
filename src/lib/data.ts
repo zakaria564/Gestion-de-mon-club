@@ -25,7 +25,7 @@ export type Player = {
   tutorEmail?: string;
   tutorCin?: string;
   status: 'Actif' | 'Blessé' | 'Suspendu' | 'Inactif';
-  category: 'Sénior' | 'U23' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
+  category: 'Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
   entryDate?: string;
   exitDate?: string;
   documents?: PlayerDocument[];
@@ -44,7 +44,7 @@ export type Coach = {
   photo?: string;
   cin?: string;
   status: 'Actif' | 'Inactif';
-  category: 'Sénior' | 'U23' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
+  category: 'Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
   documents?: PlayerDocument[];
   gender: 'Masculin' | 'Féminin';
 }
@@ -57,7 +57,7 @@ export type CalendarEvent = {
   date: string;
   time: string;
   location: string;
-  teamCategory: 'Sénior' | 'U23' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
+  teamCategory: 'Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
   gender: 'Masculin' | 'Féminin';
   homeOrAway?: 'home' | 'away';
 };

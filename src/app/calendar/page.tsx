@@ -32,11 +32,12 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useOpponentsContext } from '@/context/opponents-context';
 
 
-const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
 const categoryColors: Record<string, string> = {
   'Sénior': 'hsl(var(--chart-1))',
   'U23': 'hsl(var(--chart-2))',
+  'U20': 'hsl(340, 80%, 55%)',
   'U19': 'hsl(var(--chart-3))',
   'U18': 'hsl(var(--chart-4))',
   'U17': 'hsl(var(--chart-5))',
@@ -338,8 +339,11 @@ export default function CalendarPage() {
     const isMatch = event.type.toLowerCase().includes('match');
     if (!isMatch || !event.opponent) return event.type;
     
-    const homeTeam = event.homeOrAway === 'home' ? clubInfo.name : event.opponent;
-    const awayTeam = event.homeOrAway === 'home' ? event.opponent : clubInfo.name;
+    const clubName = event.gender === 'Féminin' ? `${clubInfo.name} (F)` : clubInfo.name;
+    const opponentName = event.gender === 'Féminin' ? `${event.opponent} (F)` : event.opponent;
+
+    const homeTeam = event.homeOrAway === 'home' ? clubName : opponentName;
+    const awayTeam = event.homeOrAway === 'home' ? opponentName : clubName;
     
     return `${homeTeam} vs ${awayTeam}`;
   }
@@ -735,3 +739,4 @@ export default function CalendarPage() {
     
 
     
+

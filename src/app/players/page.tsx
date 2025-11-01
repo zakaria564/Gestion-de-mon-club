@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -56,6 +57,8 @@ const documentSchema = z.object({
   expirationDate: z.string().optional(),
 });
 
+const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+
 const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
   birthDate: z.string().min(1, "La date de naissance est requise."),
@@ -73,7 +76,7 @@ const playerSchema = z.object({
   tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
   tutorCin: z.string().optional(),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
-  category: z.enum(['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7']),
+  category: z.enum(playerCategories),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
   documents: z.array(documentSchema).optional(),
@@ -124,6 +127,7 @@ const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "
 const categoryColors: Record<string, string> = {
   'Sénior': 'hsl(var(--chart-1))',
   'U23': 'hsl(var(--chart-2))',
+  'U20': 'hsl(340, 80%, 55%)',
   'U19': 'hsl(var(--chart-3))',
   'U18': 'hsl(var(--chart-4))',
   'U17': 'hsl(var(--chart-5))',
@@ -138,7 +142,6 @@ const categoryColors: Record<string, string> = {
 export default function PlayersPage() {
     const context = usePlayersContext();
     const { toast } = useToast();
-    const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
     
     if (!context) {
       throw new Error("PlayersPage must be used within a PlayersProvider");
@@ -801,3 +804,4 @@ export default function PlayersPage() {
 }
 
     
+
