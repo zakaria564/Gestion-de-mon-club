@@ -172,26 +172,41 @@ export default function RankingPage() {
   }, [filteredResults, clubInfo.name, activeTab]);
 
  const scorersRanking = useMemo(() => {
-    const scorerStats: { [name: string]: { goals: number; isClubPlayer: boolean } } = {};
+    const scorerStats: { [name: string]: { goals: number; isClubPlayer: boolean; teamName: string; parsedName: string } } = {};
     const clubPlayerNames = new Set(players.map(p => p.name));
+    const nameRegex = /(.*) \((.*)\)/; // Regex to parse "Player Name (Team Name)"
 
     filteredResults.forEach(result => {
         if (!result.scorers || !Array.isArray(result.scorers)) return;
         
         result.scorers.forEach(scorer => {
-            const isClubPlayer = clubPlayerNames.has(scorer.playerName);
-            if (!scorerStats[scorer.playerName]) {
-                scorerStats[scorer.playerName] = { goals: 0, isClubPlayer };
+            const rawPlayerName = scorer.playerName;
+            let parsedName = rawPlayerName;
+            let teamName = 'Adversaire';
+            let isClubPlayer = clubPlayerNames.has(rawPlayerName);
+
+            if (isClubPlayer) {
+                teamName = clubInfo.name;
+            } else {
+                const match = rawPlayerName.match(nameRegex);
+                if (match) {
+                    parsedName = match[1].trim(); // "Ikram Afifi"
+                    teamName = match[2].trim();   // "WAC"
+                }
             }
-            scorerStats[scorer.playerName].goals += scorer.count;
+
+            if (!scorerStats[rawPlayerName]) {
+                scorerStats[rawPlayerName] = { goals: 0, isClubPlayer, teamName, parsedName };
+            }
+            scorerStats[rawPlayerName].goals += scorer.count;
         });
     });
 
     const sortedScorers = Object.entries(scorerStats)
-      .map(([name, data]) => ({
-          name,
+      .map(([originalName, data]) => ({
+          name: data.parsedName,
           goals: data.goals,
-          team: data.isClubPlayer ? clubInfo.name : 'Adversaire',
+          team: data.teamName,
           isClubPlayer: data.isClubPlayer
       }))
       .sort((a, b) => {
