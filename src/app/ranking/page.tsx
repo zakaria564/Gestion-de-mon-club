@@ -174,6 +174,7 @@ export default function RankingPage() {
   const scorersRanking = useMemo(() => {
     const scorerStats: { [name: string]: { goals: number, team: string, isClubPlayer: boolean } } = {};
     const clubPlayerNames = new Set(players.map(p => p.name));
+    const opponentNames = new Set(opponents.map(o => o.name));
 
     filteredResults.forEach(result => {
         if (!result.scorers || !Array.isArray(result.scorers)) return;
@@ -183,17 +184,22 @@ export default function RankingPage() {
             
             if (!scorerStats[scorerName]) {
                 const isClubPlayer = clubPlayerNames.has(scorerName);
-                let teamName = "Adversaire";
+                let teamName = "Inconnu";
                 
                 if (isClubPlayer) {
                     teamName = clubInfo.name;
                 } else if (result.matchType === 'club-match') {
                     teamName = result.opponent;
                 } else if (result.matchType === 'opponent-vs-opponent') {
-                    // Simplistic assumption: a non-club player belongs to one of the opponent teams
-                    // This is imperfect as we don't store which team the scorer belongs to.
-                    // A better approach would be to store team with scorer. For now, show opponent name.
-                    teamName = scorer.playerName.startsWith('opponent-') ? scorer.playerName.substring(9) : "Adversaire";
+                    // This is an imperfect guess. We assume if the scorer name matches an opponent team name, it's that team.
+                    if (opponentNames.has(scorerName)) {
+                      teamName = scorerName;
+                    } else if(result.homeTeam && result.awayTeam) {
+                      // If we can't identify, we show both teams from the match to give context
+                      teamName = `${result.homeTeam} / ${result.awayTeam}`;
+                    }
+                } else {
+                     teamName = result.opponent;
                 }
 
                 scorerStats[scorerName] = { goals: 0, team: teamName, isClubPlayer };
@@ -217,7 +223,7 @@ export default function RankingPage() {
         return { ...scorer, rank };
     });
 
-  }, [filteredResults, players, clubInfo.name]);
+  }, [filteredResults, players, opponents, clubInfo.name]);
 
 
   if (loading) {
