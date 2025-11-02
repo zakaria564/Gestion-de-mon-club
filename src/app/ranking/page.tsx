@@ -147,7 +147,8 @@ export default function RankingPage() {
         .sort((a, b) => {
             if (b.points !== a.points) return b.points - a.points;
             if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-            return b.goalsFor - a.goalsFor;
+            if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+            return a.team.localeCompare(b.team); // Alphabetical tie-breaker
         });
 
   }, [results, clubInfo.name, teamCategoryFilter, genderFilter, activeTab]);
