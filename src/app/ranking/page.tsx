@@ -22,8 +22,11 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Player } from "@/lib/data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart } from "lucide-react";
+import { BarChart, Trophy } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usePlayersContext } from "@/context/players-context";
+import { useOpponentsContext } from "@/context/opponents-context";
+import { Badge } from "@/components/ui/badge";
 
 interface TeamStats {
   team: string;
@@ -37,40 +40,55 @@ interface TeamStats {
   points: number;
 }
 
+interface ScorerStat {
+    rank: number;
+    name: string;
+    team: string;
+    isClubPlayer: boolean;
+    goals: number;
+}
+
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchTypes = ['Match Championnat', 'Match Coupe', 'Match Tournoi'];
 
 export default function RankingPage() {
   const resultsContext = useResultsContext();
   const clubContext = useClubContext();
+  const playersContext = usePlayersContext();
+  const opponentsContext = useOpponentsContext();
 
-  if (!resultsContext || !clubContext) {
-    throw new Error("RankingPage must be used within ResultsProvider and ClubProvider");
+  if (!resultsContext || !clubContext || !playersContext || !opponentsContext) {
+    throw new Error("RankingPage must be used within all required providers");
   }
 
-  const { results, loading } = resultsContext;
+  const { results, loading: resultsLoading } = resultsContext;
   const { clubInfo } = clubContext;
+  const { players, loading: playersLoading } = playersContext;
+  const { opponents, loading: opponentsLoading } = opponentsContext;
+
+  const loading = resultsLoading || playersLoading || opponentsLoading;
+
   const [teamCategoryFilter, setTeamCategoryFilter] = useState('Sénior');
   const [genderFilter, setGenderFilter] = useState<'Masculin' | 'Féminin'>('Masculin');
   const [activeTab, setActiveTab] = useState(matchTypes[0]);
-  
+
+  const filteredResults = useMemo(() => {
+    return results.filter(result =>
+      result.teamCategory === teamCategoryFilter &&
+      result.gender === genderFilter
+    );
+  }, [results, teamCategoryFilter, genderFilter]);
+
   const rankings = useMemo(() => {
     const stats: { [key: string]: TeamStats } = {};
 
-    let filteredResults: Result[];
+    let resultsForRanking: Result[];
 
     if (activeTab === 'Match Championnat') {
-      filteredResults = results.filter(result => 
-        result.teamCategory === teamCategoryFilter && 
-        result.category === activeTab &&
-        result.gender === genderFilter
-      );
+      resultsForRanking = filteredResults.filter(result => result.category === activeTab);
     } else {
-      // For Cup and Tournament, only include matches involving our club
-      filteredResults = results.filter(result => 
-        result.teamCategory === teamCategoryFilter && 
+      resultsForRanking = filteredResults.filter(result =>
         result.category === activeTab &&
-        result.gender === genderFilter &&
         (result.matchType === 'club-match' || !result.matchType)
       );
     }
@@ -91,31 +109,31 @@ export default function RankingPage() {
       }
     };
 
-    filteredResults.forEach((result) => {
+    resultsForRanking.forEach((result) => {
       const scoreParts = result.score.split('-').map(s => parseInt(s.trim()));
       if (scoreParts.length !== 2 || isNaN(scoreParts[0]) || isNaN(scoreParts[1])) {
-        return; // Skip invalid scores
+        return;
       }
 
       const homeGoals = scoreParts[0];
       const awayGoals = scoreParts[1];
-      
+
       let homeTeam: string, awayTeam: string;
 
       if (result.matchType === 'opponent-vs-opponent') {
-          homeTeam = result.homeTeam!;
-          awayTeam = result.awayTeam!;
+        homeTeam = result.homeTeam!;
+        awayTeam = result.awayTeam!;
       } else {
-          const isHome = result.homeOrAway === 'home';
-          homeTeam = isHome ? clubInfo.name : result.opponent;
-          awayTeam = isHome ? result.opponent : clubInfo.name;
+        const isHome = result.homeOrAway === 'home';
+        homeTeam = isHome ? clubInfo.name : result.opponent;
+        awayTeam = isHome ? result.opponent : clubInfo.name;
       }
-      
+
       if (!homeTeam || !awayTeam) return;
 
       initializeTeam(homeTeam);
       initializeTeam(awayTeam);
-      
+
       stats[homeTeam].played += 1;
       stats[awayTeam].played += 1;
       stats[homeTeam].goalsFor += homeGoals;
@@ -140,48 +158,93 @@ export default function RankingPage() {
     });
 
     return Object.values(stats)
-        .map(team => ({
-            ...team,
-            goalDifference: team.goalsFor - team.goalsAgainst,
-        }))
-        .sort((a, b) => {
-            if (b.points !== a.points) return b.points - a.points;
-            if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-            if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
-            return a.team.localeCompare(b.team); // Alphabetical tie-breaker
-        });
+      .map(team => ({
+        ...team,
+        goalDifference: team.goalsFor - team.goalsAgainst,
+      }))
+      .sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+        if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+        return a.team.localeCompare(b.team);
+      });
 
-  }, [results, clubInfo.name, teamCategoryFilter, genderFilter, activeTab]);
+  }, [filteredResults, clubInfo.name, activeTab]);
+
+  const scorersRanking = useMemo(() => {
+    const scorerStats: { [name: string]: { goals: number, team: string, isClubPlayer: boolean } } = {};
+    const clubPlayerNames = new Set(players.map(p => p.name));
+
+    filteredResults.forEach(result => {
+        if (!result.scorers || !Array.isArray(result.scorers)) return;
+        
+        result.scorers.forEach(scorer => {
+            if (!scorerStats[scorer.playerName]) {
+                const isClubPlayer = clubPlayerNames.has(scorer.playerName);
+                let teamName = "Adversaire";
+                if(isClubPlayer) {
+                    teamName = clubInfo.name;
+                } else if (result.matchType === 'club-match') {
+                    teamName = result.opponent;
+                } else if (result.matchType === 'opponent-vs-opponent') {
+                    // This part is tricky, we don't know which opponent team the scorer belongs to
+                    // We can list both or make an assumption. For now, let's keep it simple.
+                    teamName = `${result.homeTeam} / ${result.awayTeam}`;
+                }
+
+                scorerStats[scorer.playerName] = { goals: 0, team: teamName, isClubPlayer };
+            }
+            scorerStats[scorer.playerName].goals += scorer.count;
+        });
+    });
+
+    const sortedScorers = Object.entries(scorerStats)
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => {
+        if (b.goals !== a.goals) return b.goals - a.goals;
+        return a.name.localeCompare(b.name);
+      });
+
+    let rank = 1;
+    return sortedScorers.map((scorer, index) => {
+        if (index > 0 && scorer.goals < sortedScorers[index - 1].goals) {
+            rank = index + 1;
+        }
+        return { ...scorer, rank };
+    });
+
+  }, [filteredResults, players, clubInfo.name]);
+
 
   if (loading) {
-     return (
-        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-            <div className="flex items-center justify-between space-y-2">
-                <Skeleton className="h-10 w-48" />
-            </div>
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-8 w-1/2"/>
-                    <Skeleton className="h-6 w-1/4"/>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                {Array.from({ length: 9 }).map((_, i) => <TableHead key={i}><Skeleton className="h-6 w-full"/></TableHead>)}
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {Array.from({ length: 5 }).map((_, i) => (
-                                <TableRow key={i}>
-                                     {Array.from({ length: 9 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full"/></TableCell>)}
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+    return (
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="flex items-center justify-between space-y-2">
+          <Skeleton className="h-10 w-48" />
         </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-1/2" />
+            <Skeleton className="h-6 w-1/4" />
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {Array.from({ length: 9 }).map((_, i) => <TableHead key={i}><Skeleton className="h-6 w-full" /></TableHead>)}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: 9 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
@@ -189,94 +252,139 @@ export default function RankingPage() {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <BarChart className="h-8 w-8"/>
+          <BarChart className="h-8 w-8" />
           Classement
         </h2>
       </div>
 
-       <div className="flex items-center gap-4">
-            <Select value={teamCategoryFilter} onValueChange={setTeamCategoryFilter}>
-                <SelectTrigger className="w-full sm:w-[200px]">
-                    <SelectValue placeholder="Filtrer par catégorie" />
-                </SelectTrigger>
-                <SelectContent>
-                    {playerCategories.map(cat => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-            <Select value={genderFilter} onValueChange={(v) => setGenderFilter(v as any)}>
-                <SelectTrigger className="w-full sm:w-[200px]">
-                    <SelectValue placeholder="Filtrer par genre" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="Masculin">Masculin</SelectItem>
-                    <SelectItem value="Féminin">Féminin</SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
-        
-       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList>
-            {matchTypes.map(type => (
-              <TabsTrigger key={type} value={type}>{type.replace('Match ', '')}</TabsTrigger>
+      <div className="flex items-center gap-4">
+        <Select value={teamCategoryFilter} onValueChange={setTeamCategoryFilter}>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="Filtrer par catégorie" />
+          </SelectTrigger>
+          <SelectContent>
+            {playerCategories.map(cat => (
+              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
             ))}
-          </TabsList>
+          </SelectContent>
+        </Select>
+        <Select value={genderFilter} onValueChange={(v) => setGenderFilter(v as any)}>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="Filtrer par genre" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Masculin">Masculin</SelectItem>
+            <SelectItem value="Féminin">Féminin</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
           {matchTypes.map(type => (
-             <TabsContent key={type} value={type}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Classement - {type.replace('Match ', '')}</CardTitle>
-                    <CardDescription>
-                      Classement des équipes {genderFilter === 'Féminin' ? 'féminines' : 'masculines'} pour la catégorie {teamCategoryFilter}.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[50px]">#</TableHead>
-                          <TableHead>Équipe</TableHead>
-                          <TableHead className="text-center">J</TableHead>
-                          <TableHead className="text-center">G</TableHead>
-                          <TableHead className="text-center">N</TableHead>
-                          <TableHead className="text-center">P</TableHead>
-                          <TableHead className="text-center hidden sm:table-cell">BP</TableHead>
-                          <TableHead className="text-center hidden sm:table-cell">BC</TableHead>
-                          <TableHead className="text-center hidden sm:table-cell">DB</TableHead>
-                          <TableHead className="text-center">Pts</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {rankings.length > 0 ? (
-                          rankings.map((stat, index) => (
-                              <TableRow key={stat.team} className={stat.team === clubInfo.name ? "bg-accent/50" : ""}>
-                                  <TableCell className="font-medium">{index + 1}</TableCell>
-                                  <TableCell className="font-medium">{stat.team}</TableCell>
-                                  <TableCell className="text-center">{stat.played}</TableCell>
-                                  <TableCell className="text-center">{stat.wins}</TableCell>
-                                  <TableCell className="text-center">{stat.draws}</TableCell>
-                                  <TableCell className="text-center">{stat.losses}</TableCell>
-                                  <TableCell className="text-center hidden sm:table-cell">{stat.goalsFor}</TableCell>
-                                  <TableCell className="text-center hidden sm:table-cell">{stat.goalsAgainst}</TableCell>
-                                  <TableCell className="text-center hidden sm:table-cell">{stat.goalDifference}</TableCell>
-                                  <TableCell className="text-center font-bold">{stat.points}</TableCell>
-                              </TableRow>
-                          ))
-                        ) : (
-                          <TableRow>
-                            <TableCell colSpan={10} className="text-center">
-                              Aucun résultat de type "{type.replace('Match ', '')}" trouvé pour cette catégorie et ce genre.
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-             </TabsContent>
+            <TabsTrigger key={type} value={type}>{type.replace('Match ', '')}</TabsTrigger>
           ))}
-       </Tabs>
+          <TabsTrigger value="scorers"><Trophy className="mr-2 h-4 w-4" />Buteurs</TabsTrigger>
+        </TabsList>
+        {matchTypes.map(type => (
+          <TabsContent key={type} value={type}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Classement - {type.replace('Match ', '')}</CardTitle>
+                <CardDescription>
+                  Classement des équipes {genderFilter === 'Féminin' ? 'féminines' : 'masculines'} pour la catégorie {teamCategoryFilter}.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">#</TableHead>
+                      <TableHead>Équipe</TableHead>
+                      <TableHead className="text-center">J</TableHead>
+                      <TableHead className="text-center">G</TableHead>
+                      <TableHead className="text-center">N</TableHead>
+                      <TableHead className="text-center">P</TableHead>
+                      <TableHead className="text-center hidden sm:table-cell">BP</TableHead>
+                      <TableHead className="text-center hidden sm:table-cell">BC</TableHead>
+                      <TableHead className="text-center hidden sm:table-cell">DB</TableHead>
+                      <TableHead className="text-center">Pts</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {rankings.length > 0 ? (
+                      rankings.map((stat, index) => (
+                        <TableRow key={stat.team} className={stat.team === clubInfo.name ? "bg-accent/50" : ""}>
+                          <TableCell className="font-medium">{index + 1}</TableCell>
+                          <TableCell className="font-medium">{stat.team}</TableCell>
+                          <TableCell className="text-center">{stat.played}</TableCell>
+                          <TableCell className="text-center">{stat.wins}</TableCell>
+                          <TableCell className="text-center">{stat.draws}</TableCell>
+                          <TableCell className="text-center">{stat.losses}</TableCell>
+                          <TableCell className="text-center hidden sm:table-cell">{stat.goalsFor}</TableCell>
+                          <TableCell className="text-center hidden sm:table-cell">{stat.goalsAgainst}</TableCell>
+                          <TableCell className="text-center hidden sm:table-cell">{stat.goalDifference}</TableCell>
+                          <TableCell className="text-center font-bold">{stat.points}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={10} className="text-center">
+                          Aucun résultat de type "{type.replace('Match ', '')}" trouvé pour cette catégorie et ce genre.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        ))}
+         <TabsContent value="scorers">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Classement des Buteurs</CardTitle>
+                    <CardDescription>
+                        Meilleurs buteurs pour la catégorie {teamCategoryFilter} ({genderFilter === 'Féminin' ? 'Féminin' : 'Masculin'}) toutes compétitions confondues.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[50px]">Rang</TableHead>
+                                <TableHead>Joueur</TableHead>
+                                <TableHead>Équipe</TableHead>
+                                <TableHead className="text-right">Buts</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {scorersRanking.length > 0 ? (
+                                scorersRanking.map(scorer => (
+                                    <TableRow key={scorer.name} className={scorer.isClubPlayer ? "bg-accent/50" : ""}>
+                                        <TableCell className="font-medium">{scorer.rank}</TableCell>
+                                        <TableCell className="font-medium">{scorer.name}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={scorer.isClubPlayer ? "default" : "secondary"}>
+                                                {scorer.isClubPlayer ? clubInfo.name : "Adversaire"}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right font-bold">{scorer.goals}</TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="text-center">
+                                        Aucun buteur trouvé pour cette catégorie et ce genre.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
