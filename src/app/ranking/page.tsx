@@ -51,6 +51,32 @@ interface ScorerStat {
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchTypes = ['Match Championnat', 'Match Coupe', 'Match Tournoi'];
 
+const chartColors = [
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-5))',
+  'hsl(var(--chart-6))',
+  'hsl(var(--chart-7))',
+  'hsl(var(--chart-8))',
+  'hsl(var(--chart-9))',
+  'hsl(var(--chart-10))',
+  'hsl(var(--chart-11))',
+];
+
+// Simple hash function to get a consistent color for a team name
+const getTeamColor = (teamName: string, clubName: string, colorMap: Map<string, string>): string => {
+  if (teamName === clubName) {
+    return 'hsl(var(--chart-2))'; // Specific green for user's club
+  }
+  if (colorMap.has(teamName)) {
+    return colorMap.get(teamName)!;
+  }
+  return 'hsl(var(--secondary))';
+};
+
+
 export default function RankingPage() {
   const resultsContext = useResultsContext();
   const clubContext = useClubContext();
@@ -174,7 +200,7 @@ export default function RankingPage() {
  const scorersRanking = useMemo(() => {
     const scorerStats: { [name: string]: { goals: number; isClubPlayer: boolean; teamName: string; parsedName: string } } = {};
     const clubPlayerNames = new Set(players.map(p => p.name));
-    const nameRegex = /(.*) \((.*)\)/; // Regex to parse "Player Name (Team Name)"
+    const nameRegex = /(.*) \((.*)\)/; 
 
     filteredResults.forEach(result => {
         if (!result.scorers || !Array.isArray(result.scorers)) return;
@@ -228,6 +254,18 @@ export default function RankingPage() {
 
   }, [filteredResults, clubInfo.name, players]);
 
+  const teamColorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const teams = [...new Set(scorersRanking.map(s => s.team))];
+    let colorIndex = 0;
+    teams.forEach(team => {
+      if (team !== clubInfo.name) {
+        map.set(team, chartColors[colorIndex % chartColors.length]);
+        colorIndex++;
+      }
+    });
+    return map;
+  }, [scorersRanking, clubInfo.name]);
 
 
   if (loading) {
@@ -379,7 +417,13 @@ export default function RankingPage() {
                                         <TableCell className="font-medium">{scorer.rank}</TableCell>
                                         <TableCell className="font-medium">{scorer.name}</TableCell>
                                         <TableCell>
-                                            <Badge style={scorer.isClubPlayer ? { backgroundColor: 'hsl(var(--chart-2))', color: 'white' } : {}} variant={scorer.isClubPlayer ? "default" : "secondary"}>
+                                            <Badge 
+                                              style={{ 
+                                                backgroundColor: getTeamColor(scorer.team, clubInfo.name, teamColorMap), 
+                                                color: 'white' 
+                                              }} 
+                                              className="border-transparent"
+                                            >
                                                 {scorer.team}
                                             </Badge>
                                         </TableCell>
