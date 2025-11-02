@@ -569,8 +569,14 @@ export default function CalendarPage() {
                         <div className="flex flex-col flex-1 text-center">
                             <div className='flex gap-2 items-center justify-center mb-2'>
                                 <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
-                                {event.teamCategory && <Badge style={{backgroundColor: categoryColors[event.teamCategory], color: 'white'}} className="border-transparent">{event.teamCategory}</Badge>}
-                                {event.gender && <Badge variant="outline">{event.gender}</Badge>}
+                                {event.teamCategory && (
+                                    <Badge 
+                                        style={{backgroundColor: categoryColors[event.teamCategory], color: 'white'}} 
+                                        className="border-transparent"
+                                    >
+                                        {event.gender === 'Féminin' ? `${event.teamCategory} F` : event.teamCategory}
+                                    </Badge>
+                                )}
                             </div>
                             <p className="font-semibold">{getMatchTitle(event)}</p>
                             <p className="text-sm text-muted-foreground">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
@@ -606,8 +612,7 @@ export default function CalendarPage() {
           {selectedEvent && (
             <>
               <div className="grid gap-4 py-4">
-                  {selectedEvent.teamCategory && <p><strong>Catégorie:</strong> {selectedEvent.teamCategory}</p>}
-                  {selectedEvent.gender && <p><strong>Genre:</strong> {selectedEvent.gender}</p>}
+                  {selectedEvent.teamCategory && <p><strong>Catégorie:</strong> {selectedEvent.gender === 'Féminin' ? `${selectedEvent.teamCategory} F` : selectedEvent.teamCategory}</p>}
                   <p><strong>Date:</strong> {format(parseISO(selectedEvent.date), 'dd/MM/yyyy')}</p>
                   <p><strong>Heure:</strong> {selectedEvent.time}</p>
                   <p><strong>Lieu:</strong> {selectedEvent.location}</p>
