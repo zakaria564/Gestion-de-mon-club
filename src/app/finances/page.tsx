@@ -46,7 +46,7 @@ import { format, parseISO } from 'date-fns';
 import type { Payment } from "@/lib/financial-data";
 import { Badge } from "@/components/ui/badge";
 
-type MemberStatus = 'À jour' | 'Paiement en attente';
+type MemberStatus = 'À jour' | 'En attente';
 
 export default function FinancesPage() {
   const financialContext = useFinancialContext();
@@ -109,22 +109,11 @@ export default function FinancesPage() {
         // 3. Determine the status
         let status: MemberStatus = 'À jour';
 
-        // Check if there's any payment with a 'non payé' or 'partiel' status
-        const hasPendingPayment = memberPayments.some(p => p.status === 'non payé' || p.status === 'partiel');
-        
-        // Check if there is a payment entry for the current month
+        const hasPendingForAnyMonth = memberPayments.some(p => p.status === 'non payé' || p.status === 'partiel');
         const hasPaymentForCurrentMonth = memberPayments.some(p => p.dueDate === currentMonth);
         
-        const currentMonthPayment = memberPayments.find(p => p.dueDate === currentMonth);
-
-        if (hasPendingPayment) {
-            status = 'Paiement en attente';
-        } else if (!hasPaymentForCurrentMonth) {
-            // If all past payments are fine, but no entry for this month, it's pending
-            status = 'Paiement en attente';
-        } else if (currentMonthPayment && currentMonthPayment.status !== 'payé') {
-            // This case is covered by hasPendingPayment, but is good for clarity
-            status = 'Paiement en attente';
+        if (hasPendingForAnyMonth || !hasPaymentForCurrentMonth) {
+            status = 'En attente';
         }
         
         return {
@@ -200,7 +189,7 @@ export default function FinancesPage() {
         switch (status) {
             case 'À jour':
                 return { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' };
-            case 'Paiement en attente':
+            case 'En attente':
                 return { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' };
             default:
                 return {};
@@ -258,9 +247,9 @@ export default function FinancesPage() {
                     <TableCell className="hidden sm:table-cell">{item.paymentCount}</TableCell>
                     <TableCell>
                       <Badge style={getBadgeStyle(item.status)} className="h-auto">
-                        {item.status === 'Paiement en attente' ? (
+                        {item.status === 'En attente' ? (
                           <span className="text-center leading-tight">
-                            Paiement en<br />attente
+                            En<br />attente
                           </span>
                         ) : (
                           item.status
