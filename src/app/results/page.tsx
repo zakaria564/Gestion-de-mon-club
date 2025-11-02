@@ -398,7 +398,7 @@ export default function ResultsPage() {
                                                     style={{ backgroundColor: categoryColors[result.teamCategory], color: 'white' }} 
                                                     className="border-transparent"
                                                 >
-                                                    {result.teamCategory}
+                                                    {result.gender === 'Féminin' ? `${result.teamCategory} F` : result.teamCategory}
                                                 </Badge>
                                                 <Badge variant="outline">{result.category}</Badge>
                                                 <p className="text-sm text-muted-foreground pt-2">{result.location}</p>
