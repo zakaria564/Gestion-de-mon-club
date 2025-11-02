@@ -306,8 +306,6 @@ export default function CalendarPage() {
     
     if (resultMatchType === 'opponent-vs-opponent') {
         finalResult.opponent = `${finalResult.homeTeam} vs ${finalResult.awayTeam}`;
-        finalResult.scorers = [];
-        finalResult.assists = [];
     }
     
     await addResult(finalResult);
@@ -329,16 +327,29 @@ export default function CalendarPage() {
   }, [players, newResult.teamCategory, newResult.gender]);
 
   const allPossiblePlayersOptions: MultiSelectOption[] = useMemo(() => {
-    const opponentPlayers: MultiSelectOption[] = opponents.map(op => ({
-      value: `opponent-${op.name}`,
-      label: `${op.name} (Adversaire)`,
-    }));
+    let playersForOptions = filteredPlayerOptions;
     
-    const combined = [...filteredPlayerOptions, ...opponentPlayers];
-    const unique = Array.from(new Map(combined.map(item => [item.value, item])).values());
+    if (resultMatchType === 'opponent-vs-opponent') {
+        const opponentTeams = [newResult.homeTeam, newResult.awayTeam].filter(Boolean);
+        const opponentPlayers: MultiSelectOption[] = opponents
+            .filter(op => opponentTeams.includes(op.name))
+            .map(op => ({
+                value: `opponent-${op.name}`,
+                label: `${op.name} (Adversaire)`,
+            }));
+        playersForOptions = [...playersForOptions, ...opponentPlayers];
+    } else {
+        const opponentPlayers: MultiSelectOption[] = opponents.map(op => ({
+            value: `opponent-${op.name}`,
+            label: `${op.name} (Adversaire)`,
+        }));
+        playersForOptions = [...playersForOptions, ...opponentPlayers];
+    }
+    
+    const unique = Array.from(new Map(playersForOptions.map(item => [item.value, item])).values());
     
     return unique;
-  }, [filteredPlayerOptions, opponents]);
+  }, [filteredPlayerOptions, opponents, resultMatchType, newResult.homeTeam, newResult.awayTeam]);
 
   const filteredOpponentOptions = useMemo(() => {
     return opponents.filter(op => op.gender === newEvent.gender);
@@ -895,30 +906,27 @@ export default function CalendarPage() {
                             <Input id="score" value={newResult.score} onChange={handleResultInputChange} required />
                         </div>
 
-                        {resultMatchType === 'club-match' && (
-                           <>
-                            <div className="space-y-2">
-                              <Label>Buteurs</Label>
-                              <MultiSelect
-                                options={allPossiblePlayersOptions}
-                                value={performanceToList(newResult.scorers)}
-                                onChange={(selected) => handleDynamicListChange('scorers', selected)}
-                                placeholder="Sélectionner ou saisir les buteurs..."
-                                creatable
-                              />
-                            </div>
+                        <div className="space-y-2">
+                            <Label>Buteurs</Label>
+                            <MultiSelect
+                            options={allPossiblePlayersOptions}
+                            value={performanceToList(newResult.scorers)}
+                            onChange={(selected) => handleDynamicListChange('scorers', selected)}
+                            placeholder="Sélectionner ou saisir les buteurs..."
+                            creatable
+                            />
+                        </div>
 
-                            <div className="space-y-2">
-                              <Label>Passeurs décisifs</Label>
-                              <MultiSelect
-                                options={filteredPlayerOptions}
-                                value={performanceToList(newResult.assists)}
-                                onChange={(selected) => handleDynamicListChange('assists', selected)}
-                                placeholder="Sélectionner les passeurs..."
-                              />
-                            </div>
-                          </>
-                        )}
+                        <div className="space-y-2">
+                            <Label>Passeurs décisifs</Label>
+                            <MultiSelect
+                            options={allPossiblePlayersOptions}
+                            value={performanceToList(newResult.assists)}
+                            onChange={(selected) => handleDynamicListChange('assists', selected)}
+                            placeholder="Sélectionner les passeurs..."
+                            creatable
+                            />
+                        </div>
                     </div>
                 </div>
                 <DialogFooter className="pt-4 border-t">
@@ -945,16 +953,12 @@ export default function CalendarPage() {
                     <p>
                         <strong>Lieu :</strong> {selectedResult.location || "Non spécifié"}
                     </p>
-                    {(selectedResult.matchType === 'club-match' || !selectedResult.matchType) && (
-                        <>
-                        <p>
-                            <strong>Buteurs :</strong> {formatPerformance(selectedResult.scorers)}
-                        </p>
-                        <p>
-                            <strong>Passeurs :</strong> {formatPerformance(selectedResult.assists)}
-                        </p>
-                        </>
-                    )}
+                    <p>
+                        <strong>Buteurs :</strong> {formatPerformance(selectedResult.scorers)}
+                    </p>
+                    <p>
+                        <strong>Passeurs :</strong> {formatPerformance(selectedResult.assists)}
+                    </p>
                 </div>
             )}
             <DialogFooter>
@@ -966,5 +970,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-
-    
