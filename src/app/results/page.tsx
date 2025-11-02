@@ -301,12 +301,12 @@ export default function ResultsPage() {
 
   const getResultTitle = (result: Result) => {
      if (result.matchType === 'opponent-vs-opponent') {
-        const homeTeamName = result.gender === 'Féminin' ? `${result.homeTeam} (F)` : result.homeTeam;
-        const awayTeamName = result.gender === 'Féminin' ? `${result.awayTeam} (F)` : result.awayTeam;
+        const homeTeamName = result.homeTeam;
+        const awayTeamName = result.awayTeam;
         return `${homeTeamName} vs ${awayTeamName}`;
     }
-    const clubName = result.gender === 'Féminin' ? `${clubInfo.name} (F)` : clubInfo.name;
-    const opponentName = result.gender === 'Féminin' ? `${result.opponent} (F)` : result.opponent;
+    const clubName = clubInfo.name;
+    const opponentName = result.opponent;
     const homeTeam = result.homeOrAway === 'home' ? clubName : opponentName;
     const awayTeam = result.homeOrAway === 'home' ? opponentName : clubName;
     return `${homeTeam} vs ${awayTeam}`;
