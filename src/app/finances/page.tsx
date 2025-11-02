@@ -90,37 +90,52 @@ export default function FinancesPage() {
     allMembers: { id: string; name: string }[]
   ) => {
     const currentMonth = format(new Date(), "yyyy-MM");
-    const memberSummary: { [key: string]: { member: string; totalPaid: number; paymentCount: number; status: MemberStatus } } = {};
+    
+    // 1. Group all payments by member
+    const paymentsByMember = payments.reduce((acc, p) => {
+        if (!acc[p.member]) {
+            acc[p.member] = [];
+        }
+        acc[p.member].push(p);
+        return acc;
+    }, {} as Record<string, Payment[]>);
 
-    allMembers.forEach(member => {
-        memberSummary[member.name] = {
+    // 2. Create a summary for each member
+    const memberSummaries = allMembers.map(member => {
+        const memberPayments = paymentsByMember[member.name] || [];
+        const totalPaid = memberPayments.reduce((sum, p) => sum + p.paidAmount, 0);
+        const paymentCount = memberPayments.length;
+
+        // 3. Determine the status
+        let status: MemberStatus = 'À jour';
+
+        // Check if there's any payment with a 'non payé' or 'partiel' status
+        const hasPendingPayment = memberPayments.some(p => p.status === 'non payé' || p.status === 'partiel');
+        
+        // Check if there is a payment entry for the current month
+        const hasPaymentForCurrentMonth = memberPayments.some(p => p.dueDate === currentMonth);
+        
+        const currentMonthPayment = memberPayments.find(p => p.dueDate === currentMonth);
+
+        if (hasPendingPayment) {
+            status = 'Paiement en attente';
+        } else if (!hasPaymentForCurrentMonth) {
+            // If all past payments are fine, but no entry for this month, it's pending
+            status = 'Paiement en attente';
+        } else if (currentMonthPayment && currentMonthPayment.status !== 'payé') {
+            // This case is covered by hasPendingPayment, but is good for clarity
+            status = 'Paiement en attente';
+        }
+        
+        return {
             member: member.name,
-            totalPaid: 0,
-            paymentCount: 0,
-            status: 'À jour' // Default status
+            totalPaid,
+            paymentCount,
+            status
         };
     });
 
-    payments.forEach(p => {
-        if (!memberSummary[p.member]) {
-             memberSummary[p.member] = { member: p.member, totalPaid: 0, paymentCount: 0, status: 'À jour' };
-        }
-        memberSummary[p.member].totalPaid += p.paidAmount;
-        memberSummary[p.member].paymentCount += 1;
-        if (p.status === 'partiel' || p.status === 'non payé') {
-          memberSummary[p.member].status = 'Paiement en attente';
-        }
-    });
-
-    // Second pass to check for missing payments for the current month
-    Object.values(memberSummary).forEach(summary => {
-        const hasPaymentForCurrentMonth = payments.some(p => p.member === summary.member && p.dueDate === currentMonth);
-        if (!hasPaymentForCurrentMonth) {
-            summary.status = 'Paiement en attente';
-        }
-    });
-
-    return Object.values(memberSummary);
+    return memberSummaries;
   };
 
   const aggregatedPlayerPayments = useMemo(() => {
