@@ -172,44 +172,25 @@ export default function RankingPage() {
   }, [filteredResults, clubInfo.name, activeTab]);
 
   const scorersRanking = useMemo(() => {
-    const scorerStats: { [name: string]: { goals: number, team: string, isClubPlayer: boolean } } = {};
-    const clubPlayerNames = new Set(players.map(p => p.name));
-    const opponentNames = new Set(opponents.map(o => o.name));
+    const scorerStats: { [name: string]: { goals: number, team: string } } = {};
 
     filteredResults.forEach(result => {
         if (!result.scorers || !Array.isArray(result.scorers)) return;
         
         result.scorers.forEach(scorer => {
-            const scorerName = scorer.playerName.replace(/^opponent-/, '');
-            
-            if (!scorerStats[scorerName]) {
-                const isClubPlayer = clubPlayerNames.has(scorerName);
-                let teamName = "Inconnu";
-                
-                if (isClubPlayer) {
-                    teamName = clubInfo.name;
-                } else if (result.matchType === 'club-match') {
-                    teamName = result.opponent;
-                } else if (result.matchType === 'opponent-vs-opponent') {
-                    // This is an imperfect guess. We assume if the scorer name matches an opponent team name, it's that team.
-                    if (opponentNames.has(scorerName)) {
-                      teamName = scorerName;
-                    } else if(result.homeTeam && result.awayTeam) {
-                      // If we can't identify, we show both teams from the match to give context
-                      teamName = `${result.homeTeam} / ${result.awayTeam}`;
-                    }
-                } else {
-                     teamName = result.opponent;
-                }
-
-                scorerStats[scorerName] = { goals: 0, team: teamName, isClubPlayer };
+            const uniqueScorerKey = `${scorer.playerName}||${scorer.team}`;
+            if (!scorerStats[uniqueScorerKey]) {
+                scorerStats[uniqueScorerKey] = { goals: 0, team: scorer.team };
             }
-            scorerStats[scorerName].goals += scorer.count;
+            scorerStats[uniqueScorerKey].goals += scorer.count;
         });
     });
 
     const sortedScorers = Object.entries(scorerStats)
-      .map(([name, data]) => ({ name, ...data }))
+      .map(([key, data]) => {
+          const [playerName] = key.split('||');
+          return { name: playerName, team: data.team, goals: data.goals };
+      })
       .sort((a, b) => {
         if (b.goals !== a.goals) return b.goals - a.goals;
         return a.name.localeCompare(b.name);
@@ -220,10 +201,10 @@ export default function RankingPage() {
         if (index > 0 && scorer.goals < sortedScorers[index - 1].goals) {
             rank = index + 1;
         }
-        return { ...scorer, rank };
+        return { ...scorer, rank, isClubPlayer: scorer.team === clubInfo.name };
     });
 
-  }, [filteredResults, players, opponents, clubInfo.name]);
+  }, [filteredResults, clubInfo.name]);
 
 
   if (loading) {
@@ -370,8 +351,8 @@ export default function RankingPage() {
                         </TableHeader>
                         <TableBody>
                             {scorersRanking.length > 0 ? (
-                                scorersRanking.map(scorer => (
-                                    <TableRow key={scorer.name} className={scorer.isClubPlayer ? "bg-accent/50" : ""}>
+                                scorersRanking.map((scorer, index) => (
+                                    <TableRow key={`${scorer.name}-${scorer.team}`} className={scorer.isClubPlayer ? "bg-accent/50" : ""}>
                                         <TableCell className="font-medium">{scorer.rank}</TableCell>
                                         <TableCell className="font-medium">{scorer.name}</TableCell>
                                         <TableCell>

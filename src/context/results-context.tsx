@@ -8,6 +8,7 @@ import { useAuth } from "./auth-context";
 
 export interface PerformanceDetail {
   playerName: string;
+  team: string;
   count: number;
 }
 

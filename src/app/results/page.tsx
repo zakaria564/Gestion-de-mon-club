@@ -122,13 +122,13 @@ export default function ResultsPage() {
     listName: 'scorers' | 'assists',
     values: string[]
   ) => {
-    const performanceDetails: PerformanceDetail[] = values.reduce((acc, val) => {
-      const name = val.startsWith("opponent-") ? val.substring(9) : val;
-      const existing = acc.find(item => item.playerName === name);
+     const performanceDetails: PerformanceDetail[] = values.reduce((acc, val) => {
+      const [team, playerName] = val.split('||');
+      const existing = acc.find(item => item.playerName === playerName && item.team === team);
       if (existing) {
         existing.count++;
       } else {
-        acc.push({ playerName: name, count: 1 });
+        acc.push({ playerName, team, count: 1 });
       }
       return acc;
     }, [] as PerformanceDetail[]);
@@ -264,36 +264,42 @@ export default function ResultsPage() {
     };
   }, [results, categoryFilter, opponentFilter]);
 
-  const filteredPlayerOptions = useMemo(() => {
-    return players
-      .filter(p => p.category === newResult.teamCategory && p.gender === newResult.gender)
-      .map(p => ({ value: p.name, label: p.name }));
-  }, [players, newResult.teamCategory, newResult.gender]);
-  
   const allPossiblePlayersOptions: MultiSelectOption[] = useMemo(() => {
-    let playersForOptions = filteredPlayerOptions;
-    
-    if (matchType === 'opponent-vs-opponent') {
-        const opponentTeams = [newResult.homeTeam, newResult.awayTeam].filter(Boolean);
-        const opponentPlayers: MultiSelectOption[] = opponents
-            .filter(op => opponentTeams.includes(op.name))
-            .map(op => ({
-                value: `opponent-${op.name}`,
-                label: `${op.name} (Adversaire)`,
-            }));
-        playersForOptions = [...playersForOptions, ...opponentPlayers];
-    } else {
-        const opponentPlayers: MultiSelectOption[] = opponents.map(op => ({
-            value: `opponent-${op.name}`,
-            label: `${op.name} (Adversaire)`,
-        }));
-        playersForOptions = [...playersForOptions, ...opponentPlayers];
+    const clubPlayers: MultiSelectOption[] = players
+      .filter(p => p.category === newResult.teamCategory && p.gender === newResult.gender)
+      .map(p => ({
+        value: `${clubInfo.name}||${p.name}`,
+        label: p.name,
+        group: clubInfo.name
+      }));
+
+    let opponentPlayers: MultiSelectOption[] = [];
+
+    if (matchType === 'club-match' && newResult.opponent) {
+      opponentPlayers.push({
+        value: `${newResult.opponent}||${newResult.opponent}`,
+        label: `Joueur de ${newResult.opponent}`,
+        group: newResult.opponent,
+      });
+    } else if (matchType === 'opponent-vs-opponent') {
+      if (newResult.homeTeam) {
+        opponentPlayers.push({
+          value: `${newResult.homeTeam}||${newResult.homeTeam}`,
+          label: `Joueur de ${newResult.homeTeam}`,
+          group: newResult.homeTeam,
+        });
+      }
+      if (newResult.awayTeam) {
+        opponentPlayers.push({
+          value: `${newResult.awayTeam}||${newResult.awayTeam}`,
+          label: `Joueur de ${newResult.awayTeam}`,
+          group: newResult.awayTeam,
+        });
+      }
     }
-    
-    const unique = Array.from(new Map(playersForOptions.map(item => [item.value, item])).values());
-    
-    return unique;
-  }, [filteredPlayerOptions, opponents, matchType, newResult.homeTeam, newResult.awayTeam]);
+
+    return [...clubPlayers, ...opponentPlayers];
+  }, [players, newResult.teamCategory, newResult.gender, newResult.opponent, newResult.homeTeam, newResult.awayTeam, clubInfo.name, matchType]);
 
   const formatPerformance = (items: PerformanceDetail[] | undefined): string => {
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -342,7 +348,7 @@ export default function ResultsPage() {
   
   const performanceToList = (performance?: PerformanceDetail[]): string[] => {
     if (!performance) return [];
-    return performance.flatMap(p => Array(p.count).fill(p.playerName));
+    return performance.flatMap(p => Array(p.count).fill(`${p.team}||${p.playerName}`));
   };
 
 
