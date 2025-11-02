@@ -1,13 +1,19 @@
 
+"use client";
+
 import { CoachPaymentHistoryClient } from './coach-payment-history-client';
+import { useParams } from 'next/navigation';
 import React from 'react';
 
-// This is a Server Component
-export default function CoachPaymentHistoryPage({ params }: { params: { id: string } }) {
-  // Use React.use() to unwrap the dynamic params object
-  const stableParams = React.use(params);
+// This is now a Client Component
+export default function CoachPaymentHistoryPage() {
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+
+  if (!id) {
+    return null;
+  }
   
-  // Pass the decoded memberName directly to the client component
-  const memberName = decodeURIComponent(stableParams.id);
+  const memberName = decodeURIComponent(id);
   return <CoachPaymentHistoryClient memberName={memberName} />;
 }

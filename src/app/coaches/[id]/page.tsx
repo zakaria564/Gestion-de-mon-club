@@ -1,12 +1,18 @@
 
+"use client";
+
 import { CoachDetailClient } from './coach-detail-client';
+import { useParams } from 'next/navigation';
 import React from 'react';
 
-// This is a Server Component
-export default function CoachDetailPage({ params }: { params: { id: string } }) {
-  // Use React.use() to unwrap the dynamic params object
-  const stableParams = React.use(params);
+// This is now a Client Component
+export default function CoachDetailPage() {
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
-  // Pass the id directly to the client component
-  return <CoachDetailClient id={stableParams.id} />;
+  if (!id) {
+    return null;
+  }
+
+  return <CoachDetailClient id={id} />;
 }

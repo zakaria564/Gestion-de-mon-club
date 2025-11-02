@@ -1,12 +1,19 @@
 
+"use client";
+
 import { PlayerDetailClient } from './player-detail-client';
+import { useParams } from 'next/navigation';
 import React from 'react';
 
-// This is a Server Component
-export default function PlayerDetailPage({ params }: { params: { id: string } }) {
-  // Use React.use() to unwrap the dynamic params object
-  const stableParams = React.use(params);
+// This is now a Client Component
+export default function PlayerDetailPage() {
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+
+  if (!id) {
+    // Optionally, render a loading state or null
+    return null;
+  }
   
-  // Pass the id directly to the client component
-  return <PlayerDetailClient id={stableParams.id} />;
+  return <PlayerDetailClient id={id} />;
 }
