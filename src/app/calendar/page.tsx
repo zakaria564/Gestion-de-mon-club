@@ -212,7 +212,8 @@ export default function CalendarPage() {
     setEventDialogOpen(true);
   }
 
-  const handleDeleteEvent = async (eventId: string) => {
+  const handleDeleteEvent = async (eventId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     await deleteEvent(eventId);
     setDetailsOpen(false);
     setSelectedEvent(null);
@@ -630,8 +631,8 @@ export default function CalendarPage() {
               <CardContent>
                 <div className="space-y-4">
                   {eventsForSelectedDate.map((event) => (
-                    <div key={event.id} onClick={() => handleEventClick(event)} className="p-4 rounded-md border flex items-center gap-2 cursor-pointer hover:bg-muted/50 relative group">
-                        <div className="flex flex-col flex-1 text-center">
+                    <div key={event.id} className="p-4 rounded-md border flex flex-col items-center gap-2 cursor-pointer hover:bg-muted/50 relative group">
+                        <div onClick={() => handleEventClick(event)} className="flex-1 w-full">
                             <div className='flex gap-2 items-center justify-center mb-2'>
                                 <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
                                 {event.teamCategory && (
@@ -643,9 +644,31 @@ export default function CalendarPage() {
                                     </Badge>
                                 )}
                             </div>
-                            <p className="font-semibold">{getMatchTitle(event)}</p>
-                            <p className="text-sm text-muted-foreground">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
-                            <p className="text-sm text-muted-foreground">{event.location}</p>
+                            <p className="font-semibold text-center">{getMatchTitle(event)}</p>
+                            <p className="text-sm text-muted-foreground text-center">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
+                            <p className="text-sm text-muted-foreground text-center">{event.location}</p>
+                        </div>
+                         <div className="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button size="icon" variant="outline" onClick={(e) => openEditEventDialog(event, e)}>
+                                <Edit className="h-4 w-4"/>
+                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                     <Button size="icon" variant="destructive" onClick={(e) => e.stopPropagation()}>
+                                        <Trash2 className="h-4 w-4"/>
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                                        <AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                        <AlertDialogAction onClick={(e) => handleDeleteEvent(event.id, e)}>Supprimer</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                         </div>
                     </div>
                   ))}
