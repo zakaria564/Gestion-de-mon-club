@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation';
 
 export default function CoachDetailPage() {
   const params = useParams();
-  const id = params.id as string;
+  const id = params?.id as string;
   
   if (!id) {
     return <div>Chargement...</div>;

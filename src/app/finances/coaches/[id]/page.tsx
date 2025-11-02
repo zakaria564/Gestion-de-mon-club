@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation';
 
 export default function CoachPaymentHistoryPage() {
   const params = useParams();
-  const memberName = params.id as string;
+  const memberName = params?.id as string;
 
   if (!memberName) {
     return <div>Chargement...</div>;
