@@ -184,7 +184,7 @@ export default function OpponentsPage() {
                 <div className="flex-1">
                   <CardTitle className="text-base">{opponent.name}</CardTitle>
                   <CardDescription>
-                      <Badge variant={opponent.gender === 'Féminin' ? 'destructive' : 'default'} className="mt-1">
+                      <Badge variant={opponent.gender === 'Féminin' ? 'secondary' : 'default'} className="mt-1">
                           {opponent.gender}
                       </Badge>
                   </CardDescription>
