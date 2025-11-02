@@ -12,7 +12,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit, PlusCircle, Trash2, X, Eye } from 'lucide-react';
+import { Edit, PlusCircle, Trash2, X, Eye, MoreHorizontal } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -30,6 +30,7 @@ import { useClubContext } from '@/context/club-context';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useOpponentsContext } from '@/context/opponents-context';
 import { MultiSelect, MultiSelectOption } from '@/components/ui/multi-select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
@@ -631,7 +632,7 @@ export default function CalendarPage() {
               <CardContent>
                 <div className="space-y-4">
                   {eventsForSelectedDate.map((event) => (
-                    <div key={event.id} className="p-4 rounded-md border flex flex-col items-center gap-2 cursor-pointer hover:bg-muted/50 relative group">
+                    <div key={event.id} className="p-4 rounded-md border flex flex-col items-start gap-2 cursor-pointer hover:bg-muted/50 relative group">
                         <div onClick={() => handleEventClick(event)} className="flex-1 w-full">
                             <div className='flex gap-2 items-center justify-center mb-2'>
                                 <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
@@ -648,27 +649,40 @@ export default function CalendarPage() {
                             <p className="text-sm text-muted-foreground text-center">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
                             <p className="text-sm text-muted-foreground text-center">{event.location}</p>
                         </div>
-                         <div className="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button size="icon" variant="outline" onClick={(e) => openEditEventDialog(event, e)}>
-                                <Edit className="h-4 w-4"/>
-                            </Button>
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                     <Button size="icon" variant="destructive" onClick={(e) => e.stopPropagation()}>
-                                        <Trash2 className="h-4 w-4"/>
+                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
+                                        <span className="sr-only">Ouvrir le menu</span>
+                                        <MoreHorizontal className="h-4 w-4" />
                                     </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                                        <AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                        <AlertDialogAction onClick={(e) => handleDeleteEvent(event.id, e)}>Supprimer</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenuItem onClick={(e) => openEditEventDialog(event, e)}>
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Modifier
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                Supprimer
+                                            </DropdownMenuItem>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                                                <AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                                <AlertDialogAction onClick={(e) => handleDeleteEvent(event.id, e)}>Supprimer</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     </div>
                   ))}
