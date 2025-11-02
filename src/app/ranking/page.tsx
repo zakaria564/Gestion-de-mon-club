@@ -67,7 +67,7 @@ const chartColors = [
 // Simple hash function to get a consistent color for a team name
 const getTeamColor = (teamName: string, clubName: string, colorMap: Map<string, string>): string => {
   if (teamName === clubName) {
-    return 'hsl(var(--chart-2))'; // Specific green for user's club
+    return 'hsl(var(--accent))'; // Specific orange for user's club
   }
   if (colorMap.has(teamName)) {
     return colorMap.get(teamName)!;
