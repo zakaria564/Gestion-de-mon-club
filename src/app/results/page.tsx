@@ -280,21 +280,21 @@ export default function ResultsPage() {
   }
   
   const getMatchOutcome = (result: Result) => {
-    const parts = result.score.split('-').map(s => parseInt(s.trim()));
-    if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return 'bg-gray-500'; // Nul si score invalide
-    
     if (result.matchType === 'opponent-vs-opponent') {
-        if (parts[0] > parts[1]) return 'bg-green-500'; 
-        if (parts[0] < parts[1]) return 'bg-red-500'; 
-        return 'bg-yellow-500';
+        return 'bg-primary'; // Blue for opponent vs opponent
     }
 
+    const parts = result.score.split('-').map(s => parseInt(s.trim()));
+    if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) {
+        return 'bg-gray-500'; // Default for invalid score
+    }
+    
     const usdsGoals = result.homeOrAway === 'home' ? parts[0] : parts[1];
     const opponentGoals = result.homeOrAway === 'home' ? parts[1] : parts[0];
 
-    if (usdsGoals > opponentGoals) return 'bg-green-500';
-    if (usdsGoals < opponentGoals) return 'bg-red-500';
-    return 'bg-yellow-500';
+    if (usdsGoals > opponentGoals) return 'bg-green-500'; // Win
+    if (usdsGoals < opponentGoals) return 'bg-red-500'; // Loss
+    return 'bg-orange-500'; // Draw
   }
 
   const getResultTitle = (result: Result) => {
@@ -373,15 +373,15 @@ export default function ResultsPage() {
                                         <CardHeader className="p-3">
                                             <div className="flex items-start justify-between gap-2">
                                                 <div className="flex-1">
-                                                    <CardTitle className="text-base leading-tight">{getResultTitle(result)}</CardTitle>
+                                                    <CardTitle className="text-sm leading-tight">{getResultTitle(result)}</CardTitle>
                                                     <CardDescription className="text-xs">{result.date}</CardDescription>
                                                 </div>
-                                                <div className={`text-xl font-bold p-1.5 rounded-md text-white ${getMatchOutcome(result)}`}>
+                                                <div className={`text-lg font-bold p-1 rounded-md text-white ${getMatchOutcome(result)}`}>
                                                     {result.score}
                                                 </div>
                                             </div>
                                         </CardHeader>
-                                        <CardContent className="p-3 flex-grow space-y-1.5">
+                                        <CardContent className="p-3 flex-grow space-y-1">
                                             <div className="flex flex-wrap gap-1">
                                               <Badge 
                                                   style={{ backgroundColor: categoryColors[result.teamCategory], color: 'white' }} 
@@ -749,3 +749,4 @@ export default function ResultsPage() {
     </div>
   );
 }
+
