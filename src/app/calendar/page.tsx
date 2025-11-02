@@ -444,8 +444,6 @@ export default function CalendarPage() {
   const isNewEventMatch = newEvent.type.toLowerCase().includes('match');
   const performanceToList = (performance?: PerformanceDetail[]): string[] => {
     if (!performance) return [];
-    // This function now needs to differentiate between own players and opponents if necessary.
-    // For now, it just maps names. If keys become complex, this needs adjustment.
     return performance.flatMap(p => Array(p.count).fill(p.playerName));
   };
 
@@ -478,7 +476,7 @@ export default function CalendarPage() {
                     <SelectContent>
                       <SelectItem value="Match Amical">Match Amical</SelectItem>
                       <SelectItem value="Match Championnat">Match de Championnat</SelectItem>
-                      <SelectItem value="Match Coupe">Match de Coupe</SelectItem>
+                      <SelectItem value="Match Coupe">Match Coupe</SelectItem>
                       <SelectItem value="Match Tournoi">Match Tournoi</SelectItem>
                       <SelectItem value="Entraînement Physique">Entraînement Physique</SelectItem>
                       <SelectItem value="Entraînement Technique">Entraînement Technique</SelectItem>
@@ -931,3 +929,5 @@ export default function CalendarPage() {
     </div>
   );
 }
+
+    
