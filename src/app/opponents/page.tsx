@@ -29,6 +29,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 
 export default function OpponentsPage() {
@@ -41,6 +43,7 @@ export default function OpponentsPage() {
   const [newOpponent, setNewOpponent] = useState<NewOpponent>({
     name: "",
     logoUrl: "",
+    gender: "Masculin",
   });
 
   useEffect(() => {
@@ -53,9 +56,13 @@ export default function OpponentsPage() {
     const { id, value } = e.target;
     setNewOpponent(prev => ({ ...prev, [id]: value }));
   };
+  
+  const handleSelectChange = (value: 'Masculin' | 'Féminin') => {
+    setNewOpponent(prev => ({ ...prev, gender: value }));
+  };
 
   const resetForm = () => {
-    setNewOpponent({ name: "", logoUrl: "" });
+    setNewOpponent({ name: "", logoUrl: "", gender: "Masculin" });
     setIsEditing(false);
     setEditingOpponent(null);
     setOpen(false);
@@ -79,6 +86,7 @@ export default function OpponentsPage() {
     setNewOpponent({
       name: opponent.name,
       logoUrl: opponent.logoUrl || "",
+      gender: opponent.gender || "Masculin",
     });
     setOpen(true);
   };
@@ -128,6 +136,18 @@ export default function OpponentsPage() {
                   <Label htmlFor="name">Nom de l'équipe</Label>
                   <Input id="name" placeholder="ex: FC Barcelone" value={newOpponent.name} onChange={handleInputChange} required />
                 </div>
+                 <div className="grid gap-2">
+                  <Label htmlFor="gender">Genre</Label>
+                  <Select onValueChange={handleSelectChange} value={newOpponent.gender} required>
+                      <SelectTrigger>
+                          <SelectValue placeholder="Sélectionner un genre" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="Masculin">Masculin</SelectItem>
+                          <SelectItem value="Féminin">Féminin</SelectItem>
+                      </SelectContent>
+                  </Select>
+                </div>
               </div>
               <DialogFooter>
                 <Button type="button" variant="secondary" onClick={resetForm}>Annuler</Button>
@@ -161,7 +181,14 @@ export default function OpponentsPage() {
                   <AvatarImage src={opponent.logoUrl || undefined} alt={opponent.name} data-ai-hint="team logo" />
                   <AvatarFallback>{opponent.name.substring(0, 2)}</AvatarFallback>
                 </Avatar>
-                <CardTitle className="text-base">{opponent.name}</CardTitle>
+                <div className="flex-1">
+                  <CardTitle className="text-base">{opponent.name}</CardTitle>
+                  <CardDescription>
+                      <Badge variant={opponent.gender === 'Féminin' ? 'destructive' : 'default'} className="mt-1">
+                          {opponent.gender}
+                      </Badge>
+                  </CardDescription>
+                </div>
               </CardHeader>
               <CardFooter className="justify-end">
                 <DropdownMenu>

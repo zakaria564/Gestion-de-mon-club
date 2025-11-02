@@ -11,6 +11,7 @@ export interface Opponent {
   uid: string;
   name: string;
   logoUrl?: string;
+  gender: 'Masculin' | 'Féminin';
 }
 
 export type NewOpponent = Omit<Opponent, 'id' | 'uid'>;

@@ -25,7 +25,7 @@ export type Player = {
   tutorEmail?: string;
   tutorCin?: string;
   status: 'Actif' | 'Blessé' | 'Suspendu' | 'Inactif';
-  category: string; // Updated to be more generic, e.g., "Sénior", "Sénior F", "U17", "U17 F"
+  category: 'Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
   entryDate?: string;
   exitDate?: string;
   documents?: PlayerDocument[];
@@ -44,7 +44,7 @@ export type Coach = {
   photo?: string;
   cin?: string;
   status: 'Actif' | 'Inactif';
-  category: string; // Updated to be more generic
+  category: string;
   documents?: PlayerDocument[];
   gender: 'Masculin' | 'Féminin';
 }
@@ -57,7 +57,8 @@ export type CalendarEvent = {
   date: string;
   time: string;
   location: string;
-  teamCategory: string; // Updated to be more generic
+  teamCategory: string;
+  gender: 'Masculin' | 'Féminin';
   homeOrAway?: 'home' | 'away';
 };
 

@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useContext, useEffect, useMemo } from 'react';
@@ -19,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { fr } from 'date-fns/locale';
-import { format, parse, parseISO, isPast } from 'date-fns';
+import { format, parse, parseISO, isPast, addHours } from 'date-fns';
 import { CalendarEvent, NewCalendarEvent, useCalendarContext } from '@/context/calendar-context';
 import { useResultsContext, NewResult, Result, PerformanceDetail } from '@/context/results-context';
 import { usePlayersContext } from '@/context/players-context';
@@ -296,6 +295,10 @@ export default function CalendarPage() {
       .map(p => ({ value: p.name, label: p.name }));
   }, [players, newResult.teamCategory, newResult.gender]);
 
+  const filteredOpponentOptions = useMemo(() => {
+    return opponents.filter(op => op.gender === newEvent.gender);
+  }, [opponents, newEvent.gender]);
+
   const eventsByDate = calendarEvents.reduce((acc, event) => {
     const eventDate = format(parseISO(event.date), 'yyyy-MM-dd');
     if (!acc[eventDate]) {
@@ -339,8 +342,8 @@ export default function CalendarPage() {
     const isMatch = event.type.toLowerCase().includes('match');
     if (!isMatch || !event.opponent) return event.type;
     
-    const clubName = event.gender === 'Féminin' ? `${clubInfo.name} (F)` : clubInfo.name;
-    const opponentName = event.gender === 'Féminin' ? `${event.opponent} (F)` : event.opponent;
+    const clubName = clubInfo.name;
+    const opponentName = event.opponent;
 
     const homeTeam = event.homeOrAway === 'home' ? clubName : opponentName;
     const awayTeam = event.homeOrAway === 'home' ? opponentName : clubName;
@@ -467,7 +470,7 @@ export default function CalendarPage() {
                               <SelectValue placeholder="Sélectionner un adversaire" />
                           </SelectTrigger>
                           <SelectContent>
-                              {opponents.map(op => (
+                              {filteredOpponentOptions.map(op => (
                                   <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>
                               ))}
                           </SelectContent>
@@ -597,7 +600,7 @@ export default function CalendarPage() {
           <DialogHeader>
             <DialogTitle>{selectedEvent?.type}</DialogTitle>
             <DialogDescription>
-              {selectedEvent?.type.toLowerCase().includes('match') && selectedEvent.opponent ? `vs ${selectedEvent.opponent}` : 'Détails de l\'événement'}
+              {selectedEvent?.type.toLowerCase().includes('match') && selectedEvent.opponent ? getMatchTitle(selectedEvent) : 'Détails de l\'événement'}
             </DialogDescription>
           </DialogHeader>
           {selectedEvent && (
@@ -735,9 +738,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-
-    
-
-    
-
-
