@@ -70,12 +70,11 @@ const coachSchema = z.object({
   cin: z.string().optional(),
   category: z.string().min(1, "La catégorie est requise."),
   documents: z.array(documentSchema).optional(),
-  gender: z.enum(['Masculin', 'Féminin']),
 });
 
 type CoachFormValues = z.infer<typeof coachSchema>;
 
-const defaultValues: Omit<CoachFormValues, 'status'> = {
+const defaultValues: Omit<CoachFormValues, 'status' | 'gender'> = {
     name: '',
     specialization: 'Entraîneur Principal',
     phone: '',
@@ -87,7 +86,6 @@ const defaultValues: Omit<CoachFormValues, 'status'> = {
     cin: '',
     category: 'Sénior',
     documents: [],
-    gender: 'Masculin',
 };
 
 const documentOptions = [

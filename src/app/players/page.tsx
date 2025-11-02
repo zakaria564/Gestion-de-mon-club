@@ -73,7 +73,6 @@ const playerSchema = z.object({
   jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
   photo: z.string().url("Veuillez entrer une URL valide.").optional().or(z.literal('')),
   cin: z.string().optional(),
-  gender: z.enum(['Masculin', 'Féminin']),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
   tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
@@ -88,7 +87,7 @@ const playerSchema = z.object({
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
 
-const defaultValues: PlayerFormValues = {
+const defaultValues: Omit<PlayerFormValues, 'gender'> = {
     name: '',
     birthDate: '',
     address: '',
@@ -99,7 +98,6 @@ const defaultValues: PlayerFormValues = {
     jerseyNumber: 10,
     photo: '',
     cin: '',
-    gender: 'Masculin',
     tutorName: '',
     tutorPhone: '',
     tutorEmail: '',
@@ -186,7 +184,7 @@ export default function PlayersPage() {
       const gender = data.category.endsWith(' F') ? 'Féminin' : 'Masculin';
       const finalData = { ...data, gender };
       
-      await addPlayer(finalData);
+      await addPlayer(finalData as any);
       setDialogOpen(false);
       toast({ title: "Joueur ajouté", description: "Le nouveau joueur a été ajouté avec succès." });
     };
@@ -257,7 +255,7 @@ export default function PlayersPage() {
         sortedPlayers.forEach(player => {
             const category = player.category || 'Sénior';
             const poste = player.poste || 'Non défini';
-            const isFemale = category.endsWith(' F');
+            const isFemale = player.gender === 'Féminin';
             const targetGroup = isFemale ? femaleGroups : maleGroups;
 
             if (!targetGroup[category]) {
@@ -834,3 +832,4 @@ export default function PlayersPage() {
     </div>
     );
 }
+

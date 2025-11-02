@@ -46,7 +46,6 @@ const playerSchema = z.object({
   photo: z.string().url("Veuillez entrer une URL valide pour la photo.").optional().or(z.literal('')),
   country: z.string().min(1, "La nationalité est requise."),
   cin: z.string().optional(),
-  gender: z.enum(['Masculin', 'Féminin']),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
   tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
@@ -138,7 +137,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
         photo: player.photo || '',
         country: player.country || 'Marocaine',
         cin: player.cin || '',
-        gender: player.gender || 'Masculin',
         tutorName: player.tutorName || '',
         tutorPhone: player.tutorPhone || '',
         tutorEmail: player.tutorEmail || '',
@@ -768,3 +766,4 @@ export function PlayerDetailClient({ id }: { id: string }) {
     </div>
   );
 }
+

@@ -64,7 +64,6 @@ const coachSchema = z.object({
   cin: z.string().optional(),
   category: z.string().min(1, "La catégorie est requise."),
   documents: z.array(documentSchema).optional(),
-  gender: z.enum(['Masculin', 'Féminin']),
 });
 
 type CoachFormValues = z.infer<typeof coachSchema>;
@@ -126,7 +125,6 @@ export function CoachDetailClient({ id }: { id: string }) {
         cin: coach.cin || '',
         category: coach.category || 'Sénior',
         documents,
-        gender: coach.gender || 'Masculin',
       });
     } else if (!dialogOpen) {
         form.reset();
