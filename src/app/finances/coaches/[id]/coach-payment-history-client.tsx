@@ -273,6 +273,3 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
     </div>
   );
 }
-
-    
-

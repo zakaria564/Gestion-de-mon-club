@@ -273,6 +273,3 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
     </div>
   );
 }
-
-    
-
