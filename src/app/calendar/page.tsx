@@ -220,25 +220,11 @@ export default function CalendarPage() {
     setDeleteConfirmationOpen(false);
   }
 
-  const openAddResultDialog = (event: CalendarEvent) => {
+  const openAddResultDialog = () => {
      setDetailsOpen(false);
-     setNewResult({
-        opponent: event.opponent,
-        homeTeam: '',
-        awayTeam: '',
-        date: event.date,
-        time: event.time,
-        location: event.location,
-        teamCategory: event.teamCategory,
-        gender: event.gender,
-        category: event.type, // 'Match Amical', etc.
-        score: '',
-        scorers: [],
-        assists: [],
-        homeOrAway: event.homeOrAway || 'home',
-        matchType: 'club-match'
-      });
-      setResultDialogOpen(true);
+     setResultDialogOpen(true);
+     // Reset form for a clean slate, not pre-filled from calendar event
+     resetResultForm(true); 
   };
 
   const handleResultInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -275,9 +261,11 @@ export default function CalendarPage() {
     setNewResult(prev => ({ ...prev, [listName]: list }));
   };
 
-  const resetResultForm = () => {
+  const resetResultForm = (keepOpen = false) => {
     setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
-    setResultDialogOpen(false);
+    if (!keepOpen) {
+      setResultDialogOpen(false);
+    }
     setMatchType('club-match');
   };
   
@@ -663,7 +651,7 @@ export default function CalendarPage() {
               </div>
               <DialogFooter className="flex-wrap justify-end gap-2">
                  {isPast(parseISO(selectedEvent.date)) && selectedEvent.type.toLowerCase().includes("match") && (
-                    <Button variant="outline" onClick={() => openAddResultDialog(selectedEvent)}>
+                    <Button variant="outline" onClick={() => openAddResultDialog()}>
                       <PlusCircle className="mr-2 h-4 w-4" /> Ajouter le score
                     </Button>
                   )}
@@ -920,5 +908,7 @@ export default function CalendarPage() {
     </div>
   );
 }
+
+    
 
     
