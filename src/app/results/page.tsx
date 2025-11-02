@@ -312,17 +312,6 @@ export default function ResultsPage() {
     return `${homeTeam} vs ${awayTeam}`;
   };
 
-  const isMatchActionDisabled = (result: Result): boolean => {
-    try {
-        const matchDateTime = parse(`${result.date} ${result.time}`, 'yyyy-MM-dd HH:mm', new Date());
-        const twentyFourHoursAfter = addHours(matchDateTime, 24);
-        return isAfter(new Date(), twentyFourHoursAfter);
-    } catch (e) {
-        // If parsing fails, disable by default for safety
-        return true;
-    }
-  };
-
   const isLoading = loading || playersLoading || opponentsLoading;
 
   return (
@@ -585,9 +574,7 @@ export default function ResultsPage() {
                              <div key={matchCategory}>
                                 <h4 className="text-xl font-semibold mb-3">{matchCategory}</h4>
                                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                  {categoryResults.map((result) => {
-                                      const disabled = isMatchActionDisabled(result);
-                                      return (
+                                  {categoryResults.map((result) => (
                                         <Card key={result.id} className="flex flex-col">
                                             <CardHeader>
                                                 <div className="flex items-start justify-between gap-4">
@@ -623,14 +610,14 @@ export default function ResultsPage() {
                                                     <Eye className="mr-2 h-4 w-4" />
                                                     Détails
                                                   </DropdownMenuItem>
-                                                  <DropdownMenuItem onClick={() => openEditDialog(result)} disabled={disabled}>
+                                                  <DropdownMenuItem onClick={() => openEditDialog(result)}>
                                                     <Edit className="mr-2 h-4 w-4" />
                                                     Modifier
                                                   </DropdownMenuItem>
                                                   <DropdownMenuSeparator />
                                                   <AlertDialog>
                                                       <AlertDialogTrigger asChild>
-                                                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600" disabled={disabled}>
+                                                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
                                                               <Trash2 className="mr-2 h-4 w-4" />
                                                               Supprimer
                                                           </DropdownMenuItem>
@@ -652,8 +639,7 @@ export default function ResultsPage() {
                                               </DropdownMenu>
                                             </CardFooter>
                                         </Card>
-                                      )
-                                  })}
+                                  ))}
                                 </div>
                              </div>
                         ))}
@@ -698,12 +684,12 @@ export default function ResultsPage() {
                     </div>
                 )}
                 <DialogFooter className="justify-end gap-2">
-                     <Button variant="outline" onClick={() => openEditDialog(selectedResult!)} disabled={selectedResult ? isMatchActionDisabled(selectedResult) : true}>
+                     <Button variant="outline" onClick={() => openEditDialog(selectedResult!)}>
                         <Edit className="mr-2 h-4 w-4" /> Modifier
                     </Button>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button variant="destructive" disabled={selectedResult ? isMatchActionDisabled(selectedResult) : true}>
+                            <Button variant="destructive">
                                 <Trash2 className="mr-2 h-4 w-4" /> Supprimer
                             </Button>
                         </AlertDialogTrigger>
