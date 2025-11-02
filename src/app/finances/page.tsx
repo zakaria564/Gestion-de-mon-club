@@ -46,7 +46,7 @@ import { format, parseISO } from 'date-fns';
 import type { Payment } from "@/lib/financial-data";
 import { Badge } from "@/components/ui/badge";
 
-type MemberStatus = 'À jour' | 'En attente';
+type MemberStatus = 'À jour' | 'En attente' | 'Partiel';
 
 export default function FinancesPage() {
   const financialContext = useFinancialContext();
@@ -91,7 +91,6 @@ export default function FinancesPage() {
   ) => {
     const currentMonth = format(new Date(), "yyyy-MM");
     
-    // 1. Group all payments by member
     const paymentsByMember = payments.reduce((acc, p) => {
         if (!acc[p.member]) {
             acc[p.member] = [];
@@ -100,22 +99,29 @@ export default function FinancesPage() {
         return acc;
     }, {} as Record<string, Payment[]>);
 
-    // 2. Create a summary for each member
     const memberSummaries = allMembers.map(member => {
         const memberPayments = paymentsByMember[member.name] || [];
         const totalPaid = memberPayments.reduce((sum, p) => sum + p.paidAmount, 0);
         const paymentCount = memberPayments.length;
-
-        // 3. Determine the status
+        
         let status: MemberStatus = 'À jour';
 
-        const hasPendingForAnyMonth = memberPayments.some(p => p.status === 'non payé' || p.status === 'partiel');
-        const hasPaymentForCurrentMonth = memberPayments.some(p => p.dueDate === currentMonth);
-        
-        if (hasPendingForAnyMonth || !hasPaymentForCurrentMonth) {
+        const paymentForCurrentMonth = memberPayments.find(p => p.dueDate === currentMonth);
+        const hasUnpaidFromPreviousMonths = memberPayments.some(p => p.dueDate < currentMonth && (p.status === 'non payé' || p.status === 'partiel'));
+
+        if (hasUnpaidFromPreviousMonths) {
+            status = 'En attente';
+        } else if (paymentForCurrentMonth) {
+            if (paymentForCurrentMonth.status === 'partiel') {
+                status = 'Partiel';
+            } else if (paymentForCurrentMonth.status === 'non payé') {
+                status = 'En attente';
+            }
+        } else {
+            // No payment for the current month, so it's pending
             status = 'En attente';
         }
-        
+
         return {
             member: member.name,
             totalPaid,
@@ -190,6 +196,8 @@ export default function FinancesPage() {
             case 'À jour':
                 return { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' };
             case 'En attente':
+                return { backgroundColor: 'hsl(var(--destructive))', color: 'hsl(var(--destructive-foreground))' };
+            case 'Partiel':
                 return { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' };
             default:
                 return {};
