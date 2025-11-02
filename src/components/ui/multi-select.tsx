@@ -14,6 +14,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command"
 import {
   Popover,
@@ -24,6 +25,7 @@ import {
 export type MultiSelectOption = {
   value: string
   label: string
+  group?: string // e.g., Team Name
 }
 
 interface MultiSelectProps {
@@ -46,34 +48,47 @@ export function MultiSelect({
   const [open, setOpen] = React.useState(false)
   const [inputValue, setInputValue] = React.useState("")
 
-  const handleUnselect = (item: string, index: number) => {
-    onChange(value.filter((_, i) => i !== index))
+  const handleUnselect = (item: string) => {
+    const newValues = [...value];
+    const itemIndex = newValues.lastIndexOf(item);
+    if (itemIndex > -1) {
+      newValues.splice(itemIndex, 1);
+      onChange(newValues);
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" && inputValue && creatable) {
-      if (!options.some(option => option.value === inputValue)) {
-         onChange([...value, inputValue])
+      const newOptionValue = `manual-${inputValue}`
+      if (!options.some(option => option.value === newOptionValue) && !value.includes(newOptionValue)) {
+         onChange([...value, newOptionValue])
       }
       setInputValue("")
       e.preventDefault()
-    } else if (e.key === "Backspace" && !inputValue) {
-      if (value.length > 0) {
-        onChange(value.slice(0, -1))
-      }
+    } else if (e.key === "Backspace" && !inputValue && value.length > 0) {
+        // Remove the last item on backspace
+        onChange(value.slice(0, value.length - 1));
     }
   }
+  
+  const selectedOptions = value.map(val => {
+    // For created values, format them.
+    if (val.startsWith("manual-")) {
+      return { value: val, label: val.replace("manual-", ""), group: "Saisie manuelle" }
+    }
+    return options.find(opt => opt.value === val)
+  }).filter(Boolean) as MultiSelectOption[];
 
-  const filteredOptions = options.filter(
-    (option) =>
-      !value.includes(option.value) &&
-      option.label.toLowerCase().includes(inputValue.toLowerCase())
-  )
 
-  const selectedWithCounts = value.reduce((acc, item) => {
-    acc[item] = (acc[item] || 0) + 1;
+  const groupedOptions = options.reduce((acc, option) => {
+    const group = option.group || "Autres";
+    if (!acc[group]) {
+        acc[group] = [];
+    }
+    acc[group].push(option);
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, MultiSelectOption[]>);
+
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -89,18 +104,18 @@ export function MultiSelect({
           onClick={() => setOpen(!open)}
         >
           <div className="flex gap-1 flex-wrap">
-            {value.length > 0 ? (
-              value.map((item, index) => (
+            {selectedOptions.length > 0 ? (
+              selectedOptions.map((option, index) => (
                 <Badge
                   variant="secondary"
-                  key={`${item}-${index}`}
+                  key={`${option.value}-${index}`}
                   className="mr-1"
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleUnselect(item, index)
+                    handleUnselect(option.value)
                   }}
                 >
-                  {item}
+                  {option.label}
                   <X className="ml-1 h-3 w-3" />
                 </Badge>
               ))
@@ -122,25 +137,27 @@ export function MultiSelect({
             <CommandEmpty>
               {creatable ? `Appuyez sur Entrée pour ajouter "${inputValue}"` : "Aucun résultat trouvé."}
             </CommandEmpty>
-            <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  onSelect={() => {
-                    onChange([...value, option.value])
-                    setInputValue("")
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      "opacity-0" // Always hide checkmark in multi-select for simplicity
-                    )}
-                  />
-                  {option.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+             {Object.entries(groupedOptions).map(([group, groupOptions]) => (
+                <CommandGroup key={group} heading={group}>
+                    {groupOptions.filter(opt => opt.label.toLowerCase().includes(inputValue.toLowerCase())).map((option) => (
+                        <CommandItem
+                            key={option.value}
+                            onSelect={() => {
+                                onChange([...value, option.value])
+                                setInputValue("")
+                            }}
+                        >
+                            <Check
+                                className={cn(
+                                "mr-2 h-4 w-4",
+                                value.includes(option.value) ? "opacity-100" : "opacity-0"
+                                )}
+                            />
+                            {option.label}
+                        </CommandItem>
+                    ))}
+                </CommandGroup>
+            ))}
           </CommandList>
         </Command>
       </PopoverContent>
