@@ -706,7 +706,7 @@ export default function ResultsPage() {
                 {selectedResult && (
                     <div className="space-y-4 py-4">
                       <p>
-                        <strong>Catégorie :</strong> {selectedResult.teamCategory}{selectedResult.gender === 'Féminin' ? ' F' : ''}
+                        <strong>Catégorie :</strong> {selectedResult.gender === 'Féminin' ? `${selectedResult.teamCategory} F` : selectedResult.teamCategory}
                       </p>
                       <p>
                         <strong>Date :</strong> {format(parseISO(selectedResult.date), "dd/MM/yyyy")}
