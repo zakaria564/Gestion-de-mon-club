@@ -256,26 +256,22 @@ export default function CalendarPage() {
     setNewResult(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleDynamicListChange = (
-    listName: 'scorers' | 'assists',
-    values: string[]
-  ) => {
-    const performanceDetails: PerformanceDetail[] = values.reduce((acc, val) => {
-      const [team, playerName] = val.split('||');
-      const existing = acc.find(item => item.playerName === playerName && item.team === team);
-      if (existing) {
-        existing.count++;
-      } else {
-        acc.push({ playerName, team, count: 1 });
-      }
-      return acc;
-    }, [] as PerformanceDetail[]);
-
-    setNewResult(prev => ({ ...prev, [listName]: performanceDetails }));
+  const handleDynamicListChange = (listName: 'scorers' | 'assists', values: string[]) => {
+      const performanceDetails: PerformanceDetail[] = values.reduce((acc, playerName) => {
+          const existing = acc.find(item => item.playerName === playerName);
+          if (existing) {
+              existing.count++;
+          } else {
+              acc.push({ playerName, count: 1 });
+          }
+          return acc;
+      }, [] as PerformanceDetail[]);
+      setNewResult(prev => ({ ...prev, [listName]: performanceDetails }));
   };
 
+
   const addDynamicListItem = (listName: 'scorers' | 'assists') => {
-    const list = [...newResult[listName], { playerName: '', team: '', count: 1 }];
+    const list = [...newResult[listName], { playerName: '', count: 1 }];
     setNewResult(prev => ({ ...prev, [listName]: list }));
   };
 
@@ -324,38 +320,14 @@ export default function CalendarPage() {
     const clubPlayers: MultiSelectOption[] = players
       .filter(p => p.category === newResult.teamCategory && p.gender === newResult.gender)
       .map(p => ({
-        value: `${clubInfo.name}||${p.name}`,
+        value: p.name,
         label: p.name,
         group: clubInfo.name
       }));
 
-    let opponentPlayers: MultiSelectOption[] = [];
+    return clubPlayers;
+  }, [players, newResult.teamCategory, newResult.gender, clubInfo.name]);
 
-    if (resultMatchType === 'club-match' && newResult.opponent) {
-      opponentPlayers.push({
-        value: `${newResult.opponent}||${newResult.opponent}`,
-        label: `Joueur de ${newResult.opponent}`,
-        group: newResult.opponent,
-      });
-    } else if (resultMatchType === 'opponent-vs-opponent') {
-      if (newResult.homeTeam) {
-        opponentPlayers.push({
-          value: `${newResult.homeTeam}||${newResult.homeTeam}`,
-          label: `Joueur de ${newResult.homeTeam}`,
-          group: newResult.homeTeam,
-        });
-      }
-      if (newResult.awayTeam) {
-        opponentPlayers.push({
-          value: `${newResult.awayTeam}||${newResult.awayTeam}`,
-          label: `Joueur de ${newResult.awayTeam}`,
-          group: newResult.awayTeam,
-        });
-      }
-    }
-
-    return [...clubPlayers, ...opponentPlayers];
-  }, [players, newResult.teamCategory, newResult.gender, newResult.opponent, newResult.homeTeam, newResult.awayTeam, clubInfo.name, resultMatchType]);
 
   const filteredOpponentOptions = useMemo(() => {
     return opponents.filter(op => op.gender === newEvent.gender);
@@ -463,7 +435,7 @@ export default function CalendarPage() {
   const isNewEventMatch = newEvent.type.toLowerCase().includes('match');
   const performanceToList = (performance?: PerformanceDetail[]): string[] => {
     if (!performance) return [];
-    return performance.flatMap(p => Array(p.count).fill(`${p.team}||${p.playerName}`));
+    return performance.flatMap(p => Array(p.count).fill(p.playerName));
   };
 
 

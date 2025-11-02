@@ -59,9 +59,8 @@ export function MultiSelect({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" && inputValue && creatable) {
-      const newOptionValue = `manual-${inputValue}`
-      if (!options.some(option => option.value === newOptionValue) && !value.includes(newOptionValue)) {
-         onChange([...value, newOptionValue])
+      if (!options.some(option => option.value === inputValue)) {
+         onChange([...value, inputValue])
       }
       setInputValue("")
       e.preventDefault()
@@ -72,11 +71,7 @@ export function MultiSelect({
   }
   
   const selectedOptions = value.map(val => {
-    // For created values, format them.
-    if (val.startsWith("manual-")) {
-      return { value: val, label: val.replace("manual-", ""), group: "Saisie manuelle" }
-    }
-    return options.find(opt => opt.value === val)
+    return options.find(opt => opt.value === val) || { value: val, label: val, group: "Saisie manuelle" }
   }).filter(Boolean) as MultiSelectOption[];
 
 

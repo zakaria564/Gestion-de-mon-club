@@ -171,26 +171,29 @@ export default function RankingPage() {
 
   }, [filteredResults, clubInfo.name, activeTab]);
 
-  const scorersRanking = useMemo(() => {
-    const scorerStats: { [name: string]: { goals: number, team: string } } = {};
+ const scorersRanking = useMemo(() => {
+    const scorerStats: { [name: string]: { goals: number; isClubPlayer: boolean } } = {};
+    const clubPlayerNames = new Set(players.map(p => p.name));
 
     filteredResults.forEach(result => {
         if (!result.scorers || !Array.isArray(result.scorers)) return;
         
         result.scorers.forEach(scorer => {
-            const uniqueScorerKey = `${scorer.playerName}||${scorer.team}`;
-            if (!scorerStats[uniqueScorerKey]) {
-                scorerStats[uniqueScorerKey] = { goals: 0, team: scorer.team };
+            const isClubPlayer = clubPlayerNames.has(scorer.playerName);
+            if (!scorerStats[scorer.playerName]) {
+                scorerStats[scorer.playerName] = { goals: 0, isClubPlayer };
             }
-            scorerStats[uniqueScorerKey].goals += scorer.count;
+            scorerStats[scorer.playerName].goals += scorer.count;
         });
     });
 
     const sortedScorers = Object.entries(scorerStats)
-      .map(([key, data]) => {
-          const [playerName] = key.split('||');
-          return { name: playerName, team: data.team, goals: data.goals };
-      })
+      .map(([name, data]) => ({
+          name,
+          goals: data.goals,
+          team: data.isClubPlayer ? clubInfo.name : 'Adversaire',
+          isClubPlayer: data.isClubPlayer
+      }))
       .sort((a, b) => {
         if (b.goals !== a.goals) return b.goals - a.goals;
         return a.name.localeCompare(b.name);
@@ -201,10 +204,11 @@ export default function RankingPage() {
         if (index > 0 && scorer.goals < sortedScorers[index - 1].goals) {
             rank = index + 1;
         }
-        return { ...scorer, rank, isClubPlayer: scorer.team === clubInfo.name };
+        return { ...scorer, rank };
     });
 
-  }, [filteredResults, clubInfo.name]);
+  }, [filteredResults, clubInfo.name, players]);
+
 
 
   if (loading) {
@@ -352,7 +356,7 @@ export default function RankingPage() {
                         <TableBody>
                             {scorersRanking.length > 0 ? (
                                 scorersRanking.map((scorer, index) => (
-                                    <TableRow key={`${scorer.name}-${scorer.team}`} className={scorer.isClubPlayer ? "bg-accent/50" : ""}>
+                                    <TableRow key={`${scorer.name}-${index}`} className={scorer.isClubPlayer ? "bg-accent/50" : ""}>
                                         <TableCell className="font-medium">{scorer.rank}</TableCell>
                                         <TableCell className="font-medium">{scorer.name}</TableCell>
                                         <TableCell>
