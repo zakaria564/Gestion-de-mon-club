@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Link from "next/link";
@@ -51,10 +50,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
-const baseCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
-
-const playerCategories: string[] = baseCategories.flatMap(cat => [cat, `${cat} F`]);
-
+const playerCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
 const documentSchema = z.object({
   name: z.string().min(1, "Le nom du document est requis."),
@@ -79,6 +75,7 @@ const playerSchema = z.object({
   tutorCin: z.string().optional(),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
   category: z.string().min(1, "La catégorie est requise."),
+  gender: z.enum(['Masculin', 'Féminin']),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
   documents: z.array(documentSchema).optional(),
@@ -87,7 +84,7 @@ const playerSchema = z.object({
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
 
-const defaultValues: Omit<PlayerFormValues, 'gender'> = {
+const defaultValues: PlayerFormValues = {
     name: '',
     birthDate: '',
     address: '',
@@ -104,6 +101,7 @@ const defaultValues: Omit<PlayerFormValues, 'gender'> = {
     tutorCin: '',
     status: 'Actif',
     category: 'Sénior',
+    gender: 'Masculin',
     entryDate: '',
     exitDate: '',
     documents: [],
@@ -139,11 +137,6 @@ const categoryColors: Record<string, string> = {
   'U11': 'hsl(var(--chart-10))',
   'U7': 'hsl(var(--chart-11))',
 };
-
-// Add colors for female categories
-Object.keys(categoryColors).forEach(key => {
-    categoryColors[`${key} F`] = categoryColors[key];
-});
 
 
 export default function PlayersPage() {
@@ -181,10 +174,7 @@ export default function PlayersPage() {
         return;
       }
       
-      const gender = data.category.endsWith(' F') ? 'Féminin' : 'Masculin';
-      const finalData = { ...data, gender };
-      
-      await addPlayer(finalData as any);
+      await addPlayer(data);
       setDialogOpen(false);
       toast({ title: "Joueur ajouté", description: "Le nouveau joueur a été ajouté avec succès." });
     };
@@ -227,8 +217,7 @@ export default function PlayersPage() {
 
     const handleCategoryChange = async (player: Player, newCategory: string) => {
         if (player.category !== newCategory) {
-            const gender = newCategory.endsWith(' F') ? 'Féminin' : 'Masculin';
-            const updatedPlayer = { ...player, category: newCategory, gender: gender };
+            const updatedPlayer = { ...player, category: newCategory };
             await updatePlayer(updatedPlayer);
             toast({
                 title: "Catégorie mise à jour",
@@ -255,8 +244,8 @@ export default function PlayersPage() {
         sortedPlayers.forEach(player => {
             const category = player.category || 'Sénior';
             const poste = player.poste || 'Non défini';
-            const isFemale = player.gender === 'Féminin';
-            const targetGroup = isFemale ? femaleGroups : maleGroups;
+            
+            const targetGroup = player.gender === 'Féminin' ? femaleGroups : maleGroups;
 
             if (!targetGroup[category]) {
                 targetGroup[category] = {};
@@ -269,8 +258,8 @@ export default function PlayersPage() {
         
         const sortCategoryGroups = (groups: Record<string, Record<string, Player[]>>) => {
              const sortedCategories = Object.keys(groups).sort((a, b) => {
-                const aIndex = playerCategories.indexOf(a);
-                const bIndex = playerCategories.indexOf(b);
+                const aIndex = playerCategories.indexOf(a as Player['category']);
+                const bIndex = playerCategories.indexOf(b as Player['category']);
                 return aIndex - bIndex;
             });
             const sortedGroups: Record<string, Record<string, Player[]>> = {};
@@ -455,6 +444,27 @@ export default function PlayersPage() {
                                         <FormMessage />
                                         </FormItem>
                                     )}
+                                    />
+                                     <FormField
+                                      control={form.control}
+                                      name="gender"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Genre</FormLabel>
+                                          <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                                            <FormControl>
+                                              <SelectTrigger>
+                                                <SelectValue placeholder="Sélectionner un genre" />
+                                              </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                              <SelectItem value="Masculin">Masculin</SelectItem>
+                                              <SelectItem value="Féminin">Féminin</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
                                     />
                                     <FormField
                                         control={form.control}
@@ -833,3 +843,4 @@ export default function PlayersPage() {
     );
 }
 
+    

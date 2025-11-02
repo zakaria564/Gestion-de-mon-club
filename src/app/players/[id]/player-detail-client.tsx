@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -31,9 +30,7 @@ const documentSchema = z.object({
   expirationDate: z.string().optional(),
 });
 
-const baseCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
-
-const playerCategories: string[] = baseCategories.flatMap(cat => [cat, `${cat} F`]);
+const playerCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
 const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
@@ -52,6 +49,7 @@ const playerSchema = z.object({
   tutorCin: z.string().optional(),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
   category: z.string().min(1, "La catégorie est requise."),
+  gender: z.enum(['Masculin', 'Féminin']),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
   documents: z.array(documentSchema).optional(),
@@ -143,6 +141,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
         tutorCin: player.tutorCin || '',
         status: player.status || 'Actif',
         category: player.category || 'Sénior',
+        gender: player.gender || 'Masculin',
         entryDate: player.entryDate && isValid(parseISO(player.entryDate)) ? format(parseISO(player.entryDate), 'yyyy-MM-dd') : '',
         exitDate: player.exitDate && isValid(parseISO(player.exitDate)) ? format(parseISO(player.exitDate), 'yyyy-MM-dd') : '',
         documents,
@@ -185,12 +184,9 @@ export function PlayerDetailClient({ id }: { id: string }) {
   const onSubmit = async (data: PlayerFormValues) => {
     if (!player) return;
     
-    const gender = data.category.endsWith(' F') ? 'Féminin' : 'Masculin';
-    
     const dataToUpdate = { 
         ...player,
         ...data,
-        gender,
         id: player.id,
         uid: player.uid
     };
@@ -444,6 +440,27 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                   <FormControl>
                                     <Input type="date" {...field} required />
                                   </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                             <FormField
+                              control={form.control}
+                              name="gender"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Genre</FormLabel>
+                                  <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner un genre" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="Masculin">Masculin</SelectItem>
+                                      <SelectItem value="Féminin">Féminin</SelectItem>
+                                    </SelectContent>
+                                  </Select>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -767,3 +784,4 @@ export function PlayerDetailClient({ id }: { id: string }) {
   );
 }
 
+    
