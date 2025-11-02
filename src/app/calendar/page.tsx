@@ -633,7 +633,7 @@ export default function CalendarPage() {
                 <div className="space-y-4">
                   {eventsForSelectedDate.map((event) => (
                     <div key={event.id} className="p-4 rounded-md border flex flex-col items-start gap-2 cursor-pointer hover:bg-muted/50 relative group" onClick={() => handleEventClick(event)}>
-                        <div className="flex-1 w-full">
+                        <div className="flex-1 w-full mb-2">
                             <div className='flex gap-2 items-center justify-center mb-2'>
                                 <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
                                 {event.teamCategory && (
@@ -649,7 +649,7 @@ export default function CalendarPage() {
                             <p className="text-sm text-muted-foreground text-center">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
                             <p className="text-sm text-muted-foreground text-center">{event.location}</p>
                         </div>
-                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
