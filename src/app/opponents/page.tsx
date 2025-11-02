@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -31,6 +31,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 export default function OpponentsPage() {
@@ -97,6 +98,79 @@ export default function OpponentsPage() {
   };
   
   const photoPreview = newOpponent.logoUrl;
+
+  const { maleOpponents, femaleOpponents } = useMemo(() => {
+    const maleOpponents = opponents.filter(o => o.gender === 'Masculin');
+    const femaleOpponents = opponents.filter(o => o.gender === 'Féminin');
+    return { maleOpponents, femaleOpponents };
+  }, [opponents]);
+
+  const renderOpponentGrid = (opponentList: Opponent[]) => {
+    if (opponentList.length === 0) {
+      return (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p className="text-muted-foreground">Aucun adversaire trouvé pour cette catégorie.</p>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {opponentList.map((opponent) => (
+          <Card key={opponent.id} className="flex flex-col">
+            <CardHeader className="flex-grow flex flex-row items-center gap-4">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={opponent.logoUrl || undefined} alt={opponent.name} data-ai-hint="team logo" />
+                <AvatarFallback>{opponent.name.substring(0, 2)}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <CardTitle className="text-base">{opponent.name}</CardTitle>
+              </div>
+            </CardHeader>
+            <CardFooter className="justify-end">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Ouvrir le menu</span>
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => openEditDialog(opponent)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Modifier
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Supprimer
+                      </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Cette action est irréversible. Voulez-vous vraiment supprimer cet adversaire ?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(opponent.id)}>Supprimer</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -172,70 +246,19 @@ export default function OpponentsPage() {
             </Card>
           ))}
         </div>
-      ) : opponents.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {opponents.map((opponent) => (
-            <Card key={opponent.id} className="flex flex-col">
-              <CardHeader className="flex-grow flex flex-row items-center gap-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={opponent.logoUrl || undefined} alt={opponent.name} data-ai-hint="team logo" />
-                  <AvatarFallback>{opponent.name.substring(0, 2)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <CardTitle className="text-base">{opponent.name}</CardTitle>
-                  <CardDescription>
-                      <Badge style={opponent.gender === 'Féminin' ? { backgroundColor: 'hsl(var(--chart-11))', color: 'white' } : {}} className="mt-1">
-                          {opponent.gender}
-                      </Badge>
-                  </CardDescription>
-                </div>
-              </CardHeader>
-              <CardFooter className="justify-end">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <span className="sr-only">Ouvrir le menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => openEditDialog(opponent)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Modifier
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                     <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
-                           <Trash2 className="mr-2 h-4 w-4" />
-                           Supprimer
-                        </DropdownMenuItem>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Cette action est irréversible. Voulez-vous vraiment supprimer cet adversaire ?
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Annuler</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(opponent.id)}>Supprimer</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
       ) : (
-        <Card>
-            <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">Aucun adversaire trouvé. Commencez par en ajouter un.</p>
-            </CardContent>
-        </Card>
+        <Tabs defaultValue="male" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="male">Masculin</TabsTrigger>
+                <TabsTrigger value="female">Féminin</TabsTrigger>
+            </TabsList>
+            <TabsContent value="male" className="mt-4">
+                {renderOpponentGrid(maleOpponents)}
+            </TabsContent>
+            <TabsContent value="female" className="mt-4">
+                {renderOpponentGrid(femaleOpponents)}
+            </TabsContent>
+        </Tabs>
       )}
     </div>
   );
