@@ -29,6 +29,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useClubContext } from '@/context/club-context';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useOpponentsContext } from '@/context/opponents-context';
+import { MultiSelect, MultiSelectOption } from '@/components/ui/multi-select';
 
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
@@ -157,16 +158,14 @@ export default function CalendarPage() {
 
     if (isMatch && hasPassed) {
         const existingResult = results.find(
-            (r) => r.date === event.date && r.opponent === event.opponent && r.teamCategory === event.teamCategory
+            (r) => r.date === event.date && r.opponent === event.opponent && r.teamCategory === event.teamCategory && (r.matchType === 'club-match' || !r.matchType)
         );
 
         if (existingResult) {
             setSelectedResult(existingResult);
             setResultDetailsOpen(true);
         } else {
-            // Keep details open to allow adding result, editing, or deleting
-            setSelectedEvent(event);
-            setDetailsOpen(true);
+            openAddResultDialogFromEvent(event);
         }
     } else {
         setSelectedEvent(event);
@@ -220,12 +219,35 @@ export default function CalendarPage() {
     setDeleteConfirmationOpen(false);
   }
 
+ const openAddResultDialogFromEvent = (event: CalendarEvent) => {
+    setDetailsOpen(false); // Close any open detail view
+    setResultDialogOpen(true);
+    setResultMatchType('club-match'); // Default to club match
+    setNewResult({
+      opponent: event.opponent,
+      homeTeam: '',
+      awayTeam: '',
+      date: format(parseISO(event.date), 'yyyy-MM-dd'),
+      time: event.time,
+      location: event.location,
+      score: '',
+      scorers: [],
+      assists: [],
+      category: event.type,
+      teamCategory: event.teamCategory,
+      gender: event.gender,
+      homeOrAway: event.homeOrAway || 'home',
+      matchType: 'club-match',
+    });
+  };
+
   const openAddResultDialog = () => {
      setDetailsOpen(false);
      setResultDialogOpen(true);
      // Reset form for a clean slate, not pre-filled from calendar event
      resetResultForm(true); 
   };
+
 
   const handleResultInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -234,21 +256,19 @@ export default function CalendarPage() {
 
   const handleDynamicListChange = (
     listName: 'scorers' | 'assists',
-    index: number,
-    field: 'playerName' | 'count',
-    value: string | number
+    values: string[]
   ) => {
-    const list = [...newResult[listName]];
-    const currentItem = { ...list[index] };
-    
-    if (field === 'count') {
-        currentItem.count = Number(value) < 1 ? 1 : Number(value);
-    } else {
-        currentItem.playerName = value as string;
-    }
+    const performanceDetails: PerformanceDetail[] = values.reduce((acc, name) => {
+      const existing = acc.find(item => item.playerName === name);
+      if (existing) {
+        existing.count++;
+      } else {
+        acc.push({ playerName: name, count: 1 });
+      }
+      return acc;
+    }, [] as PerformanceDetail[]);
 
-    list[index] = currentItem;
-    setNewResult(prev => ({ ...prev, [listName]: list }));
+    setNewResult(prev => ({ ...prev, [listName]: performanceDetails }));
   };
 
   const addDynamicListItem = (listName: 'scorers' | 'assists') => {
@@ -279,11 +299,7 @@ export default function CalendarPage() {
 
   const handleResultSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const finalResult = {
-        ...newResult,
-        scorers: newResult.scorers.filter(s => s.playerName),
-        assists: newResult.assists.filter(a => a.playerName)
-    };
+    const finalResult = { ...newResult };
     
     if (resultMatchType === 'opponent-vs-opponent') {
         finalResult.opponent = `${finalResult.homeTeam} vs ${finalResult.awayTeam}`;
@@ -309,6 +325,11 @@ export default function CalendarPage() {
       .map(p => ({ value: p.name, label: p.name }));
   }, [players, newResult.teamCategory, newResult.gender]);
 
+  const allPossiblePlayersOptions = useMemo(() => {
+    const opponentPlayers = opponents.map(op => ({ value: op.name, label: `${op.name} (Adversaire)` }));
+    return [...filteredPlayerOptions, ...opponentPlayers];
+  }, [filteredPlayerOptions, opponents]);
+
   const filteredOpponentOptions = useMemo(() => {
     return opponents.filter(op => op.gender === newEvent.gender);
   }, [opponents, newEvent.gender]);
@@ -329,6 +350,7 @@ export default function CalendarPage() {
   const selectedDateString = date ? format(date, 'yyyy-MM-dd') : undefined;
   const eventsForSelectedDate = selectedDateString 
     ? (eventsByDate[selectedDateString] || []).sort((a, b) => {
+        if (!a.time || !b.time) return 0;
         const timeA = a.time.split(':').map(Number);
         const timeB = b.time.split(':').map(Number);
         if (timeA[0] !== timeB[0]) {
@@ -412,6 +434,11 @@ export default function CalendarPage() {
   }
 
   const isNewEventMatch = newEvent.type.toLowerCase().includes('match');
+  const performanceToList = (performance?: PerformanceDetail[]): string[] => {
+    if (!performance) return [];
+    return performance.flatMap(p => Array(p.count).fill(p.playerName));
+  };
+
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -650,7 +677,7 @@ export default function CalendarPage() {
               </div>
               <DialogFooter className="flex-wrap justify-end gap-2">
                  {isPast(parseISO(selectedEvent.date)) && selectedEvent.type.toLowerCase().includes("match") && (
-                    <Button variant="outline" onClick={() => openAddResultDialog()}>
+                    <Button variant="outline" onClick={() => openAddResultDialogFromEvent(selectedEvent)}>
                       <PlusCircle className="mr-2 h-4 w-4" /> Ajouter le score
                     </Button>
                   )}
@@ -824,41 +851,28 @@ export default function CalendarPage() {
                         </div>
 
                         {resultMatchType === 'club-match' && (
-                            <>
-                                <div className="space-y-4">
-                                    <Label>Buteurs</Label>
-                                    {newResult.scorers.map((scorer, index) => (
-                                        <div key={index} className="flex items-center gap-2">
-                                            <Select onValueChange={(value) => handleDynamicListChange('scorers', index, 'playerName', value)} value={scorer.playerName}>
-                                                <SelectTrigger><SelectValue placeholder="Choisir un joueur..." /></SelectTrigger>
-                                                <SelectContent>
-                                                    {filteredPlayerOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
-                                                </SelectContent>
-                                            </Select>
-                                            <Input type="number" min="1" value={scorer.count} onChange={(e) => handleDynamicListChange('scorers', index, 'count', e.target.value)} className="w-20" />
-                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeDynamicListItem('scorers', index)}><X className="h-4 w-4" /></Button>
-                                        </div>
-                                    ))}
-                                    <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('scorers')}>Ajouter un buteur</Button>
-                                </div>
+                           <>
+                            <div className="space-y-2">
+                              <Label>Buteurs</Label>
+                              <MultiSelect
+                                options={allPossiblePlayersOptions}
+                                value={performanceToList(newResult.scorers)}
+                                onChange={(selected) => handleDynamicListChange('scorers', selected)}
+                                placeholder="Sélectionner ou saisir les buteurs..."
+                                creatable
+                              />
+                            </div>
 
-                                <div className="space-y-4">
-                                    <Label>Passeurs décisifs</Label>
-                                    {newResult.assists.map((assist, index) => (
-                                        <div key={index} className="flex items-center gap-2">
-                                            <Select onValueChange={(value) => handleDynamicListChange('assists', index, 'playerName', value)} value={assist.playerName}>
-                                                <SelectTrigger><SelectValue placeholder="Choisir un joueur..." /></SelectTrigger>
-                                                <SelectContent>
-                                                    {filteredPlayerOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
-                                                </SelectContent>
-                                            </Select>
-                                            <Input type="number" min="1" value={assist.count} onChange={(e) => handleDynamicListChange('assists', index, 'count', e.target.value)} className="w-20" />
-                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeDynamicListItem('assists', index)}><X className="h-4 w-4" /></Button>
-                                        </div>
-                                    ))}
-                                    <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('assists')}>Ajouter un passeur</Button>
-                                </div>
-                            </>
+                            <div className="space-y-2">
+                              <Label>Passeurs décisifs</Label>
+                              <MultiSelect
+                                options={filteredPlayerOptions}
+                                value={performanceToList(newResult.assists)}
+                                onChange={(selected) => handleDynamicListChange('assists', selected)}
+                                placeholder="Sélectionner les passeurs..."
+                              />
+                            </div>
+                          </>
                         )}
                     </div>
                 </div>

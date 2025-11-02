@@ -32,6 +32,7 @@ interface MultiSelectProps {
   onChange: (value: string[]) => void
   placeholder?: string
   className?: string
+  creatable?: boolean
 }
 
 export function MultiSelect({
@@ -40,21 +41,46 @@ export function MultiSelect({
   onChange,
   placeholder = "Select options...",
   className,
+  creatable = false,
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false)
+  const [inputValue, setInputValue] = React.useState("")
 
   const handleUnselect = (item: string) => {
     onChange(value.filter((i) => i !== item))
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" && inputValue && creatable) {
+      if (!value.includes(inputValue)) {
+        onChange([...value, inputValue])
+      }
+      setInputValue("")
+      e.preventDefault()
+    } else if (e.key === "Backspace" && !inputValue) {
+      if (value.length > 0) {
+        onChange(value.slice(0, -1))
+      }
+    }
+  }
+
+  const filteredOptions = options.filter(
+    (option) =>
+      !value.includes(option.value) &&
+      option.label.toLowerCase().includes(inputValue.toLowerCase())
+  )
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
+        <div
           role="combobox"
           aria-expanded={open}
-          className={cn("w-full justify-between h-auto min-h-10", className)}
+          className={cn(
+            "w-full justify-between rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+            "flex items-center min-h-10 px-3 py-2",
+            className
+          )}
           onClick={() => setOpen(!open)}
         >
           <div className="flex gap-1 flex-wrap">
@@ -77,16 +103,22 @@ export function MultiSelect({
               <span className="text-muted-foreground">{placeholder}</span>
             )}
           </div>
-          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
-        </Button>
+          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 ml-auto" />
+        </div>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Rechercher..." />
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command onKeyDown={handleKeyDown}>
+          <CommandInput
+            placeholder="Rechercher ou créer..."
+            value={inputValue}
+            onValueChange={setInputValue}
+          />
           <CommandList>
-            <CommandEmpty>Aucun résultat trouvé.</CommandEmpty>
+            <CommandEmpty>
+              {creatable ? `Appuyez sur Entrée pour ajouter "${inputValue}"` : "Aucun résultat trouvé."}
+            </CommandEmpty>
             <CommandGroup>
-              {options.map((option) => (
+              {filteredOptions.map((option) => (
                 <CommandItem
                   key={option.value}
                   onSelect={() => {
@@ -95,13 +127,13 @@ export function MultiSelect({
                         ? value.filter((item) => item !== option.value)
                         : [...value, option.value]
                     )
-                    setOpen(true)
+                    setInputValue("")
                   }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value.includes(option.value) ? "opacity-100" : "opacity-0"
+                      "opacity-0" // Always hide checkmark in multi-select for simplicity
                     )}
                   />
                   {option.label}
