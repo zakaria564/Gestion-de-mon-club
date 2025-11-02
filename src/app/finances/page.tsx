@@ -85,30 +85,51 @@ export default function FinancesPage() {
   const { players, loading: playersLoading } = playersContext;
   const { coaches, loading: coachesLoading } = coachesContext;
 
-  const aggregatePayments = (payments: Payment[]) => {
-      const memberSummary: { [key: string]: { member: string; totalPaid: number; paymentCount: number, status: MemberStatus } } = {};
+  const aggregatePayments = (
+    payments: Payment[],
+    allMembers: { id: string; name: string }[]
+  ) => {
+    const currentMonth = format(new Date(), "yyyy-MM");
+    const memberSummary: { [key: string]: { member: string; totalPaid: number; paymentCount: number; status: MemberStatus } } = {};
 
-      payments.forEach(p => {
-          if (!memberSummary[p.member]) {
-              memberSummary[p.member] = { member: p.member, totalPaid: 0, paymentCount: 0, status: 'À jour' };
-          }
-          memberSummary[p.member].totalPaid += p.paidAmount;
-          memberSummary[p.member].paymentCount += 1;
-          if (p.status === 'partiel' || p.status === 'non payé') {
-            memberSummary[p.member].status = 'Paiement en attente';
-          }
-      });
+    allMembers.forEach(member => {
+        memberSummary[member.name] = {
+            member: member.name,
+            totalPaid: 0,
+            paymentCount: 0,
+            status: 'À jour' // Default status
+        };
+    });
 
-      return Object.values(memberSummary);
+    payments.forEach(p => {
+        if (!memberSummary[p.member]) {
+             memberSummary[p.member] = { member: p.member, totalPaid: 0, paymentCount: 0, status: 'À jour' };
+        }
+        memberSummary[p.member].totalPaid += p.paidAmount;
+        memberSummary[p.member].paymentCount += 1;
+        if (p.status === 'partiel' || p.status === 'non payé') {
+          memberSummary[p.member].status = 'Paiement en attente';
+        }
+    });
+
+    // Second pass to check for missing payments for the current month
+    Object.values(memberSummary).forEach(summary => {
+        const hasPaymentForCurrentMonth = payments.some(p => p.member === summary.member && p.dueDate === currentMonth);
+        if (!hasPaymentForCurrentMonth) {
+            summary.status = 'Paiement en attente';
+        }
+    });
+
+    return Object.values(memberSummary);
   };
 
   const aggregatedPlayerPayments = useMemo(() => {
-    return aggregatePayments(playerPayments);
-  }, [playerPayments]);
+    return aggregatePayments(playerPayments, players);
+  }, [playerPayments, players]);
 
   const aggregatedCoachSalaries = useMemo(() => {
-      return aggregatePayments(coachSalaries);
-  }, [coachSalaries]);
+      return aggregatePayments(coachSalaries, coaches);
+  }, [coachSalaries, coaches]);
 
 
   const filteredPlayerMembers = useMemo(() => {
