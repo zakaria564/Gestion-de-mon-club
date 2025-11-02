@@ -37,7 +37,7 @@ interface TeamStats {
   points: number;
 }
 
-const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchTypes = ['Match Championnat', 'Match Coupe', 'Match Tournoi'];
 
 export default function RankingPage() {
