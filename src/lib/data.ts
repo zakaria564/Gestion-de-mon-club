@@ -54,15 +54,12 @@ export type CalendarEvent = {
   uid: string;
   type: string;
   opponent: string;
-  homeTeam?: string;
-  awayTeam?: string;
   date: string;
   time: string;
   location: string;
   teamCategory: string;
   gender: 'Masculin' | 'Féminin';
   homeOrAway?: 'home' | 'away';
-  matchType?: 'club-match' | 'opponent-vs-opponent';
 };
 
 export type Notification = {
