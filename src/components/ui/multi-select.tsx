@@ -46,14 +46,14 @@ export function MultiSelect({
   const [open, setOpen] = React.useState(false)
   const [inputValue, setInputValue] = React.useState("")
 
-  const handleUnselect = (item: string) => {
-    onChange(value.filter((i) => i !== item))
+  const handleUnselect = (item: string, index: number) => {
+    onChange(value.filter((_, i) => i !== index))
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" && inputValue && creatable) {
-      if (!value.includes(inputValue)) {
-        onChange([...value, inputValue])
+      if (!options.some(option => option.value === inputValue)) {
+         onChange([...value, inputValue])
       }
       setInputValue("")
       e.preventDefault()
@@ -70,6 +70,11 @@ export function MultiSelect({
       option.label.toLowerCase().includes(inputValue.toLowerCase())
   )
 
+  const selectedWithCounts = value.reduce((acc, item) => {
+    acc[item] = (acc[item] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -85,14 +90,14 @@ export function MultiSelect({
         >
           <div className="flex gap-1 flex-wrap">
             {value.length > 0 ? (
-              value.map((item) => (
+              value.map((item, index) => (
                 <Badge
                   variant="secondary"
-                  key={item}
+                  key={`${item}-${index}`}
                   className="mr-1"
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleUnselect(item)
+                    handleUnselect(item, index)
                   }}
                 >
                   {item}
@@ -118,15 +123,11 @@ export function MultiSelect({
               {creatable ? `Appuyez sur Entrée pour ajouter "${inputValue}"` : "Aucun résultat trouvé."}
             </CommandEmpty>
             <CommandGroup>
-              {filteredOptions.map((option) => (
+              {options.map((option) => (
                 <CommandItem
                   key={option.value}
                   onSelect={() => {
-                    onChange(
-                      value.includes(option.value)
-                        ? value.filter((item) => item !== option.value)
-                        : [...value, option.value]
-                    )
+                    onChange([...value, option.value])
                     setInputValue("")
                   }}
                 >
