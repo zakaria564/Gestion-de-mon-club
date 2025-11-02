@@ -632,8 +632,8 @@ export default function CalendarPage() {
               <CardContent>
                 <div className="space-y-4">
                   {eventsForSelectedDate.map((event) => (
-                    <div key={event.id} className="p-4 rounded-md border flex flex-col items-start gap-2 cursor-pointer hover:bg-muted/50 relative group">
-                        <div onClick={() => handleEventClick(event)} className="flex-1 w-full">
+                    <div key={event.id} className="p-4 rounded-md border flex flex-col items-start gap-2 cursor-pointer hover:bg-muted/50 relative group" onClick={() => handleEventClick(event)}>
+                        <div className="flex-1 w-full">
                             <div className='flex gap-2 items-center justify-center mb-2'>
                                 <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
                                 {event.teamCategory && (
