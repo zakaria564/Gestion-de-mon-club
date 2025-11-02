@@ -34,7 +34,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Banknote, PlusCircle, Users, UserCheck, Eye, Search } from "lucide-react";
+import { Banknote, PlusCircle, Users, UserCheck, Eye, Search, FilterX } from "lucide-react";
 import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
 import { useFinancialContext } from "@/context/financial-context";
@@ -118,6 +118,7 @@ export default function FinancesPage() {
                 status = 'En attente';
             }
         } else {
+             // No payment entry for the current month yet
             status = 'En attente';
         }
 
@@ -196,7 +197,7 @@ export default function FinancesPage() {
             case 'À jour':
                 return { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' };
             case 'En attente':
-                return { backgroundColor: '#FBBF24', color: 'hsl(var(--accent-foreground))' }; // Jaune-orangé
+                 return { backgroundColor: '#F87171', color: 'hsl(var(--destructive-foreground))' }; // Rouge doux
             case 'Partiel':
                 return { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' };
             default:
