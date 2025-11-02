@@ -119,17 +119,17 @@ export default function ResultsPage() {
   }
   
   const handleDynamicListChange = (listName: 'scorers' | 'assists', values: string[]) => {
-      const performanceDetails: PerformanceDetail[] = values.reduce((acc, playerName) => {
-          const existing = acc.find(item => item.playerName === playerName);
-          if (existing) {
-              existing.count++;
-          } else {
-              acc.push({ playerName, count: 1 });
-          }
-          return acc;
-      }, [] as PerformanceDetail[]);
-      setNewResult(prev => ({ ...prev, [listName]: performanceDetails }));
-  };
+    const performanceDetails: PerformanceDetail[] = values.reduce((acc, playerName) => {
+        const existing = acc.find(item => item.playerName === playerName);
+        if (existing) {
+            existing.count++;
+        } else {
+            acc.push({ playerName, count: 1 });
+        }
+        return acc;
+    }, [] as PerformanceDetail[]);
+    setNewResult(prev => ({ ...prev, [listName]: performanceDetails }));
+};
 
   
   const resetForm = () => {
@@ -216,8 +216,8 @@ export default function ResultsPage() {
         return categoryMatch && opponentMatch;
     });
 
-    const clubResults = filtered.filter(r => r.matchType !== 'opponent-vs-opponent');
-    const opponentResults = filtered.filter(r => r.matchType === 'opponent-vs-opponent');
+    const clubResults = filtered.filter(r => r.matchType !== 'opponent-vs-opponent' && r.matchType !== 'opponent_vs_opponent');
+    const opponentResults = filtered.filter(r => r.matchType === 'opponent-vs-opponent' || r.matchType === 'opponent_vs_opponent');
 
     const groupLogic = (resultsToGroup: Result[]): GroupedResults => {
         const grouped: GroupedResults = {};
@@ -298,7 +298,7 @@ export default function ResultsPage() {
   }
 
   const getResultTitle = (result: Result) => {
-     if (result.matchType === 'opponent-vs-opponent') {
+     if (result.matchType === 'opponent-vs-opponent' || result.matchType === 'opponent_vs_opponent') {
         const homeTeamName = result.homeTeam;
         const awayTeamName = result.awayTeam;
         return `${homeTeamName} vs ${awayTeamName}`;
@@ -318,7 +318,7 @@ export default function ResultsPage() {
   };
 
 
-  const renderResultsView = (groupedData: GroupedResults, gender: 'Masculin' | 'Féminin', title: string) => {
+  const renderResultsView = (groupedData: GroupedResults, gender: 'Masculin' | 'Féminin') => {
       if (isLoading) {
           return (
              <div className="space-y-8">
@@ -352,15 +352,14 @@ export default function ResultsPage() {
       
       if (Object.keys(groupedData).length === 0) {
           return (
-              <div className="text-center py-10 col-span-full border-t border-dashed mt-8">
-                  <p className="text-muted-foreground">Aucun résultat pour les {title.toLowerCase()} des équipes {gender === 'Féminin' ? 'féminines' : 'masculines'}.</p>
+              <div className="text-center py-10 col-span-full">
+                  <p className="text-muted-foreground">Aucun résultat trouvé pour cette vue.</p>
               </div>
           );
       }
 
       return (
-          <div className="space-y-8 border-t border-dashed pt-8 mt-8">
-              <h2 className="text-3xl font-bold tracking-tight">{title}</h2>
+          <div className="space-y-8">
               {Object.entries(groupedData).map(([teamCategory, matchCategories]) => (
                 <div key={teamCategory}>
                     <h3 className="text-2xl font-bold tracking-tight mb-4" style={{ color: categoryColors[teamCategory] }}>{teamCategory}</h3>
@@ -654,18 +653,38 @@ export default function ResultsPage() {
             )}
         </div>
 
-        <Tabs defaultValue="male" className="w-full">
+        <Tabs defaultValue="club" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="male">Masculin</TabsTrigger>
-                <TabsTrigger value="female">Féminin</TabsTrigger>
+                <TabsTrigger value="club">Matchs du Club</TabsTrigger>
+                <TabsTrigger value="opponents">Matchs des Adversaires</TabsTrigger>
             </TabsList>
-            <TabsContent value="male" className="mt-4">
-                {renderResultsView(maleClubResults, 'Masculin', 'Matchs du Club')}
-                {renderResultsView(maleOpponentResults, 'Masculin', 'Matchs des Adversaires')}
+            <TabsContent value="club" className="mt-4">
+                 <Tabs defaultValue="male" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="male">Masculin</TabsTrigger>
+                        <TabsTrigger value="female">Féminin</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="male" className="mt-4">
+                        {renderResultsView(maleClubResults, 'Masculin')}
+                    </TabsContent>
+                    <TabsContent value="female" className="mt-4">
+                        {renderResultsView(femaleClubResults, 'Féminin')}
+                    </TabsContent>
+                </Tabs>
             </TabsContent>
-            <TabsContent value="female" className="mt-4">
-                {renderResultsView(femaleClubResults, 'Féminin', 'Matchs du Club')}
-                {renderResultsView(femaleOpponentResults, 'Féminin', 'Matchs des Adversaires')}
+            <TabsContent value="opponents" className="mt-4">
+                 <Tabs defaultValue="male" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="male">Masculin</TabsTrigger>
+                        <TabsTrigger value="female">Féminin</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="male" className="mt-4">
+                        {renderResultsView(maleOpponentResults, 'Masculin')}
+                    </TabsContent>
+                    <TabsContent value="female" className="mt-4">
+                        {renderResultsView(femaleOpponentResults, 'Féminin')}
+                    </TabsContent>
+                </Tabs>
             </TabsContent>
         </Tabs>
         
