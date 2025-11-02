@@ -28,6 +28,7 @@ import { useOpponentsContext } from "@/context/opponents-context";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, parseISO } from 'date-fns';
+import { MultiSelect, MultiSelectOption } from "@/components/ui/multi-select";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical', 'Match Tournoi'];
@@ -119,32 +120,22 @@ export default function ResultsPage() {
   
   const handleDynamicListChange = (
     listName: 'scorers' | 'assists',
-    index: number,
-    field: 'playerName' | 'count',
-    value: string | number
+    values: string[]
   ) => {
-    const list = [...newResult[listName]];
-    const currentItem = { ...list[index] };
-    
-    if (field === 'count') {
-        currentItem.count = Number(value) < 1 ? 1 : Number(value);
-    } else {
-        currentItem.playerName = value as string;
-    }
+    const performanceDetails: PerformanceDetail[] = values.reduce((acc, val) => {
+      const name = val.startsWith("opponent-") ? val.substring(9) : val;
+      const existing = acc.find(item => item.playerName === name);
+      if (existing) {
+        existing.count++;
+      } else {
+        acc.push({ playerName: name, count: 1 });
+      }
+      return acc;
+    }, [] as PerformanceDetail[]);
 
-    list[index] = currentItem;
-    setNewResult(prev => ({ ...prev, [listName]: list }));
+    setNewResult(prev => ({ ...prev, [listName]: performanceDetails }));
   };
 
-  const addDynamicListItem = (listName: 'scorers' | 'assists') => {
-    const list = [...newResult[listName], { playerName: '', count: 1 }];
-    setNewResult(prev => ({ ...prev, [listName]: list }));
-  };
-
-  const removeDynamicListItem = (listName: 'scorers' | 'assists', index: number) => {
-    const list = newResult[listName].filter((_, i) => i !== index);
-    setNewResult(prev => ({ ...prev, [listName]: list }));
-  };
   
   const resetForm = () => {
     setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
@@ -157,11 +148,7 @@ export default function ResultsPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const finalResult: NewResult = {
-        ...newResult,
-        scorers: newResult.scorers.filter(s => s.playerName),
-        assists: newResult.assists.filter(a => a.playerName)
-    };
+    const finalResult: NewResult = { ...newResult };
     
     if (matchType === 'opponent-vs-opponent') {
         finalResult.opponent = `${finalResult.homeTeam} vs ${finalResult.awayTeam}`;
@@ -284,6 +271,18 @@ export default function ResultsPage() {
       .filter(p => p.category === newResult.teamCategory && p.gender === newResult.gender)
       .map(p => ({ value: p.name, label: p.name }));
   }, [players, newResult.teamCategory, newResult.gender]);
+  
+  const allPossiblePlayersOptions: MultiSelectOption[] = useMemo(() => {
+    const opponentPlayers: MultiSelectOption[] = opponents.map(op => ({
+      value: `opponent-${op.name}`,
+      label: `${op.name} (Adversaire)`,
+    }));
+    
+    const combined = [...filteredPlayerOptions, ...opponentPlayers];
+    const unique = Array.from(new Map(combined.map(item => [item.value, item])).values());
+    
+    return unique;
+  }, [filteredPlayerOptions, opponents]);
 
   const formatPerformance = (items: PerformanceDetail[] | undefined): string => {
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -329,6 +328,12 @@ export default function ResultsPage() {
   };
 
   const isLoading = loading || playersLoading || opponentsLoading;
+  
+  const performanceToList = (performance?: PerformanceDetail[]): string[] => {
+    if (!performance) return [];
+    return performance.flatMap(p => Array(p.count).fill(p.playerName));
+  };
+
 
   const renderResultsView = (groupedData: GroupedResults, gender: 'Masculin' | 'Féminin') => {
       if (isLoading) {
@@ -602,39 +607,26 @@ export default function ResultsPage() {
 
                            {matchType === 'club-match' && (
                            <>
-                              <div className="space-y-4">
-                                  <Label>Buteurs</Label>
-                                  {newResult.scorers.map((scorer, index) => (
-                                      <div key={index} className="flex items-center gap-2">
-                                          <Select onValueChange={(value) => handleDynamicListChange('scorers', index, 'playerName', value)} value={scorer.playerName}>
-                                              <SelectTrigger><SelectValue placeholder="Choisir un joueur..." /></SelectTrigger>
-                                              <SelectContent>
-                                                  {filteredPlayerOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
-                                              </SelectContent>
-                                          </Select>
-                                          <Input type="number" min="1" value={scorer.count} onChange={(e) => handleDynamicListChange('scorers', index, 'count', e.target.value)} className="w-20" />
-                                          <Button type="button" variant="ghost" size="icon" onClick={() => removeDynamicListItem('scorers', index)}><X className="h-4 w-4" /></Button>
-                                      </div>
-                                  ))}
-                                  <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('scorers')}>Ajouter un buteur</Button>
-                              </div>
+                              <div className="space-y-2">
+                                <Label>Buteurs</Label>
+                                <MultiSelect
+                                    options={allPossiblePlayersOptions}
+                                    value={performanceToList(newResult.scorers)}
+                                    onChange={(selected) => handleDynamicListChange('scorers', selected)}
+                                    placeholder="Sélectionner ou saisir les buteurs..."
+                                    creatable
+                                />
+                                </div>
 
-                              <div className="space-y-4">
-                                  <Label>Passeurs</Label>
-                                  {newResult.assists.map((assist, index) => (
-                                      <div key={index} className="flex items-center gap-2">
-                                          <Select onValueChange={(value) => handleDynamicListChange('assists', index, 'playerName', value)} value={assist.playerName}>
-                                              <SelectTrigger><SelectValue placeholder="Choisir un joueur..." /></SelectTrigger>
-                                              <SelectContent>
-                                                  {filteredPlayerOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
-                                              </SelectContent>
-                                          </Select>
-                                          <Input type="number" min="1" value={assist.count} onChange={(e) => handleDynamicListChange('assists', index, 'count', e.target.value)} className="w-20" />
-                                          <Button type="button" variant="ghost" size="icon" onClick={() => removeDynamicListItem('assists', index)}><X className="h-4 w-4" /></Button>
-                                      </div>
-                                  ))}
-                                  <Button type="button" variant="outline" size="sm" onClick={() => addDynamicListItem('assists')}>Ajouter un passeur</Button>
-                              </div>
+                                <div className="space-y-2">
+                                <Label>Passeurs décisifs</Label>
+                                <MultiSelect
+                                    options={filteredPlayerOptions}
+                                    value={performanceToList(newResult.assists)}
+                                    onChange={(selected) => handleDynamicListChange('assists', selected)}
+                                    placeholder="Sélectionner les passeurs..."
+                                />
+                                </div>
                             </>
                            )}
                       </div>

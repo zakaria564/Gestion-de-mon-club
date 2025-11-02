@@ -258,7 +258,8 @@ export default function CalendarPage() {
     listName: 'scorers' | 'assists',
     values: string[]
   ) => {
-    const performanceDetails: PerformanceDetail[] = values.reduce((acc, name) => {
+    const performanceDetails: PerformanceDetail[] = values.reduce((acc, val) => {
+      const name = val.startsWith("opponent-") ? val.substring(9) : val;
       const existing = acc.find(item => item.playerName === name);
       if (existing) {
         existing.count++;
@@ -325,9 +326,16 @@ export default function CalendarPage() {
       .map(p => ({ value: p.name, label: p.name }));
   }, [players, newResult.teamCategory, newResult.gender]);
 
-  const allPossiblePlayersOptions = useMemo(() => {
-    const opponentPlayers = opponents.map(op => ({ value: op.name, label: `${op.name} (Adversaire)` }));
-    return [...filteredPlayerOptions, ...opponentPlayers];
+  const allPossiblePlayersOptions: MultiSelectOption[] = useMemo(() => {
+    const opponentPlayers: MultiSelectOption[] = opponents.map(op => ({
+      value: `opponent-${op.name}`,
+      label: `${op.name} (Adversaire)`,
+    }));
+    
+    const combined = [...filteredPlayerOptions, ...opponentPlayers];
+    const unique = Array.from(new Map(combined.map(item => [item.value, item])).values());
+    
+    return unique;
   }, [filteredPlayerOptions, opponents]);
 
   const filteredOpponentOptions = useMemo(() => {
@@ -436,6 +444,8 @@ export default function CalendarPage() {
   const isNewEventMatch = newEvent.type.toLowerCase().includes('match');
   const performanceToList = (performance?: PerformanceDetail[]): string[] => {
     if (!performance) return [];
+    // This function now needs to differentiate between own players and opponents if necessary.
+    // For now, it just maps names. If keys become complex, this needs adjustment.
     return performance.flatMap(p => Array(p.count).fill(p.playerName));
   };
 
