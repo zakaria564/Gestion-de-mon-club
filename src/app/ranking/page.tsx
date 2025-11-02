@@ -179,22 +179,26 @@ export default function RankingPage() {
         if (!result.scorers || !Array.isArray(result.scorers)) return;
         
         result.scorers.forEach(scorer => {
-            if (!scorerStats[scorer.playerName]) {
-                const isClubPlayer = clubPlayerNames.has(scorer.playerName);
+            const scorerName = scorer.playerName.replace(/^opponent-/, '');
+            
+            if (!scorerStats[scorerName]) {
+                const isClubPlayer = clubPlayerNames.has(scorerName);
                 let teamName = "Adversaire";
-                if(isClubPlayer) {
+                
+                if (isClubPlayer) {
                     teamName = clubInfo.name;
                 } else if (result.matchType === 'club-match') {
                     teamName = result.opponent;
                 } else if (result.matchType === 'opponent-vs-opponent') {
-                    // This part is tricky, we don't know which opponent team the scorer belongs to
-                    // We can list both or make an assumption. For now, let's keep it simple.
-                    teamName = `${result.homeTeam} / ${result.awayTeam}`;
+                    // Simplistic assumption: a non-club player belongs to one of the opponent teams
+                    // This is imperfect as we don't store which team the scorer belongs to.
+                    // A better approach would be to store team with scorer. For now, show opponent name.
+                    teamName = scorer.playerName.startsWith('opponent-') ? scorer.playerName.substring(9) : "Adversaire";
                 }
 
-                scorerStats[scorer.playerName] = { goals: 0, team: teamName, isClubPlayer };
+                scorerStats[scorerName] = { goals: 0, team: teamName, isClubPlayer };
             }
-            scorerStats[scorer.playerName].goals += scorer.count;
+            scorerStats[scorerName].goals += scorer.count;
         });
     });
 
@@ -366,7 +370,7 @@ export default function RankingPage() {
                                         <TableCell className="font-medium">{scorer.name}</TableCell>
                                         <TableCell>
                                             <Badge variant={scorer.isClubPlayer ? "default" : "secondary"}>
-                                                {scorer.isClubPlayer ? clubInfo.name : "Adversaire"}
+                                                {scorer.team}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right font-bold">{scorer.goals}</TableCell>
