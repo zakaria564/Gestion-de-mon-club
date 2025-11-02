@@ -69,6 +69,9 @@ const getTeamColor = (teamName: string, clubName: string, colorMap: Map<string, 
   if (teamName === clubName) {
     return 'hsl(var(--chart-2))'; // Specific green for user's club
   }
+  if (teamName.toUpperCase() === 'WAC') {
+    return 'hsl(0, 80%, 60%)'; // Light red for WAC
+  }
   if (colorMap.has(teamName)) {
     return colorMap.get(teamName)!;
   }
@@ -366,7 +369,7 @@ export default function RankingPage() {
                   <TableBody>
                     {rankings.length > 0 ? (
                       rankings.map((stat, index) => (
-                        <TableRow key={stat.team} className={stat.team === clubInfo.name ? "bg-accent/50" : ""}>
+                        <TableRow key={stat.team} className={stat.team === clubInfo.name ? "bg-muted" : ""}>
                           <TableCell className="font-medium">{index + 1}</TableCell>
                           <TableCell className="font-medium">{stat.team}</TableCell>
                           <TableCell className="text-center">{stat.played}</TableCell>
