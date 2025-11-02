@@ -2,12 +2,8 @@
 import { CoachDetailClient } from './coach-detail-client';
 import React from 'react';
 
+// This is a Server Component
 export default function CoachDetailPage({ params }: { params: { id: string } }) {
-  const { id } = React.use(params);
-  
-  if (!id) {
-    return <div>Chargement...</div>;
-  }
-
-  return <CoachDetailClient id={id} />;
+  // Pass the id directly to the client component
+  return <CoachDetailClient id={params.id} />;
 }

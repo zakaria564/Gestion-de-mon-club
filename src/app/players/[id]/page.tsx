@@ -2,14 +2,8 @@
 import { PlayerDetailClient } from './player-detail-client';
 import React from 'react';
 
+// This is a Server Component
 export default function PlayerDetailPage({ params }: { params: { id: string } }) {
-  // We can safely access params.id here because this is a Server Component.
-  // We then pass the id as a prop to the Client Component.
-  const { id } = React.use(params);
-  
-  if (!id) {
-    return <div>Chargement...</div>;
-  }
-
-  return <PlayerDetailClient id={id} />;
+  // Pass the id directly to the client component
+  return <PlayerDetailClient id={params.id} />;
 }
