@@ -118,9 +118,9 @@ export default function FinancesPage() {
                 status = 'En attente';
             }
         } else {
-            // No payment for the current month, so it's pending
             status = 'En attente';
         }
+
 
         return {
             member: member.name,
@@ -196,7 +196,7 @@ export default function FinancesPage() {
             case 'À jour':
                 return { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' };
             case 'En attente':
-                return { backgroundColor: 'hsl(var(--destructive))', color: 'hsl(var(--destructive-foreground))' };
+                return { backgroundColor: '#FBBF24', color: 'hsl(var(--accent-foreground))' }; // Jaune-orangé
             case 'Partiel':
                 return { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' };
             default:
