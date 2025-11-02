@@ -206,57 +206,52 @@ export default function ResultsPage() {
     return [...new Set(allOpponents.filter(Boolean))] as string[];
   }, [results]);
 
-  const { maleGroupedResults, femaleGroupedResults } = useMemo(() => {
+  const {
+      maleClubResults, femaleClubResults,
+      maleOpponentResults, femaleOpponentResults
+  } = useMemo(() => {
     const filtered = results.filter(result => {
         const categoryMatch = categoryFilter === 'all' || result.teamCategory === categoryFilter;
         const opponentMatch = opponentFilter === 'all' || result.opponent === opponentFilter || result.homeTeam === opponentFilter || result.awayTeam === opponentFilter;
         return categoryMatch && opponentMatch;
     });
 
-    const groupLogic = (filteredResults: Result[]) => {
+    const clubResults = filtered.filter(r => r.matchType !== 'opponent-vs-opponent');
+    const opponentResults = filtered.filter(r => r.matchType === 'opponent-vs-opponent');
+
+    const groupLogic = (resultsToGroup: Result[]): GroupedResults => {
         const grouped: GroupedResults = {};
-        filteredResults.forEach(result => {
+        resultsToGroup.forEach(result => {
             const teamCat = result.teamCategory;
             const matchCat = result.category;
-
-            if (!grouped[teamCat]) {
-                grouped[teamCat] = {};
-            }
-            if (!grouped[teamCat][matchCat]) {
-                grouped[teamCat][matchCat] = [];
-            }
+            if (!grouped[teamCat]) grouped[teamCat] = {};
+            if (!grouped[teamCat][matchCat]) grouped[teamCat][matchCat] = [];
             grouped[teamCat][matchCat].push(result);
         });
-
-        const sortedTeamCategories = Object.keys(grouped).sort((a, b) => {
-          const aIndex = playerCategories.indexOf(a as Player['category']);
-          const bIndex = playerCategories.indexOf(b as Player['category']);
-          return aIndex - bIndex;
-        });
-
-        const sortedGroupedResults: GroupedResults = {};
-        for (const teamCat of sortedTeamCategories) {
-            const sortedMatchCategories = Object.keys(grouped[teamCat]).sort((a, b) => {
-                const aIndex = matchCategories.indexOf(a);
-                const bIndex = matchCategories.indexOf(b);
-                return aIndex - bIndex;
-            });
+        
+        const sortAndGroup = (grouped: GroupedResults): GroupedResults => {
+            const sortedGroupedResults: GroupedResults = {};
+            const sortedTeamCategories = Object.keys(grouped).sort((a, b) => playerCategories.indexOf(a as Player['category']) - playerCategories.indexOf(b as Player['category']));
             
-            sortedGroupedResults[teamCat] = {};
-            for (const matchCat of sortedMatchCategories) {
-                sortedGroupedResults[teamCat][matchCat] = grouped[teamCat][matchCat];
+            for (const teamCat of sortedTeamCategories) {
+                sortedGroupedResults[teamCat] = {};
+                const sortedMatchCategories = Object.keys(grouped[teamCat]).sort((a, b) => matchCategories.indexOf(a) - matchCategories.indexOf(b));
+                for (const matchCat of sortedMatchCategories) {
+                    sortedGroupedResults[teamCat][matchCat] = grouped[teamCat][matchCat].sort((a,b) => b.date.localeCompare(a.date));
+                }
             }
-        }
-        return sortedGroupedResults;
-    };
-    
-    const maleResults = filtered.filter(r => r.gender === 'Masculin');
-    const femaleResults = filtered.filter(r => r.gender === 'Féminin');
+            return sortedGroupedResults;
+        };
 
-    return {
-        maleGroupedResults: groupLogic(maleResults),
-        femaleGroupedResults: groupLogic(femaleResults)
+        return sortAndGroup(grouped);
     };
+
+    const maleClubResults = groupLogic(clubResults.filter(r => r.gender === 'Masculin'));
+    const femaleClubResults = groupLogic(clubResults.filter(r => r.gender === 'Féminin'));
+    const maleOpponentResults = groupLogic(opponentResults.filter(r => r.gender === 'Masculin'));
+    const femaleOpponentResults = groupLogic(opponentResults.filter(r => r.gender === 'Féminin'));
+
+    return { maleClubResults, femaleClubResults, maleOpponentResults, femaleOpponentResults };
   }, [results, categoryFilter, opponentFilter]);
 
   const allPossiblePlayersOptions: MultiSelectOption[] = useMemo(() => {
@@ -323,7 +318,7 @@ export default function ResultsPage() {
   };
 
 
-  const renderResultsView = (groupedData: GroupedResults, gender: 'Masculin' | 'Féminin') => {
+  const renderResultsView = (groupedData: GroupedResults, gender: 'Masculin' | 'Féminin', title: string) => {
       if (isLoading) {
           return (
              <div className="space-y-8">
@@ -357,14 +352,15 @@ export default function ResultsPage() {
       
       if (Object.keys(groupedData).length === 0) {
           return (
-              <div className="text-center py-10 col-span-full">
-                  <p className="text-muted-foreground">Aucun résultat trouvé pour les équipes {gender === 'Féminin' ? 'féminines' : 'masculines'}.</p>
+              <div className="text-center py-10 col-span-full border-t border-dashed mt-8">
+                  <p className="text-muted-foreground">Aucun résultat pour les {title.toLowerCase()} des équipes {gender === 'Féminin' ? 'féminines' : 'masculines'}.</p>
               </div>
           );
       }
 
       return (
-          <div className="space-y-8">
+          <div className="space-y-8 border-t border-dashed pt-8 mt-8">
+              <h2 className="text-3xl font-bold tracking-tight">{title}</h2>
               {Object.entries(groupedData).map(([teamCategory, matchCategories]) => (
                 <div key={teamCategory}>
                     <h3 className="text-2xl font-bold tracking-tight mb-4" style={{ color: categoryColors[teamCategory] }}>{teamCategory}</h3>
@@ -664,10 +660,12 @@ export default function ResultsPage() {
                 <TabsTrigger value="female">Féminin</TabsTrigger>
             </TabsList>
             <TabsContent value="male" className="mt-4">
-                {renderResultsView(maleGroupedResults, 'Masculin')}
+                {renderResultsView(maleClubResults, 'Masculin', 'Matchs du Club')}
+                {renderResultsView(maleOpponentResults, 'Masculin', 'Matchs des Adversaires')}
             </TabsContent>
             <TabsContent value="female" className="mt-4">
-                {renderResultsView(femaleGroupedResults, 'Féminin')}
+                {renderResultsView(femaleClubResults, 'Féminin', 'Matchs du Club')}
+                {renderResultsView(femaleOpponentResults, 'Féminin', 'Matchs des Adversaires')}
             </TabsContent>
         </Tabs>
         
