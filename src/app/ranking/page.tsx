@@ -190,8 +190,12 @@ export default function RankingPage() {
             } else {
                 const match = rawPlayerName.match(nameRegex);
                 if (match) {
-                    parsedName = match[1].trim(); // "Ikram Afifi"
-                    teamName = match[2].trim();   // "WAC"
+                    parsedName = match[1].trim();
+                    teamName = match[2].trim();
+                } else if (result.matchType === 'club-match') {
+                    teamName = result.opponent;
+                } else if (result.matchType === 'opponent-vs-opponent') {
+                    teamName = `${result.homeTeam} / ${result.awayTeam}`;
                 }
             }
 
@@ -375,7 +379,7 @@ export default function RankingPage() {
                                         <TableCell className="font-medium">{scorer.rank}</TableCell>
                                         <TableCell className="font-medium">{scorer.name}</TableCell>
                                         <TableCell>
-                                            <Badge variant={scorer.isClubPlayer ? "default" : "secondary"}>
+                                            <Badge style={scorer.isClubPlayer ? { backgroundColor: 'hsl(var(--chart-2))', color: 'white' } : {}} variant={scorer.isClubPlayer ? "default" : "secondary"}>
                                                 {scorer.team}
                                             </Badge>
                                         </TableCell>
