@@ -28,9 +28,10 @@ const categoryColors: Record<string, string> = {
   'U16': 'hsl(var(--chart-6))',
   'U15': 'hsl(var(--chart-7))',
   'U13': 'hsl(var(--chart-8))',
-  'U9': 'hsl(25 60% 45%)', // Brown color for U9
+  'U9': 'hsl(25 60% 45%)',
   'U11': 'hsl(var(--chart-10))',
   'U7': 'hsl(var(--chart-11))',
+  'U20': 'hsl(340, 80%, 55%)',
 };
 
 
