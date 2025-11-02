@@ -27,7 +27,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useClubContext } from "@/context/club-context";
 import { useOpponentsContext } from "@/context/opponents-context";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { addHours, isAfter, parse } from "date-fns";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical', 'Match Tournoi'];
@@ -212,55 +212,71 @@ export default function ResultsPage() {
     setDetailsOpen(true);
   }
   
-  const opponentOptions = useMemo(() => {
-    return opponents.map(op => op.name);
-  }, [opponents]);
+  const filteredOpponentOptions = useMemo(() => {
+    return opponents.filter(op => op.gender === newResult.gender);
+  }, [opponents, newResult.gender]);
 
-  const groupedAndFilteredResults = useMemo(() => {
+  const opponentOptions = useMemo(() => {
+    const allOpponents = results.flatMap(r => {
+        if (r.matchType === 'opponent-vs-opponent') {
+            return [r.homeTeam, r.awayTeam];
+        }
+        return [r.opponent];
+    });
+    return [...new Set(allOpponents.filter(Boolean))] as string[];
+  }, [results]);
+
+  const { maleGroupedResults, femaleGroupedResults } = useMemo(() => {
     const filtered = results.filter(result => {
         const categoryMatch = categoryFilter === 'all' || result.teamCategory === categoryFilter;
         const opponentMatch = opponentFilter === 'all' || result.opponent === opponentFilter || result.homeTeam === opponentFilter || result.awayTeam === opponentFilter;
         return categoryMatch && opponentMatch;
     });
 
-    const grouped: GroupedResults = {};
+    const groupLogic = (filteredResults: Result[]) => {
+        const grouped: GroupedResults = {};
+        filteredResults.forEach(result => {
+            const teamCat = result.teamCategory;
+            const matchCat = result.category;
 
-    filtered.forEach(result => {
-        const teamCat = result.teamCategory;
-        const matchCat = result.category;
-
-        if (!grouped[teamCat]) {
-            grouped[teamCat] = {};
-        }
-        if (!grouped[teamCat][matchCat]) {
-            grouped[teamCat][matchCat] = [];
-        }
-        grouped[teamCat][matchCat].push(result);
-    });
-
-    // Sort team categories
-    const sortedTeamCategories = Object.keys(grouped).sort((a, b) => {
-      const aIndex = playerCategories.indexOf(a as Player['category']);
-      const bIndex = playerCategories.indexOf(b as Player['category']);
-      return aIndex - bIndex;
-    });
-
-    const sortedGroupedResults: GroupedResults = {};
-    for (const teamCat of sortedTeamCategories) {
-        // Sort match categories within each team category
-        const sortedMatchCategories = Object.keys(grouped[teamCat]).sort((a, b) => {
-            const aIndex = matchCategories.indexOf(a);
-            const bIndex = matchCategories.indexOf(b);
-            return aIndex - bIndex;
+            if (!grouped[teamCat]) {
+                grouped[teamCat] = {};
+            }
+            if (!grouped[teamCat][matchCat]) {
+                grouped[teamCat][matchCat] = [];
+            }
+            grouped[teamCat][matchCat].push(result);
         });
-        
-        sortedGroupedResults[teamCat] = {};
-        for (const matchCat of sortedMatchCategories) {
-            sortedGroupedResults[teamCat][matchCat] = grouped[teamCat][matchCat];
+
+        const sortedTeamCategories = Object.keys(grouped).sort((a, b) => {
+          const aIndex = playerCategories.indexOf(a as Player['category']);
+          const bIndex = playerCategories.indexOf(b as Player['category']);
+          return aIndex - bIndex;
+        });
+
+        const sortedGroupedResults: GroupedResults = {};
+        for (const teamCat of sortedTeamCategories) {
+            const sortedMatchCategories = Object.keys(grouped[teamCat]).sort((a, b) => {
+                const aIndex = matchCategories.indexOf(a);
+                const bIndex = matchCategories.indexOf(b);
+                return aIndex - bIndex;
+            });
+            
+            sortedGroupedResults[teamCat] = {};
+            for (const matchCat of sortedMatchCategories) {
+                sortedGroupedResults[teamCat][matchCat] = grouped[teamCat][matchCat];
+            }
         }
-    }
+        return sortedGroupedResults;
+    };
     
-    return sortedGroupedResults;
+    const maleResults = filtered.filter(r => r.gender === 'Masculin');
+    const femaleResults = filtered.filter(r => r.gender === 'Féminin');
+
+    return {
+        maleGroupedResults: groupLogic(maleResults),
+        femaleGroupedResults: groupLogic(femaleResults)
+    };
   }, [results, categoryFilter, opponentFilter]);
 
   const filteredPlayerOptions = useMemo(() => {
@@ -313,6 +329,132 @@ export default function ResultsPage() {
   };
 
   const isLoading = loading || playersLoading || opponentsLoading;
+
+  const renderResultsView = (groupedData: GroupedResults, gender: 'Masculin' | 'Féminin') => {
+      if (isLoading) {
+          return (
+             <div className="space-y-8">
+              {Array.from({length: 2}).map((_, groupIndex) => (
+                <div key={groupIndex}>
+                    <Skeleton className="h-8 w-1/4 mb-4" />
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {Array.from({length: 4}).map((_, cardIndex) => (
+                        <Card key={cardIndex}>
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <Skeleton className="h-6 w-3/5" />
+                                <Skeleton className="h-8 w-1/4 rounded-md" />
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-4/5" />
+                        </CardContent>
+                        <CardFooter className="justify-end gap-2">
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                        </CardFooter>
+                        </Card>
+                    ))}
+                    </div>
+                </div>
+              ))}
+            </div>
+          );
+      }
+      
+      if (Object.keys(groupedData).length === 0) {
+          return (
+              <div className="text-center py-10 col-span-full">
+                  <p className="text-muted-foreground">Aucun résultat trouvé pour les équipes {gender === 'Féminin' ? 'féminines' : 'masculines'}.</p>
+              </div>
+          );
+      }
+
+      return (
+          <div className="space-y-8">
+              {Object.entries(groupedData).map(([teamCategory, matchCategories]) => (
+                <div key={teamCategory}>
+                    <h3 className="text-2xl font-bold tracking-tight mb-4" style={{ color: categoryColors[teamCategory] }}>{teamCategory}</h3>
+                    <div className="space-y-6">
+                        {Object.entries(matchCategories).map(([matchCategory, categoryResults]) => (
+                             <div key={matchCategory}>
+                                <h4 className="text-xl font-semibold mb-3">{matchCategory}</h4>
+                                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                  {categoryResults.map((result) => (
+                                        <Card key={result.id} className="flex flex-col">
+                                            <CardHeader>
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div className="flex-1">
+                                                        <CardTitle className="text-lg">{getResultTitle(result)}</CardTitle>
+                                                        <CardDescription>{result.date}</CardDescription>
+                                                    </div>
+                                                    <div className={`text-2xl font-bold p-2 rounded-md text-white ${getMatchOutcome(result)}`}>
+                                                        {result.score}
+                                                    </div>
+                                                </div>
+                                            </CardHeader>
+                                            <CardContent className="flex-grow space-y-2">
+                                                <Badge 
+                                                    style={{ backgroundColor: categoryColors[result.teamCategory], color: 'white' }} 
+                                                    className="border-transparent"
+                                                >
+                                                    {result.teamCategory}
+                                                </Badge>
+                                                <Badge variant="outline">{result.category}</Badge>
+                                                <p className="text-sm text-muted-foreground pt-2">{result.location}</p>
+                                            </CardContent>
+                                            <CardFooter className="justify-end gap-2">
+                                              <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                  <Button variant="ghost" className="h-8 w-8 p-0">
+                                                    <span className="sr-only">Ouvrir le menu</span>
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                  </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                  <DropdownMenuItem onClick={() => handleShowDetails(result)}>
+                                                    <Eye className="mr-2 h-4 w-4" />
+                                                    Détails
+                                                  </DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => openEditDialog(result)}>
+                                                    <Edit className="mr-2 h-4 w-4" />
+                                                    Modifier
+                                                  </DropdownMenuItem>
+                                                  <DropdownMenuSeparator />
+                                                  <AlertDialog>
+                                                      <AlertDialogTrigger asChild>
+                                                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                                                              <Trash2 className="mr-2 h-4 w-4" />
+                                                              Supprimer
+                                                          </DropdownMenuItem>
+                                                      </AlertDialogTrigger>
+                                                      <AlertDialogContent>
+                                                          <AlertDialogHeader>
+                                                          <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                                                          <AlertDialogDescription>
+                                                              Cette action ne peut pas être annulée. Cela supprimera définitivement ce résultat.
+                                                          </AlertDialogDescription>
+                                                          </AlertDialogHeader>
+                                                          <AlertDialogFooter>
+                                                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                                          <AlertDialogAction onClick={() => handleDelete(result.id)}>Supprimer</AlertDialogAction>
+                                                          </AlertDialogFooter>
+                                                      </AlertDialogContent>
+                                                  </AlertDialog>
+                                                </DropdownMenuContent>
+                                              </DropdownMenu>
+                                            </CardFooter>
+                                        </Card>
+                                  ))}
+                                </div>
+                             </div>
+                        ))}
+                    </div>
+                </div>
+              ))}
+            </div>
+      );
+  };
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -406,7 +548,7 @@ export default function ResultsPage() {
                                             <SelectValue placeholder="Sélectionner un adversaire" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {opponents.map(op => (
+                                            {filteredOpponentOptions.map(op => (
                                                 <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>
                                             ))}
                                         </SelectContent>
@@ -422,7 +564,7 @@ export default function ResultsPage() {
                                     <Select onValueChange={(v) => handleSelectChange('homeTeam', v)} value={newResult.homeTeam} required>
                                         <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
                                         <SelectContent>
-                                            {opponents.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
+                                            {filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -431,7 +573,7 @@ export default function ResultsPage() {
                                      <Select onValueChange={(v) => handleSelectChange('awayTeam', v)} value={newResult.awayTeam} required>
                                         <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
                                         <SelectContent>
-                                            {opponents.filter(op => op.name !== newResult.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
+                                            {filteredOpponentOptions.filter(op => op.name !== newResult.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -537,121 +679,18 @@ export default function ResultsPage() {
             )}
         </div>
 
-        {isLoading ? (
-             <div className="space-y-8">
-              {Array.from({length: 2}).map((_, groupIndex) => (
-                <div key={groupIndex}>
-                    <Skeleton className="h-8 w-1/4 mb-4" />
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {Array.from({length: 4}).map((_, cardIndex) => (
-                        <Card key={cardIndex}>
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <Skeleton className="h-6 w-3/5" />
-                                <Skeleton className="h-8 w-1/4 rounded-md" />
-                            </div>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-4/5" />
-                        </CardContent>
-                        <CardFooter className="justify-end gap-2">
-                                <Skeleton className="h-8 w-8 rounded-full" />
-                        </CardFooter>
-                        </Card>
-                    ))}
-                    </div>
-                </div>
-              ))}
-            </div>
-          ) : Object.keys(groupedAndFilteredResults).length > 0 ? (
-            <div className="space-y-8">
-              {Object.entries(groupedAndFilteredResults).map(([teamCategory, matchCategories]) => (
-                <div key={teamCategory}>
-                    <h3 className="text-2xl font-bold tracking-tight mb-4" style={{ color: categoryColors[teamCategory] }}>{teamCategory}</h3>
-                    <div className="space-y-6">
-                        {Object.entries(matchCategories).map(([matchCategory, categoryResults]) => (
-                             <div key={matchCategory}>
-                                <h4 className="text-xl font-semibold mb-3">{matchCategory}</h4>
-                                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                  {categoryResults.map((result) => (
-                                        <Card key={result.id} className="flex flex-col">
-                                            <CardHeader>
-                                                <div className="flex items-start justify-between gap-4">
-                                                    <div className="flex-1">
-                                                        <CardTitle className="text-lg">{getResultTitle(result)}</CardTitle>
-                                                        <CardDescription>{result.date}</CardDescription>
-                                                    </div>
-                                                    <div className={`text-2xl font-bold p-2 rounded-md text-white ${getMatchOutcome(result)}`}>
-                                                        {result.score}
-                                                    </div>
-                                                </div>
-                                            </CardHeader>
-                                            <CardContent className="flex-grow space-y-2">
-                                                <Badge 
-                                                    style={{ backgroundColor: categoryColors[result.teamCategory], color: 'white' }} 
-                                                    className="border-transparent"
-                                                >
-                                                    {result.teamCategory}
-                                                </Badge>
-                                                <Badge variant="outline">{result.category}</Badge>
-                                                <p className="text-sm text-muted-foreground pt-2">{result.location}</p>
-                                            </CardContent>
-                                            <CardFooter className="justify-end gap-2">
-                                              <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                  <Button variant="ghost" className="h-8 w-8 p-0">
-                                                    <span className="sr-only">Ouvrir le menu</span>
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                  </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                  <DropdownMenuItem onClick={() => handleShowDetails(result)}>
-                                                    <Eye className="mr-2 h-4 w-4" />
-                                                    Détails
-                                                  </DropdownMenuItem>
-                                                  <DropdownMenuItem onClick={() => openEditDialog(result)}>
-                                                    <Edit className="mr-2 h-4 w-4" />
-                                                    Modifier
-                                                  </DropdownMenuItem>
-                                                  <DropdownMenuSeparator />
-                                                  <AlertDialog>
-                                                      <AlertDialogTrigger asChild>
-                                                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
-                                                              <Trash2 className="mr-2 h-4 w-4" />
-                                                              Supprimer
-                                                          </DropdownMenuItem>
-                                                      </AlertDialogTrigger>
-                                                      <AlertDialogContent>
-                                                          <AlertDialogHeader>
-                                                          <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                                                          <AlertDialogDescription>
-                                                              Cette action ne peut pas être annulée. Cela supprimera définitivement ce résultat.
-                                                          </AlertDialogDescription>
-                                                          </AlertDialogHeader>
-                                                          <AlertDialogFooter>
-                                                          <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                                          <AlertDialogAction onClick={() => handleDelete(result.id)}>Supprimer</AlertDialogAction>
-                                                          </AlertDialogFooter>
-                                                      </AlertDialogContent>
-                                                  </AlertDialog>
-                                                </DropdownMenuContent>
-                                              </DropdownMenu>
-                                            </CardFooter>
-                                        </Card>
-                                  ))}
-                                </div>
-                             </div>
-                        ))}
-                    </div>
-                </div>
-              ))}
-            </div>
-             ) : (
-                <div className="text-center py-10 col-span-full">
-                    <p className="text-muted-foreground">Aucun résultat trouvé pour les filtres sélectionnés.</p>
-                </div>
-            )}
+        <Tabs defaultValue="male" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="male">Masculin</TabsTrigger>
+                <TabsTrigger value="female">Féminin</TabsTrigger>
+            </TabsList>
+            <TabsContent value="male" className="mt-4">
+                {renderResultsView(maleGroupedResults, 'Masculin')}
+            </TabsContent>
+            <TabsContent value="female" className="mt-4">
+                {renderResultsView(femaleGroupedResults, 'Féminin')}
+            </TabsContent>
+        </Tabs>
         
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
             <DialogContent>
