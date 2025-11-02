@@ -28,6 +28,7 @@ import { useClubContext } from "@/context/club-context";
 import { useOpponentsContext } from "@/context/opponents-context";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format, parseISO } from 'date-fns';
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical', 'Match Tournoi'];
@@ -705,7 +706,10 @@ export default function ResultsPage() {
                 {selectedResult && (
                     <div className="space-y-4 py-4">
                       <p>
-                        <strong>Date :</strong> {selectedResult.date}
+                        <strong>Catégorie :</strong> {selectedResult.teamCategory}{selectedResult.gender === 'Féminin' ? ' F' : ''}
+                      </p>
+                      <p>
+                        <strong>Date :</strong> {format(parseISO(selectedResult.date), "dd/MM/yyyy")}
                       </p>
                       <p>
                         <strong>Lieu :</strong> {selectedResult.location || "Non spécifié"}
@@ -723,7 +727,7 @@ export default function ResultsPage() {
                     </div>
                 )}
                 <DialogFooter className="justify-end gap-2">
-                     <Button variant="outline" onClick={() => openEditDialog(selectedResult!)}>
+                    <Button variant="outline" onClick={() => openEditDialog(selectedResult!)}>
                         <Edit className="mr-2 h-4 w-4" /> Modifier
                     </Button>
                     <AlertDialog>
