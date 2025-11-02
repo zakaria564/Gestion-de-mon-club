@@ -220,6 +220,7 @@ export default function RankingPage() {
                 } else if (result.matchType === 'club-match') {
                     teamName = result.opponent;
                 } else if (result.matchType === 'opponent-vs-opponent') {
+                    // This is a fallback and might not be accurate if a player name contains "vs"
                     teamName = `${result.homeTeam} / ${result.awayTeam}`;
                 }
             }
@@ -412,7 +413,7 @@ export default function RankingPage() {
                         <TableBody>
                             {scorersRanking.length > 0 ? (
                                 scorersRanking.map((scorer, index) => (
-                                    <TableRow key={`${scorer.name}-${index}`} className={scorer.isClubPlayer ? "bg-accent/50" : ""}>
+                                    <TableRow key={`${scorer.name}-${index}`}>
                                         <TableCell className="font-medium">{scorer.rank}</TableCell>
                                         <TableCell className="font-medium">{scorer.name}</TableCell>
                                         <TableCell>
