@@ -48,7 +48,10 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
         data.sort((a, b) => {
           if (a.date > b.date) return -1;
           if (a.date < b.date) return 1;
-          return a.time.localeCompare(b.time);
+          if (a.time && b.time) {
+            return a.time.localeCompare(b.time);
+          }
+          return 0;
         });
 
         setCalendarEvents(data);

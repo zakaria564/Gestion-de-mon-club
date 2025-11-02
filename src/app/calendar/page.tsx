@@ -74,20 +74,24 @@ export default function CalendarPage() {
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
+  const [eventMatchType, setEventMatchType] = useState<'club-match' | 'opponent-vs-opponent'>('club-match');
   const [newEvent, setNewEvent] = useState<NewCalendarEvent>({
     type: '',
     opponent: '',
+    homeTeam: '',
+    awayTeam: '',
     date: '',
     time: '',
     location: '',
     teamCategory: 'Sénior',
     gender: 'Masculin',
     homeOrAway: 'home',
+    matchType: 'club-match',
   });
 
   // State for Add Result Dialog
   const [resultDialogOpen, setResultDialogOpen] = useState(false);
-  const [matchType, setMatchType] = useState<'club-match' | 'opponent-vs-opponent'>('club-match');
+  const [resultMatchType, setResultMatchType] = useState<'club-match' | 'opponent-vs-opponent'>('club-match');
   const [newResult, setNewResult] = useState<NewResult>({
       opponent: '',
       homeTeam: '',
@@ -113,15 +117,19 @@ export default function CalendarPage() {
   const [selectedResult, setSelectedResult] = useState<Result | null>(null);
   
   useEffect(() => {
-    setNewResult(prev => ({ ...prev, matchType }));
-  }, [matchType]);
+    setNewResult(prev => ({ ...prev, matchType: resultMatchType }));
+  }, [resultMatchType]);
+
+  useEffect(() => {
+    setNewEvent(prev => ({ ...prev, matchType: eventMatchType }));
+  }, [eventMatchType]);
   
   const handleEventInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setNewEvent(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleEventSelectChange = (field: 'type' | 'teamCategory' | 'opponent' | 'gender', value: string) => {
+  const handleEventSelectChange = (field: keyof NewCalendarEvent, value: string) => {
     setNewEvent(prev => ({ ...prev, [field]: value as any }));
   };
 
@@ -132,23 +140,29 @@ export default function CalendarPage() {
   const handleEventSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
+    const finalEvent = { ...newEvent };
+    if (newEvent.matchType === 'opponent-vs-opponent') {
+        finalEvent.opponent = `${finalEvent.homeTeam} vs ${finalEvent.awayTeam}`;
+    }
+
     if (isEditing && editingEvent) {
        await updateEvent({
         id: editingEvent.id,
-        ...newEvent,
+        ...finalEvent,
        });
     } else {
-      await addEvent(newEvent);
+      await addEvent(finalEvent);
     }
     
     resetEventForm();
   };
 
   const resetEventForm = () => {
-    setNewEvent({ type: '', opponent: '', date: '', time: '', location: '', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home' });
+    setNewEvent({ type: '', opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
     setEventDialogOpen(false);
     setIsEditing(false);
     setEditingEvent(null);
+    setEventMatchType('club-match');
   }
 
   const handleEventClick = (event: CalendarEvent) => {
@@ -180,13 +194,17 @@ export default function CalendarPage() {
     setNewEvent({ 
         type: '', 
         opponent: '', 
+        homeTeam: '',
+        awayTeam: '',
         date: format(selectedDate, 'yyyy-MM-dd'), 
         time: '', 
         location: '',
         teamCategory: 'Sénior',
         gender: 'Masculin',
         homeOrAway: 'home',
+        matchType: 'club-match',
     });
+    setEventMatchType('club-match');
     setEventDialogOpen(true);
   }
   
@@ -200,15 +218,20 @@ export default function CalendarPage() {
     setDetailsOpen(false);
     setIsEditing(true);
     setEditingEvent(event);
+    const matchType = event.matchType || 'club-match';
+    setEventMatchType(matchType);
     setNewEvent({
       type: event.type,
       opponent: event.opponent,
+      homeTeam: event.homeTeam || '',
+      awayTeam: event.awayTeam || '',
       date: format(parseISO(event.date), 'yyyy-MM-dd'),
       time: event.time,
       location: event.location,
       teamCategory: event.teamCategory || 'Sénior',
       gender: event.gender || 'Masculin',
       homeOrAway: event.homeOrAway || 'home',
+      matchType,
     });
     setEventDialogOpen(true);
   }
@@ -266,7 +289,7 @@ export default function CalendarPage() {
     if (!keepOpen) {
       setResultDialogOpen(false);
     }
-    setMatchType('club-match');
+    setResultMatchType('club-match');
   };
   
   const handleResultSelectChange = (field: 'category' | 'teamCategory' | 'opponent' | 'homeTeam' | 'awayTeam' | 'gender', value: string) => {
@@ -285,7 +308,7 @@ export default function CalendarPage() {
         assists: newResult.assists.filter(a => a.playerName)
     };
     
-    if (matchType === 'opponent-vs-opponent') {
+    if (resultMatchType === 'opponent-vs-opponent') {
         finalResult.opponent = `${finalResult.homeTeam} vs ${finalResult.awayTeam}`;
         finalResult.scorers = [];
         finalResult.assists = [];
@@ -358,11 +381,18 @@ export default function CalendarPage() {
 
   const getMatchTitle = (event: CalendarEvent) => {
     const isMatch = event.type.toLowerCase().includes('match');
-    if (!isMatch || !event.opponent) return event.type;
+    if (!isMatch) return event.type;
+
+    if (event.matchType === 'opponent-vs-opponent') {
+        const homeTeamName = event.homeTeam;
+        const awayTeamName = event.awayTeam;
+        return `${homeTeamName} vs ${awayTeamName}`;
+    }
     
+    if (!event.opponent) return event.type;
+
     const clubName = clubInfo.name;
     const opponentName = event.opponent;
-
     const homeTeam = event.homeOrAway === 'home' ? clubName : opponentName;
     const awayTeam = event.homeOrAway === 'home' ? opponentName : clubName;
     
@@ -481,32 +511,70 @@ export default function CalendarPage() {
                 </div>
                 {isNewEventMatch && (
                   <>
-                    <div className="grid gap-2">
-                      <Label>Domicile / Extérieur</Label>
-                      <RadioGroup defaultValue="home" value={newEvent.homeOrAway} onValueChange={handleHomeAwayChange} className="flex gap-4">
-                          <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="home" id="home" />
-                              <Label htmlFor="home">Domicile</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="away" id="away" />
-                              <Label htmlFor="away">Extérieur</Label>
-                          </div>
-                      </RadioGroup>
+                     <div className="grid gap-2">
+                        <Label>Type de Match</Label>
+                        <RadioGroup value={eventMatchType} onValueChange={(v) => setEventMatchType(v as any)} className="flex gap-4">
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="club-match" id="club-match-event" />
+                                <Label htmlFor="club-match-event">Match de mon club</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="opponent-vs-opponent" id="opponent-match-event" />
+                                <Label htmlFor="opponent-match-event">Adversaires</Label>
+                            </div>
+                        </RadioGroup>
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="opponent">Adversaire</Label>
-                      <Select onValueChange={(v) => handleEventSelectChange('opponent', v)} value={newEvent.opponent} required>
-                          <SelectTrigger>
-                              <SelectValue placeholder="Sélectionner un adversaire" />
-                          </SelectTrigger>
-                          <SelectContent>
-                              {filteredOpponentOptions.map(op => (
-                                  <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>
-                              ))}
-                          </SelectContent>
-                      </Select>
-                    </div>
+                    {eventMatchType === 'club-match' ? (
+                        <>
+                            <div className="grid gap-2">
+                                <Label>Domicile / Extérieur</Label>
+                                <RadioGroup defaultValue="home" value={newEvent.homeOrAway} onValueChange={handleHomeAwayChange} className="flex gap-4">
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="home" id="home" />
+                                        <Label htmlFor="home">Domicile</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="away" id="away" />
+                                        <Label htmlFor="away">Extérieur</Label>
+                                    </div>
+                                </RadioGroup>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="opponent">Adversaire</Label>
+                                <Select onValueChange={(v) => handleEventSelectChange('opponent', v)} value={newEvent.opponent} required>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner un adversaire" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {filteredOpponentOptions.map(op => (
+                                            <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="homeTeam">Équipe à Domicile</Label>
+                                <Select onValueChange={(v) => handleEventSelectChange('homeTeam', v)} value={newEvent.homeTeam} required>
+                                    <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="awayTeam">Équipe à l'Extérieur</Label>
+                                <Select onValueChange={(v) => handleEventSelectChange('awayTeam', v)} value={newEvent.awayTeam} required>
+                                    <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {filteredOpponentOptions.filter(op => op.name !== newEvent.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    )}
                   </>
                 )}
                 <div className="grid grid-cols-2 gap-4">
@@ -637,7 +705,7 @@ export default function CalendarPage() {
           <DialogHeader>
             <DialogTitle>{selectedEvent?.type}</DialogTitle>
             <DialogDescription>
-              {selectedEvent?.type.toLowerCase().includes('match') && selectedEvent.opponent ? getMatchTitle(selectedEvent) : 'Détails de l\'événement'}
+              {selectedEvent?.type.toLowerCase().includes('match') ? getMatchTitle(selectedEvent!) : 'Détails de l\'événement'}
             </DialogDescription>
           </DialogHeader>
           {selectedEvent && (
@@ -647,7 +715,7 @@ export default function CalendarPage() {
                   <p><strong>Date:</strong> {format(parseISO(selectedEvent.date), 'dd/MM/yyyy')}</p>
                   <p><strong>Heure:</strong> {selectedEvent.time}</p>
                   <p><strong>Lieu:</strong> {selectedEvent.location}</p>
-                  {selectedEvent.opponent && <p><strong>Adversaire:</strong> {selectedEvent.opponent}</p>}
+                  {selectedEvent.type.toLowerCase().includes('match') && selectedEvent.matchType !== 'opponent-vs-opponent' && selectedEvent.opponent && <p><strong>Adversaire:</strong> {selectedEvent.opponent}</p>}
               </div>
               <DialogFooter className="flex-wrap justify-end gap-2">
                  {isPast(parseISO(selectedEvent.date)) && selectedEvent.type.toLowerCase().includes("match") && (
@@ -698,7 +766,7 @@ export default function CalendarPage() {
                     <div className="grid gap-4 py-4 px-1">
                          <div className="grid gap-2">
                             <Label>Type de saisie</Label>
-                             <RadioGroup value={matchType} onValueChange={(v) => setMatchType(v as any)} className="flex gap-4">
+                             <RadioGroup value={resultMatchType} onValueChange={(v) => setResultMatchType(v as any)} className="flex gap-4">
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="club-match" id="club-match-res" />
                                     <Label htmlFor="club-match-res">Match de mon club</Label>
@@ -750,7 +818,7 @@ export default function CalendarPage() {
                             </Select>
                         </div>
                         
-                        {matchType === 'club-match' && (
+                        {resultMatchType === 'club-match' && (
                             <>
                                 <div className="grid gap-2">
                                     <Label>Domicile / Extérieur</Label>
@@ -781,7 +849,7 @@ export default function CalendarPage() {
                             </>
                          )}
 
-                        {matchType === 'opponent-vs-opponent' && (
+                        {resultMatchType === 'opponent-vs-opponent' && (
                             <div className="grid grid-cols-2 gap-4">
                                <div className="grid gap-2">
                                     <Label htmlFor="homeTeam">Équipe à Domicile</Label>
@@ -824,7 +892,7 @@ export default function CalendarPage() {
                             <Input id="score" value={newResult.score} onChange={handleResultInputChange} required />
                         </div>
 
-                        {matchType === 'club-match' && (
+                        {resultMatchType === 'club-match' && (
                             <>
                                 <div className="space-y-4">
                                     <Label>Buteurs</Label>
@@ -908,7 +976,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-
-    
-
-    
