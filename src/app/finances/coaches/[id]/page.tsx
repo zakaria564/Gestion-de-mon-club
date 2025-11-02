@@ -4,7 +4,10 @@ import React from 'react';
 
 // This is a Server Component
 export default function CoachPaymentHistoryPage({ params }: { params: { id: string } }) {
-  // Pass the id directly to the client component
-  const memberName = decodeURIComponent(params.id);
+  // Use React.use() to unwrap the dynamic params object
+  const stableParams = React.use(params);
+  
+  // Pass the decoded memberName directly to the client component
+  const memberName = decodeURIComponent(stableParams.id);
   return <CoachPaymentHistoryClient memberName={memberName} />;
 }
