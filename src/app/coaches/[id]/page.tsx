@@ -1,13 +1,9 @@
 
-'use client';
-
 import { CoachDetailClient } from './coach-detail-client';
 import React from 'react';
-import { useParams } from 'next/navigation';
 
-export default function CoachDetailPage() {
-  const params = useParams();
-  const id = params?.id as string;
+export default function CoachDetailPage({ params }: { params: { id: string } }) {
+  const { id } = React.use(params);
   
   if (!id) {
     return <div>Chargement...</div>;

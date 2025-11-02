@@ -1,17 +1,16 @@
 
-'use client';
-
 import { CoachPaymentHistoryClient } from './coach-payment-history-client';
 import React from 'react';
-import { useParams } from 'next/navigation';
 
-export default function CoachPaymentHistoryPage() {
-  const params = useParams();
-  const memberName = params?.id as string;
+export default function CoachPaymentHistoryPage({ params }: { params: { id: string } }) {
+  const { id } = React.use(params);
 
-  if (!memberName) {
+  if (!id) {
     return <div>Chargement...</div>;
   }
 
-  return <CoachPaymentHistoryClient memberName={decodeURIComponent(memberName)} />;
+  // The id is URL encoded, so we need to decode it.
+  const memberName = decodeURIComponent(id);
+
+  return <CoachPaymentHistoryClient memberName={memberName} />;
 }

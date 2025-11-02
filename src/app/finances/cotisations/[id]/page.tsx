@@ -1,17 +1,16 @@
 
-'use client';
-
 import { PlayerPaymentHistoryClient } from './player-payment-history-client';
 import React from 'react';
-import { useParams } from 'next/navigation';
 
-export default function PlayerPaymentHistoryPage() {
-  const params = useParams();
-  const memberName = params?.id as string;
+export default function PlayerPaymentHistoryPage({ params }: { params: { id: string } }) {
+  const { id } = React.use(params);
 
-  if (!memberName) {
+  if (!id) {
     return <div>Chargement...</div>;
   }
+  
+  // The id is URL encoded, so we need to decode it.
+  const memberName = decodeURIComponent(id);
 
-  return <PlayerPaymentHistoryClient memberName={decodeURIComponent(memberName)} />;
+  return <PlayerPaymentHistoryClient memberName={memberName} />;
 }

@@ -1,13 +1,11 @@
 
-'use client';
-
 import { PlayerDetailClient } from './player-detail-client';
 import React from 'react';
-import { useParams } from 'next/navigation';
 
-export default function PlayerDetailPage() {
-  const params = useParams();
-  const id = params?.id as string;
+export default function PlayerDetailPage({ params }: { params: { id: string } }) {
+  // We can safely access params.id here because this is a Server Component.
+  // We then pass the id as a prop to the Client Component.
+  const { id } = React.use(params);
   
   if (!id) {
     return <div>Chargement...</div>;
