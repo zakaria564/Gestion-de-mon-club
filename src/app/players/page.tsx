@@ -49,6 +49,7 @@ import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { useCoachesContext } from "@/context/coaches-context";
 
 const playerCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
@@ -78,6 +79,7 @@ const playerSchema = z.object({
   gender: z.enum(['Masculin', 'Féminin']),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
+  coachName: z.string().optional(),
   documents: z.array(documentSchema).optional(),
 });
 
@@ -104,6 +106,7 @@ const defaultValues: PlayerFormValues = {
     gender: 'Masculin',
     entryDate: '',
     exitDate: '',
+    coachName: '',
     documents: [],
 };
 
@@ -141,13 +144,15 @@ const categoryColors: Record<string, string> = {
 
 export default function PlayersPage() {
     const context = usePlayersContext();
+    const coachesContext = useCoachesContext();
     const { toast } = useToast();
     
-    if (!context) {
-      throw new Error("PlayersPage must be used within a PlayersProvider");
+    if (!context || !coachesContext) {
+      throw new Error("PlayersPage must be used within a PlayersProvider and CoachesProvider");
     }
 
     const { players, loading, addPlayer, updatePlayer } = context;
+    const { coaches, loading: coachesLoading } = coachesContext;
     const [dialogOpen, setDialogOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterKey, setFilterKey] = useState("name");
@@ -712,6 +717,28 @@ export default function PlayersPage() {
                                     )}
                                     />
                                     <FormField
+                                        control={form.control}
+                                        name="coachName"
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Entraîneur</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                <SelectValue placeholder="Sélectionner un entraîneur" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {coaches.map((coach) => (
+                                                <SelectItem key={coach.id} value={coach.name}>{coach.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
+                                    <FormField
                                     control={form.control}
                                     name="status"
                                     render={({ field }) => (
@@ -812,7 +839,7 @@ export default function PlayersPage() {
         </div>
 
         <div className="w-full">
-            {loading ? (
+            {(loading || coachesLoading) ? (
                 Array.from({ length: 3 }).map((_, index) => (
                     <div key={index} className="space-y-4">
                         <Skeleton className="h-8 w-48 mt-6" />

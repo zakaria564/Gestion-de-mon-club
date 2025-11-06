@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -8,7 +7,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield, Mail, MapPin, FileText, PlusCircle, X, ExternalLink, VenetianMask, UserSquare, Calendar, LogIn, LogOut } from "lucide-react";
+import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield, Mail, MapPin, FileText, PlusCircle, X, ExternalLink, VenetianMask, UserSquare, Calendar, LogIn, LogOut, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -23,6 +22,7 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useCoachesContext } from '@/context/coaches-context';
 
 const documentSchema = z.object({
   name: z.string().min(1, "Le nom du document est requis."),
@@ -52,6 +52,7 @@ const playerSchema = z.object({
   gender: z.enum(['Masculin', 'Féminin']),
   entryDate: z.string().optional(),
   exitDate: z.string().optional(),
+  coachName: z.string().optional(),
   documents: z.array(documentSchema).optional(),
 });
 
@@ -96,12 +97,15 @@ export function PlayerDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const { toast } = useToast();
   const context = usePlayersContext();
+  const coachesContext = useCoachesContext();
 
-  if (!context) {
-    throw new Error("PlayerDetailClient must be used within a PlayersProvider");
+
+  if (!context || !coachesContext) {
+    throw new Error("PlayerDetailClient must be used within a PlayersProvider and CoachesProvider");
   }
 
   const { loading, updatePlayer, deletePlayer, getPlayerById } = context;
+  const { coaches, loading: coachesLoading } = coachesContext;
   const [dialogOpen, setDialogOpen] = useState(false);
   const player = useMemo(() => getPlayerById(id), [id, getPlayerById]);
   
@@ -142,6 +146,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
         status: player.status || 'Actif',
         category: player.category || 'Sénior',
         gender: player.gender || 'Masculin',
+        coachName: player.coachName || '',
         entryDate: player.entryDate && isValid(parseISO(player.entryDate)) ? format(parseISO(player.entryDate), 'yyyy-MM-dd') : '',
         exitDate: player.exitDate && isValid(parseISO(player.exitDate)) ? format(parseISO(player.exitDate), 'yyyy-MM-dd') : '',
         documents,
@@ -152,7 +157,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
   }, [player, dialogOpen, form]);
 
 
-  if (loading) {
+  if (loading || coachesLoading) {
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <Skeleton className="h-8 w-48" />
@@ -316,6 +321,12 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <Home className="h-5 w-5 text-muted-foreground" />
                     <span>Catégorie : <Badge style={{ backgroundColor: categoryColors[playerCategory.replace(' F', '')], color: 'white' }} className="border-transparent">{playerCategory}</Badge></span>
                 </div>
+                 {player.coachName && (
+                    <div className="flex items-center gap-4">
+                        <UserCheck className="h-5 w-5 text-muted-foreground" />
+                        <span>Entraîneur: {player.coachName}</span>
+                    </div>
+                 )}
                 <div className="flex items-center gap-4">
                     <Shirt className="h-5 w-5 text-muted-foreground" />
                     <span>Statut : <Badge variant={getBadgeVariant(playerStatus) as any}>{playerStatus}</Badge></span>
@@ -581,6 +592,28 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                   <FormMessage />
                                 </FormItem>
                               )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="coachName"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Entraîneur</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner un entraîneur" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {coaches.map((coach) => (
+                                        <SelectItem key={coach.id} value={coach.name}>{coach.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
                             />
                              <FormField
                                   control={form.control}
