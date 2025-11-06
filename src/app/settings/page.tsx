@@ -25,6 +25,7 @@ import { useCalendarContext } from "@/context/calendar-context";
 import { useFinancialContext } from "@/context/financial-context";
 import { useResultsContext } from "@/context/results-context";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { useOpponentsContext } from "@/context/opponents-context";
 
 export default function SettingsPage() {
   const { 
@@ -46,6 +47,7 @@ export default function SettingsPage() {
   const calendarCtx = useCalendarContext();
   const financialCtx = useFinancialContext();
   const resultsCtx = useResultsContext();
+  const opponentsCtx = useOpponentsContext();
 
   const { toast } = useToast();
 
@@ -70,6 +72,8 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loading = clubLoading || authLoading;
+  
+  const isClubNameSet = clubInfo && clubInfo.name !== "Gestion Club";
 
   useEffect(() => {
     if (clubInfo) {
@@ -153,7 +157,7 @@ export default function SettingsPage() {
   };
 
   const handleBackup = async () => {
-    if (playersCtx.loading || coachesCtx.loading || calendarCtx.loading || financialCtx.loading || resultsCtx.loading) {
+    if (playersCtx.loading || coachesCtx.loading || calendarCtx.loading || financialCtx.loading || resultsCtx.loading || opponentsCtx.loading) {
         toast({
             variant: "destructive",
             title: "Veuillez patienter",
@@ -171,6 +175,7 @@ export default function SettingsPage() {
             playerPayments: financialCtx.playerPayments,
             coachSalaries: financialCtx.coachSalaries,
             results: resultsCtx.results,
+            opponents: opponentsCtx.opponents,
         };
 
         const jsonString = JSON.stringify(dataToBackup, null, 2);
@@ -260,7 +265,10 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="club-name">Nom du club</Label>
-                <Input id="club-name" value={clubName} onChange={(e) => setClubName(e.target.value)} />
+                <Input id="club-name" value={clubName} onChange={(e) => setClubName(e.target.value)} disabled={isClubNameSet} />
+                 {isClubNameSet && (
+                    <p className="text-xs text-muted-foreground">Le nom du club ne peut pas être modifié après avoir été défini.</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="club-logo-url">URL du logo du club</Label>
@@ -268,7 +276,9 @@ export default function SettingsPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSaveInfo} disabled={isSavingInfo}>{isSavingInfo ? "Enregistrement..." : "Enregistrer"}</Button>
+              <Button onClick={handleSaveInfo} disabled={isSavingInfo || (isClubNameSet && clubInfo.logoUrl === logoUrl)}>
+                {isSavingInfo ? "Enregistrement..." : "Enregistrer"}
+              </Button>
             </CardFooter>
           </Card>
 
@@ -388,3 +398,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    
