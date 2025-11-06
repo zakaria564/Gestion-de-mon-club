@@ -73,8 +73,6 @@ export default function SettingsPage() {
 
   const loading = clubLoading || authLoading;
   
-  const isClubNameSet = clubInfo && clubInfo.name !== "Gestion Club";
-
   useEffect(() => {
     if (clubInfo) {
       setClubName(clubInfo.name);
@@ -84,6 +82,8 @@ export default function SettingsPage() {
         setDisplayName(user.displayName || '');
     }
   }, [clubInfo, user]);
+
+  const isClubNameSet = clubInfo && clubInfo.name !== "Gestion Club";
 
   const handleSaveInfo = async () => {
     if (!clubName) {
@@ -276,7 +276,7 @@ export default function SettingsPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSaveInfo} disabled={isSavingInfo || (isClubNameSet && clubInfo.logoUrl === logoUrl && clubName === clubInfo.name)}>
+              <Button onClick={handleSaveInfo} disabled={isSavingInfo || (isClubNameSet && clubInfo.logoUrl === logoUrl && clubInfo.name === clubName)}>
                 {isSavingInfo ? "Enregistrement..." : "Enregistrer"}
               </Button>
             </CardFooter>
@@ -379,7 +379,7 @@ export default function SettingsPage() {
                 <AlertCircle className="h-4 w-4"/>
                 <AlertDescription>
                   La restauration écrasera toutes les données actuelles (joueurs, entraîneurs, calendrier, etc.). Utilisez cette fonction avec précaution.
-                </Aler
+                </AlertDescription>
               </Alert>
             </CardContent>
           </Card>
@@ -388,3 +388,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    
