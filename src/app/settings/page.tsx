@@ -276,7 +276,7 @@ export default function SettingsPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSaveInfo} disabled={isSavingInfo || (isClubNameSet && clubInfo.logoUrl === logoUrl)}>
+              <Button onClick={handleSaveInfo} disabled={isSavingInfo || (isClubNameSet && clubInfo.logoUrl === logoUrl && clubName === clubInfo.name)}>
                 {isSavingInfo ? "Enregistrement..." : "Enregistrer"}
               </Button>
             </CardFooter>
@@ -379,18 +379,8 @@ export default function SettingsPage() {
                 <AlertCircle className="h-4 w-4"/>
                 <AlertDescription>
                   La restauration écrasera toutes les données actuelles (joueurs, entraîneurs, calendrier, etc.). Utilisez cette fonction avec précaution.
-                </AlertDescription>
+                </Aler
               </Alert>
-            </CardContent>
-          </Card>
-
-          <Card className="lg:col-span-2 xl:col-span-3">
-            <CardHeader>
-              <CardTitle>Comptes Admin</CardTitle>
-              <CardDescription>Gérez les comptes administrateurs du club. Bientôt disponible.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Cette fonctionnalité est en cours de développement.</p>
             </CardContent>
           </Card>
 
@@ -398,5 +388,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    
