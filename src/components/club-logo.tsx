@@ -20,7 +20,8 @@ export function ClubLogo({ className, imageClassName }: ClubLogoProps) {
     setIsClient(true);
   }, []);
 
-  const finalSrc = clubInfo?.logoUrl || "https://img.logoipsum.com/289.svg";
+  const defaultLogo = "https://image.noelshack.com/fichiers/2025/45/4/1762466303-football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34-screen.png";
+  const finalSrc = clubInfo?.logoUrl || defaultLogo;
 
   if (clubLoading || !isClient) {
     return <Skeleton className={cn("rounded-full", className)} />;
