@@ -278,8 +278,12 @@ export default function SettingsPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSaveInfo} disabled={isSavingInfo || isInfoUnchanged}>
-                {isSavingInfo ? "Enregistrement..." : "Enregistrer"}
+               <Button onClick={handleSaveInfo} disabled={isSavingInfo || (isClubNameSet && clubInfo.logoUrl === logoUrl)}>
+                {isSavingInfo 
+                  ? "Enregistrement..." 
+                  : isClubNameSet 
+                  ? "Mise à jour logo du club"
+                  : "Enregistrer"}
               </Button>
             </CardFooter>
           </Card>
