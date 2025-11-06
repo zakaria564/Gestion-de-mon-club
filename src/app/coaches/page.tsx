@@ -48,6 +48,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from "@/hooks/use-toast";
+import { usePlayersContext } from "@/context/players-context";
 
 const baseCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const playerCategories: string[] = baseCategories.flatMap(cat => [cat, `${cat} F`]);
@@ -122,13 +123,15 @@ Object.keys(categoryColors).forEach(key => {
 
 export default function CoachesPage() {
   const context = useCoachesContext();
+  const playersContext = usePlayersContext();
   const { toast } = useToast();
   
-  if (!context) {
-    throw new Error("CoachesPage must be used within a CoachesProvider");
+  if (!context || !playersContext) {
+    throw new Error("CoachesPage must be used within a CoachesProvider and PlayersProvider");
   }
 
   const { coaches, loading, addCoach, updateCoach } = context;
+  const { players } = playersContext;
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -198,6 +201,16 @@ export default function CoachesPage() {
           description: `Un entraîneur avec le nom "${data.name}" existe déjà.`,
         });
         return;
+      }
+      
+      const existingPlayer = players.find(p => p.name.trim().toLowerCase() === data.name.trim().toLowerCase());
+      if (existingPlayer) {
+          toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: `Un joueur avec le nom "${data.name}" existe déjà.`,
+          });
+          return;
       }
       
      const gender = data.category.endsWith(' F') ? 'Féminin' : 'Masculin';

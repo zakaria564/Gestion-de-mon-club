@@ -179,6 +179,16 @@ export default function PlayersPage() {
         return;
       }
       
+      const existingCoach = coaches.find(c => c.name.trim().toLowerCase() === data.name.trim().toLowerCase());
+      if (existingCoach) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: `Un entraîneur avec le nom "${data.name}" existe déjà.`,
+        });
+        return;
+      }
+      
       await addPlayer(data);
       setDialogOpen(false);
       toast({ title: "Joueur ajouté", description: "Le nouveau joueur a été ajouté avec succès." });
