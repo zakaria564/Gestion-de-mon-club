@@ -241,6 +241,7 @@ export function PlayerPaymentHistoryClient({ memberName }: { memberName: string 
                                 <DropdownMenuItem 
                                     onSelect={(e) => e.preventDefault()} 
                                     className="text-red-600"
+                                    disabled={payment.status === 'payé'}
                                 >
                                     Supprimer
                                 </DropdownMenuItem>
