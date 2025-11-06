@@ -71,20 +71,6 @@ export type Notification = {
     priority: 'Haute' | 'Moyenne';
 }
 
-export type Tournament = {
-    id: string;
-    uid: string;
-    name: string;
-    type: 'Tournoi' | 'Coupe';
-    teamCategory: string;
-    gender: 'Masculin' | 'Féminin';
-    numberOfTeams: number;
-    teams: string[];
-};
-
-export type NewTournament = Omit<Tournament, 'id' | 'uid'>;
-
-
 export const clubStats = {
   totalPlayers: 45,
   totalCoaches: 5,
