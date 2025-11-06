@@ -235,15 +235,15 @@ export function CoachDetailClient({ id }: { id: string }) {
                 </div>
                  <div className="flex items-center gap-4">
                     <Mail className="h-5 w-5 text-muted-foreground" />
-                    <a href={`mailto:${coach.email}`} className="hover:underline">{coach.email}</a>
+                    <a href={`mailto:${coach.email}`} className="text-primary hover:underline">{coach.email}</a>
                 </div>
                 <div className="flex items-center gap-4">
                     <Phone className="h-5 w-5 text-muted-foreground" />
-                    <a href={`tel:${coach.phone}`} className="hover:underline">{coach.phone}</a>
+                    <a href={`tel:${coach.phone}`} className="text-primary hover:underline">{coach.phone}</a>
                 </div>
                  <div className="flex items-center gap-4">
                     <MapPin className="h-5 w-5 text-muted-foreground" />
-                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coach.address)}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coach.address)}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                         {coach.address}
                     </a>
                 </div>

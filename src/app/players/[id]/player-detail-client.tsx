@@ -261,17 +261,17 @@ export function PlayerDetailClient({ id }: { id: string }) {
                  )}
                 <div className="flex items-center gap-4">
                     <Phone className="h-5 w-5 text-muted-foreground" />
-                    <a href={`tel:${player.phone}`} className="hover:underline">{player.phone}</a>
+                    <a href={`tel:${player.phone}`} className="text-primary hover:underline">{player.phone}</a>
                 </div>
                 {player.email && (
                   <div className="flex items-center gap-4">
                     <Mail className="h-5 w-5 text-muted-foreground" />
-                    <a href={`mailto:${player.email}`} className="hover:underline">{player.email}</a>
+                    <a href={`mailto:${player.email}`} className="text-primary hover:underline">{player.email}</a>
                   </div>
                 )}
                 <div className="flex items-center gap-4">
                     <MapPin className="h-5 w-5 text-muted-foreground" />
-                     <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(player.address)}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                     <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(player.address)}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                         {player.address}
                     </a>
                 </div>
@@ -299,13 +299,13 @@ export function PlayerDetailClient({ id }: { id: string }) {
                   {player.tutorPhone && (
                     <div className="flex items-center gap-4">
                         <Phone className="h-5 w-5 text-muted-foreground" />
-                        <a href={`tel:${player.tutorPhone}`} className="hover:underline">{player.tutorPhone}</a>
+                        <a href={`tel:${player.tutorPhone}`} className="text-primary hover:underline">{player.tutorPhone}</a>
                     </div>
                   )}
                   {player.tutorEmail && (
                     <div className="flex items-center gap-4">
                         <Mail className="h-5 w-5 text-muted-foreground" />
-                        <a href={`mailto:${player.tutorEmail}`} className="hover:underline">{player.tutorEmail}</a>
+                        <a href={`mailto:${player.tutorEmail}`} className="text-primary hover:underline">{player.tutorEmail}</a>
                     </div>
                   )}
               </div>
