@@ -45,6 +45,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO } from 'date-fns';
 import type { Payment } from "@/lib/financial-data";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 type MemberStatus = 'À jour' | 'En attente' | 'Partiel';
 
@@ -52,6 +53,7 @@ export default function FinancesPage() {
   const financialContext = useFinancialContext();
   const playersContext = usePlayersContext();
   const coachesContext = useCoachesContext();
+  const { toast } = useToast();
   
   const [open, setOpen] = useState(false);
   const [paymentType, setPaymentType] = useState<'player' | 'coach'>('player');
@@ -157,6 +159,15 @@ export default function FinancesPage() {
     const totalAmount = parseFloat(newPaymentData.totalAmount);
     const initialPaidAmount = parseFloat(newPaymentData.initialPaidAmount);
 
+    if (initialPaidAmount > totalAmount) {
+        toast({
+            variant: "destructive",
+            title: "Erreur de validation",
+            description: "Le montant payé ne peut pas être supérieur au montant total.",
+        });
+        return;
+    }
+
     if (newPaymentData.member && !isNaN(totalAmount) && !isNaN(initialPaidAmount) && newPaymentData.dueDate) {
       if (paymentType === 'player') {
         await addPlayerPayment({ ...newPaymentData, totalAmount, initialPaidAmount });
@@ -178,6 +189,18 @@ export default function FinancesPage() {
     });
     setOpen(true);
   }
+  
+  const handleInitialPaidAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const paidValue = e.target.value;
+    const totalAmount = parseFloat(newPaymentData.totalAmount) || 0;
+    
+    if (parseFloat(paidValue) > totalAmount) {
+      setNewPaymentData(p => ({ ...p, initialPaidAmount: totalAmount.toString() }));
+    } else {
+      setNewPaymentData(p => ({ ...p, initialPaidAmount: paidValue }));
+    }
+  };
+
 
   const renderTable = (
     data: { member: string; totalPaid: number; paymentCount: number, status: MemberStatus }[], 
@@ -291,6 +314,12 @@ export default function FinancesPage() {
     const paid = parseFloat(newPaymentData.initialPaidAmount) || 0;
     return (total - paid).toFixed(2);
   }, [newPaymentData.totalAmount, newPaymentData.initialPaidAmount]);
+  
+  const isPaidAmountInvalid = useMemo(() => {
+    const total = parseFloat(newPaymentData.totalAmount);
+    const paid = parseFloat(newPaymentData.initialPaidAmount);
+    return !isNaN(total) && !isNaN(paid) && paid > total;
+  }, [newPaymentData.totalAmount, newPaymentData.initialPaidAmount]);
 
   const membersWithPaymentForMonth = useMemo(() => {
     if (!newPaymentData.dueDate) return new Set();
@@ -361,7 +390,10 @@ export default function FinancesPage() {
                 </div>
                  <div className="grid gap-2">
                   <Label htmlFor="initialPaidAmount">Montant initial payé (DH)</Label>
-                  <Input id="initialPaidAmount" type="number" placeholder="150" value={newPaymentData.initialPaidAmount} onChange={(e) => setNewPaymentData(p => ({...p, initialPaidAmount: e.target.value}))} required/>
+                  <Input id="initialPaidAmount" type="number" placeholder="150" value={newPaymentData.initialPaidAmount} onChange={handleInitialPaidAmountChange} required/>
+                   {isPaidAmountInvalid && (
+                      <p className="text-sm text-red-500">Le montant payé ne peut pas dépasser le montant total.</p>
+                   )}
                 </div>
                  <div className="grid gap-2">
                   <Label htmlFor="remainingAmount">Reste à payer (DH)</Label>
@@ -369,7 +401,7 @@ export default function FinancesPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Sauvegarder</Button>
+                <Button type="submit" disabled={isPaidAmountInvalid}>Sauvegarder</Button>
               </DialogFooter>
             </form>
           </DialogContent>
