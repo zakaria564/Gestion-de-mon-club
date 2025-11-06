@@ -32,8 +32,8 @@ export function ClubLogo({ className, imageClassName }: ClubLogoProps) {
         <Image 
           src={finalSrc} 
           alt="Club Logo" 
-          width={50} 
-          height={50} 
+          width={60} 
+          height={60} 
           className={cn("rounded-full object-contain", imageClassName)} 
           data-ai-hint="club logo" 
         />
