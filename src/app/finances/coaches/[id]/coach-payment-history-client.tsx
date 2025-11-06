@@ -58,7 +58,18 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
   const handleAddComplement = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const amount = parseFloat(complementAmount);
-    if (!amount || amount <= 0 || !selectedPayment) return;
+
+    if (!selectedPayment) return;
+
+    if (!amount || amount <= 0) {
+        toast({ variant: "destructive", title: "Erreur", description: "Veuillez entrer un montant valide." });
+        return;
+    }
+    
+    if (amount > selectedPayment.remainingAmount) {
+        toast({ variant: "destructive", title: "Erreur", description: `Le montant ne peut pas dépasser ${selectedPayment.remainingAmount.toFixed(2)} DH.` });
+        return;
+    }
 
     await updateCoachSalary(selectedPayment.id, amount);
     
@@ -147,6 +158,15 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
       default:
         return {};
     }
+  };
+  
+  const handleComplementAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!selectedPayment) return;
+    let value = e.target.value;
+    if (parseFloat(value) > selectedPayment.remainingAmount) {
+        value = selectedPayment.remainingAmount.toString();
+    }
+    setComplementAmount(value);
   };
 
   return (
@@ -260,7 +280,7 @@ export function CoachPaymentHistoryClient({ memberName }: { memberName: string }
             <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                 <Label htmlFor="complementAmount">Montant du complément (DH)</Label>
-                <Input id="complementAmount" type="number" placeholder={selectedPayment?.remainingAmount.toFixed(2)} value={complementAmount} onChange={(e) => setComplementAmount(e.target.value)} max={selectedPayment?.remainingAmount.toString()} min="0.01" step="0.01" />
+                <Input id="complementAmount" type="number" placeholder={selectedPayment?.remainingAmount.toFixed(2)} value={complementAmount} onChange={handleComplementAmountChange} max={selectedPayment?.remainingAmount.toString()} min="0.01" step="0.01" />
                 </div>
             </div>
             <DialogFooter>
