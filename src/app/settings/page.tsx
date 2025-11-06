@@ -251,6 +251,8 @@ export default function SettingsPage() {
           </div>
       )
   }
+  
+  const isInfoUnchanged = clubInfo.name === clubName && clubInfo.logoUrl === logoUrl;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -276,7 +278,7 @@ export default function SettingsPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSaveInfo} disabled={isSavingInfo || (isClubNameSet && clubInfo.logoUrl === logoUrl && clubInfo.name === clubName)}>
+              <Button onClick={handleSaveInfo} disabled={isSavingInfo || isInfoUnchanged}>
                 {isSavingInfo ? "Enregistrement..." : "Enregistrer"}
               </Button>
             </CardFooter>
@@ -388,5 +390,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    
