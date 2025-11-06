@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, updateProfile, updatePassword, User } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider, User } from 'firebase/auth';
 import { app } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -14,7 +14,7 @@ interface AuthContextType {
   logOut: () => Promise<any>;
   resetPassword: (email: string) => Promise<any>;
   updateUserProfile: (profileData: { displayName?: string; photoURL?: string; }) => Promise<void>;
-  updateUserPassword: (newPassword: string) => Promise<void>;
+  updateUserPassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -67,8 +67,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return updateProfile(auth.currentUser, profileData);
   }
 
-  const updateUserPassword = (newPassword: string) => {
-     if (!auth.currentUser) throw new Error("Utilisateur non authentifié.");
+  const updateUserPassword = async (currentPassword: string, newPassword: string) => {
+     if (!auth.currentUser || !auth.currentUser.email) {
+        throw new Error("Utilisateur non authentifié ou email non disponible.");
+     }
+     
+     const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
+     
+     // Re-authenticate the user
+     await reauthenticateWithCredential(auth.currentUser, credential);
+     
+     // Now, update the password
      return updatePassword(auth.currentUser, newPassword);
   }
 

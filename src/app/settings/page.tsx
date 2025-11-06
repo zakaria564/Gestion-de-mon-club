@@ -53,16 +53,19 @@ export default function SettingsPage() {
   const [logoUrl, setLogoUrl] = useState("");
   
   const [displayName, setDisplayName] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const [isSavingInfo, setIsSavingInfo] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [isBackuping, setIsBackuping] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
 
   const [restoreError, setRestoreError] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -98,27 +101,15 @@ export default function SettingsPage() {
 
   const handleSaveProfile = async () => {
     setProfileError(null);
+    if (displayName === user?.displayName) return;
+    
     setIsSavingProfile(true);
-
     try {
-      if (newPassword) {
-        if (newPassword !== confirmPassword) {
-          throw new Error("Les mots de passe ne correspondent pas.");
-        }
-        await updateUserPassword(newPassword);
-        setNewPassword('');
-        setConfirmPassword('');
-      }
-
-      if (displayName !== user?.displayName) {
-        await updateUserProfile({ displayName });
-      }
-      
+      await updateUserProfile({ displayName });
       toast({
         title: "Profil mis à jour",
-        description: "Vos informations ont été modifiées avec succès."
+        description: "Votre nom d'utilisateur a été modifié avec succès."
       });
-
     } catch (error: any) {
         setProfileError(error.message);
         toast({
@@ -128,6 +119,36 @@ export default function SettingsPage() {
         });
     } finally {
         setIsSavingProfile(false);
+    }
+  };
+
+  const handleSavePassword = async () => {
+    setPasswordError(null);
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError("Veuillez remplir tous les champs de mot de passe.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Les nouveaux mots de passe ne correspondent pas.");
+      return;
+    }
+
+    setIsSavingPassword(true);
+    try {
+      await updateUserPassword(currentPassword, newPassword);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      toast({
+        title: "Mot de passe mis à jour",
+        description: "Votre mot de passe a été modifié avec succès."
+      });
+    } catch (error: any) {
+        setPasswordError(error.message);
+    } finally {
+        setIsSavingPassword(false);
     }
   };
 
@@ -295,6 +316,16 @@ export default function SettingsPage() {
               <CardDescription>Modifiez votre mot de passe.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+               {passwordError && (
+                  <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{passwordError}</AlertDescription>
+                  </Alert>
+                )}
+              <div className="space-y-2">
+                <Label htmlFor="current-password">Mot de passe actuel</Label>
+                <Input id="current-password" type="password" placeholder="Votre mot de passe actuel" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="new-password">Nouveau mot de passe</Label>
                 <Input id="new-password" type="password" placeholder="Laisser vide pour ne pas changer" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}/>
@@ -305,8 +336,8 @@ export default function SettingsPage() {
               </div>
             </CardContent>
              <CardFooter>
-              <Button onClick={handleSaveProfile} disabled={isSavingProfile}>
-                {isSavingProfile ? "Enregistrement..." : "Mettre à jour le mot de passe"}
+              <Button onClick={handleSavePassword} disabled={isSavingPassword}>
+                {isSavingPassword ? "Enregistrement..." : "Mettre à jour le mot de passe"}
               </Button>
             </CardFooter>
           </Card>
