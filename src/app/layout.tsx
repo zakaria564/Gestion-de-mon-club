@@ -17,6 +17,7 @@ import "./globals.css";
 import { ClubLogo } from "@/components/club-logo";
 import { ThemeProvider } from "@/components/theme-provider";
 import { OpponentsProvider, useOpponentsContext } from "@/context/opponents-context";
+import { TournamentsProvider, useTournamentsContext } from "@/context/tournaments-context";
 
 
 const inter = Inter({
@@ -34,12 +35,13 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const { loading: financialLoading } = useFinancialContext();
   const { loading: resultsLoading } = useResultsContext();
   const { loading: opponentsLoading } = useOpponentsContext();
+  const { loading: tournamentsLoading } = useTournamentsContext();
   
   const pathname = usePathname();
   const router = useRouter();
   const isAuthPage = ["/login", "/signup", "/forgot-password"].includes(pathname);
 
-  const isLoading = authLoading || clubLoading || playersLoading || coachesLoading || calendarLoading || financialLoading || resultsLoading || opponentsLoading;
+  const isLoading = authLoading || clubLoading || playersLoading || coachesLoading || calendarLoading || financialLoading || resultsLoading || opponentsLoading || tournamentsLoading;
 
   React.useEffect(() => {
     if (authLoading) return; 
@@ -110,15 +112,17 @@ export default function RootLayout({
                 <ClubProvider>
                   <PlayersProvider>
                     <CoachesProvider>
-                      <CalendarProvider>
-                        <FinancialProvider>
-                            <ResultsProvider>
-                              <OpponentsProvider>
-                                <AppContent>{children}</AppContent>
-                              </OpponentsProvider>
-                            </ResultsProvider>
-                        </FinancialProvider>
-                      </CalendarProvider>
+                        <OpponentsProvider>
+                            <CalendarProvider>
+                                <ResultsProvider>
+                                    <TournamentsProvider>
+                                        <FinancialProvider>
+                                            <AppContent>{children}</AppContent>
+                                        </FinancialProvider>
+                                    </TournamentsProvider>
+                                </ResultsProvider>
+                            </CalendarProvider>
+                        </OpponentsProvider>
                     </CoachesProvider>
                   </PlayersProvider>
                 </ClubProvider>

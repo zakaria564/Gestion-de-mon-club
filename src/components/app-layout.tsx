@@ -26,6 +26,7 @@ import {
   Settings,
   BarChart,
   Shield,
+  Swords,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { ClubLogo } from "@/components/club-logo";
@@ -53,6 +54,7 @@ const navItems = [
   { href: "/calendar", label: "Calendrier", icon: Calendar },
   { href: "/results", label: "Résultats", icon: Trophy },
   { href: "/ranking", label: "Classement", icon: BarChart },
+  { href: "/tournaments", label: "Tournois", icon: Swords },
   { href: "/finances", label: "Paiements", icon: Banknote },
   { href: "/settings", label: "Paramètres", icon: Settings },
 ];
