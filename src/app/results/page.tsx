@@ -78,6 +78,8 @@ export default function ResultsPage() {
   
   const [matchType, setMatchType] = useState<'club-match' | 'opponent-vs-opponent'>('club-match');
   
+  const [manualOpponentScorers, setManualOpponentScorers] = useState("");
+  const [manualOpponentAssists, setManualOpponentAssists] = useState("");
   const [manualScorers, setManualScorers] = useState("");
   const [manualAssists, setManualAssists] = useState("");
 
@@ -137,6 +139,8 @@ export default function ResultsPage() {
   
   const resetForm = () => {
     setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
+    setManualOpponentScorers("");
+    setManualOpponentAssists("");
     setManualScorers("");
     setManualAssists("");
     setOpen(false);
@@ -147,29 +151,47 @@ export default function ResultsPage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
+  
     const finalResult: NewResult = { ...newResult };
-
-    if (matchType === 'opponent-vs-opponent') {
+  
+    const processManualInput = (input: string, teamName?: string): PerformanceDetail[] => {
+        if (!input.trim()) return [];
+        const names = input.split('\n').map(name => name.trim()).filter(Boolean);
+        return names.map(name => ({
+            playerName: teamName ? `${name} (${teamName})` : name,
+            count: 1
+        }));
+    };
+  
+    let allScorers: PerformanceDetail[] = [...(finalResult.scorers || [])];
+    let allAssists: PerformanceDetail[] = [...(finalResult.assists || [])];
+  
+    if (matchType === 'club-match') {
+        const opponentScorers = processManualInput(manualOpponentScorers, finalResult.opponent);
+        const opponentAssists = processManualInput(manualOpponentAssists, finalResult.opponent);
+        allScorers = [...allScorers, ...opponentScorers];
+        allAssists = [...allAssists, ...opponentAssists];
+    } else if (matchType === 'opponent-vs-opponent') {
         finalResult.opponent = `${finalResult.homeTeam} vs ${finalResult.awayTeam}`;
-        
-        const processManualInput = (input: string): PerformanceDetail[] => {
-            if (!input.trim()) return [];
-            const names = input.split('\n').map(name => name.trim()).filter(Boolean);
-            const performanceDetails: PerformanceDetail[] = names.reduce((acc, playerName) => {
-                const existing = acc.find(item => item.playerName === playerName);
-                if (existing) {
-                    existing.count++;
-                } else {
-                    acc.push({ playerName, count: 1 });
-                }
-                return acc;
-            }, [] as PerformanceDetail[]);
-            return performanceDetails;
-        }
-        finalResult.scorers = processManualInput(manualScorers);
-        finalResult.assists = processManualInput(manualAssists);
+        allScorers = processManualInput(manualScorers);
+        allAssists = processManualInput(manualAssists);
     }
+    
+    // Consolidate counts
+    const consolidate = (items: PerformanceDetail[]): PerformanceDetail[] => {
+      return items.reduce((acc, item) => {
+        const existing = acc.find(i => i.playerName === item.playerName);
+        if (existing) {
+          existing.count += item.count;
+        } else {
+          acc.push({ ...item });
+        }
+        return acc;
+      }, [] as PerformanceDetail[]);
+    };
+
+    finalResult.scorers = consolidate(allScorers);
+    finalResult.assists = consolidate(allAssists);
 
     if (isEditing && editingResult) {
       await updateResult({ id: editingResult.id, ...finalResult });
@@ -184,20 +206,18 @@ export default function ResultsPage() {
     setIsEditing(true);
     setEditingResult(result);
     setMatchType(result.matchType || 'club-match');
-
-    const performanceToListString = (performance?: PerformanceDetail[]): string => {
-        if (!performance) return "";
-        return performance.map(p => p.playerName).join('\n');
-    };
-    
-    if (result.matchType === 'opponent-vs-opponent') {
-        setManualScorers(performanceToListString(result.scorers));
-        setManualAssists(performanceToListString(result.assists));
-    } else {
-        setManualScorers("");
-        setManualAssists("");
-    }
-
+  
+    const clubScorers = result.scorers?.filter(s => !s.playerName.includes('(')) || [];
+    const clubAssists = result.assists?.filter(a => !a.playerName.includes('(')) || [];
+  
+    const opponentScorers = result.scorers?.filter(s => s.playerName.includes(`(${result.opponent})`))
+      .map(s => s.playerName.replace(` (${result.opponent})`, '')).join('\n') || '';
+    const opponentAssists = result.assists?.filter(a => a.playerName.includes(`(${result.opponent})`))
+      .map(a => a.playerName.replace(` (${result.opponent})`, '')).join('\n') || '';
+      
+    const manualScorersText = result.scorers?.map(s => s.playerName).join('\n') || '';
+    const manualAssistsText = result.assists?.map(a => a.playerName).join('\n') || '';
+  
     setNewResult({
         opponent: result.opponent,
         homeTeam: result.homeTeam || '',
@@ -209,11 +229,24 @@ export default function ResultsPage() {
         category: result.category || 'Match Championnat',
         teamCategory: result.teamCategory || 'Sénior',
         gender: result.gender || 'Masculin',
-        scorers: Array.isArray(result.scorers) ? result.scorers : [],
-        assists: result.assists && Array.isArray(result.assists) ? result.assists : [],
+        scorers: clubScorers,
+        assists: clubAssists,
         homeOrAway: result.homeOrAway || 'home',
         matchType: result.matchType || 'club-match',
     });
+  
+    if(result.matchType === 'club-match') {
+      setManualOpponentScorers(opponentScorers);
+      setManualOpponentAssists(opponentAssists);
+      setManualScorers('');
+      setManualAssists('');
+    } else {
+      setManualScorers(manualScorersText);
+      setManualAssists(manualAssistsText);
+      setManualOpponentScorers('');
+      setManualOpponentAssists('');
+    }
+  
     setOpen(true);
   }
 
@@ -549,6 +582,25 @@ export default function ResultsPage() {
                             </Select>
                         </div>
                         
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="date">Date</Label>
+                                <Input id="date" type="date" value={newResult.date} onChange={handleInputChange} required />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="time">Heure</Label>
+                                <Input id="time" type="time" value={newResult.time} onChange={handleInputChange} required />
+                            </div>
+                        </div>
+                         <div className="grid gap-2">
+                          <Label htmlFor="location">Lieu</Label>
+                          <Input id="location" value={newResult.location} onChange={handleInputChange} placeholder="Stade ou lieu" required />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="score">Score final (ex: 3-1)</Label>
+                            <Input id="score" value={newResult.score} onChange={handleInputChange} required />
+                        </div>
+
                          {matchType === 'club-match' ? (
                             <>
                                 <div className="grid gap-2">
@@ -587,12 +639,32 @@ export default function ResultsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
+                                    <Label htmlFor="manualOpponentScorers">Buteurs (équipe adverse) - un par ligne</Label>
+                                    <Textarea
+                                        id="manualOpponentScorers"
+                                        placeholder="Nom du joueur 1&#10;Nom du joueur 2"
+                                        value={manualOpponentScorers}
+                                        onChange={(e) => setManualOpponentScorers(e.target.value)}
+                                        rows={2}
+                                    />
+                                </div>
+                                <div className="space-y-2">
                                     <Label>Passeurs décisifs (votre club)</Label>
                                     <MultiSelect
                                         options={allPossiblePlayersOptions}
                                         value={performanceToList(newResult.assists)}
                                         onChange={(selected) => handleDynamicListChange('assists', selected)}
                                         placeholder="Sélectionner les passeurs de votre club..."
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="manualOpponentAssists">Passeurs (équipe adverse) - un par ligne</Label>
+                                    <Textarea
+                                        id="manualOpponentAssists"
+                                        placeholder="Nom du joueur 1"
+                                        value={manualOpponentAssists}
+                                        onChange={(e) => setManualOpponentAssists(e.target.value)}
+                                        rows={2}
                                     />
                                 </div>
                             </>
@@ -619,17 +691,17 @@ export default function ResultsPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="manualScorers">Buteurs (un par ligne)</Label>
+                                    <Label htmlFor="manualScorers">Buteurs (un par ligne, format: Nom (Équipe))</Label>
                                     <Textarea
                                         id="manualScorers"
-                                        placeholder="Exemple:&#10;Hafsa Rami (WAC)&#10;Aya Boukhari (USDS)"
+                                        placeholder="Exemple:&#10;Hafsa Rami (WAC)&#10;Aya Boukhari (TAS)"
                                         value={manualScorers}
                                         onChange={(e) => setManualScorers(e.target.value)}
                                         rows={3}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="manualAssists">Passeurs décisifs (un par ligne)</Label>
+                                    <Label htmlFor="manualAssists">Passeurs décisifs (un par ligne, format: Nom (Équipe))</Label>
                                     <Textarea
                                         id="manualAssists"
                                         placeholder="Exemple:&#10;Jane Doe (WAC)"
@@ -640,25 +712,6 @@ export default function ResultsPage() {
                                 </div>
                             </>
                          )}
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="date">Date</Label>
-                                <Input id="date" type="date" value={newResult.date} onChange={handleInputChange} required />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="time">Heure</Label>
-                                <Input id="time" type="time" value={newResult.time} onChange={handleInputChange} required />
-                            </div>
-                        </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="location">Lieu</Label>
-                          <Input id="location" value={newResult.location} onChange={handleInputChange} placeholder="Stade ou lieu" required />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="score">Score final (ex: 3-1)</Label>
-                            <Input id="score" value={newResult.score} onChange={handleInputChange} required />
-                        </div>
                       </div>
                     </div>
                   <DialogFooter className="pt-4 border-t">
@@ -795,5 +848,3 @@ export default function ResultsPage() {
     </div>
   );
 }
-
-    
