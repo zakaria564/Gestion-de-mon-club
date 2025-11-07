@@ -7,8 +7,8 @@ import React from 'react';
 
 // This is now a Client Component
 export default function CoachDetailPage() {
-  const params = useParams();
-  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const params = useParams<{ id: string }>();
+  const id = params.id;
 
   if (!id) {
     return null;
