@@ -103,7 +103,7 @@ export default function ResultsPage() {
   
    useEffect(() => {
     setNewResult(prev => ({ ...prev, matchType }));
-  }, [matchType, newResult.homeTeam, newResult.awayTeam]);
+  }, [matchType]);
 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,9 +130,7 @@ export default function ResultsPage() {
         return acc;
     }, [] as PerformanceDetail[]);
     setNewResult(prev => ({ ...prev, [listName]: performanceDetails }));
-};
-
-
+  };
   
   const resetForm = () => {
     setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
@@ -516,7 +514,7 @@ export default function ResultsPage() {
                             </Select>
                         </div>
                         
-                         {matchType === 'club-match' && (
+                         {matchType === 'club-match' ? (
                             <>
                                 <div className="grid gap-2">
                                     <Label>Domicile / Extérieur</Label>
@@ -544,31 +542,71 @@ export default function ResultsPage() {
                                         </SelectContent>
                                     </Select>
                                 </div>
+                                <div className="space-y-2">
+                                    <Label>Buteurs</Label>
+                                    <MultiSelect
+                                        options={allPossiblePlayersOptions}
+                                        value={performanceToList(newResult.scorers)}
+                                        onChange={(selected) => handleDynamicListChange('scorers', selected)}
+                                        placeholder="Sélectionner les buteurs de votre club..."
+                                        creatable={false}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Passeurs décisifs</Label>
+                                    <MultiSelect
+                                        options={allPossiblePlayersOptions}
+                                        value={performanceToList(newResult.assists)}
+                                        onChange={(selected) => handleDynamicListChange('assists', selected)}
+                                        placeholder="Sélectionner les passeurs de votre club..."
+                                        creatable={false}
+                                    />
+                                </div>
+                            </>
+                         ) : (
+                            <>
+                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                        <Label htmlFor="homeTeam">Équipe à Domicile</Label>
+                                        <Select onValueChange={(v) => handleSelectChange('homeTeam', v)} value={newResult.homeTeam} required>
+                                            <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
+                                            <SelectContent>
+                                                {filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="awayTeam">Équipe à l'Extérieur</Label>
+                                        <Select onValueChange={(v) => handleSelectChange('awayTeam', v)} value={newResult.awayTeam} required>
+                                            <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
+                                            <SelectContent>
+                                                {filteredOpponentOptions.filter(op => op.name !== newResult.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Buteurs</Label>
+                                    <MultiSelect
+                                        options={[]}
+                                        value={performanceToList(newResult.scorers)}
+                                        onChange={(selected) => handleDynamicListChange('scorers', selected)}
+                                        placeholder="Ex: Joueur Un (Équipe A), Joueur Deux (Équipe B)..."
+                                        creatable
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Passeurs décisifs</Label>
+                                     <MultiSelect
+                                        options={[]}
+                                        value={performanceToList(newResult.assists)}
+                                        onChange={(selected) => handleDynamicListChange('assists', selected)}
+                                        placeholder="Ex: Joueur Un (Équipe A), Joueur Deux (Équipe B)..."
+                                        creatable
+                                    />
+                                </div>
                             </>
                          )}
-
-                        {matchType === 'opponent-vs-opponent' && (
-                            <div className="grid grid-cols-2 gap-4">
-                               <div className="grid gap-2">
-                                    <Label htmlFor="homeTeam">Équipe à Domicile</Label>
-                                    <Select onValueChange={(v) => handleSelectChange('homeTeam', v)} value={newResult.homeTeam} required>
-                                        <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
-                                        <SelectContent>
-                                            {filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                 <div className="grid gap-2">
-                                    <Label htmlFor="awayTeam">Équipe à l'Extérieur</Label>
-                                     <Select onValueChange={(v) => handleSelectChange('awayTeam', v)} value={newResult.awayTeam} required>
-                                        <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
-                                        <SelectContent>
-                                            {filteredOpponentOptions.filter(op => op.name !== newResult.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                        )}
                         
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
@@ -587,28 +625,6 @@ export default function ResultsPage() {
                         <div className="grid gap-2">
                             <Label htmlFor="score">Score final (ex: 3-1)</Label>
                             <Input id="score" value={newResult.score} onChange={handleInputChange} required />
-                        </div>
-
-                         <div className="space-y-2">
-                            <Label>Buteurs</Label>
-                            <MultiSelect
-                                options={allPossiblePlayersOptions}
-                                value={performanceToList(newResult.scorers)}
-                                onChange={(selected) => handleDynamicListChange('scorers', selected)}
-                                placeholder="Sélectionner ou saisir les buteurs... ex: Nom (Équipe)"
-                                creatable
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label>Passeurs décisifs</Label>
-                            <MultiSelect
-                                options={allPossiblePlayersOptions}
-                                value={performanceToList(newResult.assists)}
-                                onChange={(selected) => handleDynamicListChange('assists', selected)}
-                                placeholder="Sélectionner ou saisir les passeurs... ex: Nom (Équipe)"
-                                creatable
-                            />
                         </div>
                       </div>
                     </div>
