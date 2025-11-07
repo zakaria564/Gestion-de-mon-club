@@ -29,6 +29,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, parseISO } from 'date-fns';
 import { MultiSelect, MultiSelectOption } from "@/components/ui/multi-select";
+import { Textarea } from "@/components/ui/textarea";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical', 'Match Tournoi'];
@@ -77,6 +78,8 @@ export default function ResultsPage() {
   
   const [matchType, setMatchType] = useState<'club-match' | 'opponent-vs-opponent'>('club-match');
   
+  const [manualScorers, setManualScorers] = useState("");
+  const [manualAssists, setManualAssists] = useState("");
 
   const [newResult, setNewResult] = useState<NewResult>({
     opponent: '',
@@ -134,6 +137,8 @@ export default function ResultsPage() {
   
   const resetForm = () => {
     setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
+    setManualScorers("");
+    setManualAssists("");
     setOpen(false);
     setIsEditing(false);
     setEditingResult(null);
@@ -144,9 +149,26 @@ export default function ResultsPage() {
     event.preventDefault();
 
     const finalResult: NewResult = { ...newResult };
-    
+
     if (matchType === 'opponent-vs-opponent') {
         finalResult.opponent = `${finalResult.homeTeam} vs ${finalResult.awayTeam}`;
+        
+        const processManualInput = (input: string): PerformanceDetail[] => {
+            if (!input.trim()) return [];
+            const names = input.split('\n').map(name => name.trim()).filter(Boolean);
+            const performanceDetails: PerformanceDetail[] = names.reduce((acc, playerName) => {
+                const existing = acc.find(item => item.playerName === playerName);
+                if (existing) {
+                    existing.count++;
+                } else {
+                    acc.push({ playerName, count: 1 });
+                }
+                return acc;
+            }, [] as PerformanceDetail[]);
+            return performanceDetails;
+        }
+        finalResult.scorers = processManualInput(manualScorers);
+        finalResult.assists = processManualInput(manualAssists);
     }
 
     if (isEditing && editingResult) {
@@ -162,6 +184,20 @@ export default function ResultsPage() {
     setIsEditing(true);
     setEditingResult(result);
     setMatchType(result.matchType || 'club-match');
+
+    const performanceToListString = (performance?: PerformanceDetail[]): string => {
+        if (!performance) return "";
+        return performance.map(p => p.playerName).join('\n');
+    };
+    
+    if (result.matchType === 'opponent-vs-opponent') {
+        setManualScorers(performanceToListString(result.scorers));
+        setManualAssists(performanceToListString(result.assists));
+    } else {
+        setManualScorers("");
+        setManualAssists("");
+    }
+
     setNewResult({
         opponent: result.opponent,
         homeTeam: result.homeTeam || '',
@@ -542,23 +578,21 @@ export default function ResultsPage() {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Buteurs</Label>
+                                    <Label>Buteurs (votre club)</Label>
                                     <MultiSelect
                                         options={allPossiblePlayersOptions}
                                         value={performanceToList(newResult.scorers)}
                                         onChange={(selected) => handleDynamicListChange('scorers', selected)}
                                         placeholder="Sélectionner les buteurs de votre club..."
-                                        creatable={false}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Passeurs décisifs</Label>
+                                    <Label>Passeurs décisifs (votre club)</Label>
                                     <MultiSelect
                                         options={allPossiblePlayersOptions}
                                         value={performanceToList(newResult.assists)}
                                         onChange={(selected) => handleDynamicListChange('assists', selected)}
                                         placeholder="Sélectionner les passeurs de votre club..."
-                                        creatable={false}
                                     />
                                 </div>
                             </>
@@ -585,23 +619,23 @@ export default function ResultsPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Buteurs</Label>
-                                    <MultiSelect
-                                        options={[]}
-                                        value={performanceToList(newResult.scorers)}
-                                        onChange={(selected) => handleDynamicListChange('scorers', selected)}
-                                        placeholder="Ex: Joueur Un (Équipe A), Joueur Deux (Équipe B)..."
-                                        creatable
+                                    <Label htmlFor="manualScorers">Buteurs (un par ligne)</Label>
+                                    <Textarea
+                                        id="manualScorers"
+                                        placeholder="Exemple:&#10;Hafsa Rami (WAC)&#10;Aya Boukhari (USDS)"
+                                        value={manualScorers}
+                                        onChange={(e) => setManualScorers(e.target.value)}
+                                        rows={3}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Passeurs décisifs</Label>
-                                     <MultiSelect
-                                        options={[]}
-                                        value={performanceToList(newResult.assists)}
-                                        onChange={(selected) => handleDynamicListChange('assists', selected)}
-                                        placeholder="Ex: Joueur Un (Équipe A), Joueur Deux (Équipe B)..."
-                                        creatable
+                                    <Label htmlFor="manualAssists">Passeurs décisifs (un par ligne)</Label>
+                                    <Textarea
+                                        id="manualAssists"
+                                        placeholder="Exemple:&#10;Jane Doe (WAC)"
+                                        value={manualAssists}
+                                        onChange={(e) => setManualAssists(e.target.value)}
+                                        rows={3}
                                     />
                                 </div>
                             </>
