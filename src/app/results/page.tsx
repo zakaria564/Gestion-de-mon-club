@@ -108,9 +108,11 @@ export default function ResultsPage() {
   
    useEffect(() => {
     setNewResult(prev => ({ ...prev, matchType }));
-    setOpponentScorerTeam(newResult.homeTeam || '');
-    setOpponentAssistTeam(newResult.homeTeam || '');
-  }, [matchType, newResult.homeTeam]);
+    if (matchType === 'opponent-vs-opponent') {
+      if (!opponentScorerTeam) setOpponentScorerTeam(newResult.homeTeam || '');
+      if (!opponentAssistTeam) setOpponentAssistTeam(newResult.homeTeam || '');
+    }
+  }, [matchType, newResult.homeTeam, newResult.awayTeam]);
 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,36 +142,43 @@ export default function ResultsPage() {
 };
 
 const addOpponentPerformanceItem = (type: 'scorer' | 'assist') => {
-    let name = type === 'scorer' ? opponentScorerName : opponentAssistName;
-    let team = type === 'scorer' ? opponentScorerTeam : opponentAssistTeam;
-    const listName = type === 'scorer' ? 'scorers' : 'assists';
+    let name: string, team: string, listName: 'scorers' | 'assists', setName: React.Dispatch<React.SetStateAction<string>>;
+
+    if (type === 'scorer') {
+        name = opponentScorerName;
+        team = opponentScorerTeam;
+        listName = 'scorers';
+        setName = setOpponentScorerName;
+    } else {
+        name = opponentAssistName;
+        team = opponentAssistTeam;
+        listName = 'assists';
+        setName = setOpponentAssistName;
+    }
 
     if (!name || !team) return;
 
     const formattedName = `${name.trim()} (${team.trim()})`;
     
     setNewResult(prev => {
-        const existingItem = prev[listName].find(item => item.playerName === formattedName);
+        const list = prev[listName] || [];
+        const existingItem = list.find(item => item.playerName === formattedName);
         if (existingItem) {
             return {
                 ...prev,
-                [listName]: prev[listName].map(item =>
+                [listName]: list.map(item =>
                     item.playerName === formattedName ? { ...item, count: item.count + 1 } : item
                 )
             };
         } else {
             return {
                 ...prev,
-                [listName]: [...prev[listName], { playerName: formattedName, count: 1 }]
+                [listName]: [...list, { playerName: formattedName, count: 1 }]
             };
         }
     });
 
-    if (type === 'scorer') {
-        setOpponentScorerName('');
-    } else {
-        setOpponentAssistName('');
-    }
+    setName('');
 };
 
 const removePerformanceItem = (listName: 'scorers' | 'assists', playerName: string) => {
