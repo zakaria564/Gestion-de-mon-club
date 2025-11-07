@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useResultsContext, NewResult, Result, PerformanceDetail } from "@/context/results-context";
-import { Edit, PlusCircle, Trash2, X, FilterX, Eye, MoreHorizontal } from "lucide-react";
+import { Edit, PlusCircle, Trash2, X, FilterX, Eye, MoreHorizontal, UserPlus } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -76,6 +76,12 @@ export default function ResultsPage() {
   const [opponentFilter, setOpponentFilter] = useState('all');
   
   const [matchType, setMatchType] = useState<'club-match' | 'opponent-vs-opponent'>('club-match');
+  
+  // State for manual opponent scorer entry
+  const [opponentScorerName, setOpponentScorerName] = useState('');
+  const [opponentScorerTeam, setOpponentScorerTeam] = useState('');
+  const [opponentAssistName, setOpponentAssistName] = useState('');
+  const [opponentAssistTeam, setOpponentAssistTeam] = useState('');
 
   const [newResult, setNewResult] = useState<NewResult>({
     opponent: '',
@@ -102,7 +108,9 @@ export default function ResultsPage() {
   
    useEffect(() => {
     setNewResult(prev => ({ ...prev, matchType }));
-  }, [matchType]);
+    setOpponentScorerTeam(newResult.homeTeam || '');
+    setOpponentAssistTeam(newResult.homeTeam || '');
+  }, [matchType, newResult.homeTeam]);
 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,6 +139,58 @@ export default function ResultsPage() {
     setNewResult(prev => ({ ...prev, [listName]: performanceDetails }));
 };
 
+const addOpponentPerformanceItem = (type: 'scorer' | 'assist') => {
+    let name = type === 'scorer' ? opponentScorerName : opponentAssistName;
+    let team = type === 'scorer' ? opponentScorerTeam : opponentAssistTeam;
+    const listName = type === 'scorer' ? 'scorers' : 'assists';
+
+    if (!name || !team) return;
+
+    const formattedName = `${name.trim()} (${team.trim()})`;
+    
+    setNewResult(prev => {
+        const existingItem = prev[listName].find(item => item.playerName === formattedName);
+        if (existingItem) {
+            return {
+                ...prev,
+                [listName]: prev[listName].map(item =>
+                    item.playerName === formattedName ? { ...item, count: item.count + 1 } : item
+                )
+            };
+        } else {
+            return {
+                ...prev,
+                [listName]: [...prev[listName], { playerName: formattedName, count: 1 }]
+            };
+        }
+    });
+
+    if (type === 'scorer') {
+        setOpponentScorerName('');
+    } else {
+        setOpponentAssistName('');
+    }
+};
+
+const removePerformanceItem = (listName: 'scorers' | 'assists', playerName: string) => {
+    setNewResult(prev => {
+        const item = prev[listName].find(p => p.playerName === playerName);
+        if (item && item.count > 1) {
+            return {
+                ...prev,
+                [listName]: prev[listName].map(p =>
+                    p.playerName === playerName ? { ...p, count: p.count - 1 } : p
+                )
+            };
+        } else {
+            return {
+                ...prev,
+                [listName]: prev[listName].filter(p => p.playerName !== playerName)
+            };
+        }
+    });
+};
+
   
   const resetForm = () => {
     setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
@@ -138,6 +198,10 @@ export default function ResultsPage() {
     setIsEditing(false);
     setEditingResult(null);
     setMatchType('club-match');
+    setOpponentScorerName('');
+    setOpponentScorerTeam('');
+    setOpponentAssistName('');
+    setOpponentAssistTeam('');
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -163,6 +227,8 @@ export default function ResultsPage() {
     setIsEditing(true);
     setEditingResult(result);
     setMatchType(result.matchType || 'club-match');
+    setOpponentScorerTeam(result.homeTeam || '');
+    setOpponentAssistTeam(result.homeTeam || '');
     setNewResult({
         opponent: result.opponent,
         homeTeam: result.homeTeam || '',
@@ -255,17 +321,6 @@ export default function ResultsPage() {
   }, [results, categoryFilter, opponentFilter]);
 
   const allPossiblePlayersOptions: MultiSelectOption[] = useMemo(() => {
-    if (newResult.matchType === 'opponent-vs-opponent') {
-      const homeTeam = newResult.homeTeam || 'Équipe à domicile';
-      const awayTeam = newResult.awayTeam || "Équipe à l'extérieur";
-      // This is a placeholder for creatable options. The actual value will be formatted on creation.
-      return [
-        { value: `create-home`, label: `Ajouter un nouveau joueur pour ${homeTeam}...`, group: homeTeam },
-        { value: `create-away`, label: `Ajouter un nouveau joueur pour ${awayTeam}...`, group: awayTeam }
-      ];
-    }
-
-    // Default case for club matches
     return players
       .filter(p => p.category === newResult.teamCategory && p.gender === newResult.gender)
       .map(p => ({
@@ -273,7 +328,7 @@ export default function ResultsPage() {
         label: p.name,
         group: clubInfo.name
       }));
-  }, [players, newResult.teamCategory, newResult.gender, clubInfo.name, newResult.matchType, newResult.homeTeam, newResult.awayTeam]);
+  }, [players, newResult.teamCategory, newResult.gender, clubInfo.name]);
 
 
   const formatPerformance = (items: PerformanceDetail[] | undefined): string => {
@@ -579,51 +634,119 @@ export default function ResultsPage() {
                             </div>
                         )}
                         
-
-                          <div className="grid grid-cols-2 gap-4">
-                              <div className="grid gap-2">
-                                  <Label htmlFor="date">Date</Label>
-                                  <Input id="date" type="date" value={newResult.date} onChange={handleInputChange} required />
-                              </div>
-                              <div className="grid gap-2">
-                                  <Label htmlFor="time">Heure</Label>
-                                  <Input id="time" type="time" value={newResult.time} onChange={handleInputChange} required />
-                              </div>
-                          </div>
-                          <div className="grid gap-2">
-                            <Label htmlFor="location">Lieu</Label>
-                            <Input id="location" value={newResult.location} onChange={handleInputChange} placeholder="Stade ou lieu" required />
-                          </div>
-                          <div className="grid gap-2">
-                              <Label htmlFor="score">Score final (ex: 3-1)</Label>
-                              <Input id="score" value={newResult.score} onChange={handleInputChange} required />
-                          </div>
-
-                           
-                           <div className="space-y-2">
-                                <Label>Buteurs</Label>
-                                <MultiSelect
-                                    options={allPossiblePlayersOptions}
-                                    value={performanceToList(newResult.scorers)}
-                                    onChange={(selected) => handleDynamicListChange('scorers', selected)}
-                                    placeholder="Sélectionner ou saisir les buteurs..."
-                                    creatable
-                                    formatCreateLabel={(inputValue, group) => `Ajouter "${inputValue}" à ${group}`}
-                                />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="date">Date</Label>
+                                <Input id="date" type="date" value={newResult.date} onChange={handleInputChange} required />
                             </div>
-
-                            <div className="space-y-2">
-                                <Label>Passeurs décisifs</Label>
-                                <MultiSelect
-                                    options={allPossiblePlayersOptions}
-                                    value={performanceToList(newResult.assists)}
-                                    onChange={(selected) => handleDynamicListChange('assists', selected)}
-                                    placeholder="Sélectionner ou saisir les passeurs..."
-                                    creatable
-                                    formatCreateLabel={(inputValue, group) => `Ajouter "${inputValue}" à ${group}`}
-                                />
+                            <div className="grid gap-2">
+                                <Label htmlFor="time">Heure</Label>
+                                <Input id="time" type="time" value={newResult.time} onChange={handleInputChange} required />
                             </div>
-                           
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="location">Lieu</Label>
+                          <Input id="location" value={newResult.location} onChange={handleInputChange} placeholder="Stade ou lieu" required />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="score">Score final (ex: 3-1)</Label>
+                            <Input id="score" value={newResult.score} onChange={handleInputChange} required />
+                        </div>
+
+                        {matchType === 'club-match' ? (
+                            <>
+                                <div className="space-y-2">
+                                    <Label>Buteurs</Label>
+                                    <MultiSelect
+                                        options={allPossiblePlayersOptions}
+                                        value={performanceToList(newResult.scorers)}
+                                        onChange={(selected) => handleDynamicListChange('scorers', selected)}
+                                        placeholder="Sélectionner ou saisir les buteurs..."
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Passeurs décisifs</Label>
+                                    <MultiSelect
+                                        options={allPossiblePlayersOptions}
+                                        value={performanceToList(newResult.assists)}
+                                        onChange={(selected) => handleDynamicListChange('assists', selected)}
+                                        placeholder="Sélectionner ou saisir les passeurs..."
+                                    />
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="space-y-4 rounded-md border p-4">
+                                    <Label className="font-semibold">Buteurs (adversaires)</Label>
+                                    <div className="flex items-end gap-2">
+                                        <div className="grid gap-1.5 flex-1">
+                                            <Label htmlFor="opponentScorerTeam" className="text-xs">Équipe</Label>
+                                            <Select value={opponentScorerTeam} onValueChange={setOpponentScorerTeam}>
+                                                <SelectTrigger id="opponentScorerTeam">
+                                                    <SelectValue placeholder="Choisir équipe" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value={newResult.homeTeam || ''}>{newResult.homeTeam || 'Domicile'}</SelectItem>
+                                                    <SelectItem value={newResult.awayTeam || ''}>{newResult.awayTeam || 'Extérieur'}</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="grid gap-1.5 flex-1">
+                                            <Label htmlFor="opponentScorerName" className="text-xs">Nom du joueur</Label>
+                                            <Input id="opponentScorerName" value={opponentScorerName} onChange={(e) => setOpponentScorerName(e.target.value)} placeholder="Nom du buteur" />
+                                        </div>
+                                        <Button type="button" size="icon" onClick={() => addOpponentPerformanceItem('scorer')} disabled={!opponentScorerName || !opponentScorerTeam}>
+                                            <UserPlus className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    <div className="space-y-1">
+                                        {newResult.scorers.map((scorer, index) => (
+                                            <Badge key={index} variant="secondary" className="mr-1">
+                                                {scorer.playerName} ({scorer.count})
+                                                <button type="button" onClick={() => removePerformanceItem('scorers', scorer.playerName)} className="ml-1.5">
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 rounded-md border p-4">
+                                    <Label className="font-semibold">Passeurs (adversaires)</Label>
+                                    <div className="flex items-end gap-2">
+                                        <div className="grid gap-1.5 flex-1">
+                                            <Label htmlFor="opponentAssistTeam" className="text-xs">Équipe</Label>
+                                            <Select value={opponentAssistTeam} onValueChange={setOpponentAssistTeam}>
+                                                <SelectTrigger id="opponentAssistTeam">
+                                                    <SelectValue placeholder="Choisir équipe" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value={newResult.homeTeam || ''}>{newResult.homeTeam || 'Domicile'}</SelectItem>
+                                                    <SelectItem value={newResult.awayTeam || ''}>{newResult.awayTeam || 'Extérieur'}</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="grid gap-1.5 flex-1">
+                                            <Label htmlFor="opponentAssistName" className="text-xs">Nom du joueur</Label>
+                                            <Input id="opponentAssistName" value={opponentAssistName} onChange={(e) => setOpponentAssistName(e.target.value)} placeholder="Nom du passeur" />
+                                        </div>
+                                        <Button type="button" size="icon" onClick={() => addOpponentPerformanceItem('assist')} disabled={!opponentAssistName || !opponentAssistTeam}>
+                                            <UserPlus className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                     <div className="space-y-1">
+                                        {newResult.assists.map((assist, index) => (
+                                            <Badge key={index} variant="secondary" className="mr-1">
+                                                {assist.playerName} ({assist.count})
+                                                 <button type="button" onClick={() => removePerformanceItem('assists', assist.playerName)} className="ml-1.5">
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
                       </div>
                     </div>
                   <DialogFooter className="pt-4 border-t">
