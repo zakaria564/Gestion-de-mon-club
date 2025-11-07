@@ -35,6 +35,7 @@ interface MultiSelectProps {
   placeholder?: string
   className?: string
   creatable?: boolean
+  formatCreateLabel?: (inputValue: string) => React.ReactNode
 }
 
 export function MultiSelect({
@@ -44,6 +45,7 @@ export function MultiSelect({
   placeholder = "Select options...",
   className,
   creatable = false,
+  formatCreateLabel,
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false)
   const [inputValue, setInputValue] = React.useState("")
@@ -56,16 +58,48 @@ export function MultiSelect({
       onChange(newValues);
     }
   }
+  
+  const handleSelect = (newValue: string) => {
+      onChange([...value, newValue]);
+      setInputValue("");
+  }
+  
+  const handleCreate = (inputValue: string) => {
+    if (creatable && inputValue) {
+      let finalValue = inputValue;
+      if (inputValue.includes('(') && inputValue.endsWith(')')) {
+          // Already formatted
+      } else if (inputValue.startsWith(newResult.homeTeam!) && newResult.matchType === 'opponent-vs-opponent') {
+          const name = inputValue.substring(newResult.homeTeam!.length).trim();
+          finalValue = `${name} (${newResult.homeTeam})`;
+      } else if (inputValue.startsWith(newResult.awayTeam!) && newResult.matchType === 'opponent-vs-opponent') {
+          const name = inputValue.substring(newResult.awayTeam!.length).trim();
+          finalValue = `${name} (${newResult.awayTeam})`;
+      }
+      
+      handleSelect(finalValue);
+    }
+  };
+
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Enter" && inputValue && creatable) {
-      if (!options.some(option => option.value === inputValue)) {
-         onChange([...value, inputValue])
-      }
-      setInputValue("")
-      e.preventDefault()
+    if (e.key === "Enter" && inputValue) {
+        if (creatable) {
+            let finalValue = inputValue;
+            
+            const homeTeamPrefix = options.find(opt => opt.group && inputValue.startsWith(opt.group))?.group;
+            
+            if (homeTeamPrefix) {
+                const name = inputValue.substring(homeTeamPrefix.length).trim();
+                finalValue = `${name} (${homeTeamPrefix})`;
+            }
+
+            if (!options.some(option => option.value.toLowerCase() === finalValue.toLowerCase())) {
+                handleSelect(finalValue);
+            }
+        }
+        e.preventDefault();
     } else if (e.key === "Backspace" && !inputValue && value.length > 0) {
-        // Remove the last item on backspace
         onChange(value.slice(0, value.length - 1));
     }
   }
@@ -82,6 +116,14 @@ export function MultiSelect({
     }
     acc[group].push(option);
     return acc;
+  }, {} as Record<string, MultiSelectOption[]>);
+  
+  const filteredOptions = Object.keys(groupedOptions).reduce((acc, group) => {
+      const filtered = groupedOptions[group].filter(opt => opt.label.toLowerCase().includes(inputValue.toLowerCase()));
+      if(filtered.length > 0) {
+          acc[group] = filtered;
+      }
+      return acc;
   }, {} as Record<string, MultiSelectOption[]>);
 
 
@@ -130,16 +172,24 @@ export function MultiSelect({
           />
           <CommandList>
             <CommandEmpty>
-              {creatable ? `Appuyez sur Entrée pour ajouter "${inputValue}"` : "Aucun résultat trouvé."}
+             {creatable && inputValue ? (
+                <CommandItem
+                  onSelect={() => handleSelect(inputValue)}
+                  className="cursor-pointer"
+                >
+                  {formatCreateLabel ? formatCreateLabel(inputValue) : `Ajouter "${inputValue}"`}
+                </CommandItem>
+              ) : (
+                "Aucun résultat trouvé."
+              )}
             </CommandEmpty>
-             {Object.entries(groupedOptions).map(([group, groupOptions]) => (
+             {Object.entries(filteredOptions).map(([group, groupOptions]) => (
                 <CommandGroup key={group} heading={group}>
-                    {groupOptions.filter(opt => opt.label.toLowerCase().includes(inputValue.toLowerCase())).map((option) => (
+                    {groupOptions.map((option) => (
                         <CommandItem
                             key={option.value}
                             onSelect={() => {
-                                onChange([...value, option.value])
-                                setInputValue("")
+                                handleSelect(option.value);
                             }}
                         >
                             <Check

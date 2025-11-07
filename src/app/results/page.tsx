@@ -263,8 +263,20 @@ export default function ResultsPage() {
         group: clubInfo.name
       }));
 
+    if (newResult.matchType === 'opponent-vs-opponent') {
+        const homeTeam = newResult.homeTeam || 'Équipe à domicile';
+        const awayTeam = newResult.awayTeam || "Équipe à l'extérieur";
+        const homeTeamOptions: MultiSelectOption[] = [{ value: `${homeTeam} `, label: `Nouveau joueur pour ${homeTeam}...`, group: homeTeam }];
+        const awayTeamOptions: MultiSelectOption[] = [{ value: `${awayTeam} `, label: `Nouveau joueur pour ${awayTeam}...`, group: awayTeam }];
+        
+        return [
+            ...homeTeamOptions,
+            ...awayTeamOptions
+        ];
+    }
+    
     return clubPlayers;
-  }, [players, newResult.teamCategory, newResult.gender, clubInfo.name]);
+  }, [players, newResult.teamCategory, newResult.gender, clubInfo.name, newResult.matchType, newResult.homeTeam, newResult.awayTeam]);
 
 
   const formatPerformance = (items: PerformanceDetail[] | undefined): string => {
@@ -599,6 +611,19 @@ export default function ResultsPage() {
                                 onChange={(selected) => handleDynamicListChange('scorers', selected)}
                                 placeholder="Sélectionner ou saisir les buteurs..."
                                 creatable
+                                formatCreateLabel={(inputValue) => {
+                                    if (newResult.matchType === 'opponent-vs-opponent') {
+                                        if (inputValue.startsWith(newResult.homeTeam!)) {
+                                            const name = inputValue.substring(newResult.homeTeam!.length).trim();
+                                            return `Ajouter "${name} (${newResult.homeTeam})"`;
+                                        }
+                                        if (inputValue.startsWith(newResult.awayTeam!)) {
+                                            const name = inputValue.substring(newResult.awayTeam!.length).trim();
+                                            return `Ajouter "${name} (${newResult.awayTeam})"`;
+                                        }
+                                    }
+                                    return `Ajouter "${inputValue}"`;
+                                }}
                             />
                             </div>
 
@@ -749,4 +774,3 @@ export default function ResultsPage() {
     </div>
   );
 }
-

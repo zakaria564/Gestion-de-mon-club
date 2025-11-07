@@ -223,8 +223,8 @@ export default function RankingPage() {
                 } else if (result.matchType === 'club-match') {
                     teamName = result.opponent;
                 } else if (result.matchType === 'opponent-vs-opponent') {
-                    // This is a fallback and might not be accurate if a player name contains "vs"
-                    teamName = `${result.homeTeam} / ${result.awayTeam}`;
+                    // Fallback if format is not correct, but should not happen with new input logic
+                    teamName = "Inconnu";
                 }
             }
 
