@@ -16,6 +16,7 @@ import { useCoachesContext } from "@/context/coaches-context";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClubContext } from "@/context/club-context";
+import { ClubLogo } from "@/components/club-logo";
 
 export function CoachPaymentDetailClient({ id }: { id: string }) {
   const financialCtx = useFinancialContext();
@@ -171,9 +172,12 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
         <div ref={receiptRef} className="p-4 bg-white text-black">
             <CardHeader>
             <div className="flex flex-col sm:flex-row items-start justify-between mb-8 gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
-                        <p className="text-muted-foreground">Reçu de Salaire</p>
+                    <div className="flex items-center gap-4">
+                        <ClubLogo className="size-16" />
+                        <div>
+                            <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
+                            <p className="text-muted-foreground">Reçu de Salaire</p>
+                        </div>
                     </div>
                     <div className="text-left sm:text-right">
                         <p className="text-sm">Reçu n°: {payment.id.substring(0,8)}</p>
