@@ -14,7 +14,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from "@/components/ui/command"
 import {
   Popover,
@@ -25,7 +24,7 @@ import {
 export type MultiSelectOption = {
   value: string
   label: string
-  group?: string // e.g., Team Name
+  group?: string
 }
 
 interface MultiSelectProps {
@@ -35,7 +34,7 @@ interface MultiSelectProps {
   placeholder?: string
   className?: string
   creatable?: boolean
-  formatCreateLabel?: (inputValue: string) => React.ReactNode
+  formatCreateLabel?: (inputValue: string, group?: string) => React.ReactNode
 }
 
 export function MultiSelect({
@@ -45,7 +44,7 @@ export function MultiSelect({
   placeholder = "Select options...",
   className,
   creatable = false,
-  formatCreateLabel,
+  formatCreateLabel = (inputValue) => `Ajouter "${inputValue}"`,
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false)
   const [inputValue, setInputValue] = React.useState("")
@@ -63,44 +62,18 @@ export function MultiSelect({
       onChange([...value, newValue]);
       setInputValue("");
   }
-  
-  const handleCreate = (inputValue: string) => {
-    if (creatable && inputValue) {
-      let finalValue = inputValue;
-      if (inputValue.includes('(') && inputValue.endsWith(')')) {
-          // Already formatted
-      } else if (inputValue.startsWith(newResult.homeTeam!) && newResult.matchType === 'opponent-vs-opponent') {
-          const name = inputValue.substring(newResult.homeTeam!.length).trim();
-          finalValue = `${name} (${newResult.homeTeam})`;
-      } else if (inputValue.startsWith(newResult.awayTeam!) && newResult.matchType === 'opponent-vs-opponent') {
-          const name = inputValue.substring(newResult.awayTeam!.length).trim();
-          finalValue = `${name} (${newResult.awayTeam})`;
-      }
-      
-      handleSelect(finalValue);
-    }
-  };
-
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" && inputValue) {
-        if (creatable) {
-            let finalValue = inputValue;
-            
-            const homeTeamPrefix = options.find(opt => opt.group && inputValue.startsWith(opt.group))?.group;
-            
-            if (homeTeamPrefix) {
-                const name = inputValue.substring(homeTeamPrefix.length).trim();
-                finalValue = `${name} (${homeTeamPrefix})`;
-            }
-
-            if (!options.some(option => option.value.toLowerCase() === finalValue.toLowerCase())) {
-                handleSelect(finalValue);
-            }
-        }
+      if (creatable) {
         e.preventDefault();
+        // This is a simple creation, more complex logic should be handled by onSelect with a special value
+        if (!options.some(option => option.value.toLowerCase() === inputValue.toLowerCase())) {
+          handleSelect(inputValue);
+        }
+      }
     } else if (e.key === "Backspace" && !inputValue && value.length > 0) {
-        onChange(value.slice(0, value.length - 1));
+      onChange(value.slice(0, value.length - 1));
     }
   }
   
@@ -108,24 +81,35 @@ export function MultiSelect({
     return options.find(opt => opt.value === val) || { value: val, label: val, group: "Saisie manuelle" }
   }).filter(Boolean) as MultiSelectOption[];
 
-
   const groupedOptions = options.reduce((acc, option) => {
     const group = option.group || "Autres";
     if (!acc[group]) {
-        acc[group] = [];
+      acc[group] = [];
     }
     acc[group].push(option);
     return acc;
   }, {} as Record<string, MultiSelectOption[]>);
   
   const filteredOptions = Object.keys(groupedOptions).reduce((acc, group) => {
-      const filtered = groupedOptions[group].filter(opt => opt.label.toLowerCase().includes(inputValue.toLowerCase()));
-      if(filtered.length > 0) {
-          acc[group] = filtered;
-      }
-      return acc;
+    const filtered = groupedOptions[group].filter(opt =>
+      opt.label.toLowerCase().includes(inputValue.toLowerCase()) || opt.value.startsWith('create-')
+    );
+    if (filtered.length > 0) {
+      acc[group] = filtered;
+    }
+    return acc;
   }, {} as Record<string, MultiSelectOption[]>);
 
+  const getLabelForValue = (val: string) => {
+    const option = options.find(opt => opt.value === val);
+    if (option) return option.label;
+    
+    // Handle formatted strings like "Player Name (Team Name)"
+    const match = val.match(/(.*) \((.*)\)/);
+    if (match) return match[1];
+
+    return val;
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -141,18 +125,18 @@ export function MultiSelect({
           onClick={() => setOpen(!open)}
         >
           <div className="flex gap-1 flex-wrap">
-            {selectedOptions.length > 0 ? (
-              selectedOptions.map((option, index) => (
+            {value.length > 0 ? (
+              value.map((val, index) => (
                 <Badge
                   variant="secondary"
-                  key={`${option.value}-${index}`}
+                  key={`${val}-${index}`}
                   className="mr-1"
                   onClick={(e) => {
-                    e.stopPropagation()
-                    handleUnselect(option.value)
+                    e.stopPropagation();
+                    handleUnselect(val);
                   }}
                 >
-                  {option.label}
+                  {getLabelForValue(val)}
                   <X className="ml-1 h-3 w-3" />
                 </Badge>
               ))
@@ -172,36 +156,45 @@ export function MultiSelect({
           />
           <CommandList>
             <CommandEmpty>
-             {creatable && inputValue ? (
-                <CommandItem
-                  onSelect={() => handleSelect(inputValue)}
-                  className="cursor-pointer"
-                >
-                  {formatCreateLabel ? formatCreateLabel(inputValue) : `Ajouter "${inputValue}"`}
-                </CommandItem>
-              ) : (
-                "Aucun résultat trouvé."
-              )}
+              Aucun résultat trouvé.
             </CommandEmpty>
-             {Object.entries(filteredOptions).map(([group, groupOptions]) => (
-                <CommandGroup key={group} heading={group}>
-                    {groupOptions.map((option) => (
-                        <CommandItem
-                            key={option.value}
-                            onSelect={() => {
-                                handleSelect(option.value);
-                            }}
-                        >
-                            <Check
-                                className={cn(
-                                "mr-2 h-4 w-4",
-                                value.includes(option.value) ? "opacity-100" : "opacity-0"
-                                )}
-                            />
-                            {option.label}
-                        </CommandItem>
-                    ))}
-                </CommandGroup>
+            {Object.entries(filteredOptions).map(([group, groupOptions]) => (
+              <CommandGroup key={group} heading={group}>
+                {groupOptions.map((option) => {
+                  if (option.value.startsWith('create-')) {
+                    if (!inputValue) return null;
+                    return (
+                       <CommandItem
+                        key={option.value}
+                        onSelect={() => {
+                          const newValue = `${inputValue} (${group})`;
+                          handleSelect(newValue);
+                        }}
+                        className="cursor-pointer"
+                      >
+                       {formatCreateLabel(inputValue, group)}
+                      </CommandItem>
+                    )
+                  }
+
+                  return (
+                    <CommandItem
+                      key={option.value}
+                      onSelect={() => {
+                        handleSelect(option.value);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          value.includes(option.value) ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {option.label}
+                    </CommandItem>
+                  )
+                })}
+              </CommandGroup>
             ))}
           </CommandList>
         </Command>

@@ -255,27 +255,24 @@ export default function ResultsPage() {
   }, [results, categoryFilter, opponentFilter]);
 
   const allPossiblePlayersOptions: MultiSelectOption[] = useMemo(() => {
-    const clubPlayers: MultiSelectOption[] = players
+    if (newResult.matchType === 'opponent-vs-opponent') {
+      const homeTeam = newResult.homeTeam || 'Équipe à domicile';
+      const awayTeam = newResult.awayTeam || "Équipe à l'extérieur";
+      // This is a placeholder for creatable options. The actual value will be formatted on creation.
+      return [
+        { value: `create-home`, label: `Ajouter un nouveau joueur pour ${homeTeam}...`, group: homeTeam },
+        { value: `create-away`, label: `Ajouter un nouveau joueur pour ${awayTeam}...`, group: awayTeam }
+      ];
+    }
+
+    // Default case for club matches
+    return players
       .filter(p => p.category === newResult.teamCategory && p.gender === newResult.gender)
       .map(p => ({
         value: p.name,
         label: p.name,
         group: clubInfo.name
       }));
-
-    if (newResult.matchType === 'opponent-vs-opponent') {
-        const homeTeam = newResult.homeTeam || 'Équipe à domicile';
-        const awayTeam = newResult.awayTeam || "Équipe à l'extérieur";
-        const homeTeamOptions: MultiSelectOption[] = [{ value: `${homeTeam} `, label: `Nouveau joueur pour ${homeTeam}...`, group: homeTeam }];
-        const awayTeamOptions: MultiSelectOption[] = [{ value: `${awayTeam} `, label: `Nouveau joueur pour ${awayTeam}...`, group: awayTeam }];
-        
-        return [
-            ...homeTeamOptions,
-            ...awayTeamOptions
-        ];
-    }
-    
-    return clubPlayers;
   }, [players, newResult.teamCategory, newResult.gender, clubInfo.name, newResult.matchType, newResult.homeTeam, newResult.awayTeam]);
 
 
@@ -604,38 +601,27 @@ export default function ResultsPage() {
 
                            
                            <div className="space-y-2">
-                            <Label>Buteurs</Label>
-                            <MultiSelect
-                                options={allPossiblePlayersOptions}
-                                value={performanceToList(newResult.scorers)}
-                                onChange={(selected) => handleDynamicListChange('scorers', selected)}
-                                placeholder="Sélectionner ou saisir les buteurs..."
-                                creatable
-                                formatCreateLabel={(inputValue) => {
-                                    if (newResult.matchType === 'opponent-vs-opponent') {
-                                        if (inputValue.startsWith(newResult.homeTeam!)) {
-                                            const name = inputValue.substring(newResult.homeTeam!.length).trim();
-                                            return `Ajouter "${name} (${newResult.homeTeam})"`;
-                                        }
-                                        if (inputValue.startsWith(newResult.awayTeam!)) {
-                                            const name = inputValue.substring(newResult.awayTeam!.length).trim();
-                                            return `Ajouter "${name} (${newResult.awayTeam})"`;
-                                        }
-                                    }
-                                    return `Ajouter "${inputValue}"`;
-                                }}
-                            />
+                                <Label>Buteurs</Label>
+                                <MultiSelect
+                                    options={allPossiblePlayersOptions}
+                                    value={performanceToList(newResult.scorers)}
+                                    onChange={(selected) => handleDynamicListChange('scorers', selected)}
+                                    placeholder="Sélectionner ou saisir les buteurs..."
+                                    creatable
+                                    formatCreateLabel={(inputValue, group) => `Ajouter "${inputValue}" à ${group}`}
+                                />
                             </div>
 
                             <div className="space-y-2">
-                            <Label>Passeurs décisifs</Label>
-                            <MultiSelect
-                                options={allPossiblePlayersOptions}
-                                value={performanceToList(newResult.assists)}
-                                onChange={(selected) => handleDynamicListChange('assists', selected)}
-                                placeholder="Sélectionner ou saisir les passeurs..."
-                                creatable
-                            />
+                                <Label>Passeurs décisifs</Label>
+                                <MultiSelect
+                                    options={allPossiblePlayersOptions}
+                                    value={performanceToList(newResult.assists)}
+                                    onChange={(selected) => handleDynamicListChange('assists', selected)}
+                                    placeholder="Sélectionner ou saisir les passeurs..."
+                                    creatable
+                                    formatCreateLabel={(inputValue, group) => `Ajouter "${inputValue}" à ${group}`}
+                                />
                             </div>
                            
                       </div>
