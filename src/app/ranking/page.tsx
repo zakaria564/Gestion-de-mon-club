@@ -200,55 +200,46 @@ export default function RankingPage() {
   }, [filteredResults, clubInfo.name, activeTab]);
 
   const scorersRanking = useMemo(() => {
-    const scorerStats: { [name: string]: { goals: number; isClubPlayer: boolean; teamName: string; parsedName: string } } = {};
-    const clubPlayerNames = new Set(players.map(p => p.name));
+    const scorerStats: { [key: string]: { goals: number, team: string } } = {};
     const nameRegex = /(.*) \((.*)\)/;
 
     filteredResults.forEach(result => {
-      if (!result.scorers || !Array.isArray(result.scorers)) return;
+        result.scorers?.forEach(scorer => {
+            let playerName = scorer.playerName;
+            let teamName = clubInfo.name; // Default to club name
 
-      result.scorers.forEach(scorer => {
-        const rawPlayerName = scorer.playerName;
-        let parsedName = rawPlayerName;
-        let teamName = 'Adversaire';
-        let isClubPlayer = clubPlayerNames.has(rawPlayerName);
-
-        if (isClubPlayer) {
-          teamName = clubInfo.name;
-        } else {
-          const match = rawPlayerName.match(nameRegex);
-          if (match) {
-            parsedName = match[1].trim();
-            teamName = match[2].trim();
-          } else if (result.matchType === 'club-match') {
-            teamName = result.opponent;
-          } else {
-            // This logic is flawed for opponent_vs_opponent if format is not correct, but we rely on correct input format.
-            teamName = "Inconnu";
-          }
-        }
-        
-        // Use a consistent key for aggregation
-        const uniquePlayerKey = `${parsedName}__${teamName}`;
-
-        if (!scorerStats[uniquePlayerKey]) {
-          scorerStats[uniquePlayerKey] = { goals: 0, isClubPlayer, teamName, parsedName };
-        }
-        scorerStats[uniquePlayerKey].goals += scorer.count;
-      });
+            const match = scorer.playerName.match(nameRegex);
+            if (match) {
+                playerName = match[1].trim();
+                teamName = match[2].trim();
+            } else if (result.matchType === 'club-match') {
+                const isClubPlayer = players.some(p => p.name === scorer.playerName);
+                if (!isClubPlayer) {
+                    teamName = result.opponent;
+                }
+            } else if (result.matchType === 'opponent-vs-opponent') {
+                // This case is handled by the regex, but as a fallback:
+                teamName = 'Inconnu';
+            }
+            
+            const key = `${playerName}__${teamName}`;
+            if (!scorerStats[key]) {
+                scorerStats[key] = { goals: 0, team: teamName };
+            }
+            scorerStats[key].goals += scorer.count;
+        });
     });
 
-    const sortedScorers = Object.values(scorerStats)
-      .map(data => ({
-        name: data.parsedName,
-        goals: data.goals,
-        team: data.teamName,
-        isClubPlayer: data.isClubPlayer
-      }))
-      .sort((a, b) => {
-        if (b.goals !== a.goals) return b.goals - a.goals;
-        return a.name.localeCompare(b.name);
-      });
+    const sortedScorers = Object.entries(scorerStats)
+        .map(([key, data]) => {
+            const [name] = key.split('__');
+            return {
+                name,
+                team: data.team,
+                goals: data.goals,
+            };
+        })
+        .sort((a, b) => b.goals - a.goals);
 
     let rank = 1;
     return sortedScorers.map((scorer, index) => {

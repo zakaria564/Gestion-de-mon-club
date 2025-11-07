@@ -77,11 +77,6 @@ export default function ResultsPage() {
   
   const [matchType, setMatchType] = useState<'club-match' | 'opponent-vs-opponent'>('club-match');
   
-  // State for manual opponent scorer entry
-  const [opponentScorerName, setOpponentScorerName] = useState('');
-  const [opponentScorerTeam, setOpponentScorerTeam] = useState('');
-  const [opponentAssistName, setOpponentAssistName] = useState('');
-  const [opponentAssistTeam, setOpponentAssistTeam] = useState('');
 
   const [newResult, setNewResult] = useState<NewResult>({
     opponent: '',
@@ -108,10 +103,6 @@ export default function ResultsPage() {
   
    useEffect(() => {
     setNewResult(prev => ({ ...prev, matchType }));
-    if (matchType === 'opponent-vs-opponent') {
-      if (!opponentScorerTeam) setOpponentScorerTeam(newResult.homeTeam || '');
-      if (!opponentAssistTeam) setOpponentAssistTeam(newResult.homeTeam || '');
-    }
   }, [matchType, newResult.homeTeam, newResult.awayTeam]);
 
 
@@ -141,64 +132,6 @@ export default function ResultsPage() {
     setNewResult(prev => ({ ...prev, [listName]: performanceDetails }));
 };
 
-const addOpponentPerformanceItem = (type: 'scorer' | 'assist') => {
-    let name: string, team: string, listName: 'scorers' | 'assists', setName: React.Dispatch<React.SetStateAction<string>>;
-
-    if (type === 'scorer') {
-        name = opponentScorerName;
-        team = opponentScorerTeam;
-        listName = 'scorers';
-        setName = setOpponentScorerName;
-    } else {
-        name = opponentAssistName;
-        team = opponentAssistTeam;
-        listName = 'assists';
-        setName = setOpponentAssistName;
-    }
-
-    if (!name || !team) return;
-
-    const formattedName = `${name.trim()} (${team.trim()})`;
-    
-    setNewResult(prev => {
-        const list = prev[listName] || [];
-        const existingItem = list.find(item => item.playerName === formattedName);
-        if (existingItem) {
-            return {
-                ...prev,
-                [listName]: list.map(item =>
-                    item.playerName === formattedName ? { ...item, count: item.count + 1 } : item
-                )
-            };
-        } else {
-            return {
-                ...prev,
-                [listName]: [...list, { playerName: formattedName, count: 1 }]
-            };
-        }
-    });
-
-    setName('');
-};
-
-const removePerformanceItem = (listName: 'scorers' | 'assists', playerName: string) => {
-    setNewResult(prev => {
-        const item = prev[listName].find(p => p.playerName === playerName);
-        if (item && item.count > 1) {
-            return {
-                ...prev,
-                [listName]: prev[listName].map(p =>
-                    p.playerName === playerName ? { ...p, count: p.count - 1 } : p
-                )
-            };
-        } else {
-            return {
-                ...prev,
-                [listName]: prev[listName].filter(p => p.playerName !== playerName)
-            };
-        }
-    });
-};
 
   
   const resetForm = () => {
@@ -207,10 +140,6 @@ const removePerformanceItem = (listName: 'scorers' | 'assists', playerName: stri
     setIsEditing(false);
     setEditingResult(null);
     setMatchType('club-match');
-    setOpponentScorerName('');
-    setOpponentScorerTeam('');
-    setOpponentAssistName('');
-    setOpponentAssistTeam('');
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -236,8 +165,6 @@ const removePerformanceItem = (listName: 'scorers' | 'assists', playerName: stri
     setIsEditing(true);
     setEditingResult(result);
     setMatchType(result.matchType || 'club-match');
-    setOpponentScorerTeam(result.homeTeam || '');
-    setOpponentAssistTeam(result.homeTeam || '');
     setNewResult({
         opponent: result.opponent,
         homeTeam: result.homeTeam || '',
@@ -662,100 +589,27 @@ const removePerformanceItem = (listName: 'scorers' | 'assists', playerName: stri
                             <Input id="score" value={newResult.score} onChange={handleInputChange} required />
                         </div>
 
-                        {matchType === 'club-match' ? (
-                            <>
-                                <div className="space-y-2">
-                                    <Label>Buteurs</Label>
-                                    <MultiSelect
-                                        options={allPossiblePlayersOptions}
-                                        value={performanceToList(newResult.scorers)}
-                                        onChange={(selected) => handleDynamicListChange('scorers', selected)}
-                                        placeholder="Sélectionner ou saisir les buteurs..."
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Passeurs décisifs</Label>
-                                    <MultiSelect
-                                        options={allPossiblePlayersOptions}
-                                        value={performanceToList(newResult.assists)}
-                                        onChange={(selected) => handleDynamicListChange('assists', selected)}
-                                        placeholder="Sélectionner ou saisir les passeurs..."
-                                    />
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <div className="space-y-4 rounded-md border p-4">
-                                    <Label className="font-semibold">Buteurs (adversaires)</Label>
-                                    <div className="flex items-end gap-2">
-                                        <div className="grid gap-1.5 flex-1">
-                                            <Label htmlFor="opponentScorerTeam" className="text-xs">Équipe</Label>
-                                            <Select value={opponentScorerTeam} onValueChange={setOpponentScorerTeam}>
-                                                <SelectTrigger id="opponentScorerTeam">
-                                                    <SelectValue placeholder="Choisir équipe" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value={newResult.homeTeam || ''}>{newResult.homeTeam || 'Domicile'}</SelectItem>
-                                                    <SelectItem value={newResult.awayTeam || ''}>{newResult.awayTeam || 'Extérieur'}</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="grid gap-1.5 flex-1">
-                                            <Label htmlFor="opponentScorerName" className="text-xs">Nom du joueur</Label>
-                                            <Input id="opponentScorerName" value={opponentScorerName} onChange={(e) => setOpponentScorerName(e.target.value)} placeholder="Nom du buteur" />
-                                        </div>
-                                        <Button type="button" size="icon" onClick={() => addOpponentPerformanceItem('scorer')} disabled={!opponentScorerName || !opponentScorerTeam}>
-                                            <UserPlus className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                    <div className="space-y-1">
-                                        {newResult.scorers.map((scorer, index) => (
-                                            <Badge key={index} variant="secondary" className="mr-1">
-                                                {scorer.playerName} ({scorer.count})
-                                                <button type="button" onClick={() => removePerformanceItem('scorers', scorer.playerName)} className="ml-1.5">
-                                                    <X className="h-3 w-3" />
-                                                </button>
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                </div>
+                         <div className="space-y-2">
+                            <Label>Buteurs</Label>
+                            <MultiSelect
+                                options={allPossiblePlayersOptions}
+                                value={performanceToList(newResult.scorers)}
+                                onChange={(selected) => handleDynamicListChange('scorers', selected)}
+                                placeholder="Sélectionner ou saisir les buteurs... ex: Nom (Équipe)"
+                                creatable
+                            />
+                        </div>
 
-                                <div className="space-y-4 rounded-md border p-4">
-                                    <Label className="font-semibold">Passeurs (adversaires)</Label>
-                                    <div className="flex items-end gap-2">
-                                        <div className="grid gap-1.5 flex-1">
-                                            <Label htmlFor="opponentAssistTeam" className="text-xs">Équipe</Label>
-                                            <Select value={opponentAssistTeam} onValueChange={setOpponentAssistTeam}>
-                                                <SelectTrigger id="opponentAssistTeam">
-                                                    <SelectValue placeholder="Choisir équipe" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value={newResult.homeTeam || ''}>{newResult.homeTeam || 'Domicile'}</SelectItem>
-                                                    <SelectItem value={newResult.awayTeam || ''}>{newResult.awayTeam || 'Extérieur'}</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="grid gap-1.5 flex-1">
-                                            <Label htmlFor="opponentAssistName" className="text-xs">Nom du joueur</Label>
-                                            <Input id="opponentAssistName" value={opponentAssistName} onChange={(e) => setOpponentAssistName(e.target.value)} placeholder="Nom du passeur" />
-                                        </div>
-                                        <Button type="button" size="icon" onClick={() => addOpponentPerformanceItem('assist')} disabled={!opponentAssistName || !opponentAssistTeam}>
-                                            <UserPlus className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                     <div className="space-y-1">
-                                        {newResult.assists.map((assist, index) => (
-                                            <Badge key={index} variant="secondary" className="mr-1">
-                                                {assist.playerName} ({assist.count})
-                                                 <button type="button" onClick={() => removePerformanceItem('assists', assist.playerName)} className="ml-1.5">
-                                                    <X className="h-3 w-3" />
-                                                </button>
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                </div>
-                            </>
-                        )}
+                        <div className="space-y-2">
+                            <Label>Passeurs décisifs</Label>
+                            <MultiSelect
+                                options={allPossiblePlayersOptions}
+                                value={performanceToList(newResult.assists)}
+                                onChange={(selected) => handleDynamicListChange('assists', selected)}
+                                placeholder="Sélectionner ou saisir les passeurs... ex: Nom (Équipe)"
+                                creatable
+                            />
+                        </div>
                       </div>
                     </div>
                   <DialogFooter className="pt-4 border-t">
