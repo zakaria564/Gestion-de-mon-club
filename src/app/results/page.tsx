@@ -149,7 +149,6 @@ export default function ResultsPage() {
         finalResult.opponent = `${finalResult.homeTeam} vs ${finalResult.awayTeam}`;
     }
 
-
     if (isEditing && editingResult) {
       await updateResult({ id: editingResult.id, ...finalResult });
     } else {
@@ -762,3 +761,5 @@ export default function ResultsPage() {
     </div>
   );
 }
+
+    
