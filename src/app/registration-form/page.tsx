@@ -89,6 +89,7 @@ export default function RegistrationFormPage() {
                     <ClubLogo className="size-20" />
                     <div className="mt-2">
                         <h1 className="text-2xl font-bold uppercase">{clubInfo.name}</h1>
+                        <p className="text-lg">Fiche d’inscription (Joueur Mineur)</p>
                         <p className="font-semibold">Saison {currentSeason}</p>
                     </div>
                   </header>
@@ -151,13 +152,14 @@ export default function RegistrationFormPage() {
             <CardContent>
               <div className="max-w-4xl mx-auto bg-background p-4 sm:p-8 rounded-md shadow-lg">
                 <div ref={adultFormRef} className="text-black bg-white p-4">
-                  <header className="flex flex-col items-center text-center border-b-2 border-black pb-4 mb-6">
-                      <ClubLogo className="size-20" />
-                      <div className="mt-2">
-                        <h1 className="text-2xl font-bold uppercase">{clubInfo.name}</h1>
-                        <p className="font-semibold">Saison {currentSeason}</p>
-                      </div>
-                  </header>
+                    <header className="flex flex-col items-center text-center border-b-2 border-black pb-4 mb-6">
+                        <ClubLogo className="size-20" />
+                        <div className="mt-2">
+                            <h1 className="text-2xl font-bold uppercase">{clubInfo.name}</h1>
+                            <p className="text-lg">Fiche d’inscription (Joueur Majeur)</p>
+                            <p className="font-semibold">Saison {currentSeason}</p>
+                        </div>
+                    </header>
                   
                   <section className="mb-6">
                     <h3 className="font-bold text-lg mb-3 underline">INFORMATIONS PERSONNELLES</h3>
