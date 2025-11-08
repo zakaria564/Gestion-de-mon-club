@@ -218,7 +218,7 @@ export default function RegistrationFormPage() {
             </CardHeader>
             <CardContent>
               <div className="max-w-4xl mx-auto bg-white dark:bg-background p-4 sm:p-8 rounded-md shadow-lg">
-                <div ref={documentsRef} className="text-black bg-white p-4 h-[297mm] w-[210mm]">
+                <div ref={documentsRef} className="text-black bg-white p-4">
                    <header className="flex flex-col items-center text-center border-b-2 border-black pb-4 mb-6">
                       <ClubLogo className="size-20" />
                       <div className="mt-2">
@@ -240,7 +240,7 @@ export default function RegistrationFormPage() {
                   </section>
                    <section>
                     <h3 className="font-bold text-lg mb-3 underline">FRAIS D'INSCRIPTION ET COTISATION</h3>
-                     <p className="text-sm">Le montant des frais d'inscription pour la saison {currentSeason} s'élève à <strong>600 DH</strong>.</p>
+                     <p className="text-sm mt-4">Le montant des frais d'inscription pour la saison {currentSeason} s'élève à <strong>600 DH</strong>.</p>
                      <p className="text-sm mt-4">La cotisation mensuelle est de <strong>100 DH</strong>.</p>
                   </section>
                 </div>
