@@ -241,7 +241,7 @@ export default function RegistrationFormPage() {
                    <section>
                     <h3 className="font-bold text-lg mb-3 underline">FRAIS D'INSCRIPTION ET COTISATION</h3>
                      <p className="text-sm">Le montant des frais d'inscription pour la saison {currentSeason} s'élève à <strong>600 DH</strong>.</p>
-                     <p className="text-sm mt-2">La cotisation mensuelle est de <strong>100 DH</strong>.</p>
+                     <p className="text-sm mt-4">La cotisation mensuelle est de <strong>100 DH</strong>.</p>
                   </section>
                 </div>
               </div>
