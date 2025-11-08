@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useRef, createRef } from "react";
+import { useRef, createRef, useState } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Button } from "@/components/ui/button";
@@ -10,13 +10,18 @@ import { useClubContext } from "@/context/club-context";
 import { Download } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 export default function RegistrationFormPage() {
   const { clubInfo } = useClubContext();
   const adultFormRef = createRef<HTMLDivElement>();
   const minorFormRef = createRef<HTMLDivElement>();
   const documentsRef = createRef<HTMLDivElement>();
-  
+  const isMobile = useIsMobile();
+  const [activeTab, setActiveTab] = useState("minor");
+
   const currentSeason = `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
 
   const handleDownloadPDF = (ref: React.RefObject<HTMLDivElement>, fileName: string) => {
@@ -59,18 +64,37 @@ export default function RegistrationFormPage() {
     </div>
   );
 
+  const tabOptions = [
+    { value: "minor", label: "Inscription Mineur" },
+    { value: "adult", label: "Inscription Adulte" },
+    { value: "documents", label: "Pièces à Fournir" },
+  ];
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
        <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Fiches d'inscription</h2>
       </div>
 
-      <Tabs defaultValue="minor" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="minor">Inscription Mineur</TabsTrigger>
-          <TabsTrigger value="adult">Inscription Adulte</TabsTrigger>
-          <TabsTrigger value="documents">Pièces à Fournir</TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+         {isMobile ? (
+          <Select value={activeTab} onValueChange={setActiveTab}>
+            <SelectTrigger className="w-full mb-4">
+              <SelectValue placeholder="Sélectionner une fiche" />
+            </SelectTrigger>
+            <SelectContent>
+              {tabOptions.map(option => (
+                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="minor">Inscription Mineur</TabsTrigger>
+            <TabsTrigger value="adult">Inscription Adulte</TabsTrigger>
+            <TabsTrigger value="documents">Pièces à Fournir</TabsTrigger>
+          </TabsList>
+        )}
         
         <TabsContent value="minor" className="mt-4">
           <Card>
@@ -85,7 +109,7 @@ export default function RegistrationFormPage() {
             <CardContent>
               <div className="max-w-4xl mx-auto bg-background p-4 sm:p-8 rounded-md shadow-lg">
                 <div ref={minorFormRef} className="text-black bg-white p-4">
-                  <header className="flex flex-col items-center text-center border-b-2 border-black pb-4 mb-6">
+                   <header className="flex flex-col items-center text-center border-b-2 border-black pb-4 mb-6">
                     <ClubLogo className="size-20" />
                     <div className="mt-2">
                         <h1 className="text-2xl font-bold uppercase">{clubInfo.name}</h1>
@@ -152,14 +176,14 @@ export default function RegistrationFormPage() {
             <CardContent>
               <div className="max-w-4xl mx-auto bg-background p-4 sm:p-8 rounded-md shadow-lg">
                 <div ref={adultFormRef} className="text-black bg-white p-4">
-                    <header className="flex flex-col items-center text-center border-b-2 border-black pb-4 mb-6">
-                        <ClubLogo className="size-20" />
-                        <div className="mt-2">
-                            <h1 className="text-2xl font-bold uppercase">{clubInfo.name}</h1>
-                            <p className="text-lg">Fiche d’inscription (Joueur Majeur)</p>
-                            <p className="font-semibold">Saison {currentSeason}</p>
-                        </div>
-                    </header>
+                  <header className="flex flex-col items-center text-center border-b-2 border-black pb-4 mb-6">
+                    <ClubLogo className="size-20" />
+                    <div className="mt-2">
+                        <h1 className="text-2xl font-bold uppercase">{clubInfo.name}</h1>
+                        <p className="text-lg">Fiche d’inscription (Joueur Majeur)</p>
+                        <p className="font-semibold">Saison {currentSeason}</p>
+                    </div>
+                  </header>
                   
                   <section className="mb-6">
                     <h3 className="font-bold text-lg mb-3 underline">INFORMATIONS PERSONNELLES</h3>
@@ -230,7 +254,7 @@ export default function RegistrationFormPage() {
                         <li>Justificatif de domicile</li>
                     </ul>
                   </section>
-                   <section>
+                   <section className="mt-8">
                     <h3 className="font-bold text-lg mb-3 underline">FRAIS D'INSCRIPTION ET COTISATION</h3>
                      <p className="text-sm mt-4">Le montant des frais d'inscription pour la saison {currentSeason} s'élève à <strong>600 DH</strong>.</p>
                      <p className="text-sm mt-4">La cotisation mensuelle est de <strong>100 DH</strong>.</p>
