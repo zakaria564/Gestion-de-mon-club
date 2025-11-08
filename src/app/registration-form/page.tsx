@@ -219,15 +219,13 @@ export default function RegistrationFormPage() {
             <CardContent>
               <div className="max-w-4xl mx-auto bg-white dark:bg-background p-4 sm:p-8 rounded-md shadow-lg">
                 <div ref={documentsRef} className="text-black bg-white p-4 h-[297mm] w-[210mm]">
-                   <header className="flex items-start justify-between border-b-2 border-black pb-4 mb-6">
-                    <div className="flex items-center gap-4">
+                   <header className="flex flex-col items-center text-center border-b-2 border-black pb-4 mb-6">
                       <ClubLogo className="size-20" />
-                      <div>
+                      <div className="mt-2">
                         <h1 className="text-2xl font-bold uppercase">{clubInfo.name}</h1>
                         <p className="text-lg">Pièces à Fournir pour l'Inscription</p>
                         <p className="font-semibold">Saison {currentSeason}</p>
                       </div>
-                    </div>
                   </header>
                   <section className="mb-6">
                     <h3 className="font-bold text-lg mb-3 underline">LISTE DES DOCUMENTS REQUIS</h3>
