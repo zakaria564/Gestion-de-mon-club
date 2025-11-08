@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
@@ -91,7 +92,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
         try {
           const data = JSON.parse(event.target?.result as string);
   
-          const requiredKeys = ['players', 'coaches', 'calendarEvents', 'playerPayments', 'coachSalaries', 'results', 'clubInfo'];
+          const requiredKeys = ['players', 'coaches', 'calendarEvents', 'playerPayments', 'coachSalaries', 'results', 'clubInfo', 'opponents'];
           for (const key of requiredKeys) {
             if (!data.hasOwnProperty(key)) {
               throw new Error(`Le fichier de sauvegarde est invalide. La clé manquante: ${key}`);
@@ -105,6 +106,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
             playerPayments: data.playerPayments,
             coachSalaries: data.coachSalaries,
             results: data.results,
+            opponents: data.opponents,
           };
   
           const batch = writeBatch(db);
