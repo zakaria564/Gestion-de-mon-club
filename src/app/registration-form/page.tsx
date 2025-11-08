@@ -68,7 +68,7 @@ export default function RegistrationFormPage() {
         <CheckboxField label="1 Photocopie de la CIN / Passeport" />
         <CheckboxField label="1 Extrait d'acte de naissance" />
         <CheckboxField label="Autorisation parentale (pour les mineurs)" />
-        <CheckboxField label="Paiement des frais d'inscription (300 DH)" />
+        <CheckboxField label="Paiement des frais d'inscription (600 DH)" />
       </div>
     </section>
   );
