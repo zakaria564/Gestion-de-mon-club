@@ -68,7 +68,7 @@ export default function RegistrationFormPage() {
         <CheckboxField label="1 Photocopie de la CIN / Passeport" />
         <CheckboxField label="1 Extrait d'acte de naissance" />
         <CheckboxField label="Autorisation parentale (pour les mineurs)" />
-        <CheckboxField label="Paiement des frais d'inscription" />
+        <CheckboxField label="Paiement des frais d'inscription (300 DH)" />
       </div>
     </section>
   );
@@ -207,7 +207,7 @@ export default function RegistrationFormPage() {
                      <p className="text-xs mb-8">
                       Je soussigné(e), ...................................................................., déclare vouloir m'inscrire au club pour la saison {currentSeason}. J'ai pris connaissance du règlement intérieur du club et m'engage à le respecter.
                     </p>
-                    <div className="flex justify-center items-center text-center mt-16">
+                     <div className="flex justify-center items-center text-center mt-16">
                         <div>
                             <p className="font-semibold">Signature du joueur</p>
                             <p className="text-xs">(Précédée de la mention "Lu et approuvé")</p>
