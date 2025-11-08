@@ -69,6 +69,23 @@ export default function RegistrationFormPage() {
     { value: "adult", label: "Inscription Adulte" },
     { value: "documents", label: "Pièces à Fournir" },
   ];
+  
+  const RegistrationFormHeader = () => (
+      <header className="flex items-center justify-between border-b-2 border-black pb-2 sm:pb-4 mb-4 sm:mb-8 text-center">
+        <div className="flex flex-col items-center gap-1 w-1/4">
+            <ClubLogo className="size-12 sm:size-20" />
+            <p className="font-bold text-xxs sm:text-xs">{clubInfo.name}</p>
+        </div>
+        <div className="w-1/2">
+            <h2 className="text-lg sm:text-2xl font-bold">Fiche d'inscription</h2>
+            <p className="font-semibold text-xs sm:text-base">Saison {currentSeason}</p>
+        </div>
+        <div className="flex flex-col items-center gap-1 w-1/4">
+            <ClubLogo className="size-12 sm:size-20" />
+            <p className="font-bold text-xxs sm:text-xs">{clubInfo.name}</p>
+        </div>
+      </header>
+  );
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -109,19 +126,7 @@ export default function RegistrationFormPage() {
             <CardContent>
               <div className="max-w-4xl mx-auto bg-background p-2 sm:p-8 rounded-md shadow-lg">
                 <div ref={minorFormRef} className="text-black bg-white p-2 sm:p-4">
-                   <header className="flex items-center justify-between border-b-2 border-black pb-2 sm:pb-4 mb-4 sm:mb-8">
-                    <div className="text-center">
-                        <ClubLogo className="size-16 sm:size-20 mx-auto" />
-                        <p className="font-bold text-xs sm:text-base">{clubInfo.name}</p>
-                    </div>
-                    <div className="text-center">
-                        <h2 className="text-xl sm:text-2xl font-bold">Fiche d'inscription</h2>
-                        <p className="font-semibold text-xs sm:text-base">Saison {currentSeason}</p>
-                    </div>
-                    <div className="h-24 w-20 sm:h-32 sm:w-28 border-2 border-black flex items-center justify-center text-xs sm:text-sm text-gray-500">
-                        Photo
-                    </div>
-                  </header>
+                   <RegistrationFormHeader />
                   
                   <section className="mb-4 sm:mb-6">
                     <h3 className="font-bold text-base sm:text-lg mb-3 underline">INFORMATIONS PERSONNELLES</h3>
@@ -181,19 +186,7 @@ export default function RegistrationFormPage() {
             <CardContent>
               <div className="max-w-4xl mx-auto bg-background p-2 sm:p-8 rounded-md shadow-lg">
                 <div ref={adultFormRef} className="text-black bg-white p-2 sm:p-4">
-                  <header className="flex items-center justify-between border-b-2 border-black pb-2 sm:pb-4 mb-4 sm:mb-8">
-                    <div className="text-center">
-                        <ClubLogo className="size-16 sm:size-20 mx-auto" />
-                        <p className="font-bold text-xs sm:text-base">{clubInfo.name}</p>
-                    </div>
-                    <div className="text-center">
-                        <h2 className="text-xl sm:text-2xl font-bold">Fiche d'inscription</h2>
-                         <p className="font-semibold text-xs sm:text-base">Saison {currentSeason}</p>
-                    </div>
-                    <div className="h-24 w-20 sm:h-32 sm:w-28 border-2 border-black flex items-center justify-center text-xs sm:text-sm text-gray-500">
-                        Photo
-                    </div>
-                  </header>
+                  <RegistrationFormHeader />
                   
                   <section className="mb-4 sm:mb-6">
                     <h3 className="font-bold text-base sm:text-lg mb-3 underline">INFORMATIONS PERSONNELLES</h3>
