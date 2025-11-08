@@ -59,20 +59,6 @@ export default function RegistrationFormPage() {
     </div>
   );
 
-  const DocumentsList = () => (
-    <section className="mb-6">
-      <h3 className="font-bold text-lg mb-3 underline">PIÈCES À FOURNIR</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
-        <CheckboxField label="1 Certificat médical d'aptitude sportive" />
-        <CheckboxField label="2 Photos d'identité" />
-        <CheckboxField label="1 Photocopie de la CIN / Passeport" />
-        <CheckboxField label="1 Extrait d'acte de naissance" />
-        <CheckboxField label="Autorisation parentale (pour les mineurs)" />
-        <CheckboxField label="Paiement des frais d'inscription (600 DH)" />
-      </div>
-    </section>
-  );
-
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
        <div className="flex items-center justify-between space-y-2">
@@ -117,6 +103,7 @@ export default function RegistrationFormPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                       <FormField label="Nom et Prénom" />
                       <FormField label="Date de naissance" />
+                      <FormField label="Genre" />
                       <FormField label="Lieu de naissance" />
                       <FormField label="Nationalité" />
                       <FormField label="Adresse complète" />
@@ -188,6 +175,7 @@ export default function RegistrationFormPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                       <FormField label="Nom et Prénom" />
                       <FormField label="Date de naissance" />
+                      <FormField label="Genre" />
                       <FormField label="Lieu de naissance" />
                       <FormField label="Nationalité" />
                       <FormField label="Adresse complète" />
@@ -232,7 +220,7 @@ export default function RegistrationFormPage() {
             </CardHeader>
             <CardContent>
               <div className="max-w-4xl mx-auto bg-white dark:bg-background p-4 sm:p-8 rounded-md shadow-lg">
-                <div ref={documentsRef} className="text-black bg-white p-4">
+                <div ref={documentsRef} className="text-black bg-white p-4 h-[297mm] w-[210mm]">
                    <header className="flex items-start justify-between border-b-2 border-black pb-4 mb-6">
                     <div className="flex items-center gap-4">
                       <ClubLogo className="size-20" />
@@ -243,7 +231,21 @@ export default function RegistrationFormPage() {
                       </div>
                     </div>
                   </header>
-                  <DocumentsList />
+                  <section className="mb-6">
+                    <h3 className="font-bold text-lg mb-3 underline">LISTE DES DOCUMENTS REQUIS</h3>
+                    <ul className="list-disc list-inside space-y-2 text-sm">
+                        <li>Certificat médical d'aptitude à la pratique du football en compétition</li>
+                        <li>Deux (2) photos d'identité récentes</li>
+                        <li>Photocopie de la Carte d'Identité Nationale (CIN) ou du passeport</li>
+                        <li>Extrait d'acte de naissance (pour les mineurs)</li>
+                        <li>Autorisation parentale signée (pour les mineurs)</li>
+                        <li>Fiche de renseignements dûment remplie</li>
+                    </ul>
+                  </section>
+                   <section>
+                    <h3 className="font-bold text-lg mb-3 underline">FRAIS D'INSCRIPTION</h3>
+                     <p className="text-sm">Le montant des frais d'inscription pour la saison {currentSeason} s'élève à <strong>600 DH</strong>.</p>
+                  </section>
                 </div>
               </div>
             </CardContent>
