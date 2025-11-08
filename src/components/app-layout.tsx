@@ -65,36 +65,6 @@ function DesktopHeader() {
 
     return (
         <header className="hidden md:flex sticky top-0 z-10 h-14 items-center justify-end gap-4 border-b bg-background px-6">
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                     <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                       <ClubLogo />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal">
-                        <div className="flex items-center gap-2">
-                            <ClubLogo className="h-10 w-10" />
-                            <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-medium leading-none">{user?.displayName || "Admin"}</p>
-                                <p className="text-xs leading-none text-muted-foreground">
-                                    {user?.email}
-                                </p>
-                            </div>
-                        </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                     <DropdownMenuItem onClick={() => router.push('/settings')}>Profil</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/settings')}>Paramètres</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => {
-                        const { logOut } = useAuth.getState();
-                        logOut().then(() => router.push('/login'));
-                    }}>
-                        Se déconnecter
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
         </header>
     );
 }
