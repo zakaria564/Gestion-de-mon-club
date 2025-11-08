@@ -79,7 +79,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
 }
 
 function AppHead() {
-    const logo = "https://firebasestorage.googleapis.com/v0/b/gestion-de-mon-club.appspot.com/o/logo_transparent.png?alt=media&token=2424b649-411a-43f7-8736-249113689404";
+    const logo = "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg";
 
     return (
         <head>
