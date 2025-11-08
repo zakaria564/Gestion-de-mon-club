@@ -76,11 +76,14 @@ function DesktopHeader() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
-                        <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user?.displayName || "Admin"}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                            {user?.email}
-                        </p>
+                        <div className="flex items-center gap-2">
+                            <ClubLogo className="h-10 w-10" />
+                            <div className="flex flex-col space-y-1">
+                                <p className="text-sm font-medium leading-none">{user?.displayName || "Admin"}</p>
+                                <p className="text-xs leading-none text-muted-foreground">
+                                    {user?.email}
+                                </p>
+                            </div>
                         </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
@@ -96,7 +99,6 @@ function DesktopHeader() {
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-            <ClubLogo className="h-10 w-10" />
         </header>
     );
 }
