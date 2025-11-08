@@ -120,7 +120,6 @@ export default function RegistrationFormPage() {
                       <FormField label="Lieu de naissance" />
                       <FormField label="Nationalité" />
                       <FormField label="Adresse complète" />
-                      <FormField label="N° CIN / Carte de séjour" />
                       <FormField label="E-mail" />
                       <FormField label="Téléphone" />
                     </div>
