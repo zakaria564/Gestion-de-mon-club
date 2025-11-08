@@ -141,12 +141,11 @@ export default function RegistrationFormPage() {
                       <FormField label="Téléphone du tuteur" />
                     </div>
                   </section>
-                  <DocumentsList />
                   <footer className="pt-8">
                     <p className="text-xs mb-8">
                       Je soussigné(e), ...................................................................., responsable légal du joueur, déclare autoriser mon enfant à participer aux activités sportives organisées par le club pour la saison {currentSeason}. J'ai pris connaissance du règlement intérieur du club et m'engage à le respecter.
                     </p>
-                    <div className="flex justify-between items-center text-center">
+                    <div className="flex justify-around items-center text-center mt-16">
                         <div>
                             <p className="font-semibold">Signature du joueur</p>
                             <p className="text-xs">(Précédée de la mention "Lu et approuvé")</p>
@@ -209,12 +208,11 @@ export default function RegistrationFormPage() {
                       <FormField label="Poste de prédilection" />
                     </div>
                   </section>
-                  <DocumentsList />
                   <footer className="pt-16">
                      <p className="text-xs mb-8">
                       Je soussigné(e), ...................................................................., déclare vouloir m'inscrire au club pour la saison {currentSeason}. J'ai pris connaissance du règlement intérieur du club et m'engage à le respecter.
                     </p>
-                    <div className="flex justify-end items-center text-center">
+                    <div className="flex justify-center items-center text-center mt-16">
                         <div>
                             <p className="font-semibold">Signature du joueur</p>
                             <p className="text-xs">(Précédée de la mention "Lu et approuvé")</p>
