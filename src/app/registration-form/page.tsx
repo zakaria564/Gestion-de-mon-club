@@ -104,7 +104,6 @@ export default function RegistrationFormPage() {
                       <FormField label="Nom et Prénom" />
                       <FormField label="Date de naissance" />
                       <FormField label="Genre" />
-                      <FormField label="Lieu de naissance" />
                       <FormField label="Nationalité" />
                       <FormField label="Adresse complète" />
                       <FormField label="E-mail" />
@@ -176,7 +175,6 @@ export default function RegistrationFormPage() {
                       <FormField label="Nom et Prénom" />
                       <FormField label="Date de naissance" />
                       <FormField label="Genre" />
-                      <FormField label="Lieu de naissance" />
                       <FormField label="Nationalité" />
                       <FormField label="Adresse complète" />
                       <FormField label="N° CIN / Carte de séjour" />
