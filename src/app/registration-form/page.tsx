@@ -176,8 +176,8 @@ export default function RegistrationFormPage() {
                       <FormField label="Date de naissance" />
                       <FormField label="Genre" />
                       <FormField label="Nationalité" />
-                      <FormField label="Adresse complète" />
                       <FormField label="N° CIN / Carte de séjour" />
+                      <FormField label="Adresse complète" />
                       <FormField label="E-mail" />
                       <FormField label="Téléphone" />
                     </div>
@@ -237,7 +237,7 @@ export default function RegistrationFormPage() {
                         <li>Photocopie de la Carte d'Identité Nationale (CIN) ou du passeport, égalisée</li>
                         <li>Extrait d'acte de naissance (pour les mineurs)</li>
                         <li>Autorisation parentale signée (pour les mineurs)</li>
-                        <li>Fiche de renseignements dûment remplie</li>
+                        <li>Justificatif de domicile</li>
                     </ul>
                   </section>
                    <section>
