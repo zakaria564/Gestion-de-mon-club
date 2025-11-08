@@ -145,14 +145,10 @@ export default function RegistrationFormPage() {
                     <p className="text-xs mb-8">
                       Je soussigné(e), ...................................................................., responsable légal du joueur, déclare autoriser mon enfant à participer aux activités sportives organisées par le club pour la saison {currentSeason}. J'ai pris connaissance du règlement intérieur du club et m'engage à le respecter.
                     </p>
-                    <div className="flex justify-around items-center text-center mt-16">
-                        <div>
-                            <p className="font-semibold">Signature du joueur</p>
-                            <p className="text-xs">(Précédée de la mention "Lu et approuvé")</p>
-                        </div>
+                    <div className="flex justify-center items-center text-center mt-16">
                         <div>
                             <p className="font-semibold">Signature du tuteur légal</p>
-                            <p className="text-xs">(Pour les mineurs)</p>
+                            <p className="text-xs">(Précédée de la mention "Lu et approuvé")</p>
                         </div>
                     </div>
                   </footer>
