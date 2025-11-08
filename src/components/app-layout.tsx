@@ -59,6 +59,49 @@ const navItems = [
   { href: "/settings", label: "Paramètres", icon: Settings },
 ];
 
+function DesktopHeader() {
+    const { user } = useAuth();
+    const router = useRouter();
+
+    return (
+        <header className="hidden md:flex sticky top-0 z-10 h-14 items-center justify-end gap-4 border-b bg-background px-6">
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                        <Avatar className="h-9 w-9">
+                        <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "Admin"} data-ai-hint="user avatar" />
+                        <AvatarFallback>{user?.email?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user?.displayName || "Admin"}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                            {user?.email}
+                        </p>
+                        </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                     <DropdownMenuItem onClick={() => router.push('/settings')}>Profil</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/settings')}>Paramètres</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => {
+                        // handleLogout logic here if needed, or assume it is handled by a provider
+                        const { logOut } = useAuth.getState();
+                        logOut().then(() => router.push('/login'));
+                    }}>
+                        Se déconnecter
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <ClubLogo className="h-10 w-10" />
+        </header>
+    );
+}
+
+
 function MobileHeader() {
     const pathname = usePathname();
     const currentPage = navItems.find((item) => item.href === pathname);
@@ -169,9 +212,12 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
                 </DropdownMenu>
             </SidebarFooter>
             </Sidebar>
-            <main className="flex-1 overflow-auto w-full">
+            <main className="flex-1 flex flex-col overflow-auto w-full">
                 <MobileHeader />
-                {children}
+                <DesktopHeader />
+                <div className="flex-1 overflow-auto">
+                    {children}
+                </div>
             </main>
         </div>
     </ProtectedRoute>
