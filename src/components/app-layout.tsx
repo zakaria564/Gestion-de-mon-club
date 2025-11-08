@@ -74,10 +74,7 @@ function DesktopHeader() {
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                         <div className="flex items-center gap-2">
-                            <Avatar className="h-10 w-10">
-                               <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "Admin"} data-ai-hint="user avatar" />
-                                <AvatarFallback>{user?.email?.substring(0, 2).toUpperCase()}</AvatarFallback>
-                            </Avatar>
+                            <ClubLogo className="h-10 w-10" />
                             <div className="flex flex-col space-y-1">
                                 <p className="text-sm font-medium leading-none">{user?.displayName || "Admin"}</p>
                                 <p className="text-xs leading-none text-muted-foreground">
