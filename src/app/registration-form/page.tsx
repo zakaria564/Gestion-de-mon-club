@@ -52,15 +52,15 @@ export default function RegistrationFormPage() {
   
   const FormField = ({ label }: { label: string }) => (
     <div className="flex items-end gap-2 border-b border-gray-400 pb-1">
-      <label className="text-sm font-medium whitespace-nowrap">{label} :</label>
+      <label className="text-xs sm:text-sm font-medium whitespace-nowrap">{label} :</label>
       <div className="w-full"></div>
     </div>
   );
   
   const CheckboxField = ({ label }: { label: string }) => (
     <div className="flex items-center gap-2">
-      <div className="h-4 w-4 border border-black"></div>
-      <span className="text-sm">{label}</span>
+      <div className="h-3 w-3 sm:h-4 sm:w-4 border border-black"></div>
+      <span className="text-xs sm:text-sm">{label}</span>
     </div>
   );
 
@@ -107,25 +107,24 @@ export default function RegistrationFormPage() {
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="max-w-4xl mx-auto bg-background p-4 sm:p-8 rounded-md shadow-lg">
-                <div ref={minorFormRef} className="text-black bg-white p-4">
-                   <header className="flex items-center justify-between border-b-2 border-black pb-4 mb-8">
+              <div className="max-w-4xl mx-auto bg-background p-2 sm:p-8 rounded-md shadow-lg">
+                <div ref={minorFormRef} className="text-black bg-white p-2 sm:p-4">
+                   <header className="flex items-center justify-between border-b-2 border-black pb-2 sm:pb-4 mb-4 sm:mb-8">
                     <div className="text-center">
-                        <ClubLogo className="size-20 mx-auto" />
-                        <p className="font-bold">{clubInfo.name}</p>
+                        <ClubLogo className="size-16 sm:size-20 mx-auto" />
+                        <p className="font-bold text-xs sm:text-base">{clubInfo.name}</p>
                     </div>
                     <div className="text-center">
-                        <h2 className="text-2xl font-bold">Fiche d'inscription</h2>
-                        <p className="font-semibold">Saison {currentSeason}</p>
-                        <p className="text-lg mt-2">Fiche d’inscription (Joueur Mineur)</p>
+                        <h2 className="text-xl sm:text-2xl font-bold">Fiche d'inscription</h2>
+                        <p className="font-semibold text-xs sm:text-base">Saison {currentSeason}</p>
                     </div>
-                    <div className="h-32 w-28 border-2 border-black flex items-center justify-center text-sm text-gray-500">
+                    <div className="h-24 w-20 sm:h-32 sm:w-28 border-2 border-black flex items-center justify-center text-xs sm:text-sm text-gray-500">
                         Photo
                     </div>
                   </header>
                   
-                  <section className="mb-6">
-                    <h3 className="font-bold text-lg mb-3 underline">INFORMATIONS PERSONNELLES</h3>
+                  <section className="mb-4 sm:mb-6">
+                    <h3 className="font-bold text-base sm:text-lg mb-3 underline">INFORMATIONS PERSONNELLES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                       <FormField label="Nom et Prénom" />
                       <FormField label="Date de naissance" />
@@ -136,15 +135,15 @@ export default function RegistrationFormPage() {
                       <FormField label="Téléphone" />
                     </div>
                   </section>
-                  <section className="mb-6">
-                    <h3 className="font-bold text-lg mb-3 underline">INFORMATIONS SPORTIVES</h3>
+                  <section className="mb-4 sm:mb-6">
+                    <h3 className="font-bold text-base sm:text-lg mb-3 underline">INFORMATIONS SPORTIVES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                       <FormField label="Catégorie" />
                       <FormField label="Poste de prédilection" />
                     </div>
                   </section>
-                  <section className="mb-6">
-                    <h3 className="font-bold text-lg mb-3 underline">TUTEUR LÉGAL (POUR LES MINEURS)</h3>
+                  <section className="mb-4 sm:mb-6">
+                    <h3 className="font-bold text-base sm:text-lg mb-3 underline">TUTEUR LÉGAL (POUR LES MINEURS)</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                       <FormField label="Nom et Prénom du tuteur" />
                       <FormField label="Lien de parenté" />
@@ -152,13 +151,13 @@ export default function RegistrationFormPage() {
                       <FormField label="Téléphone du tuteur" />
                     </div>
                   </section>
-                  <footer className="pt-8">
-                    <p className="text-xs mb-8">
+                  <footer className="pt-4 sm:pt-8">
+                    <p className="text-xs sm:text-xs mb-4 sm:mb-8">
                       Je soussigné(e), ...................................................................., responsable légal du joueur, déclare autoriser mon enfant à participer aux activités sportives organisées par le club pour la saison {currentSeason}. J'ai pris connaissance du règlement intérieur du club et m'engage à le respecter.
                     </p>
-                    <div className="flex justify-center items-center text-center mt-16">
+                    <div className="flex justify-center items-center text-center mt-8 sm:mt-16">
                         <div>
-                            <p className="font-semibold">Signature du tuteur légal</p>
+                            <p className="font-semibold text-xs sm:text-base">Signature du tuteur légal</p>
                             <p className="text-xs">(Précédée de la mention "Lu et approuvé")</p>
                         </div>
                     </div>
@@ -180,25 +179,24 @@ export default function RegistrationFormPage() {
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="max-w-4xl mx-auto bg-background p-4 sm:p-8 rounded-md shadow-lg">
-                <div ref={adultFormRef} className="text-black bg-white p-4">
-                  <header className="flex items-center justify-between border-b-2 border-black pb-4 mb-8">
+              <div className="max-w-4xl mx-auto bg-background p-2 sm:p-8 rounded-md shadow-lg">
+                <div ref={adultFormRef} className="text-black bg-white p-2 sm:p-4">
+                  <header className="flex items-center justify-between border-b-2 border-black pb-2 sm:pb-4 mb-4 sm:mb-8">
                     <div className="text-center">
-                        <ClubLogo className="size-20 mx-auto" />
-                        <p className="font-bold">{clubInfo.name}</p>
+                        <ClubLogo className="size-16 sm:size-20 mx-auto" />
+                        <p className="font-bold text-xs sm:text-base">{clubInfo.name}</p>
                     </div>
                     <div className="text-center">
-                        <h2 className="text-2xl font-bold">Fiche d'inscription</h2>
-                         <p className="font-semibold">Saison {currentSeason}</p>
-                         <p className="text-lg mt-2">Fiche d’inscription (Joueur Majeur)</p>
+                        <h2 className="text-xl sm:text-2xl font-bold">Fiche d'inscription</h2>
+                         <p className="font-semibold text-xs sm:text-base">Saison {currentSeason}</p>
                     </div>
-                    <div className="h-32 w-28 border-2 border-black flex items-center justify-center text-sm text-gray-500">
+                    <div className="h-24 w-20 sm:h-32 sm:w-28 border-2 border-black flex items-center justify-center text-xs sm:text-sm text-gray-500">
                         Photo
                     </div>
                   </header>
                   
-                  <section className="mb-6">
-                    <h3 className="font-bold text-lg mb-3 underline">INFORMATIONS PERSONNELLES</h3>
+                  <section className="mb-4 sm:mb-6">
+                    <h3 className="font-bold text-base sm:text-lg mb-3 underline">INFORMATIONS PERSONNELLES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                       <FormField label="Nom et Prénom" />
                       <FormField label="Date de naissance" />
@@ -210,20 +208,20 @@ export default function RegistrationFormPage() {
                       <FormField label="Téléphone" />
                     </div>
                   </section>
-                  <section className="mb-6">
-                    <h3 className="font-bold text-lg mb-3 underline">INFORMATIONS SPORTIVES</h3>
+                  <section className="mb-4 sm:mb-6">
+                    <h3 className="font-bold text-base sm:text-lg mb-3 underline">INFORMATIONS SPORTIVES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                       <FormField label="Catégorie" />
                       <FormField label="Poste de prédilection" />
                     </div>
                   </section>
-                  <footer className="pt-16">
-                     <p className="text-xs mb-8">
+                  <footer className="pt-8 sm:pt-16">
+                     <p className="text-xs sm:text-xs mb-4 sm:mb-8">
                       Je soussigné(e), ...................................................................., déclare vouloir m'inscrire au club pour la saison {currentSeason}. J'ai pris connaissance du règlement intérieur du club et m'engage à le respecter.
                     </p>
-                     <div className="flex justify-center items-center text-center mt-16">
+                     <div className="flex justify-center items-center text-center mt-8 sm:mt-16">
                         <div>
-                            <p className="font-semibold">Signature du joueur</p>
+                            <p className="font-semibold text-xs sm:text-base">Signature du joueur</p>
                             <p className="text-xs">(Précédée de la mention "Lu et approuvé")</p>
                         </div>
                     </div>
@@ -245,19 +243,19 @@ export default function RegistrationFormPage() {
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="max-w-4xl mx-auto bg-background p-4 sm:p-8 rounded-md shadow-lg">
-                <div ref={documentsRef} className="text-black bg-white p-4">
-                   <header className="flex flex-col items-center text-center border-b-2 border-black pb-4 mb-6">
-                      <ClubLogo className="size-20" />
+              <div className="max-w-4xl mx-auto bg-background p-2 sm:p-8 rounded-md shadow-lg">
+                <div ref={documentsRef} className="text-black bg-white p-2 sm:p-4">
+                   <header className="flex flex-col items-center text-center border-b-2 border-black pb-2 sm:pb-4 mb-4 sm:mb-6">
+                      <ClubLogo className="size-16 sm:size-20" />
                       <div className="mt-2">
-                        <h1 className="text-2xl font-bold uppercase">{clubInfo.name}</h1>
-                        <p className="text-lg">Pièces à Fournir pour l'Inscription</p>
-                        <p className="font-semibold">Saison {currentSeason}</p>
+                        <h1 className="text-xl sm:text-2xl font-bold uppercase">{clubInfo.name}</h1>
+                        <p className="text-base sm:text-lg">Pièces à Fournir pour l'Inscription</p>
+                        <p className="font-semibold text-sm sm:text-base">Saison {currentSeason}</p>
                       </div>
                   </header>
-                  <section className="mb-6">
-                    <h3 className="font-bold text-lg mb-3 underline">LISTE DES DOCUMENTS REQUIS</h3>
-                    <ul className="list-disc list-inside space-y-4 text-sm">
+                  <section className="mb-4 sm:mb-6">
+                    <h3 className="font-bold text-base sm:text-lg mb-3 underline">LISTE DES DOCUMENTS REQUIS</h3>
+                    <ul className="list-disc list-inside space-y-2 sm:space-y-4 text-xs sm:text-sm">
                         <li>Certificat médical d'aptitude à la pratique du football en compétition</li>
                         <li>Deux (2) photos d'identité récentes</li>
                         <li>Photocopie de la Carte d'Identité Nationale (CIN) ou du passeport, égalisée</li>
@@ -266,10 +264,10 @@ export default function RegistrationFormPage() {
                         <li>Justificatif de domicile</li>
                     </ul>
                   </section>
-                   <section className="mt-8">
-                    <h3 className="font-bold text-lg mb-3 underline">FRAIS D'INSCRIPTION ET COTISATION</h3>
-                     <p className="text-sm mt-4">Le montant des frais d'inscription pour la saison {currentSeason} s'élève à <strong>600 DH</strong>.</p>
-                     <p className="text-sm mt-4">La cotisation mensuelle est de <strong>100 DH</strong>.</p>
+                   <section className="mt-4 sm:mt-8">
+                    <h3 className="font-bold text-base sm:text-lg mb-3 underline">FRAIS D'INSCRIPTION ET COTISATION</h3>
+                     <p className="text-xs sm:text-sm mt-2 sm:mt-4">Le montant des frais d'inscription pour la saison {currentSeason} s'élève à <strong>600 DH</strong>.</p>
+                     <p className="text-xs sm:text-sm mt-2 sm:mt-4">La cotisation mensuelle est de <strong>100 DH</strong>.</p>
                   </section>
                 </div>
               </div>
