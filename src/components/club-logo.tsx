@@ -3,7 +3,6 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import Image from "next/image"
 import { useClubContext } from "@/context/club-context"
 import { Skeleton } from "./ui/skeleton"
 
@@ -29,7 +28,8 @@ export function ClubLogo({ className, imageClassName }: ClubLogoProps) {
 
   return (
     <div className={cn("relative flex items-center justify-center rounded-full bg-transparent overflow-hidden", className)}>
-        <Image 
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img 
           src={finalSrc} 
           alt="Club Logo" 
           width={60} 
