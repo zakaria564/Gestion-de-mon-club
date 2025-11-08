@@ -79,7 +79,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
 }
 
 function AppHead() {
-    const logo = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToZc56FDigmtFX_WtbSgaIbyEVCjvmMSHQ5w&s";
+    const logo = "https://d1csarkz8obe9u.cloudfront.net/posterpreviews/football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34_screen.jpg?ts=1667330722";
 
     return (
         <head>
