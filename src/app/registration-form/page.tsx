@@ -92,11 +92,7 @@ export default function RegistrationFormPage() {
                         <p className="font-semibold">Saison {currentSeason}</p>
                     </div>
                   </header>
-                  <div className="flex justify-center mb-6">
-                    <div className="h-32 w-28 border-2 border-black flex items-center justify-center text-sm text-gray-500">
-                      Photo
-                    </div>
-                  </div>
+                  
                   <section className="mb-6">
                     <h3 className="font-bold text-lg mb-3 underline">INFORMATIONS PERSONNELLES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
@@ -162,11 +158,7 @@ export default function RegistrationFormPage() {
                         <p className="font-semibold">Saison {currentSeason}</p>
                       </div>
                   </header>
-                  <div className="flex justify-center mb-6">
-                    <div className="h-32 w-28 border-2 border-black flex items-center justify-center text-sm text-gray-500">
-                      Photo
-                    </div>
-                  </div>
+                  
                   <section className="mb-6">
                     <h3 className="font-bold text-lg mb-3 underline">INFORMATIONS PERSONNELLES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
