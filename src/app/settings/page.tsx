@@ -83,7 +83,7 @@ export default function SettingsPage() {
     }
   }, [clubInfo, user]);
 
-  const isClubNameSet = clubInfo && clubInfo.name !== "Gestion Club";
+  const isClubNameSet = clubInfo && clubInfo.name !== "CLUB USDS";
 
   const handleSaveInfo = async () => {
     if (!clubName) {

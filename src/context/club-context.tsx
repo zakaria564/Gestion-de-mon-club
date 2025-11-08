@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
@@ -23,7 +22,7 @@ const ClubContext = createContext<ClubContextType | undefined>(undefined);
 
 export function ClubProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [clubInfo, setClubInfo] = useState<ClubInfo>({ name: "Gestion Club", logoUrl: "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg" });
+  const [clubInfo, setClubInfo] = useState<ClubInfo>({ name: "CLUB USDS", logoUrl: "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg" });
   const [loading, setLoading] = useState(true);
 
   const getClubInfoDocRef = useCallback(() => {
@@ -34,7 +33,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
   const fetchClubInfo = useCallback(async () => {
     const docRef = getClubInfoDocRef();
     if (!docRef) {
-      setClubInfo({ name: "Gestion Club", logoUrl: "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg" });
+      setClubInfo({ name: "CLUB USDS", logoUrl: "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg" });
       setLoading(false);
       return;
     }
@@ -44,7 +43,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
       if (docSnap.exists()) {
         setClubInfo(docSnap.data() as ClubInfo);
       } else {
-        const defaultInfo = { name: "Gestion Club", logoUrl: "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg" };
+        const defaultInfo = { name: "CLUB USDS", logoUrl: "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg" };
         await setDoc(docRef, defaultInfo);
         setClubInfo(defaultInfo);
       }
@@ -59,7 +58,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
     if (user) {
       fetchClubInfo();
     } else {
-      setClubInfo({ name: "Gestion Club", logoUrl: "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg" });
+      setClubInfo({ name: "CLUB USDS", logoUrl: "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg" });
       setLoading(false);
     }
   }, [user, fetchClubInfo]);
