@@ -234,7 +234,7 @@ export default function RegistrationFormPage() {
                     <ul className="list-disc list-inside space-y-2 text-sm">
                         <li>Certificat médical d'aptitude à la pratique du football en compétition</li>
                         <li>Deux (2) photos d'identité récentes</li>
-                        <li>Photocopie de la Carte d'Identité Nationale (CIN) ou du passeport</li>
+                        <li>Photocopie de la Carte d'Identité Nationale (CIN) ou du passeport, égalisée</li>
                         <li>Extrait d'acte de naissance (pour les mineurs)</li>
                         <li>Autorisation parentale signée (pour les mineurs)</li>
                         <li>Fiche de renseignements dûment remplie</li>
