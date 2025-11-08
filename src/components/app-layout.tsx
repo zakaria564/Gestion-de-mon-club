@@ -67,8 +67,8 @@ function DesktopHeader() {
         <header className="hidden md:flex sticky top-0 z-10 h-14 items-center justify-end gap-4 border-b bg-background px-6">
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                       <ClubLogo className="h-9 w-9" />
+                     <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                       <ClubLogo />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -91,7 +91,6 @@ function DesktopHeader() {
                     <DropdownMenuItem onClick={() => router.push('/settings')}>Paramètres</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => {
-                        // handleLogout logic here if needed, or assume it is handled by a provider
                         const { logOut } = useAuth.getState();
                         logOut().then(() => router.push('/login'));
                     }}>
