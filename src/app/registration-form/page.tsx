@@ -85,18 +85,18 @@ export default function RegistrationFormPage() {
             <CardContent>
               <div className="max-w-4xl mx-auto bg-background p-4 sm:p-8 rounded-md shadow-lg">
                 <div ref={minorFormRef} className="text-black bg-white p-4">
-                  <header className="flex items-start justify-between border-b-2 border-black pb-4 mb-6">
-                    <div className="flex items-center gap-4">
-                      <ClubLogo className="size-20" />
-                      <div>
+                  <header className="flex flex-col items-center text-center border-b-2 border-black pb-4 mb-6">
+                    <ClubLogo className="size-20" />
+                    <div className="mt-2">
                         <h1 className="text-2xl font-bold uppercase">{clubInfo.name}</h1>
                         <p className="font-semibold">Saison {currentSeason}</p>
-                      </div>
                     </div>
+                  </header>
+                  <div className="flex justify-center mb-6">
                     <div className="h-32 w-28 border-2 border-black flex items-center justify-center text-sm text-gray-500">
                       Photo
                     </div>
-                  </header>
+                  </div>
                   <section className="mb-6">
                     <h3 className="font-bold text-lg mb-3 underline">INFORMATIONS PERSONNELLES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
@@ -155,18 +155,18 @@ export default function RegistrationFormPage() {
             <CardContent>
               <div className="max-w-4xl mx-auto bg-background p-4 sm:p-8 rounded-md shadow-lg">
                 <div ref={adultFormRef} className="text-black bg-white p-4">
-                  <header className="flex items-start justify-between border-b-2 border-black pb-4 mb-6">
-                    <div className="flex items-center gap-4">
+                  <header className="flex flex-col items-center text-center border-b-2 border-black pb-4 mb-6">
                       <ClubLogo className="size-20" />
-                      <div>
+                      <div className="mt-2">
                         <h1 className="text-2xl font-bold uppercase">{clubInfo.name}</h1>
                         <p className="font-semibold">Saison {currentSeason}</p>
                       </div>
-                    </div>
+                  </header>
+                  <div className="flex justify-center mb-6">
                     <div className="h-32 w-28 border-2 border-black flex items-center justify-center text-sm text-gray-500">
                       Photo
                     </div>
-                  </header>
+                  </div>
                   <section className="mb-6">
                     <h3 className="font-bold text-lg mb-3 underline">INFORMATIONS PERSONNELLES</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
