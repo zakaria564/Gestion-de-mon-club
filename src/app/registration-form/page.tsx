@@ -229,7 +229,7 @@ export default function RegistrationFormPage() {
                   </header>
                   <section className="mb-6">
                     <h3 className="font-bold text-lg mb-3 underline">LISTE DES DOCUMENTS REQUIS</h3>
-                    <ul className="list-disc list-inside space-y-2 text-sm">
+                    <ul className="list-disc list-inside space-y-4 text-sm">
                         <li>Certificat médical d'aptitude à la pratique du football en compétition</li>
                         <li>Deux (2) photos d'identité récentes</li>
                         <li>Photocopie de la Carte d'Identité Nationale (CIN) ou du passeport, égalisée</li>
