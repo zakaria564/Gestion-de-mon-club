@@ -79,7 +79,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
 }
 
 function AppHead() {
-    const logo = "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg";
+    const logo = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToZc56FDigmtFX_WtbSgaIbyEVCjvmMSHQ5w&s";
 
     return (
         <head>

@@ -19,7 +19,7 @@ export function ClubLogo({ className, imageClassName }: ClubLogoProps) {
     setIsClient(true);
   }, []);
 
-  const defaultLogo = "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg";
+  const defaultLogo = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXdLXDYNNe7YrVGKxItlgSiHYeZsHw9XedKQ&s";
   const finalSrc = clubInfo?.logoUrl || defaultLogo;
 
   if (clubLoading || !isClient) {

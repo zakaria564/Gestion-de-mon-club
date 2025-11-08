@@ -22,7 +22,7 @@ const ClubContext = createContext<ClubContextType | undefined>(undefined);
 
 export function ClubProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [clubInfo, setClubInfo] = useState<ClubInfo>({ name: "USDS", logoUrl: "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg" });
+  const [clubInfo, setClubInfo] = useState<ClubInfo>({ name: "USDS", logoUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXdLXDYNNe7YrVGKxItlgSiHYeZsHw9XedKQ&s" });
   const [loading, setLoading] = useState(true);
 
   const getClubInfoDocRef = useCallback(() => {
@@ -33,7 +33,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
   const fetchClubInfo = useCallback(async () => {
     const docRef = getClubInfoDocRef();
     if (!docRef) {
-      setClubInfo({ name: "USDS", logoUrl: "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg" });
+      setClubInfo({ name: "USDS", logoUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXdLXDYNNe7YrVGKxItlgSiHYeZsHw9XedKQ&s" });
       setLoading(false);
       return;
     }
@@ -43,7 +43,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
       if (docSnap.exists()) {
         setClubInfo(docSnap.data() as ClubInfo);
       } else {
-        const defaultInfo = { name: "USDS", logoUrl: "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg" };
+        const defaultInfo = { name: "USDS", logoUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXdLXDYNNe7YrVGKxItlgSiHYeZsHw9XedKQ&s" };
         await setDoc(docRef, defaultInfo);
         setClubInfo(defaultInfo);
       }
@@ -58,7 +58,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
     if (user) {
       fetchClubInfo();
     } else {
-      setClubInfo({ name: "USDS", logoUrl: "https://image.noelshack.com/fichiers/2025/45/6/1762611845-images-2.jpeg" });
+      setClubInfo({ name: "USDS", logoUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXdLXDYNNe7YrVGKxItlgSiHYeZsHw9XedKQ&s" });
       setLoading(false);
     }
   }, [user, fetchClubInfo]);
