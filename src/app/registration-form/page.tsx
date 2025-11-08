@@ -83,14 +83,13 @@ export default function RegistrationFormPage() {
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="max-w-4xl mx-auto bg-white dark:bg-background p-4 sm:p-8 rounded-md shadow-lg">
+              <div className="max-w-4xl mx-auto bg-background p-4 sm:p-8 rounded-md shadow-lg">
                 <div ref={minorFormRef} className="text-black bg-white p-4">
                   <header className="flex items-start justify-between border-b-2 border-black pb-4 mb-6">
                     <div className="flex items-center gap-4">
                       <ClubLogo className="size-20" />
                       <div>
                         <h1 className="text-2xl font-bold uppercase">{clubInfo.name}</h1>
-                        <p className="text-lg">Fiche d’inscription (Joueur Mineur)</p>
                         <p className="font-semibold">Saison {currentSeason}</p>
                       </div>
                     </div>
@@ -154,14 +153,13 @@ export default function RegistrationFormPage() {
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="max-w-4xl mx-auto bg-white dark:bg-background p-4 sm:p-8 rounded-md shadow-lg">
+              <div className="max-w-4xl mx-auto bg-background p-4 sm:p-8 rounded-md shadow-lg">
                 <div ref={adultFormRef} className="text-black bg-white p-4">
                   <header className="flex items-start justify-between border-b-2 border-black pb-4 mb-6">
                     <div className="flex items-center gap-4">
                       <ClubLogo className="size-20" />
                       <div>
                         <h1 className="text-2xl font-bold uppercase">{clubInfo.name}</h1>
-                        <p className="text-lg">Fiche d’inscription (Joueur Majeur)</p>
                         <p className="font-semibold">Saison {currentSeason}</p>
                       </div>
                     </div>
@@ -217,7 +215,7 @@ export default function RegistrationFormPage() {
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="max-w-4xl mx-auto bg-white dark:bg-background p-4 sm:p-8 rounded-md shadow-lg">
+              <div className="max-w-4xl mx-auto bg-background p-4 sm:p-8 rounded-md shadow-lg">
                 <div ref={documentsRef} className="text-black bg-white p-4">
                    <header className="flex flex-col items-center text-center border-b-2 border-black pb-4 mb-6">
                       <ClubLogo className="size-20" />
