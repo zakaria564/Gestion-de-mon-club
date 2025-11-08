@@ -68,16 +68,16 @@ function DesktopHeader() {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                      <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                        <Avatar className="h-9 w-9">
-                        <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "Admin"} data-ai-hint="user avatar" />
-                        <AvatarFallback>{user?.email?.substring(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
+                       <ClubLogo className="h-9 w-9" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                         <div className="flex items-center gap-2">
-                            <ClubLogo className="h-10 w-10" />
+                            <Avatar className="h-10 w-10">
+                               <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "Admin"} data-ai-hint="user avatar" />
+                                <AvatarFallback>{user?.email?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                            </Avatar>
                             <div className="flex flex-col space-y-1">
                                 <p className="text-sm font-medium leading-none">{user?.displayName || "Admin"}</p>
                                 <p className="text-xs leading-none text-muted-foreground">
