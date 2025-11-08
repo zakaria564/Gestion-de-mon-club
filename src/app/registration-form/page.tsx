@@ -183,6 +183,7 @@ export default function RegistrationFormPage() {
                     <ClubLogo className="size-20" />
                     <div className="text-center">
                         <h1 className="text-2xl font-bold uppercase">{clubInfo.name}</h1>
+                        <p className="text-lg">Fiche d’inscription (Joueur Majeur)</p>
                         <p className="font-semibold">Saison {currentSeason}</p>
                     </div>
                     <div className="h-32 w-28 border-2 border-black flex items-center justify-center text-sm text-gray-500">
