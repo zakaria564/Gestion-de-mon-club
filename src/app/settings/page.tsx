@@ -83,7 +83,7 @@ export default function SettingsPage() {
     }
   }, [clubInfo, user]);
 
-  const isClubNameSet = clubInfo && clubInfo.name !== "CLUB USDS";
+  const isClubNameSet = clubInfo && clubInfo.name !== "Gestion de mon club";
 
   const handleSaveInfo = async () => {
     if (!clubName) {
@@ -281,9 +281,7 @@ export default function SettingsPage() {
                <Button onClick={handleSaveInfo} disabled={isSavingInfo || (clubName === clubInfo.name && logoUrl === clubInfo.logoUrl)}>
                 {isSavingInfo 
                   ? "Enregistrement..." 
-                  : isClubNameSet 
-                  ? "Mise à jour logo du club"
-                  : "Enregistrer"}
+                  : "Enregistrer les informations"}
               </Button>
             </CardFooter>
           </Card>
