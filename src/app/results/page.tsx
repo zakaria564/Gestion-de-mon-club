@@ -138,7 +138,7 @@ export default function ResultsPage() {
   };
   
   const resetForm = () => {
-    setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: '', teamCategory: '', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
+    setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: '', teamCategory: '', gender: '' as 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
     setManualOpponentScorers("");
     setManualOpponentAssists("");
     setManualScorers("");

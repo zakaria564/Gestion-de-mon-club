@@ -97,7 +97,7 @@ export default function RankingPage() {
   const loading = resultsLoading || playersLoading || opponentsLoading;
 
   const [teamCategoryFilter, setTeamCategoryFilter] = useState('');
-  const [genderFilter, setGenderFilter] = useState<'Masculin' | 'Féminin'>('Masculin');
+  const [genderFilter, setGenderFilter] = useState<'Masculin' | 'Féminin'>('' as 'Masculin');
   const [activeTab, setActiveTab] = useState(matchTypes[0]);
 
   const filteredResults = useMemo(() => {

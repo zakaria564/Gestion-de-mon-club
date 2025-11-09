@@ -214,7 +214,7 @@ export default function OpponentsPage() {
                   <Label htmlFor="gender">Genre</Label>
                   <Select onValueChange={handleSelectChange} value={newOpponent.gender} required>
                       <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner un genre" />
+                          <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                           <SelectItem value="Masculin">Masculin</SelectItem>

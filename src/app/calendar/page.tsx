@@ -184,7 +184,7 @@ export default function CalendarPage() {
         time: '', 
         location: '',
         teamCategory: '',
-        gender: 'Masculin',
+        gender: '' as 'Masculin',
         homeOrAway: 'home',
     });
     setEventDialogOpen(true);
@@ -890,7 +890,7 @@ export default function CalendarPage() {
                             options={allPossiblePlayersOptions}
                             value={performanceToList(newResult.scorers)}
                             onChange={(selected) => handleDynamicListChange('scorers', selected)}
-                            placeholder="Sélectionner ou saisir les buteurs..."
+                            placeholder=""
                             creatable
                             />
                         </div>
@@ -901,7 +901,7 @@ export default function CalendarPage() {
                             options={allPossiblePlayersOptions}
                             value={performanceToList(newResult.assists)}
                             onChange={(selected) => handleDynamicListChange('assists', selected)}
-                            placeholder="Sélectionner les passeurs..."
+                            placeholder=""
                             creatable
                             />
                         </div>

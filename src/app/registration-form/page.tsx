@@ -97,7 +97,7 @@ export default function RegistrationFormPage() {
          {isMobile ? (
           <Select value={activeTab} onValueChange={setActiveTab}>
             <SelectTrigger className="w-full mb-4">
-              <SelectValue placeholder="Sélectionner une fiche" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {tabOptions.map(option => (
