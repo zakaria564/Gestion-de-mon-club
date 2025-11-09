@@ -60,9 +60,6 @@ const navItems = [
 ];
 
 function DesktopHeader() {
-    const { user } = useAuth();
-    const router = useRouter();
-
     return (
         <header className="hidden md:flex sticky top-0 z-10 h-14 items-center justify-end gap-4 border-b bg-background px-6">
             <ClubLogo className="h-9 w-9" />
@@ -77,9 +74,12 @@ function MobileHeader() {
     const pageTitle = currentPage ? currentPage.label : "Gestion Club";
 
     return (
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:hidden">
-            <SidebarTrigger />
-            <span className="font-semibold">{pageTitle}</span>
+        <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:hidden">
+            <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <span className="font-semibold">{pageTitle}</span>
+            </div>
+            <ClubLogo className="h-9 w-9" />
         </header>
     );
 }
