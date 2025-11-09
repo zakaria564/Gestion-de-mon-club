@@ -44,7 +44,7 @@ export default function OpponentsPage() {
   const [newOpponent, setNewOpponent] = useState<NewOpponent>({
     name: "",
     logoUrl: "",
-    gender: "Masculin",
+    gender: "" as 'Masculin',
   });
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function OpponentsPage() {
   };
 
   const resetForm = () => {
-    setNewOpponent({ name: "", logoUrl: "", gender: "Masculin" });
+    setNewOpponent({ name: "", logoUrl: "", gender: "" as 'Masculin' });
     setIsEditing(false);
     setEditingOpponent(null);
     setOpen(false);
@@ -87,7 +87,7 @@ export default function OpponentsPage() {
     setNewOpponent({
       name: opponent.name,
       logoUrl: opponent.logoUrl || "",
-      gender: opponent.gender || "Masculin",
+      gender: opponent.gender || "" as 'Masculin',
     });
     setOpen(true);
   };
@@ -214,7 +214,7 @@ export default function OpponentsPage() {
                   <Label htmlFor="gender">Genre</Label>
                   <Select onValueChange={handleSelectChange} value={newOpponent.gender} required>
                       <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Sélectionner un genre" />
                       </SelectTrigger>
                       <SelectContent>
                           <SelectItem value="Masculin">Masculin</SelectItem>
