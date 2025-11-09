@@ -82,7 +82,7 @@ export default function RegistrationFormPage() {
         </div>
         <div className="flex flex-col items-center justify-center gap-1 w-1/4">
              <div className="w-20 h-24 sm:w-24 sm:h-32 border-2 border-black flex items-center justify-center text-gray-400 text-xs text-center">
-                Photo d'identité
+                Photo
             </div>
         </div>
       </header>
