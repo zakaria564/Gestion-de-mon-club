@@ -81,7 +81,7 @@ const defaultValues: Omit<CoachFormValues, 'status' | 'gender'> = {
     email: '',
     address: '',
     country: '',
-    experience: 0,
+    experience: '' as unknown as number,
     photo: '',
     cin: '',
     category: '',
@@ -297,7 +297,7 @@ export default function CoachesPage() {
                             <FormItem>
                               <FormLabel>Spécialité</FormLabel>
                               <Select onValueChange={field.onChange} value={field.value} required>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une spécialité" /></SelectTrigger></FormControl>
+                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent>
                                   <SelectItem value="Entraîneur Principal">Entraîneur Principal</SelectItem>
                                   <SelectItem value="Entraîneur Adjoint">Entraîneur Adjoint</SelectItem>
@@ -317,7 +317,7 @@ export default function CoachesPage() {
                             <FormItem>
                               <FormLabel>Catégorie</FormLabel>
                               <Select onValueChange={field.onChange} value={field.value} required>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une catégorie" /></SelectTrigger></FormControl>
+                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent>
                                   {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                                 </SelectContent>
@@ -368,7 +368,7 @@ export default function CoachesPage() {
                                 <Select onValueChange={field.onChange} value={field.value} required>
                                     <FormControl>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner une nationalité" />
+                                        <SelectValue />
                                     </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
@@ -407,7 +407,7 @@ export default function CoachesPage() {
                                     <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner un document" />
+                                        <SelectValue />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
