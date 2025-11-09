@@ -466,10 +466,10 @@ export default function PlayersPage() {
                                       render={({ field }) => (
                                         <FormItem>
                                           <FormLabel>Genre</FormLabel>
-                                          <Select onValueChange={field.onChange} value={field.value} required>
+                                          <Select onValueChange={field.onChange} value={field.value || ""} required>
                                             <FormControl>
                                               <SelectTrigger>
-                                                <SelectValue placeholder="Sélectionner un genre" />
+                                                <SelectValue />
                                               </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
@@ -539,10 +539,10 @@ export default function PlayersPage() {
                                         render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Nationalité</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value} required>
+                                            <Select onValueChange={field.onChange} value={field.value || ""} required>
                                                 <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Sélectionner une nationalité" />
+                                                    <SelectValue />
                                                 </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
@@ -628,7 +628,7 @@ export default function PlayersPage() {
                                           <Select onValueChange={field.onChange} value={field.value}>
                                             <FormControl>
                                               <SelectTrigger>
-                                                <SelectValue placeholder="Sélectionner un type de document" />
+                                                <SelectValue />
                                               </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
@@ -690,10 +690,10 @@ export default function PlayersPage() {
                                     render={({ field }) => (
                                         <FormItem>
                                         <FormLabel>Poste</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value} required>
+                                        <Select onValueChange={field.onChange} value={field.value || ""} required>
                                             <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Sélectionner un poste" />
+                                                <SelectValue />
                                             </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
@@ -732,10 +732,10 @@ export default function PlayersPage() {
                                         render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Entraîneur</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
+                                            <Select onValueChange={field.onChange} value={field.value || ""}>
                                             <FormControl>
                                                 <SelectTrigger>
-                                                <SelectValue placeholder="Sélectionner un entraîneur" />
+                                                <SelectValue />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
@@ -755,7 +755,7 @@ export default function PlayersPage() {
                                         <FormItem>
                                         <FormLabel>Statut</FormLabel>
                                         <Select onValueChange={field.onChange} value={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un statut" /></SelectTrigger></FormControl>
+                                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                             <SelectContent>
                                             <SelectItem value="Actif">Actif</SelectItem>
                                             <SelectItem value="Blessé">Blessé</SelectItem>
@@ -773,8 +773,8 @@ export default function PlayersPage() {
                                     render={({ field }) => (
                                         <FormItem>
                                         <FormLabel>Catégorie</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une catégorie" /></SelectTrigger></FormControl>
+                                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                             <SelectContent>
                                                 {playerCategories.map(cat => (
                                                     <SelectItem key={cat} value={cat}>{cat}</SelectItem>
@@ -837,7 +837,7 @@ export default function PlayersPage() {
             </div>
             <Select value={filterKey} onValueChange={setFilterKey}>
                 <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Filtrer par" />
+                    <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem value="name">Nom</SelectItem>

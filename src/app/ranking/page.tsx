@@ -309,7 +309,7 @@ export default function RankingPage() {
       <div className="flex items-center gap-4">
         <Select value={teamCategoryFilter} onValueChange={setTeamCategoryFilter}>
           <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Filtrer par catégorie" />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {playerCategories.map(cat => (
@@ -319,7 +319,7 @@ export default function RankingPage() {
         </Select>
         <Select value={genderFilter} onValueChange={(v) => setGenderFilter(v as any)}>
           <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Filtrer par genre" />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="Masculin">Masculin</SelectItem>

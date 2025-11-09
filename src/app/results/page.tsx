@@ -546,7 +546,7 @@ export default function ResultsPage() {
                                 <Label htmlFor="category">Type de match</Label>
                                 <Select onValueChange={(v) => handleSelectChange('category', v)} value={newResult.category} required>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Sélectionner un type" />
+                                      <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
                                       {matchCategories.map(cat => (
@@ -559,7 +559,7 @@ export default function ResultsPage() {
                                 <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
                                 <Select onValueChange={(v) => handleSelectChange('teamCategory', v)} value={newResult.teamCategory} required>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Sélectionner une catégorie" />
+                                      <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
                                       {playerCategories.map(cat => (
@@ -573,7 +573,7 @@ export default function ResultsPage() {
                             <Label htmlFor="gender">Genre</Label>
                             <Select onValueChange={(v) => handleSelectChange('gender', v)} value={newResult.gender} required>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner un genre" />
+                                    <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Masculin">Masculin</SelectItem>
@@ -620,7 +620,7 @@ export default function ResultsPage() {
                                     <Label htmlFor="opponent">Adversaire</Label>
                                     <Select onValueChange={(v) => handleSelectChange('opponent', v)} value={newResult.opponent} required>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Sélectionner un adversaire" />
+                                            <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {filteredOpponentOptions.map(op => (
@@ -635,7 +635,7 @@ export default function ResultsPage() {
                                         options={allPossiblePlayersOptions}
                                         value={performanceToList(newResult.scorers)}
                                         onChange={(selected) => handleDynamicListChange('scorers', selected)}
-                                        placeholder="Sélectionner les buteurs de votre club..."
+                                        placeholder=""
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -653,7 +653,7 @@ export default function ResultsPage() {
                                         options={allPossiblePlayersOptions}
                                         value={performanceToList(newResult.assists)}
                                         onChange={(selected) => handleDynamicListChange('assists', selected)}
-                                        placeholder="Sélectionner les passeurs de votre club..."
+                                        placeholder=""
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -672,7 +672,7 @@ export default function ResultsPage() {
                                 <div className="grid gap-2">
                                         <Label htmlFor="homeTeam">Équipe à Domicile</Label>
                                         <Select onValueChange={(v) => handleSelectChange('homeTeam', v)} value={newResult.homeTeam} required>
-                                            <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
                                             <SelectContent>
                                                 {filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
                                             </SelectContent>
@@ -681,7 +681,7 @@ export default function ResultsPage() {
                                     <div className="grid gap-2">
                                         <Label htmlFor="awayTeam">Équipe à l'Extérieur</Label>
                                         <Select onValueChange={(v) => handleSelectChange('awayTeam', v)} value={newResult.awayTeam} required>
-                                            <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
                                             <SelectContent>
                                                 {filteredOpponentOptions.filter(op => op.name !== newResult.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
                                             </SelectContent>
@@ -722,7 +722,7 @@ export default function ResultsPage() {
        <div className="flex flex-col sm:flex-row items-center gap-4 my-4">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-full sm:w-[200px]">
-                    <SelectValue placeholder="Filtrer par catégorie" />
+                    <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem value="all">Toutes les catégories</SelectItem>
@@ -733,7 +733,7 @@ export default function ResultsPage() {
             </Select>
             <Select value={opponentFilter} onValueChange={setOpponentFilter}>
                 <SelectTrigger className="w-full sm:w-[200px]">
-                    <SelectValue placeholder="Filtrer par adversaire" />
+                    <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem value="all">Tous les adversaires</SelectItem>

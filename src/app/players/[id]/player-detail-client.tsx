@@ -465,7 +465,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                   <Select onValueChange={field.onChange} value={field.value} required>
                                     <FormControl>
                                       <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner un genre" />
+                                        <SelectValue />
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
@@ -538,7 +538,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                      <Select onValueChange={field.onChange} value={field.value} required>
                                         <FormControl>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Sélectionner une nationalité" />
+                                            <SelectValue />
                                         </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
@@ -561,7 +561,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                   <Select onValueChange={field.onChange} value={field.value} required>
                                     <FormControl>
                                       <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner un poste" />
+                                        <SelectValue />
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
@@ -603,7 +603,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                     <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner un entraîneur" />
+                                        <SelectValue />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
@@ -623,7 +623,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                     <FormItem>
                                       <FormLabel>Statut</FormLabel>
                                       <Select onValueChange={field.onChange} value={field.value}>
-                                        <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un statut" /></SelectTrigger></FormControl>
+                                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                         <SelectContent>
                                           <SelectItem value="Actif">Actif</SelectItem>
                                           <SelectItem value="Blessé">Blessé</SelectItem>
@@ -642,7 +642,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                     <FormItem>
                                       <FormLabel>Catégorie</FormLabel>
                                       <Select onValueChange={field.onChange} value={field.value}>
-                                        <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une catégorie" /></SelectTrigger></FormControl>
+                                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                         <SelectContent>
                                           {playerCategories.map(cat => (
                                             <SelectItem key={cat} value={cat}>{cat}</SelectItem>
@@ -753,7 +753,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                     <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionner un type de document" />
+                                        <SelectValue />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>

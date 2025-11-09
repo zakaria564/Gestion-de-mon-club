@@ -357,7 +357,7 @@ export default function FinancesPage() {
                   <Label>Type de paiement</Label>
                    <Select onValueChange={(value) => setPaymentType(value as 'player' | 'coach')} value={paymentType}>
                     <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner le type" />
+                        <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="player">Cotisation Joueur</SelectItem>
@@ -373,7 +373,7 @@ export default function FinancesPage() {
                   <Label htmlFor="member">Membre</Label>
                   <Select name="member" onValueChange={(value) => setNewPaymentData(prev => ({ ...prev, member: value }))} value={newPaymentData.member} required>
                     <SelectTrigger disabled={!newPaymentData.dueDate}>
-                        <SelectValue placeholder="Sélectionner un membre" />
+                        <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {memberOptions.map(member => (

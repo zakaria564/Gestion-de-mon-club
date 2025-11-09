@@ -462,7 +462,7 @@ export default function CalendarPage() {
                   <Label htmlFor="type">Type d'événement</Label>
                   <Select name="type" onValueChange={(v) => handleEventSelectChange('type', v)} value={newEvent.type} required>
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un type" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Match Amical">Match Amical</SelectItem>
@@ -482,7 +482,7 @@ export default function CalendarPage() {
                         <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
                         <Select onValueChange={(v) => handleEventSelectChange('teamCategory', v)} value={newEvent.teamCategory} required>
                             <SelectTrigger>
-                                <SelectValue placeholder="Sélectionner une catégorie" />
+                                <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 {playerCategories.map(cat => (
@@ -495,7 +495,7 @@ export default function CalendarPage() {
                         <Label htmlFor="gender">Genre</Label>
                         <Select onValueChange={(v) => handleEventSelectChange('gender', v)} value={newEvent.gender} required>
                             <SelectTrigger>
-                                <SelectValue placeholder="Sélectionner un genre" />
+                                <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Masculin">Masculin</SelectItem>
@@ -523,7 +523,7 @@ export default function CalendarPage() {
                         <Label htmlFor="opponent">Adversaire</Label>
                         <Select onValueChange={(v) => handleEventSelectChange('opponent', v)} value={newEvent.opponent} required>
                             <SelectTrigger>
-                                <SelectValue placeholder="Sélectionner un adversaire" />
+                                <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 {filteredOpponentOptions.map(op => (
@@ -774,7 +774,7 @@ export default function CalendarPage() {
                                 <Label htmlFor="category">Type de match</Label>
                                 <Select onValueChange={(v) => handleResultSelectChange('category', v)} value={newResult.category} required>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Sélectionner un type" />
+                                      <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
                                       {matchCategories.map(cat => (
@@ -787,7 +787,7 @@ export default function CalendarPage() {
                                 <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
                                 <Select onValueChange={(v) => handleResultSelectChange('teamCategory', v)} value={newResult.teamCategory} required>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Sélectionner une catégorie" />
+                                      <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
                                       {playerCategories.map(cat => (
@@ -801,7 +801,7 @@ export default function CalendarPage() {
                             <Label htmlFor="gender">Genre</Label>
                             <Select onValueChange={(v) => handleResultSelectChange('gender', v)} value={newResult.gender} required>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Sélectionner un genre" />
+                                    <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Masculin">Masculin</SelectItem>
@@ -829,7 +829,7 @@ export default function CalendarPage() {
                                     <Label htmlFor="opponent">Adversaire</Label>
                                     <Select onValueChange={(v) => handleResultSelectChange('opponent', v)} value={newResult.opponent} required>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Sélectionner un adversaire" />
+                                            <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {filteredOpponentOptionsForResult.map(op => (
@@ -846,7 +846,7 @@ export default function CalendarPage() {
                                <div className="grid gap-2">
                                     <Label htmlFor="homeTeam">Équipe à Domicile</Label>
                                     <Select onValueChange={(v) => handleResultSelectChange('homeTeam', v)} value={newResult.homeTeam} required>
-                                        <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
                                             {filteredOpponentOptionsForResult.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
                                         </SelectContent>
@@ -855,7 +855,7 @@ export default function CalendarPage() {
                                  <div className="grid gap-2">
                                     <Label htmlFor="awayTeam">Équipe à l'Extérieur</Label>
                                      <Select onValueChange={(v) => handleResultSelectChange('awayTeam', v)} value={newResult.awayTeam} required>
-                                        <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
                                             {filteredOpponentOptionsForResult.filter(op => op.name !== newResult.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
                                         </SelectContent>
