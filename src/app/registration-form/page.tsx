@@ -81,7 +81,9 @@ export default function RegistrationFormPage() {
             <p className="font-semibold text-xs sm:text-base">Saison {currentSeason}</p>
         </div>
         <div className="flex flex-col items-center justify-center gap-1 w-1/4">
-            <p className="font-bold text-lg sm:text-2xl">USDS</p>
+             <div className="w-20 h-24 sm:w-24 sm:h-32 border-2 border-black flex items-center justify-center text-gray-400 text-xs text-center">
+                Photo d'identité
+            </div>
         </div>
       </header>
   );
