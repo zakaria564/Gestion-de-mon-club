@@ -319,7 +319,7 @@ export default function RankingPage() {
         </Select>
         <Select value={genderFilter} onValueChange={(v) => setGenderFilter(v as any)}>
           <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue />
+            <SelectValue placeholder="Genre" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="Masculin">Masculin</SelectItem>
