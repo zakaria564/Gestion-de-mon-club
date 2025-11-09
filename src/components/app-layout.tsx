@@ -60,9 +60,53 @@ const navItems = [
 ];
 
 function DesktopHeader() {
+    const { user } = useAuth();
+    const router = useRouter();
+    const { toast } = useToast();
+    const { logOut } = useAuth();
+
+    const handleLogout = async () => {
+        try {
+        await logOut();
+        router.push('/login');
+        } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Erreur de déconnexion",
+            description: error.message,
+        });
+        }
+    }
+
     return (
         <header className="hidden md:flex sticky top-0 z-10 h-14 items-center justify-end gap-4 border-b bg-background px-6">
-            <ClubLogo className="h-9 w-9" />
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                        <Avatar className="h-9 w-9">
+                            <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "Admin"} data-ai-hint="user avatar" />
+                            <AvatarFallback>{user?.email?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user?.displayName || "Admin"}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                            {user?.email}
+                        </p>
+                        </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => router.push('/settings')}>Profil</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/settings')}>Paramètres</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                        Se déconnecter
+                    </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
         </header>
     );
 }
