@@ -93,8 +93,8 @@ export default function ResultsPage() {
     score: '',
     scorers: [],
     assists: [],
-    category: 'Match Championnat',
-    teamCategory: 'Sénior',
+    category: '',
+    teamCategory: '',
     gender: 'Masculin',
     homeOrAway: 'home',
     matchType: 'club-match',
@@ -138,7 +138,7 @@ export default function ResultsPage() {
   };
   
   const resetForm = () => {
-    setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
+    setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: '', teamCategory: '', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
     setManualOpponentScorers("");
     setManualOpponentAssists("");
     setManualScorers("");
@@ -226,8 +226,8 @@ export default function ResultsPage() {
         time: result.time || '',
         location: result.location || '',
         score: result.score,
-        category: result.category || 'Match Championnat',
-        teamCategory: result.teamCategory || 'Sénior',
+        category: result.category || '',
+        teamCategory: result.teamCategory || '',
         gender: result.gender || 'Masculin',
         scorers: clubScorers,
         assists: clubAssists,
@@ -605,7 +605,7 @@ export default function ResultsPage() {
                             <>
                                 <div className="grid gap-2">
                                     <Label>Domicile / Extérieur</Label>
-                                    <RadioGroup defaultValue="home" value={newResult.homeOrAway} onValueChange={handleRadioChange} className="flex gap-4">
+                                    <RadioGroup value={newResult.homeOrAway} onValueChange={handleRadioChange} className="flex gap-4">
                                         <div className="flex items-center space-x-2">
                                             <RadioGroupItem value="home" id="home" />
                                             <Label htmlFor="home">Domicile ({clubInfo.name} vs Adversaire)</Label>

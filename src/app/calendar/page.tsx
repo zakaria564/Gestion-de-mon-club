@@ -82,7 +82,7 @@ export default function CalendarPage() {
     date: '',
     time: '',
     location: '',
-    teamCategory: 'Sénior',
+    teamCategory: '',
     gender: 'Masculin',
     homeOrAway: 'home',
   });
@@ -100,8 +100,8 @@ export default function CalendarPage() {
       score: '',
       scorers: [],
       assists: [],
-      category: 'Match Championnat',
-      teamCategory: 'Sénior',
+      category: '',
+      teamCategory: '',
       gender: 'Masculin',
       homeOrAway: 'home',
       matchType: 'club-match',
@@ -147,7 +147,7 @@ export default function CalendarPage() {
   };
 
   const resetEventForm = () => {
-    setNewEvent({ type: '', opponent: '', date: '', time: '', location: '', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home' });
+    setNewEvent({ type: '', opponent: '', date: '', time: '', location: '', teamCategory: '', gender: 'Masculin', homeOrAway: 'home' });
     setEventDialogOpen(false);
     setIsEditing(false);
     setEditingEvent(null);
@@ -183,7 +183,7 @@ export default function CalendarPage() {
         date: format(selectedDate, 'yyyy-MM-dd'), 
         time: '', 
         location: '',
-        teamCategory: 'Sénior',
+        teamCategory: '',
         gender: 'Masculin',
         homeOrAway: 'home',
     });
@@ -206,7 +206,7 @@ export default function CalendarPage() {
       date: format(parseISO(event.date), 'yyyy-MM-dd'),
       time: event.time,
       location: event.location,
-      teamCategory: event.teamCategory || 'Sénior',
+      teamCategory: event.teamCategory || '',
       gender: event.gender || 'Masculin',
       homeOrAway: event.homeOrAway || 'home',
     });
@@ -281,7 +281,7 @@ export default function CalendarPage() {
   };
 
   const resetResultForm = (keepOpen = false) => {
-    setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: 'Match Championnat', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
+    setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: '', teamCategory: '', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
     if (!keepOpen) {
       setResultDialogOpen(false);
     }
@@ -508,7 +508,7 @@ export default function CalendarPage() {
                   <>
                     <div className="grid gap-2">
                         <Label>Domicile / Extérieur</Label>
-                        <RadioGroup defaultValue="home" value={newEvent.homeOrAway} onValueChange={handleHomeAwayChange} className="flex gap-4">
+                        <RadioGroup value={newEvent.homeOrAway} onValueChange={handleHomeAwayChange} className="flex gap-4">
                             <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="home" id="home" />
                                 <Label htmlFor="home">Domicile</Label>
@@ -814,7 +814,7 @@ export default function CalendarPage() {
                             <>
                                 <div className="grid gap-2">
                                     <Label>Domicile / Extérieur</Label>
-                                    <RadioGroup defaultValue="home" value={newResult.homeOrAway} onValueChange={handleResultRadioChange} className="flex gap-4">
+                                    <RadioGroup value={newResult.homeOrAway} onValueChange={handleResultRadioChange} className="flex gap-4">
                                         <div className="flex items-center space-x-2">
                                             <RadioGroupItem value="home" id="home-res" />
                                             <Label htmlFor="home-res">Domicile ({clubInfo.name} vs Adversaire)</Label>

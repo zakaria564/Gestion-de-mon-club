@@ -96,7 +96,7 @@ export default function RankingPage() {
 
   const loading = resultsLoading || playersLoading || opponentsLoading;
 
-  const [teamCategoryFilter, setTeamCategoryFilter] = useState('Sénior');
+  const [teamCategoryFilter, setTeamCategoryFilter] = useState('');
   const [genderFilter, setGenderFilter] = useState<'Masculin' | 'Féminin'>('Masculin');
   const [activeTab, setActiveTab] = useState(matchTypes[0]);
 

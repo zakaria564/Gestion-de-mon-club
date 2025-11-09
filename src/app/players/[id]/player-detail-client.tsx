@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -461,7 +462,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>Genre</FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                                  <Select onValueChange={field.onChange} value={field.value} required>
                                     <FormControl>
                                       <SelectTrigger>
                                         <SelectValue placeholder="Sélectionner un genre" />
@@ -534,7 +535,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Nationalité</FormLabel>
-                                     <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                                     <Select onValueChange={field.onChange} value={field.value} required>
                                         <FormControl>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Sélectionner une nationalité" />
@@ -557,7 +558,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>Poste</FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                                  <Select onValueChange={field.onChange} value={field.value} required>
                                     <FormControl>
                                       <SelectTrigger>
                                         <SelectValue placeholder="Sélectionner un poste" />
@@ -599,7 +600,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Entraîneur</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
                                         <SelectValue placeholder="Sélectionner un entraîneur" />
@@ -621,7 +622,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                   render={({ field }) => (
                                     <FormItem>
                                       <FormLabel>Statut</FormLabel>
-                                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                      <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner un statut" /></SelectTrigger></FormControl>
                                         <SelectContent>
                                           <SelectItem value="Actif">Actif</SelectItem>
@@ -640,7 +641,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                   render={({ field }) => (
                                     <FormItem>
                                       <FormLabel>Catégorie</FormLabel>
-                                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                      <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une catégorie" /></SelectTrigger></FormControl>
                                         <SelectContent>
                                           {playerCategories.map(cat => (
@@ -749,7 +750,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>Nom du document</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
                                         <SelectValue placeholder="Sélectionner un type de document" />

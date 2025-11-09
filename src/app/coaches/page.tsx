@@ -76,15 +76,15 @@ type CoachFormValues = z.infer<typeof coachSchema>;
 
 const defaultValues: Omit<CoachFormValues, 'status' | 'gender'> = {
     name: '',
-    specialization: 'Entraîneur Principal',
+    specialization: '',
     phone: '',
     email: '',
     address: '',
-    country: 'Marocaine',
+    country: '',
     experience: 0,
     photo: '',
     cin: '',
-    category: 'Sénior',
+    category: '',
     documents: [],
 };
 
@@ -296,7 +296,7 @@ export default function CoachesPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Spécialité</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                              <Select onValueChange={field.onChange} value={field.value} required>
                                 <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une spécialité" /></SelectTrigger></FormControl>
                                 <SelectContent>
                                   <SelectItem value="Entraîneur Principal">Entraîneur Principal</SelectItem>
@@ -316,7 +316,7 @@ export default function CoachesPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Catégorie</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                              <Select onValueChange={field.onChange} value={field.value} required>
                                 <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une catégorie" /></SelectTrigger></FormControl>
                                 <SelectContent>
                                   {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
@@ -365,7 +365,7 @@ export default function CoachesPage() {
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Nationalité</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                                <Select onValueChange={field.onChange} value={field.value} required>
                                     <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Sélectionner une nationalité" />
@@ -404,7 +404,7 @@ export default function CoachesPage() {
                                 render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>Nom du document</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
                                         <SelectValue placeholder="Sélectionner un type de document" />

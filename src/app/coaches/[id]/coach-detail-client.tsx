@@ -383,7 +383,7 @@ export function CoachDetailClient({ id }: { id: string }) {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Spécialité</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                              <Select onValueChange={field.onChange} value={field.value} required>
                                 <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une spécialité" /></SelectTrigger></FormControl>
                                 <SelectContent>
                                   <SelectItem value="Entraîneur Principal">Entraîneur Principal</SelectItem>
@@ -403,7 +403,7 @@ export function CoachDetailClient({ id }: { id: string }) {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Catégorie</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                              <Select onValueChange={field.onChange} value={field.value} required>
                                 <FormControl><SelectTrigger><SelectValue placeholder="Sélectionner une catégorie" /></SelectTrigger></FormControl>
                                 <SelectContent>
                                   {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
@@ -452,7 +452,7 @@ export function CoachDetailClient({ id }: { id: string }) {
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Nationalité</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                                <Select onValueChange={field.onChange} value={field.value} required>
                                     <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Sélectionner une nationalité" />
@@ -491,7 +491,7 @@ export function CoachDetailClient({ id }: { id: string }) {
                                 render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>Nom du document</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
                                         <SelectValue placeholder="Sélectionner un type de document" />
