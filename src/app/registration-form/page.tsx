@@ -80,9 +80,8 @@ export default function RegistrationFormPage() {
             <h2 className="text-lg sm:text-2xl font-bold">Fiche d'inscription</h2>
             <p className="font-semibold text-xs sm:text-base">Saison {currentSeason}</p>
         </div>
-        <div className="flex flex-col items-center gap-1 w-1/4">
-            <ClubLogo className="size-12 sm:size-20" />
-            <p className="font-bold text-xxs sm:text-xs">{clubInfo.name}</p>
+        <div className="flex flex-col items-center justify-center gap-1 w-1/4">
+            <p className="font-bold text-lg sm:text-2xl">USDS</p>
         </div>
       </header>
   );
