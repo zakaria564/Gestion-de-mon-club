@@ -419,7 +419,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                             <FormItem className="w-full max-w-sm">
                               <FormLabel>URL de la photo</FormLabel>
                               <FormControl>
-                                <Input type="text" placeholder="https://example.com/photo.jpg" {...field} />
+                                <Input type="text" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -436,7 +436,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 <FormItem>
                                   <FormLabel>Nom complet</FormLabel>
                                   <FormControl>
-                                    <Input placeholder="ex: Jean Dupont" {...field} required />
+                                    <Input {...field} required />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -483,7 +483,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                   <FormItem>
                                     <FormLabel>N° CIN</FormLabel>
                                     <FormControl>
-                                      <Input placeholder="ex: A123456" {...field} />
+                                      <Input {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -496,7 +496,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                   <FormItem>
                                     <FormLabel>Téléphone</FormLabel>
                                     <FormControl>
-                                      <Input placeholder="ex: 0612345678" {...field} required />
+                                      <Input {...field} required />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -509,7 +509,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                   <FormItem>
                                     <FormLabel>Email</FormLabel>
                                     <FormControl>
-                                      <Input type="email" placeholder="ex: email@exemple.com" {...field} />
+                                      <Input type="email" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -522,7 +522,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                   <FormItem>
                                     <FormLabel>Adresse</FormLabel>
                                     <FormControl>
-                                      <Input placeholder="ex: 123 Rue de la Victoire" {...field} required />
+                                      <Input {...field} required />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -587,7 +587,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 <FormItem>
                                   <FormLabel>Numéro de maillot</FormLabel>
                                   <FormControl>
-                                    <Input type="number" placeholder="ex: 10" {...field} required />
+                                    <Input type="number" {...field} required />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -689,7 +689,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                               <FormItem>
                                 <FormLabel>Nom du tuteur</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="ex: Marie Dupont" {...field} />
+                                  <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -702,7 +702,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                               <FormItem>
                                 <FormLabel>N° CIN du tuteur</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="ex: B654321" {...field} />
+                                  <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -715,7 +715,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                               <FormItem>
                                 <FormLabel>Téléphone du tuteur</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="ex: 0712345678" {...field} />
+                                  <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -728,7 +728,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 <FormItem>
                                   <FormLabel>Email du tuteur</FormLabel>
                                   <FormControl>
-                                    <Input type="email" placeholder="ex: tuteur@exemple.com" {...field} />
+                                    <Input type="email" {...field} />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -772,7 +772,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                 <FormItem>
                                     <FormLabel>URL du document</FormLabel>
                                     <FormControl>
-                                    <Input type="url" placeholder="https://example.com/document.pdf" {...field} />
+                                    <Input type="url" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

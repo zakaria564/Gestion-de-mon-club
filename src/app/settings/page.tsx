@@ -274,7 +274,7 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="club-logo-url">URL du logo du club</Label>
-                <Input id="club-logo-url" type="text" placeholder="https://example.com/logo.png" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} />
+                <Input id="club-logo-url" type="text" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} />
               </div>
             </CardContent>
             <CardFooter>
@@ -338,15 +338,15 @@ export default function SettingsPage() {
                 )}
               <div className="space-y-2">
                 <Label htmlFor="current-password">Mot de passe actuel</Label>
-                <Input id="current-password" type="password" placeholder="Votre mot de passe actuel" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+                <Input id="current-password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="new-password">Nouveau mot de passe</Label>
-                <Input id="new-password" type="password" placeholder="Laisser vide pour ne pas changer" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}/>
+                <Input id="new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}/>
               </div>
                <div className="space-y-2">
                 <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
-                <Input id="confirm-password" type="password" placeholder="Confirmer le nouveau mot de passe" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
               </div>
             </CardContent>
              <CardFooter>

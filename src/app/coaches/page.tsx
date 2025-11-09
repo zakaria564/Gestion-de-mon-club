@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -261,7 +260,7 @@ export default function CoachesPage() {
                               <FormItem className="w-full max-w-sm">
                                 <FormLabel>URL de la photo</FormLabel>
                                 <FormControl>
-                                  <Input type="text" placeholder="https://example.com/photo.jpg" {...field} />
+                                  <Input type="text" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -275,7 +274,7 @@ export default function CoachesPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Nom complet</FormLabel>
-                              <FormControl><Input placeholder="ex: Alain Prost" {...field} required /></FormControl>
+                              <FormControl><Input {...field} required /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -286,7 +285,7 @@ export default function CoachesPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>N° CIN</FormLabel>
-                              <FormControl><Input placeholder="ex: A123456" {...field} /></FormControl>
+                              <FormControl><Input {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -333,7 +332,7 @@ export default function CoachesPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Téléphone</FormLabel>
-                              <FormControl><Input placeholder="ex: 0612345678" {...field} required /></FormControl>
+                              <FormControl><Input {...field} required /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -344,7 +343,7 @@ export default function CoachesPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Email</FormLabel>
-                              <FormControl><Input type="email" placeholder="ex: email@exemple.com" {...field} required /></FormControl>
+                              <FormControl><Input type="email" {...field} required /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -355,7 +354,7 @@ export default function CoachesPage() {
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Adresse</FormLabel>
-                                <FormControl><Input placeholder="ex: 123 Rue de la Paix" {...field} required /></FormControl>
+                                <FormControl><Input {...field} required /></FormControl>
                                 <FormMessage />
                             </FormItem>
                             )}
@@ -386,7 +385,7 @@ export default function CoachesPage() {
                           render={({ field }) => (
                             <FormItem className="md:col-span-2">
                               <FormLabel>Expérience (années)</FormLabel>
-                              <FormControl><Input type="number" placeholder="ex: 5" {...field} required /></FormControl>
+                              <FormControl><Input type="number" {...field} required /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -428,7 +427,7 @@ export default function CoachesPage() {
                                 <FormItem>
                                     <FormLabel>URL du document</FormLabel>
                                     <FormControl>
-                                    <Input type="url" placeholder="https://example.com/document.pdf" {...field} />
+                                    <Input type="url" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

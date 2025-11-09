@@ -546,7 +546,7 @@ export default function CalendarPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="location">Lieu</Label>
-                  <Input id="location" placeholder="Stade ou lieu" value={newEvent.location} onChange={handleEventInputChange} required/>
+                  <Input id="location" value={newEvent.location} onChange={handleEventInputChange} required/>
                 </div>
               </div>
               <DialogFooter>
@@ -877,7 +877,7 @@ export default function CalendarPage() {
 
                         <div className="grid gap-2">
                             <Label htmlFor="location">Lieu</Label>
-                            <Input id="location" value={newResult.location} onChange={handleResultInputChange} placeholder="Stade ou lieu" required />
+                            <Input id="location" value={newResult.location} onChange={handleResultInputChange} required />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="score">Score final (ex: 3-1)</Label>

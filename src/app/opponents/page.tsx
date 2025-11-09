@@ -203,12 +203,12 @@ export default function OpponentsPage() {
                     </Avatar>
                      <div className="w-full max-w-sm space-y-2">
                         <Label htmlFor="logoUrl">URL du logo</Label>
-                        <Input id="logoUrl" type="text" placeholder="https://example.com/logo.png" value={newOpponent.logoUrl} onChange={handleInputChange} />
+                        <Input id="logoUrl" type="text" value={newOpponent.logoUrl} onChange={handleInputChange} />
                     </div>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="name">Nom de l'équipe</Label>
-                  <Input id="name" placeholder="ex: FC Barcelone" value={newOpponent.name} onChange={handleInputChange} required />
+                  <Input id="name" value={newOpponent.name} onChange={handleInputChange} required />
                 </div>
                  <div className="grid gap-2">
                   <Label htmlFor="gender">Genre</Label>

@@ -386,11 +386,11 @@ export default function FinancesPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="totalAmount">Montant total (DH)</Label>
-                  <Input id="totalAmount" type="number" placeholder="300" value={newPaymentData.totalAmount} onChange={(e) => setNewPaymentData(p => ({...p, totalAmount: e.target.value}))} required/>
+                  <Input id="totalAmount" type="number" value={newPaymentData.totalAmount} onChange={(e) => setNewPaymentData(p => ({...p, totalAmount: e.target.value}))} required/>
                 </div>
                  <div className="grid gap-2">
                   <Label htmlFor="initialPaidAmount">Montant initial payé (DH)</Label>
-                  <Input id="initialPaidAmount" type="number" placeholder="150" value={newPaymentData.initialPaidAmount} onChange={handleInitialPaidAmountChange} required/>
+                  <Input id="initialPaidAmount" type="number" value={newPaymentData.initialPaidAmount} onChange={handleInitialPaidAmountChange} required/>
                    {isPaidAmountInvalid && (
                       <p className="text-sm text-red-500">Le montant payé ne peut pas dépasser le montant total.</p>
                    )}

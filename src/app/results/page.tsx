@@ -594,7 +594,7 @@ export default function ResultsPage() {
                         </div>
                          <div className="grid gap-2">
                           <Label htmlFor="location">Lieu</Label>
-                          <Input id="location" value={newResult.location} onChange={handleInputChange} placeholder="Stade ou lieu" required />
+                          <Input id="location" value={newResult.location} onChange={handleInputChange} required />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="score">Score final (ex: 3-1)</Label>
@@ -642,7 +642,6 @@ export default function ResultsPage() {
                                     <Label htmlFor="manualOpponentScorers">Buteurs (équipe adverse) - un par ligne</Label>
                                     <Textarea
                                         id="manualOpponentScorers"
-                                        placeholder="Nom du joueur 1&#10;Nom du joueur 2"
                                         value={manualOpponentScorers}
                                         onChange={(e) => setManualOpponentScorers(e.target.value)}
                                         rows={2}
@@ -661,7 +660,6 @@ export default function ResultsPage() {
                                     <Label htmlFor="manualOpponentAssists">Passeurs (équipe adverse) - un par ligne</Label>
                                     <Textarea
                                         id="manualOpponentAssists"
-                                        placeholder="Nom du joueur 1"
                                         value={manualOpponentAssists}
                                         onChange={(e) => setManualOpponentAssists(e.target.value)}
                                         rows={2}
@@ -694,7 +692,6 @@ export default function ResultsPage() {
                                     <Label htmlFor="manualScorers">Buteurs (un par ligne, format: Nom (Équipe))</Label>
                                     <Textarea
                                         id="manualScorers"
-                                        placeholder="Exemple:&#10;Hafsa Rami (WAC)&#10;Aya Boukhari (TAS)"
                                         value={manualScorers}
                                         onChange={(e) => setManualScorers(e.target.value)}
                                         rows={3}
@@ -704,7 +701,6 @@ export default function ResultsPage() {
                                     <Label htmlFor="manualAssists">Passeurs décisifs (un par ligne, format: Nom (Équipe))</Label>
                                     <Textarea
                                         id="manualAssists"
-                                        placeholder="Exemple:&#10;Jane Doe (WAC)"
                                         value={manualAssists}
                                         onChange={(e) => setManualAssists(e.target.value)}
                                         rows={3}
