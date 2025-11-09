@@ -136,7 +136,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
         email: player.email || '',
         address: player.address || '',
         poste: player.poste || '',
-        jerseyNumber: player.jerseyNumber || 0,
+        jerseyNumber: player.jerseyNumber || ('' as unknown as number),
         photo: player.photo || '',
         country: player.country || 'Marocaine',
         cin: player.cin || '',

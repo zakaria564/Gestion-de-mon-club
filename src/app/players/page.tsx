@@ -94,7 +94,7 @@ const defaultValues: PlayerFormValues = {
     email: '',
     country: '',
     poste: '',
-    jerseyNumber: 0,
+    jerseyNumber: '' as unknown as number,
     photo: '',
     cin: '',
     tutorName: '',
