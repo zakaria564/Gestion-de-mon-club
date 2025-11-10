@@ -330,8 +330,8 @@ export function CoachDetailClient({ id }: { id: string }) {
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)}>
-                <ScrollArea className="max-h-[60vh]">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow">
+                <ScrollArea className="flex-grow">
                     <div className="px-6 py-4 space-y-6">
                       <div className="flex flex-col items-center gap-4">
                         <Avatar className="h-24 w-24 border">

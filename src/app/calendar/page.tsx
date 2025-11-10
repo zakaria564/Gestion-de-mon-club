@@ -451,105 +451,107 @@ export default function CalendarPage() {
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un événement</DialogTitle>
+              <DialogDescription>
+                Remplissez les détails ci-dessous.
+              </DialogDescription>
+            </DialogHeader>
             <form onSubmit={handleEventSubmit}>
-              <DialogHeader>
-                <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un événement</DialogTitle>
-                <DialogDescription>
-                  Remplissez les détails ci-dessous.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="type">Type d'événement</Label>
-                  <Select name="type" onValueChange={(v) => handleEventSelectChange('type', v)} value={newEvent.type} required>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Match Amical">Match Amical</SelectItem>
-                      <SelectItem value="Match Championnat">Match de Championnat</SelectItem>
-                      <SelectItem value="Match Coupe">Match Coupe</SelectItem>
-                      <SelectItem value="Match Tournoi">Match Tournoi</SelectItem>
-                      <SelectItem value="Entraînement Physique">Entraînement Physique</SelectItem>
-                      <SelectItem value="Entraînement Technique">Entraînement Technique</SelectItem>
-                      <SelectItem value="Entraînement Tactique">Entraînement Tactique</SelectItem>
-                      <SelectItem value="Réunion">Réunion</SelectItem>
-                      <SelectItem value="Événement Spécial">Événement Spécial</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
-                        <Select onValueChange={(v) => handleEventSelectChange('teamCategory', v)} value={newEvent.teamCategory} required>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {playerCategories.map(cat => (
-                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="gender">Genre</Label>
-                        <Select onValueChange={(v) => handleEventSelectChange('gender', v)} value={newEvent.gender} required>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Masculin">Masculin</SelectItem>
-                                <SelectItem value="Féminin">Féminin</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                {isNewEventMatch && (
-                  <>
-                    <div className="grid gap-2">
-                        <Label>Domicile / Extérieur</Label>
-                        <RadioGroup value={newEvent.homeOrAway} onValueChange={handleHomeAwayChange} className="flex gap-4">
-                            <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="home" id="home" />
-                                <Label htmlFor="home">Domicile</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="away" id="away" />
-                                <Label htmlFor="away">Extérieur</Label>
-                            </div>
-                        </RadioGroup>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="opponent">Adversaire</Label>
-                        <Select onValueChange={(v) => handleEventSelectChange('opponent', v)} value={newEvent.opponent} required>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {filteredOpponentOptions.map(op => (
-                                    <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                  </>
-                )}
-                <div className="grid grid-cols-2 gap-4">
+              <ScrollArea className="max-h-[70vh]">
+                <div className="grid gap-4 py-4 px-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="date">Date</Label>
-                    <Input id="date" type="date" value={newEvent.date} onChange={handleEventInputChange} required/>
+                    <Label htmlFor="type">Type d'événement</Label>
+                    <Select name="type" onValueChange={(v) => handleEventSelectChange('type', v)} value={newEvent.type} required>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Match Amical">Match Amical</SelectItem>
+                        <SelectItem value="Match Championnat">Match de Championnat</SelectItem>
+                        <SelectItem value="Match Coupe">Match Coupe</SelectItem>
+                        <SelectItem value="Match Tournoi">Match Tournoi</SelectItem>
+                        <SelectItem value="Entraînement Physique">Entraînement Physique</SelectItem>
+                        <SelectItem value="Entraînement Technique">Entraînement Technique</SelectItem>
+                        <SelectItem value="Entraînement Tactique">Entraînement Tactique</SelectItem>
+                        <SelectItem value="Réunion">Réunion</SelectItem>
+                        <SelectItem value="Événement Spécial">Événement Spécial</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                          <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
+                          <Select onValueChange={(v) => handleEventSelectChange('teamCategory', v)} value={newEvent.teamCategory} required>
+                              <SelectTrigger>
+                                  <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  {playerCategories.map(cat => (
+                                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                  ))}
+                              </SelectContent>
+                          </Select>
+                      </div>
+                      <div className="grid gap-2">
+                          <Label htmlFor="gender">Genre</Label>
+                          <Select onValueChange={(v) => handleEventSelectChange('gender', v)} value={newEvent.gender} required>
+                              <SelectTrigger>
+                                  <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  <SelectItem value="Masculin">Masculin</SelectItem>
+                                  <SelectItem value="Féminin">Féminin</SelectItem>
+                              </SelectContent>
+                          </Select>
+                      </div>
+                  </div>
+                  {isNewEventMatch && (
+                    <>
+                      <div className="grid gap-2">
+                          <Label>Domicile / Extérieur</Label>
+                          <RadioGroup value={newEvent.homeOrAway} onValueChange={handleHomeAwayChange} className="flex gap-4">
+                              <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="home" id="home" />
+                                  <Label htmlFor="home">Domicile</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="away" id="away" />
+                                  <Label htmlFor="away">Extérieur</Label>
+                              </div>
+                          </RadioGroup>
+                      </div>
+                      <div className="grid gap-2">
+                          <Label htmlFor="opponent">Adversaire</Label>
+                          <Select onValueChange={(v) => handleEventSelectChange('opponent', v)} value={newEvent.opponent} required>
+                              <SelectTrigger>
+                                  <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  {filteredOpponentOptions.map(op => (
+                                      <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>
+                                  ))}
+                              </SelectContent>
+                          </Select>
+                      </div>
+                    </>
+                  )}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="date">Date</Label>
+                      <Input id="date" type="date" value={newEvent.date} onChange={handleEventInputChange} required/>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="time">Heure</Label>
+                      <Input id="time" type="time" value={newEvent.time} onChange={handleEventInputChange} required/>
+                    </div>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="time">Heure</Label>
-                    <Input id="time" type="time" value={newEvent.time} onChange={handleEventInputChange} required/>
+                    <Label htmlFor="location">Lieu</Label>
+                    <Input id="location" value={newEvent.location} onChange={handleEventInputChange} required/>
                   </div>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="location">Lieu</Label>
-                  <Input id="location" value={newEvent.location} onChange={handleEventInputChange} required/>
-                </div>
-              </div>
+              </ScrollArea>
               <DialogFooter>
                 <Button type="submit">Sauvegarder</Button>
               </DialogFooter>
@@ -754,8 +756,8 @@ export default function CalendarPage() {
                     Remplissez les détails du match ci-dessous.
                 </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleResultSubmit}>
-                <ScrollArea className="max-h-[60vh]">
+            <form onSubmit={handleResultSubmit} className="flex flex-col flex-grow">
+                <ScrollArea className="flex-grow">
                     <div className="grid gap-4 py-4 px-6">
                          <div className="grid gap-2">
                             <Label>Type de saisie</Label>

@@ -526,8 +526,8 @@ export default function ResultsPage() {
                     <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un résultat</DialogTitle>
                     <DialogDescription>Remplissez les détails du match ci-dessous.</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit}>
-                    <ScrollArea className="max-h-[60vh]">
+                <form onSubmit={handleSubmit} className="flex flex-col flex-grow">
+                    <ScrollArea className="flex-grow">
                         <div className="grid gap-4 py-4 px-6">
                             <div className="grid gap-2">
                                 <Label>Type de saisie</Label>
