@@ -22,7 +22,7 @@ const ClubContext = createContext<ClubContextType | undefined>(undefined);
 
 export function ClubProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [clubInfo, setClubInfo] = useState<ClubInfo>({ name: "Gestion de mon club", logoUrl: "https://d1csarkz8obe9u.cloudfront.net/posterpreviews/football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34_screen.jpg?ts=1667330722" });
+  const [clubInfo, setClubInfo] = useState<ClubInfo>({ name: "Gestion de mon club", logoUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXdLXDYNNe7YrVGKxItlgSiHYeZsHw9XedKQ&s" });
   const [loading, setLoading] = useState(true);
 
   const getClubInfoDocRef = useCallback(() => {
@@ -33,7 +33,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
   const fetchClubInfo = useCallback(async () => {
     const docRef = getClubInfoDocRef();
     if (!docRef) {
-      setClubInfo({ name: "Gestion de mon club", logoUrl: "https://d1csarkz8obe9u.cloudfront.net/posterpreviews/football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34_screen.jpg?ts=1667330722" });
+      setClubInfo({ name: "Gestion de mon club", logoUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXdLXDYNNe7YrVGKxItlgSiHYeZsHw9XedKQ&s" });
       setLoading(false);
       return;
     }
@@ -43,7 +43,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
       if (docSnap.exists()) {
         setClubInfo(docSnap.data() as ClubInfo);
       } else {
-        const defaultInfo = { name: "Gestion de mon club", logoUrl: "https://d1csarkz8obe9u.cloudfront.net/posterpreviews/football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34_screen.jpg?ts=1667330722" };
+        const defaultInfo = { name: "Gestion de mon club", logoUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXdLXDYNNe7YrVGKxItlgSiHYeZsHw9XedKQ&s" };
         await setDoc(docRef, defaultInfo);
         setClubInfo(defaultInfo);
       }
@@ -58,7 +58,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
     if (user) {
       fetchClubInfo();
     } else {
-      setClubInfo({ name: "Gestion de mon club", logoUrl: "https://d1csarkz8obe9u.cloudfront.net/posterpreviews/football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34_screen.jpg?ts=1667330722" });
+      setClubInfo({ name: "Gestion de mon club", logoUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXdLXDYNNe7YrVGKxItlgSiHYeZsHw9XedKQ&s" });
       setLoading(false);
     }
   }, [user, fetchClubInfo]);

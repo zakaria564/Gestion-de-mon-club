@@ -62,7 +62,7 @@ const navItems = [
 function DesktopHeader() {
   return (
     <header className="hidden md:flex sticky top-0 z-10 h-14 items-center justify-end gap-4 border-b bg-background px-6">
-      
+      <ClubLogo className="h-9 w-9" />
     </header>
   );
 }
