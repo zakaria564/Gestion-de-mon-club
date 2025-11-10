@@ -60,9 +60,19 @@ const navItems = [
 ];
 
 function DesktopHeader() {
+  const appLogoUrl = "https://d1csarkz8obe9u.cloudfront.net/posterpreviews/football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34_screen.jpg?ts=1667330722";
   return (
     <header className="hidden md:flex sticky top-0 z-10 h-14 items-center justify-end gap-4 border-b bg-background px-6">
-      <ClubLogo className="h-9 w-9" />
+       <div className="relative flex items-center justify-center rounded-full bg-transparent overflow-hidden h-9 w-9">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src={appLogoUrl} 
+            alt="App Logo" 
+            width={36} 
+            height={36} 
+            className="w-full h-full object-cover"
+          />
+      </div>
     </header>
   );
 }
