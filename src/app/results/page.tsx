@@ -30,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, parseISO } from 'date-fns';
 import { MultiSelect, MultiSelectOption } from "@/components/ui/multi-select";
 import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical', 'Match Tournoi'];
@@ -138,7 +139,7 @@ export default function ResultsPage() {
   };
   
   const resetForm = () => {
-    setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: '', teamCategory: '', gender: '' as 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
+    setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: '', teamCategory: '', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
     setManualOpponentScorers("");
     setManualOpponentAssists("");
     setManualScorers("");
@@ -526,190 +527,190 @@ export default function ResultsPage() {
                     <DialogDescription>Remplissez les détails du match ci-dessous.</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
-                   <div className="overflow-y-auto pr-6 -mr-6 flex-1">
-                    <div className="grid gap-4 py-4 px-1">
-                        <div className="grid gap-2">
-                            <Label>Type de saisie</Label>
-                             <RadioGroup value={matchType} onValueChange={(v) => setMatchType(v as any)} className="flex gap-4">
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="club-match" id="club-match" />
-                                    <Label htmlFor="club-match">Match de mon club</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="opponent-vs-opponent" id="opponent-match" />
-                                    <Label htmlFor="opponent-match">Match entre adversaires</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                         <div className="grid grid-cols-2 gap-4">
+                    <ScrollArea className="flex-1">
+                        <div className="grid gap-4 py-4 px-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="category">Type de match</Label>
-                                <Select onValueChange={(v) => handleSelectChange('category', v)} value={newResult.category} required>
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {matchCategories.map(cat => (
-                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                </Select>
+                                <Label>Type de saisie</Label>
+                                <RadioGroup value={matchType} onValueChange={(v) => setMatchType(v as any)} className="flex gap-4">
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="club-match" id="club-match" />
+                                        <Label htmlFor="club-match">Match de mon club</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="opponent-vs-opponent" id="opponent-match" />
+                                        <Label htmlFor="opponent-match">Match entre adversaires</Label>
+                                    </div>
+                                </RadioGroup>
                             </div>
-                             <div className="grid gap-2">
-                                <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
-                                <Select onValueChange={(v) => handleSelectChange('teamCategory', v)} value={newResult.teamCategory} required>
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {playerCategories.map(cat => (
-                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                         </div>
-                          <div className="grid gap-2">
-                            <Label htmlFor="gender">Genre</Label>
-                            <Select onValueChange={(v) => handleSelectChange('gender', v)} value={newResult.gender} required>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Masculin">Masculin</SelectItem>
-                                    <SelectItem value="Féminin">Féminin</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="date">Date</Label>
-                                <Input id="date" type="date" value={newResult.date} onChange={handleInputChange} required />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="time">Heure</Label>
-                                <Input id="time" type="time" value={newResult.time} onChange={handleInputChange} required />
-                            </div>
-                        </div>
-                         <div className="grid gap-2">
-                          <Label htmlFor="location">Lieu</Label>
-                          <Input id="location" value={newResult.location} onChange={handleInputChange} required />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="score">Score final (ex: 3-1)</Label>
-                            <Input id="score" value={newResult.score} onChange={handleInputChange} required />
-                        </div>
-
-                         {matchType === 'club-match' ? (
-                            <>
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label>Domicile / Extérieur</Label>
-                                    <RadioGroup value={newResult.homeOrAway} onValueChange={handleRadioChange} className="flex gap-4">
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="home" id="home" />
-                                            <Label htmlFor="home">Domicile ({clubInfo.name} vs Adversaire)</Label>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="away" id="away" />
-                                            <Label htmlFor="away">Extérieur (Adversaire vs {clubInfo.name})</Label>
-                                        </div>
-                                    </RadioGroup>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="opponent">Adversaire</Label>
-                                    <Select onValueChange={(v) => handleSelectChange('opponent', v)} value={newResult.opponent} required>
+                                    <Label htmlFor="category">Type de match</Label>
+                                    <Select onValueChange={(v) => handleSelectChange('category', v)} value={newResult.category} required>
                                         <SelectTrigger>
-                                            <SelectValue />
+                                        <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {filteredOpponentOptions.map(op => (
-                                                <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>
-                                            ))}
+                                        {matchCategories.map(cat => (
+                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                        ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label>Buteurs (votre club)</Label>
-                                    <MultiSelect
-                                        options={allPossiblePlayersOptions}
-                                        value={performanceToList(newResult.scorers)}
-                                        onChange={(selected) => handleDynamicListChange('scorers', selected)}
-                                        placeholder=""
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="manualOpponentScorers">Buteurs (équipe adverse) - un par ligne</Label>
-                                    <Textarea
-                                        id="manualOpponentScorers"
-                                        value={manualOpponentScorers}
-                                        onChange={(e) => setManualOpponentScorers(e.target.value)}
-                                        rows={2}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Passeurs décisifs (votre club)</Label>
-                                    <MultiSelect
-                                        options={allPossiblePlayersOptions}
-                                        value={performanceToList(newResult.assists)}
-                                        onChange={(selected) => handleDynamicListChange('assists', selected)}
-                                        placeholder=""
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="manualOpponentAssists">Passeurs (équipe adverse) - un par ligne</Label>
-                                    <Textarea
-                                        id="manualOpponentAssists"
-                                        value={manualOpponentAssists}
-                                        onChange={(e) => setManualOpponentAssists(e.target.value)}
-                                        rows={2}
-                                    />
-                                </div>
-                            </>
-                         ) : (
-                            <>
-                                <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                        <Label htmlFor="homeTeam">Équipe à Domicile</Label>
-                                        <Select onValueChange={(v) => handleSelectChange('homeTeam', v)} value={newResult.homeTeam} required>
-                                            <SelectTrigger><SelectValue /></SelectTrigger>
-                                            <SelectContent>
-                                                {filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
+                                    <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
+                                    <Select onValueChange={(v) => handleSelectChange('teamCategory', v)} value={newResult.teamCategory} required>
+                                        <SelectTrigger>
+                                        <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                        {playerCategories.map(cat => (
+                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                        ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="gender">Genre</Label>
+                                <Select onValueChange={(v) => handleSelectChange('gender', v)} value={newResult.gender} required>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Masculin">Masculin</SelectItem>
+                                        <SelectItem value="Féminin">Féminin</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="date">Date</Label>
+                                    <Input id="date" type="date" value={newResult.date} onChange={handleInputChange} required />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="time">Heure</Label>
+                                    <Input id="time" type="time" value={newResult.time} onChange={handleInputChange} required />
+                                </div>
+                            </div>
+                            <div className="grid gap-2">
+                            <Label htmlFor="location">Lieu</Label>
+                            <Input id="location" value={newResult.location} onChange={handleInputChange} required />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="score">Score final (ex: 3-1)</Label>
+                                <Input id="score" value={newResult.score} onChange={handleInputChange} required />
+                            </div>
+
+                            {matchType === 'club-match' ? (
+                                <>
+                                    <div className="grid gap-2">
+                                        <Label>Domicile / Extérieur</Label>
+                                        <RadioGroup value={newResult.homeOrAway} onValueChange={handleRadioChange} className="flex gap-4">
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="home" id="home" />
+                                                <Label htmlFor="home">Domicile ({clubInfo.name} vs Adversaire)</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="away" id="away" />
+                                                <Label htmlFor="away">Extérieur (Adversaire vs {clubInfo.name})</Label>
+                                            </div>
+                                        </RadioGroup>
                                     </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="awayTeam">Équipe à l'Extérieur</Label>
-                                        <Select onValueChange={(v) => handleSelectChange('awayTeam', v)} value={newResult.awayTeam} required>
-                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <Label htmlFor="opponent">Adversaire</Label>
+                                        <Select onValueChange={(v) => handleSelectChange('opponent', v)} value={newResult.opponent} required>
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
                                             <SelectContent>
-                                                {filteredOpponentOptions.filter(op => op.name !== newResult.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
+                                                {filteredOpponentOptions.map(op => (
+                                                    <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="manualScorers">Buteurs (un par ligne, format: Nom (Équipe))</Label>
-                                    <Textarea
-                                        id="manualScorers"
-                                        value={manualScorers}
-                                        onChange={(e) => setManualScorers(e.target.value)}
-                                        rows={3}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="manualAssists">Passeurs décisifs (un par ligne, format: Nom (Équipe))</Label>
-                                    <Textarea
-                                        id="manualAssists"
-                                        value={manualAssists}
-                                        onChange={(e) => setManualAssists(e.target.value)}
-                                        rows={3}
-                                    />
-                                </div>
-                            </>
-                         )}
-                      </div>
-                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Buteurs (votre club)</Label>
+                                        <MultiSelect
+                                            options={allPossiblePlayersOptions}
+                                            value={performanceToList(newResult.scorers)}
+                                            onChange={(selected) => handleDynamicListChange('scorers', selected)}
+                                            placeholder=""
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="manualOpponentScorers">Buteurs (équipe adverse) - un par ligne</Label>
+                                        <Textarea
+                                            id="manualOpponentScorers"
+                                            value={manualOpponentScorers}
+                                            onChange={(e) => setManualOpponentScorers(e.target.value)}
+                                            rows={2}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Passeurs décisifs (votre club)</Label>
+                                        <MultiSelect
+                                            options={allPossiblePlayersOptions}
+                                            value={performanceToList(newResult.assists)}
+                                            onChange={(selected) => handleDynamicListChange('assists', selected)}
+                                            placeholder=""
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="manualOpponentAssists">Passeurs (équipe adverse) - un par ligne</Label>
+                                        <Textarea
+                                            id="manualOpponentAssists"
+                                            value={manualOpponentAssists}
+                                            onChange={(e) => setManualOpponentAssists(e.target.value)}
+                                            rows={2}
+                                        />
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid gap-2">
+                                            <Label htmlFor="homeTeam">Équipe à Domicile</Label>
+                                            <Select onValueChange={(v) => handleSelectChange('homeTeam', v)} value={newResult.homeTeam} required>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    {filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="awayTeam">Équipe à l'Extérieur</Label>
+                                            <Select onValueChange={(v) => handleSelectChange('awayTeam', v)} value={newResult.awayTeam} required>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    {filteredOpponentOptions.filter(op => op.name !== newResult.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="manualScorers">Buteurs (un par ligne, format: Nom (Équipe))</Label>
+                                        <Textarea
+                                            id="manualScorers"
+                                            value={manualScorers}
+                                            onChange={(e) => setManualScorers(e.target.value)}
+                                            rows={3}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="manualAssists">Passeurs décisifs (un par ligne, format: Nom (Équipe))</Label>
+                                        <Textarea
+                                            id="manualAssists"
+                                            value={manualAssists}
+                                            onChange={(e) => setManualAssists(e.target.value)}
+                                            rows={3}
+                                        />
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </ScrollArea>
                   <DialogFooter className="pt-4 border-t">
                       <Button type="button" variant="secondary" onClick={resetForm}>Annuler</Button>
                       <Button type="submit">Sauvegarder</Button>
@@ -844,3 +845,5 @@ export default function ResultsPage() {
     </div>
   );
 }
+
+    

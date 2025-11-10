@@ -31,6 +31,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useOpponentsContext } from '@/context/opponents-context';
 import { MultiSelect, MultiSelectOption } from '@/components/ui/multi-select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
@@ -754,8 +755,8 @@ export default function CalendarPage() {
                 </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleResultSubmit} className="flex-1 flex flex-col overflow-hidden">
-                <div className="overflow-y-auto pr-6 -mr-6 flex-1">
-                    <div className="grid gap-4 py-4 px-1">
+                <ScrollArea className="flex-1">
+                    <div className="grid gap-4 py-4 px-6">
                          <div className="grid gap-2">
                             <Label>Type de saisie</Label>
                              <RadioGroup value={resultMatchType} onValueChange={(v) => setResultMatchType(v as any)} className="flex gap-4">
@@ -906,7 +907,7 @@ export default function CalendarPage() {
                             />
                         </div>
                     </div>
-                </div>
+                </ScrollArea>
                 <DialogFooter className="pt-4 border-t">
                     <Button type="button" variant="secondary" onClick={() => resetResultForm()}>Annuler</Button>
                     <Button type="submit">Sauvegarder le Résultat</Button>
@@ -948,3 +949,5 @@ export default function CalendarPage() {
     </div>
   );
 }
+
+    

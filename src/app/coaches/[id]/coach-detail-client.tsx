@@ -22,6 +22,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { format, isValid, parseISO } from 'date-fns';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const baseCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const playerCategories: string[] = baseCategories.flatMap(cat => [cat, `${cat} F`]);
@@ -330,9 +331,9 @@ export function CoachDetailClient({ id }: { id: string }) {
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)}>
-                  <div className="overflow-y-auto pr-6 -mr-6 max-h-[calc(90vh-180px)]">
-                    <div className="px-1 py-4 space-y-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
+                <ScrollArea className="flex-1">
+                    <div className="px-6 py-4 space-y-6">
                       <div className="flex flex-col items-center gap-4">
                         <Avatar className="h-24 w-24 border">
                           <AvatarImage src={photoPreview || undefined} alt="Aperçu de l'entraîneur" data-ai-hint="coach photo"/>
@@ -545,8 +546,8 @@ export function CoachDetailClient({ id }: { id: string }) {
                           Ajouter un document
                         </Button>
                     </div>
-                    </div>
                   </div>
+                </ScrollArea>
                 <DialogFooter className="pt-4 border-t">
                   <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                   <Button type="submit">Mettre à jour</Button>
@@ -558,3 +559,5 @@ export function CoachDetailClient({ id }: { id: string }) {
     </div>
   );
 }
+
+    

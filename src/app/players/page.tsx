@@ -50,6 +50,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useCoachesContext } from "@/context/coaches-context";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const playerCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
@@ -101,9 +102,9 @@ const defaultValues: PlayerFormValues = {
     tutorPhone: '',
     tutorEmail: '',
     tutorCin: '',
-    status: '' as 'Actif',
+    status: 'Actif',
     category: '',
-    gender: '' as 'Masculin',
+    gender: 'Masculin',
     entryDate: '',
     exitDate: '',
     coachName: '',
@@ -407,8 +408,8 @@ export default function PlayersPage() {
               </DialogHeader>
                <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
-                    <div className="overflow-y-auto pr-6 -mr-6 flex-1">
-                        <div className="space-y-6 py-4 px-1">
+                  <ScrollArea className="flex-1">
+                    <div className="space-y-6 py-4 px-6">
                         <div className="flex flex-col items-center gap-4">
                             <Avatar className="h-24 w-24 border">
                                 <AvatarImage src={photoPreview || undefined} alt="Aperçu du joueur" data-ai-hint="player photo"/>
@@ -814,7 +815,7 @@ export default function PlayersPage() {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </ScrollArea>
                     <DialogFooter className="pt-4 border-t">
                         <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                         <Button type="submit">Enregistrer</Button>
@@ -879,5 +880,7 @@ export default function PlayersPage() {
     </div>
     );
 }
+
+    
 
     
