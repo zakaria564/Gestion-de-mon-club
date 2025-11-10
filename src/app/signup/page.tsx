@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ClubLogo } from '@/components/club-logo';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import { useState, FormEvent } from 'react';
@@ -30,6 +29,8 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const appLogoUrl = "https://d1csarkz8obe9u.cloudfront.net/posterpreviews/football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34_screen.jpg?ts=1667330722";
+
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -57,7 +58,10 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="mx-auto w-full max-w-sm">
         <CardHeader className="text-center">
-          <ClubLogo className="mx-auto h-12 w-12" />
+            <div className="mx-auto h-12 w-12 rounded-full overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={appLogoUrl} alt="App Logo" className="w-full h-full object-cover" />
+            </div>
           <CardTitle className="mt-4 text-2xl">Inscription</CardTitle>
           <CardDescription>
             Entrez vos informations pour créer un compte
