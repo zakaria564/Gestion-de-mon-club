@@ -754,8 +754,8 @@ export default function CalendarPage() {
                     Remplissez les détails du match ci-dessous.
                 </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleResultSubmit} className="flex-1 flex flex-col overflow-hidden">
-                <ScrollArea className="flex-1">
+            <form onSubmit={handleResultSubmit} className="contents">
+                <ScrollArea className="flex-grow">
                     <div className="grid gap-4 py-4 px-6">
                          <div className="grid gap-2">
                             <Label>Type de saisie</Label>
@@ -908,7 +908,7 @@ export default function CalendarPage() {
                         </div>
                     </div>
                 </ScrollArea>
-                <DialogFooter className="pt-4 border-t">
+                <DialogFooter className="flex-shrink-0 pt-4 border-t">
                     <Button type="button" variant="secondary" onClick={() => resetResultForm()}>Annuler</Button>
                     <Button type="submit">Sauvegarder le Résultat</Button>
                 </DialogFooter>
