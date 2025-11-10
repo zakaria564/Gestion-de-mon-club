@@ -18,11 +18,10 @@ export function ClubLogo({ className, imageClassName }: ClubLogoProps) {
   React.useEffect(() => {
     setIsClient(true);
   }, []);
+  
+  const finalSrc = clubInfo?.logoUrl;
 
-  const defaultLogo = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXdLXDYNNe7YrVGKxItlgSiHYeZsHw9XedKQ&s";
-  const finalSrc = clubInfo?.logoUrl || defaultLogo;
-
-  if (clubLoading || !isClient) {
+  if (clubLoading || !isClient || !finalSrc) {
     return <Skeleton className={cn("rounded-full", className)} />;
   }
 
