@@ -78,27 +78,20 @@ function AppContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-function AppHead() {
-    const logo = "https://d1csarkz8obe9u.cloudfront.net/posterpreviews/football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34_screen.jpg";
-
-    return (
-        <head>
-            <link rel="manifest" href="/manifest.webmanifest" />
-            <meta name="theme-color" content="#0ea5e9" />
-            <link rel="apple-touch-icon" href={logo} />
-            <link rel="icon" href={logo} type="image/jpeg" sizes="any" />
-      </head>
-    )
-}
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const logo = "https://d1csarkz8obe9u.cloudfront.net/posterpreviews/football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34_screen.jpg";
   return (
     <html lang="fr" className={inter.variable} suppressHydrationWarning>
-      <AppHead />
+      <head>
+          <link rel="manifest" href="/manifest.webmanifest" />
+          <meta name="theme-color" content="#0ea5e9" />
+          <link rel="apple-touch-icon" href={logo} />
+          <link rel="icon" href={logo} type="image/jpeg" sizes="any" />
+      </head>
       <body>
           <ThemeProvider
             attribute="class"
