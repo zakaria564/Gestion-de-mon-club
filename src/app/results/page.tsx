@@ -521,13 +521,13 @@ export default function ResultsPage() {
             <DialogTrigger asChild>
                 <Button><PlusCircle className="mr-2 h-4 w-4" />Ajouter un résultat</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+            <DialogContent className="sm:max-w-2xl max-h-[90vh]">
                 <DialogHeader>
                     <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un résultat</DialogTitle>
                     <DialogDescription>Remplissez les détails du match ci-dessous.</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="contents">
-                    <ScrollArea className="flex-grow">
+                <form onSubmit={handleSubmit}>
+                    <ScrollArea className="max-h-[60vh]">
                         <div className="grid gap-4 py-4 px-6">
                             <div className="grid gap-2">
                                 <Label>Type de saisie</Label>
@@ -711,7 +711,7 @@ export default function ResultsPage() {
                             )}
                         </div>
                     </ScrollArea>
-                  <DialogFooter className="flex-shrink-0 pt-4 border-t">
+                  <DialogFooter>
                       <Button type="button" variant="secondary" onClick={resetForm}>Annuler</Button>
                       <Button type="submit">Sauvegarder</Button>
                   </DialogFooter>
