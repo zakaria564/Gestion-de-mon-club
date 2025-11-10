@@ -244,9 +244,9 @@ export default function CoachesPage() {
                 </DialogDescription>
               </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow">
-                <ScrollArea className="flex-grow">
-                    <div className="px-6 py-4 space-y-6">
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <ScrollArea className="h-[70vh] p-4">
+                  <div className="space-y-6">
                       <div className="flex flex-col items-center gap-4">
                           <Avatar className="h-24 w-24 border">
                             <AvatarImage src={photoPreview || undefined} alt="Aperçu de l'entraîneur" data-ai-hint="coach photo"/>
@@ -459,7 +459,7 @@ export default function CoachesPage() {
                           Ajouter un document
                         </Button>
                     </div>
-                    </div>
+                  </div>
                 </ScrollArea>
                 <DialogFooter>
                   <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>

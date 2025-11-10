@@ -458,8 +458,8 @@ export default function CalendarPage() {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleEventSubmit}>
-              <ScrollArea className="max-h-[70vh]">
-                <div className="grid gap-4 py-4 px-4">
+              <ScrollArea className="h-[70vh] p-4">
+                <div className="grid gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="type">Type d'événement</Label>
                     <Select name="type" onValueChange={(v) => handleEventSelectChange('type', v)} value={newEvent.type} required>
@@ -756,9 +756,9 @@ export default function CalendarPage() {
                     Remplissez les détails du match ci-dessous.
                 </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleResultSubmit} className="flex flex-col flex-grow">
-                <ScrollArea className="flex-grow">
-                    <div className="grid gap-4 py-4 px-6">
+            <form onSubmit={handleResultSubmit}>
+                <ScrollArea className="h-[70vh] p-4">
+                    <div className="grid gap-4">
                          <div className="grid gap-2">
                             <Label>Type de saisie</Label>
                              <RadioGroup value={resultMatchType} onValueChange={(v) => setResultMatchType(v as any)} className="flex gap-4">

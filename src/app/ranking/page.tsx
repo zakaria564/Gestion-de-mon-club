@@ -309,7 +309,7 @@ export default function RankingPage() {
       <div className="flex items-center gap-4">
         <Select value={teamCategoryFilter} onValueChange={setTeamCategoryFilter}>
           <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Catégories" />
+            <SelectValue placeholder="Catégorie" />
           </SelectTrigger>
           <SelectContent>
             {playerCategories.map(cat => (
