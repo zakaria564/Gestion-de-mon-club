@@ -229,9 +229,10 @@ export default function RankingPage() {
     let lastGoals = -1;
     
     return sortedScorers.map((scorer, index) => {
-      if (scorer.goals !== lastGoals) {
+      if (index > 0 && scorer.goals < sortedScorers[index - 1].goals) {
         rank = index + 1;
-        lastGoals = scorer.goals;
+      } else if (index === 0) {
+        rank = 1;
       }
       return { ...scorer, rank };
     });
@@ -428,4 +429,5 @@ export default function RankingPage() {
   );
 }
 
+    
     
