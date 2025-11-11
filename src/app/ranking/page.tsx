@@ -202,16 +202,14 @@ export default function RankingPage() {
       result.scorers?.forEach(scorer => {
         let playerName = scorer.playerName.trim();
         let teamName: string;
-
+        
         const opponentMatch = playerName.match(/(.*) \((.*)\)/);
-
+        
         if (opponentMatch) {
-          // It's an opponent player, format: "Player Name (Team Name)"
-          playerName = opponentMatch[1].trim();
-          teamName = opponentMatch[2].trim();
+            playerName = opponentMatch[1].trim();
+            teamName = opponentMatch[2].trim();
         } else {
-          // It's a player from the user's club
-          teamName = clubInfo.name;
+            teamName = clubInfo.name;
         }
 
         const key = `${playerName.toLowerCase()}_${teamName.toLowerCase()}`;
@@ -224,15 +222,20 @@ export default function RankingPage() {
 
     const sortedScorers = Object.values(scorerStats).sort((a, b) => b.goals - a.goals);
     
+    if (sortedScorers.length === 0) return [];
+    
     let rank = 1;
+    let lastGoals = sortedScorers[0].goals;
+    
     return sortedScorers.map((scorer, index) => {
-      if (index > 0 && sortedScorers[index-1].goals > scorer.goals) {
+      if (index > 0 && scorer.goals < lastGoals) {
         rank = index + 1;
       }
+      lastGoals = scorer.goals;
       return { ...scorer, rank };
     });
 
-  }, [filteredResults, clubInfo.name, players]);
+  }, [filteredResults, clubInfo.name]);
 
 
   const teamColorMap = useMemo(() => {
@@ -423,5 +426,3 @@ export default function RankingPage() {
     </div>
   );
 }
-
-    
