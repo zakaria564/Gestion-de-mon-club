@@ -200,40 +200,35 @@ export default function RankingPage() {
   }, [filteredResults, clubInfo.name, activeTab]);
 
   const scorersRanking = useMemo(() => {
-    const scorerStats: { [key: string]: { goals: number, team: string } } = {};
+    const scorerStats: { [key: string]: { name: string, goals: number, team: string } } = {};
 
     filteredResults.forEach(result => {
         result.scorers?.forEach(scorer => {
-            let playerName = scorer.playerName;
-            let teamName = clubInfo.name; // Default to club name
+            let playerName = scorer.playerName.trim();
+            let teamName = clubInfo.name;
 
             const nameRegex = /(.*) \((.*)\)/;
-            const match = scorer.playerName.match(nameRegex);
+            const match = playerName.match(nameRegex);
 
             if (match) {
                 playerName = match[1].trim();
                 teamName = match[2].trim();
             } else {
-                const isClubPlayer = players.some(p => p.name === scorer.playerName && p.teamCategory === result.teamCategory && p.gender === result.gender);
+                const isClubPlayer = players.some(p => p.name.toLowerCase() === playerName.toLowerCase() && p.teamCategory === result.teamCategory && p.gender === result.gender);
                 if (!isClubPlayer && result.matchType !== 'opponent-vs-opponent') {
                     teamName = result.opponent;
                 }
             }
             
-            const key = `${playerName}__${teamName}`;
+            const key = `${playerName.toLowerCase()}__${teamName.toLowerCase()}`;
             if (!scorerStats[key]) {
-                scorerStats[key] = { goals: 0, team: teamName };
+                scorerStats[key] = { name: playerName, goals: 0, team: teamName };
             }
             scorerStats[key].goals += scorer.count;
         });
     });
-
-    const sortedScorers = Object.entries(scorerStats)
-        .map(([key, data]) => {
-            const [name] = key.split('__');
-            return { name, team: data.team, goals: data.goals };
-        })
-        .sort((a, b) => b.goals - a.goals);
+    
+    const sortedScorers = Object.values(scorerStats).sort((a, b) => b.goals - a.goals);
 
     let rank = 1;
     return sortedScorers.map((scorer, index) => {
