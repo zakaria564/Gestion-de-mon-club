@@ -200,29 +200,32 @@ export default function RankingPage() {
   }, [filteredResults, clubInfo.name, activeTab]);
 
   const scorersRanking = useMemo(() => {
-    const scorerStats: { [key: string]: { name: string, goals: number, team: string } } = {};
+    const scorerStats: { [key: string]: { name: string; goals: number; team: string } } = {};
 
     filteredResults.forEach(result => {
         result.scorers?.forEach(scorer => {
-            let playerName = scorer.playerName.trim();
+            let originalPlayerName = scorer.playerName.trim();
             let teamName = clubInfo.name;
 
             const nameRegex = /(.*) \((.*)\)/;
-            const match = playerName.match(nameRegex);
+            const match = originalPlayerName.match(nameRegex);
+            
+            let finalPlayerName: string;
 
             if (match) {
-                playerName = match[1].trim();
+                finalPlayerName = match[1].trim();
                 teamName = match[2].trim();
             } else {
-                const isClubPlayer = players.some(p => p.name.toLowerCase() === playerName.toLowerCase() && p.teamCategory === result.teamCategory && p.gender === result.gender);
+                finalPlayerName = originalPlayerName;
+                const isClubPlayer = players.some(p => p.name.toLowerCase() === finalPlayerName.toLowerCase() && p.teamCategory === result.teamCategory && p.gender === result.gender);
                 if (!isClubPlayer && result.matchType !== 'opponent-vs-opponent') {
                     teamName = result.opponent;
                 }
             }
             
-            const key = `${playerName.toLowerCase()}__${teamName.toLowerCase()}`;
+            const key = `${finalPlayerName.toLowerCase()}__${teamName.toLowerCase()}`;
             if (!scorerStats[key]) {
-                scorerStats[key] = { name: playerName, goals: 0, team: teamName };
+                scorerStats[key] = { name: finalPlayerName, goals: 0, team: teamName };
             }
             scorerStats[key].goals += scorer.count;
         });
@@ -231,9 +234,11 @@ export default function RankingPage() {
     const sortedScorers = Object.values(scorerStats).sort((a, b) => b.goals - a.goals);
 
     let rank = 1;
+    let lastGoals = -1;
     return sortedScorers.map((scorer, index) => {
-      if (index > 0 && scorer.goals < sortedScorers[index - 1].goals) {
+      if (scorer.goals !== lastGoals) {
         rank = index + 1;
+        lastGoals = scorer.goals;
       }
       return { ...scorer, rank };
     });
