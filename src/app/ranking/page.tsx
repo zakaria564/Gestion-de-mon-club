@@ -200,15 +200,16 @@ export default function RankingPage() {
 
     filteredResults.forEach(result => {
       result.scorers?.forEach(scorer => {
-        let playerName = scorer.playerName.trim();
+        let playerName = scorer.playerName;
         let teamName: string;
-        
+
         const opponentMatch = playerName.match(/(.*) \((.*)\)/);
         
         if (opponentMatch) {
             playerName = opponentMatch[1].trim();
             teamName = opponentMatch[2].trim();
         } else {
+            playerName = playerName.trim();
             teamName = clubInfo.name;
         }
 
@@ -225,13 +226,13 @@ export default function RankingPage() {
     if (sortedScorers.length === 0) return [];
     
     let rank = 1;
-    let lastGoals = sortedScorers[0].goals;
+    let lastGoals = -1;
     
     return sortedScorers.map((scorer, index) => {
-      if (index > 0 && scorer.goals < lastGoals) {
+      if (scorer.goals !== lastGoals) {
         rank = index + 1;
+        lastGoals = scorer.goals;
       }
-      lastGoals = scorer.goals;
       return { ...scorer, rank };
     });
 
@@ -426,3 +427,5 @@ export default function RankingPage() {
     </div>
   );
 }
+
+    
