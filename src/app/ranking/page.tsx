@@ -201,25 +201,23 @@ export default function RankingPage() {
 
   const scorersRanking = useMemo(() => {
     const scorerStats: { [key: string]: { goals: number, team: string } } = {};
-    const nameRegex = /(.*) \((.*)\)/;
 
     filteredResults.forEach(result => {
         result.scorers?.forEach(scorer => {
             let playerName = scorer.playerName;
             let teamName = clubInfo.name; // Default to club name
 
+            const nameRegex = /(.*) \((.*)\)/;
             const match = scorer.playerName.match(nameRegex);
+
             if (match) {
                 playerName = match[1].trim();
                 teamName = match[2].trim();
-            } else if (result.matchType === 'club-match') {
-                const isClubPlayer = players.some(p => p.name === scorer.playerName);
-                if (!isClubPlayer) {
+            } else {
+                const isClubPlayer = players.some(p => p.name === scorer.playerName && p.teamCategory === result.teamCategory && p.gender === result.gender);
+                if (!isClubPlayer && result.matchType !== 'opponent-vs-opponent') {
                     teamName = result.opponent;
                 }
-            } else if (result.matchType === 'opponent-vs-opponent') {
-                // This case is handled by the regex, but as a fallback:
-                teamName = 'Inconnu';
             }
             
             const key = `${playerName}__${teamName}`;
@@ -233,11 +231,7 @@ export default function RankingPage() {
     const sortedScorers = Object.entries(scorerStats)
         .map(([key, data]) => {
             const [name] = key.split('__');
-            return {
-                name,
-                team: data.team,
-                goals: data.goals,
-            };
+            return { name, team: data.team, goals: data.goals };
         })
         .sort((a, b) => b.goals - a.goals);
 
