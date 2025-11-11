@@ -197,28 +197,27 @@ export default function RankingPage() {
 
   const scorersRanking = useMemo(() => {
     const scorerStats: { [key: string]: { name: string; goals: number; team: string } } = {};
-
+  
     filteredResults.forEach(result => {
-      result.scorers?.forEach(scorer => {
-        let playerName = scorer.playerName;
-        let teamName: string;
+        result.scorers?.forEach(scorer => {
+            let playerName = scorer.playerName;
+            let teamName: string;
 
-        const opponentMatch = playerName.match(/(.*) \((.*)\)/);
-        
-        if (opponentMatch) {
-            playerName = opponentMatch[1].trim();
-            teamName = opponentMatch[2].trim();
-        } else {
-            playerName = playerName.trim();
-            teamName = clubInfo.name;
-        }
+            const opponentMatch = playerName.match(/(.*) \((.*)\)/);
+            if (opponentMatch) {
+                playerName = opponentMatch[1].trim();
+                teamName = opponentMatch[2].trim();
+            } else {
+                playerName = playerName.trim();
+                teamName = clubInfo.name;
+            }
 
-        const key = `${playerName.toLowerCase()}_${teamName.toLowerCase()}`;
-        if (!scorerStats[key]) {
-          scorerStats[key] = { name: playerName, goals: 0, team: teamName };
-        }
-        scorerStats[key].goals += scorer.count;
-      });
+            const key = `${playerName.toLowerCase()}_${teamName.toLowerCase()}`;
+            if (!scorerStats[key]) {
+                scorerStats[key] = { name: playerName, goals: 0, team: teamName };
+            }
+            scorerStats[key].goals += scorer.count;
+        });
     });
 
     const sortedScorers = Object.values(scorerStats).sort((a, b) => b.goals - a.goals);
@@ -226,17 +225,12 @@ export default function RankingPage() {
     if (sortedScorers.length === 0) return [];
     
     let rank = 1;
-    let lastGoals = -1;
-    
     return sortedScorers.map((scorer, index) => {
       if (index > 0 && scorer.goals < sortedScorers[index - 1].goals) {
         rank = index + 1;
-      } else if (index === 0) {
-        rank = 1;
       }
       return { ...scorer, rank };
     });
-
   }, [filteredResults, clubInfo.name]);
 
 
@@ -394,8 +388,8 @@ export default function RankingPage() {
                         </TableHeader>
                         <TableBody>
                             {scorersRanking.length > 0 ? (
-                                scorersRanking.map((scorer, index) => (
-                                    <TableRow key={`${scorer.name}-${index}`}>
+                                scorersRanking.map((scorer) => (
+                                    <TableRow key={`${scorer.name}-${scorer.team}`}>
                                         <TableCell className="font-medium">{scorer.rank}</TableCell>
                                         <TableCell className="font-medium">{scorer.name}</TableCell>
                                         <TableCell>
