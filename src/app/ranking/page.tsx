@@ -58,9 +58,18 @@ const chartColors = [
 
 // Simple hash function to get a consistent color for a team name
 const getTeamColor = (teamName: string, clubName: string, colorMap: Map<string, string>): string => {
-  if (teamName.toLowerCase() === clubName.toLowerCase()) {
-    return 'hsl(var(--chart-2))'; // Specific green for user's club
+  const lowerTeamName = teamName.toLowerCase();
+  
+  if (lowerTeamName === clubName.toLowerCase()) {
+    return 'hsl(var(--accent))'; // Orange for user's club
   }
+  if (lowerTeamName === 'wac') {
+    return 'hsl(var(--destructive))'; // Red for WAC
+  }
+  if (lowerTeamName === 'rca') {
+    return 'hsl(var(--chart-2))'; // Green for RCA
+  }
+
   if (colorMap.has(teamName)) {
     return colorMap.get(teamName)!;
   }
@@ -199,38 +208,37 @@ export default function RankingPage() {
     const scorerStats: { [key: string]: { name: string; goals: number; team: string } } = {};
   
     filteredResults.forEach(result => {
-        result.scorers?.forEach(scorer => {
-            let playerName = scorer.playerName;
-            let teamName: string;
-
-            const opponentMatch = playerName.match(/(.*) \((.*)\)/);
-            if (opponentMatch) {
-                playerName = opponentMatch[1].trim();
-                teamName = opponentMatch[2].trim();
-            } else {
-                playerName = playerName.trim();
-                teamName = clubInfo.name;
-            }
-
-            const key = `${playerName.toLowerCase()}_${teamName.toLowerCase()}`;
-            if (!scorerStats[key]) {
-                scorerStats[key] = { name: playerName, goals: 0, team: teamName };
-            }
-            scorerStats[key].goals += scorer.count;
-        });
+      result.scorers?.forEach(scorer => {
+        let playerName = scorer.playerName.trim();
+        let teamName: string;
+  
+        const opponentMatch = playerName.match(/(.*) \((.*)\)/);
+        if (opponentMatch) {
+          playerName = opponentMatch[1].trim();
+          teamName = opponentMatch[2].trim();
+        } else {
+          teamName = clubInfo.name;
+        }
+  
+        const key = `${playerName.toLowerCase()}_${teamName.toLowerCase()}`;
+        if (!scorerStats[key]) {
+          scorerStats[key] = { name: playerName, goals: 0, team: teamName };
+        }
+        scorerStats[key].goals += scorer.count;
+      });
     });
-
+  
     const sortedScorers = Object.values(scorerStats).sort((a, b) => b.goals - a.goals);
     
     if (sortedScorers.length === 0) return [];
     
-    let rank = 0;
+    let rank = 1;
     let lastGoals = -1;
     return sortedScorers.map((scorer, index) => {
-      if (scorer.goals !== lastGoals) {
+      if (scorer.goals < lastGoals) {
         rank = index + 1;
-        lastGoals = scorer.goals;
       }
+      lastGoals = scorer.goals;
       return { ...scorer, rank };
     });
   }, [filteredResults, clubInfo.name]);
