@@ -40,14 +40,6 @@ interface TeamStats {
   points: number;
 }
 
-interface ScorerStat {
-    rank: number;
-    name: string;
-    team: string;
-    isClubPlayer: boolean;
-    goals: number;
-}
-
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchTypes = ['Match Championnat', 'Match Coupe', 'Match Tournoi'];
 
@@ -66,16 +58,20 @@ const chartColors = [
 
 // Simple hash function to get a consistent color for a team name
 const getTeamColor = (teamName: string, clubName: string, colorMap: Map<string, string>): string => {
-  if (teamName === clubName) {
+  if (teamName.toLowerCase() === clubName.toLowerCase()) {
     return 'hsl(var(--chart-2))'; // Specific green for user's club
-  }
-  if (teamName.toUpperCase() === 'WAC') {
-    return 'hsl(0, 80%, 60%)'; // Light red for WAC
   }
   if (colorMap.has(teamName)) {
     return colorMap.get(teamName)!;
   }
-  return 'hsl(var(--secondary))';
+  let hash = 0;
+  for (let i = 0; i < teamName.length; i++) {
+    hash = teamName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const colorIndex = Math.abs(hash) % chartColors.length;
+  const color = chartColors[colorIndex];
+  colorMap.set(teamName, color); // Cache the color
+  return color;
 };
 
 
@@ -203,57 +199,47 @@ export default function RankingPage() {
     const scorerStats: { [key: string]: { name: string; goals: number; team: string } } = {};
 
     filteredResults.forEach(result => {
-        result.scorers?.forEach(scorer => {
-            let originalPlayerName = scorer.playerName.trim();
-            let teamName = clubInfo.name;
+      result.scorers?.forEach(scorer => {
+        let playerName = scorer.playerName.trim();
+        let teamName: string;
 
-            const nameRegex = /(.*) \((.*)\)/;
-            const match = originalPlayerName.match(nameRegex);
-            
-            let finalPlayerName: string;
+        const opponentMatch = playerName.match(/(.*) \((.*)\)/);
 
-            if (match) {
-                finalPlayerName = match[1].trim();
-                teamName = match[2].trim();
-            } else {
-                finalPlayerName = originalPlayerName;
-                const isClubPlayer = players.some(p => p.name.toLowerCase() === finalPlayerName.toLowerCase() && p.teamCategory === result.teamCategory && p.gender === result.gender);
-                if (!isClubPlayer && result.matchType !== 'opponent-vs-opponent') {
-                    teamName = result.opponent;
-                }
-            }
-            
-            const key = `${finalPlayerName.toLowerCase()}__${teamName.toLowerCase()}`;
-            if (!scorerStats[key]) {
-                scorerStats[key] = { name: finalPlayerName, goals: 0, team: teamName };
-            }
-            scorerStats[key].goals += scorer.count;
-        });
+        if (opponentMatch) {
+          // It's an opponent player, format: "Player Name (Team Name)"
+          playerName = opponentMatch[1].trim();
+          teamName = opponentMatch[2].trim();
+        } else {
+          // It's a player from the user's club
+          teamName = clubInfo.name;
+        }
+
+        const key = `${playerName.toLowerCase()}_${teamName.toLowerCase()}`;
+        if (!scorerStats[key]) {
+          scorerStats[key] = { name: playerName, goals: 0, team: teamName };
+        }
+        scorerStats[key].goals += scorer.count;
+      });
     });
-    
-    const sortedScorers = Object.values(scorerStats).sort((a, b) => b.goals - a.goals);
 
+    const sortedScorers = Object.values(scorerStats).sort((a, b) => b.goals - a.goals);
+    
     let rank = 1;
-    let lastGoals = -1;
     return sortedScorers.map((scorer, index) => {
-      if (scorer.goals !== lastGoals) {
+      if (index > 0 && sortedScorers[index-1].goals > scorer.goals) {
         rank = index + 1;
-        lastGoals = scorer.goals;
       }
       return { ...scorer, rank };
     });
+
   }, [filteredResults, clubInfo.name, players]);
 
 
   const teamColorMap = useMemo(() => {
     const map = new Map<string, string>();
     const teams = [...new Set(scorersRanking.map(s => s.team))];
-    let colorIndex = 0;
     teams.forEach(team => {
-      if (team !== clubInfo.name) {
-        map.set(team, chartColors[colorIndex % chartColors.length]);
-        colorIndex++;
-      }
+      getTeamColor(team, clubInfo.name, map); // This will populate the map
     });
     return map;
   }, [scorersRanking, clubInfo.name]);
@@ -437,3 +423,5 @@ export default function RankingPage() {
     </div>
   );
 }
+
+    
