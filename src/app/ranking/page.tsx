@@ -225,9 +225,11 @@ export default function RankingPage() {
     if (sortedScorers.length === 0) return [];
     
     let rank = 1;
+    let lastGoals = sortedScorers[0].goals;
     return sortedScorers.map((scorer, index) => {
-      if (index > 0 && scorer.goals < sortedScorers[index - 1].goals) {
+      if (scorer.goals < lastGoals) {
         rank = index + 1;
+        lastGoals = scorer.goals;
       }
       return { ...scorer, rank };
     });
@@ -424,4 +426,6 @@ export default function RankingPage() {
 }
 
     
+    
+
     
