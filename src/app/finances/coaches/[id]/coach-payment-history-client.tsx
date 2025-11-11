@@ -2,7 +2,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { useFinancialContext } from "@/context/financial-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,7 +20,9 @@ import { cn } from "@/lib/utils";
 import type { Payment } from "@/lib/financial-data";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
-export function CoachPaymentHistoryClient({ memberName }: { memberName: string }) {
+export function CoachPaymentHistoryClient() {
+  const params = useParams();
+  const memberName = decodeURIComponent(params.id as string);
   const context = useFinancialContext();
   const { toast } = useToast();
 

@@ -4,7 +4,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import React from 'react';
 import type { Player } from "@/lib/data";
-import { notFound, useRouter } from "next/navigation";
+import { notFound, useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -95,8 +95,10 @@ Object.keys(categoryColors).forEach(key => {
     categoryColors[`${key} F`] = categoryColors[key];
 });
 
-export function PlayerDetailClient({ id }: { id: string }) {
+export function PlayerDetailClient() {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
   const { toast } = useToast();
   const context = usePlayersContext();
   const coachesContext = useCoachesContext();

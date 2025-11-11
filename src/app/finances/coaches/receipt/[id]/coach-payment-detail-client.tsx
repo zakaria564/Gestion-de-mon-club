@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { notFound, useRouter } from "next/navigation";
+import { notFound, useRouter, useParams } from "next/navigation";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -18,7 +18,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useClubContext } from "@/context/club-context";
 import { ClubLogo } from "@/components/club-logo";
 
-export function CoachPaymentDetailClient({ id }: { id: string }) {
+export function CoachPaymentDetailClient() {
+  const params = useParams();
+  const id = params.id as string;
   const financialCtx = useFinancialContext();
   const coachesCtx = useCoachesContext();
   const { clubInfo } = useClubContext();
