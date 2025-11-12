@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useResultsContext, NewResult, Result, PerformanceDetail } from "@/context/results-context";
-import { Edit, PlusCircle, Trash2, X, FilterX, Eye, MoreHorizontal, UserPlus } from "lucide-react";
+import { Edit, PlusCircle, Trash2, X, FilterX, Eye, MoreHorizontal, UserPlus, Calendar, MapPin, Trophy, Star, Hash } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -31,6 +31,7 @@ import { format, parseISO } from 'date-fns';
 import { MultiSelect, MultiSelectOption } from "@/components/ui/multi-select";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical', 'Match Tournoi'];
@@ -787,32 +788,52 @@ export default function ResultsPage() {
         </Tabs>
         
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                     <DialogTitle>Détails du match</DialogTitle>
-                     {selectedResult && (
-                        <DialogDescription>
-                            {getResultTitle(selectedResult)} - Score final : {selectedResult.score}
-                        </DialogDescription>
-                     )}
+                    {selectedResult && (
+                    <>
+                        <DialogTitle className="text-xl text-center mb-2">{getResultTitle(selectedResult)}</DialogTitle>
+                        <DialogDescription className="text-center">Score final : <span className="font-bold text-foreground text-lg">{selectedResult.score}</span></DialogDescription>
+                    </>
+                    )}
                 </DialogHeader>
                 {selectedResult && (
                     <div className="space-y-4 py-4">
-                      <p>
-                        <strong>Catégorie :</strong> {selectedResult.gender === 'Féminin' ? `${selectedResult.teamCategory} F` : selectedResult.teamCategory}
-                      </p>
-                      <p>
-                        <strong>Date :</strong> {format(parseISO(selectedResult.date), "dd/MM/yyyy")}
-                      </p>
-                      <p>
-                        <strong>Lieu :</strong> {selectedResult.location || "Non spécifié"}
-                      </p>
-                      <p>
-                        <strong>Buteurs :</strong> {formatPerformance(selectedResult.scorers)}
-                      </p>
-                      <p>
-                        <strong>Passeurs :</strong> {formatPerformance(selectedResult.assists)}
-                      </p>
+                        <Separator />
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                                <Hash className="h-4 w-4 text-muted-foreground" />
+                                <strong>Catégorie:</strong>
+                                <span>{selectedResult.gender === 'Féminin' ? `${selectedResult.teamCategory} F` : selectedResult.teamCategory}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-muted-foreground" />
+                                <strong>Date:</strong>
+                                <span>{format(parseISO(selectedResult.date), "dd/MM/yyyy")}</span>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <strong>Lieu:</strong>
+                            <span>{selectedResult.location || "Non spécifié"}</span>
+                        </div>
+                        <Separator />
+                        <div className="space-y-3">
+                            <div className="flex items-start gap-2">
+                                <Trophy className="h-4 w-4 text-muted-foreground mt-0.5" />
+                                <div>
+                                    <strong className="text-sm">Buteurs:</strong>
+                                    <p className="text-sm text-muted-foreground">{formatPerformance(selectedResult.scorers)}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-2">
+                                <Star className="h-4 w-4 text-muted-foreground mt-0.5" />
+                                <div>
+                                    <strong className="text-sm">Passeurs:</strong>
+                                    <p className="text-sm text-muted-foreground">{formatPerformance(selectedResult.assists)}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
                 <DialogFooter className="justify-end gap-2">
@@ -838,7 +859,6 @@ export default function ResultsPage() {
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
-                    <Button onClick={() => setDetailsOpen(false)}>Fermer</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
