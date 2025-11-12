@@ -560,7 +560,7 @@ export default function ResultsPage() {
                 <form onSubmit={handleSubmit}>
                     <ScrollArea className="h-[70vh] p-4">
                         <div className="grid gap-6">
-                             <div className="space-y-4 border-b pb-4">
+                            <div className="space-y-4 border-b pb-4">
                                 <RadioGroup value={matchType} onValueChange={(v) => setMatchType(v as any)} className="flex gap-4">
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="club-match" id="club-match" />
@@ -572,39 +572,30 @@ export default function ResultsPage() {
                                     </div>
                                 </RadioGroup>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
                                 <div className="grid gap-2">
                                     <Label htmlFor="category">Type de match</Label>
                                     <Select onValueChange={(v) => handleSelectChange('category', v)} value={newResult.category} required>
-                                        <SelectTrigger>
-                                        <SelectValue />
-                                        </SelectTrigger>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                        {matchCategories.map(cat => (
-                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                        ))}
+                                            {matchCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
                                     <Select onValueChange={(v) => handleSelectChange('teamCategory', v)} value={newResult.teamCategory} required>
-                                        <SelectTrigger>
-                                        <SelectValue />
-                                        </SelectTrigger>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                        {playerCategories.map(cat => (
-                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                        ))}
+                                            {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="gender">Genre</Label>
                                     <Select onValueChange={(v) => handleSelectChange('gender', v)} value={newResult.gender} required>
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="Masculin">Masculin</SelectItem>
                                             <SelectItem value="Féminin">Féminin</SelectItem>
@@ -623,14 +614,18 @@ export default function ResultsPage() {
                                     <Label htmlFor="location">Lieu</Label>
                                     <Input id="location" value={newResult.location} onChange={handleInputChange} required />
                                 </div>
+                                <div className="grid gap-2 lg:col-span-3">
+                                    <Label htmlFor="score">Score final (ex: 3-1)</Label>
+                                    <Input id="score" value={newResult.score} onChange={handleInputChange} required className="text-center text-lg font-bold" />
+                                </div>
                             </div>
                             
                             <Separator />
                             
                             {matchType === 'club-match' ? (
-                                <div className="grid grid-cols-2 gap-8">
-                                     <div>
-                                        <div className="font-semibold mb-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div>
+                                        <div className="font-semibold mb-2">
                                             {newResult.homeOrAway === 'home' ? clubInfo.name : newResult.opponent || 'Adversaire'}
                                         </div>
                                         <div className="space-y-4">
@@ -655,7 +650,7 @@ export default function ResultsPage() {
                                         </div>
                                     </div>
                                     <div>
-                                         <div className="font-semibold mb-4">
+                                        <div className="font-semibold mb-2">
                                             {newResult.homeOrAway === 'home' ? newResult.opponent || 'Adversaire' : clubInfo.name}
                                         </div>
                                         <div className="space-y-4">
@@ -671,30 +666,29 @@ export default function ResultsPage() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-2 gap-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div>
-                                         <div className="font-semibold mb-4">{newResult.homeTeam || 'Équipe Domicile'}</div>
-                                         <div className="space-y-2">
+                                        <div className="font-semibold mb-2">{newResult.homeTeam || 'Équipe Domicile'}</div>
+                                        <div className="space-y-2">
                                             <Label>Buteurs (un par ligne)</Label>
                                             <Textarea value={manualScorers} onChange={e => setManualScorers(e.target.value)} rows={3} />
                                         </div>
                                     </div>
-                                     <div>
-                                        <div className="font-semibold mb-4">{newResult.awayTeam || 'Équipe Extérieur'}</div>
-                                         <div className="space-y-2">
+                                    <div>
+                                        <div className="font-semibold mb-2">{newResult.awayTeam || 'Équipe Extérieur'}</div>
+                                        <div className="space-y-2">
                                             <Label>Passeurs (un par ligne)</Label>
                                             <Textarea value={manualAssists} onChange={e => setManualAssists(e.target.value)} rows={3} />
                                         </div>
                                     </div>
                                 </div>
                             )}
-
                         </div>
                     </ScrollArea>
-                  <DialogFooter>
-                      <Button type="button" variant="secondary" onClick={resetForm}>Annuler</Button>
-                      <Button type="submit">Sauvegarder</Button>
-                  </DialogFooter>
+                    <DialogFooter>
+                        <Button type="button" variant="secondary" onClick={resetForm}>Annuler</Button>
+                        <Button type="submit">Sauvegarder</Button>
+                    </DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>
