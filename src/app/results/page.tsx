@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import {
@@ -126,17 +127,31 @@ export default function ResultsPage() {
     setNewResult(prev => ({...prev, homeOrAway: value}));
   }
   
-  const handleDynamicListChange = (listName: 'scorers' | 'assists', values: string[]) => {
-    const performanceDetails: PerformanceDetail[] = values.reduce((acc, playerName) => {
-        const existing = acc.find(item => item.playerName === playerName);
-        if (existing) {
-            existing.count++;
-        } else {
-            acc.push({ playerName, count: 1 });
-        }
-        return acc;
-    }, [] as PerformanceDetail[]);
-    setNewResult(prev => ({ ...prev, [listName]: performanceDetails }));
+  const handlePerformanceChange = (
+    listName: 'scorers' | 'assists',
+    index: number,
+    field: 'playerName' | 'count',
+    value: string | number
+  ) => {
+      const updatedList = [...newResult[listName]];
+      const item = { ...updatedList[index] };
+      if (field === 'playerName') {
+          item.playerName = value as string;
+      } else {
+          item.count = Math.max(1, Number(value)); // Ensure count is at least 1
+      }
+      updatedList[index] = item;
+      setNewResult(prev => ({ ...prev, [listName]: updatedList }));
+  };
+
+  const addPerformanceItem = (listName: 'scorers' | 'assists') => {
+      const list = [...newResult[listName], { playerName: '', count: 1 }];
+      setNewResult(prev => ({ ...prev, [listName]: list }));
+  };
+
+  const removePerformanceItem = (listName: 'scorers' | 'assists', index: number) => {
+      const list = newResult[listName].filter((_, i) => i !== index);
+      setNewResult(prev => ({ ...prev, [listName]: list }));
   };
   
   const resetForm = () => {
@@ -165,8 +180,8 @@ export default function ResultsPage() {
         }));
     };
   
-    let allScorers: PerformanceDetail[] = [...(finalResult.scorers || [])];
-    let allAssists: PerformanceDetail[] = [...(finalResult.assists || [])];
+    let allScorers: PerformanceDetail[] = [...(finalResult.scorers || [])].filter(s => s.playerName);
+    let allAssists: PerformanceDetail[] = [...(finalResult.assists || [])].filter(a => a.playerName);
   
     if (matchType === 'club-match') {
         const opponentScorers = processManualInput(manualOpponentScorers, finalResult.opponent);
@@ -324,7 +339,7 @@ export default function ResultsPage() {
     return { maleClubResults, femaleClubResults, maleOpponentResults, femaleOpponentResults };
   }, [results, categoryFilter, opponentFilter]);
 
-  const allPossiblePlayersOptions: MultiSelectOption[] = useMemo(() => {
+  const allPossiblePlayersOptions = useMemo(() => {
     return players
       .filter(p => p.category === newResult.teamCategory && p.gender === newResult.gender)
       .map(p => ({
@@ -379,12 +394,6 @@ export default function ResultsPage() {
   };
 
   const isLoading = loading || playersLoading || opponentsLoading;
-  
-  const performanceToList = (performance?: PerformanceDetail[]): string[] => {
-    if (!performance) return [];
-    return performance.flatMap(p => Array(p.count).fill(p.playerName));
-  };
-
 
   const renderResultsView = (groupedData: GroupedResults, gender: 'Masculin' | 'Féminin') => {
       if (isLoading) {
@@ -559,48 +568,76 @@ export default function ResultsPage() {
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <ScrollArea className="h-[70vh] p-4">
-                        <div className="grid gap-6">
-                            <div className="space-y-4 border-b pb-4">
-                                <RadioGroup value={matchType} onValueChange={(v) => setMatchType(v as any)} className="flex gap-4">
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="club-match" id="club-match" />
-                                        <Label htmlFor="club-match">Match de mon club</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="opponent-vs-opponent" id="opponent-match" />
-                                        <Label htmlFor="opponent-match">Match entre adversaires</Label>
-                                    </div>
-                                </RadioGroup>
-                            </div>
+                        <div className="space-y-6">
+                            <RadioGroup value={matchType} onValueChange={(v) => setMatchType(v as any)} className="flex gap-4">
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="club-match" id="club-match" />
+                                    <Label htmlFor="club-match">Match de mon club</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="opponent-vs-opponent" id="opponent-match" />
+                                    <Label htmlFor="opponent-match">Match entre adversaires</Label>
+                                </div>
+                            </RadioGroup>
+                            
+                            <Separator/>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                               {matchType === 'club-match' ? (
+                                <>
+                                  <div className="grid gap-2">
+                                      <Label>Domicile / Extérieur</Label>
+                                      <RadioGroup value={newResult.homeOrAway} onValueChange={handleRadioChange} className="flex gap-4">
+                                          <div className="flex items-center space-x-2">
+                                              <RadioGroupItem value="home" id="home-res" />
+                                              <Label htmlFor="home-res">Domicile</Label>
+                                          </div>
+                                          <div className="flex items-center space-x-2">
+                                              <RadioGroupItem value="away" id="away-res" />
+                                              <Label htmlFor="away-res">Extérieur</Label>
+                                          </div>
+                                      </RadioGroup>
+                                  </div>
+                                  <div className="grid gap-2">
+                                      <Label htmlFor="opponent">Adversaire</Label>
+                                      <Select onValueChange={(v) => handleSelectChange('opponent', v)} value={newResult.opponent} required>
+                                          <SelectTrigger><SelectValue /></SelectTrigger>
+                                          <SelectContent>{filteredOpponentOptions.map(op => (<SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>))}</SelectContent>
+                                      </Select>
+                                  </div>
+                                </>
+                               ) : (
+                                <>
+                                  <div className="grid gap-2">
+                                      <Label htmlFor="homeTeam">Équipe à Domicile</Label>
+                                      <Select onValueChange={(v) => handleSelectChange('homeTeam', v)} value={newResult.homeTeam} required>
+                                          <SelectTrigger><SelectValue /></SelectTrigger>
+                                          <SelectContent>{filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent>
+                                      </Select>
+                                  </div>
+                                  <div className="grid gap-2">
+                                      <Label htmlFor="awayTeam">Équipe à l'Extérieur</Label>
+                                      <Select onValueChange={(v) => handleSelectChange('awayTeam', v)} value={newResult.awayTeam} required>
+                                          <SelectTrigger><SelectValue /></SelectTrigger>
+                                          <SelectContent>{filteredOpponentOptions.filter(op => op.name !== newResult.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent>
+                                      </Select>
+                                  </div>
+                                </>
+                               )}
+                            </div>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                 <div className="grid gap-2">
                                     <Label htmlFor="category">Type de match</Label>
-                                    <Select onValueChange={(v) => handleSelectChange('category', v)} value={newResult.category} required>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            {matchCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
+                                    <Select onValueChange={(v) => handleSelectChange('category', v)} value={newResult.category} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{matchCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select>
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
-                                    <Select onValueChange={(v) => handleSelectChange('teamCategory', v)} value={newResult.teamCategory} required>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
+                                    <Select onValueChange={(v) => handleSelectChange('teamCategory', v)} value={newResult.teamCategory} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select>
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="gender">Genre</Label>
-                                    <Select onValueChange={(v) => handleSelectChange('gender', v)} value={newResult.gender} required>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Masculin">Masculin</SelectItem>
-                                            <SelectItem value="Féminin">Féminin</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <Select onValueChange={(v) => handleSelectChange('gender', v)} value={newResult.gender} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select>
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="date">Date</Label>
@@ -614,51 +651,52 @@ export default function ResultsPage() {
                                     <Label htmlFor="location">Lieu</Label>
                                     <Input id="location" value={newResult.location} onChange={handleInputChange} required />
                                 </div>
-                                <div className="grid gap-2 lg:col-span-3">
-                                    <Label htmlFor="score">Score final (ex: 3-1)</Label>
-                                    <Input id="score" value={newResult.score} onChange={handleInputChange} required className="text-center text-lg font-bold" />
-                                </div>
                             </div>
-                            
+
                             <Separator />
                             
+                            <div className="grid gap-2 sm:col-span-2 md:col-span-3">
+                                <Label htmlFor="score">Score final (ex: 3-1)</Label>
+                                <Input id="score" value={newResult.score} onChange={handleInputChange} required className="text-center text-lg font-bold" />
+                            </div>
+
                             {matchType === 'club-match' ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div>
-                                        <div className="font-semibold mb-2">
-                                            {newResult.homeOrAway === 'home' ? clubInfo.name : newResult.opponent || 'Adversaire'}
-                                        </div>
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
+                                        <div className="font-semibold mb-2 text-center">{newResult.homeOrAway === 'home' ? clubInfo.name : newResult.opponent}</div>
+                                        <div className="space-y-4 p-4 border rounded-md">
+                                            <div>
                                                 <Label>Buteurs</Label>
-                                                <MultiSelect
-                                                    options={allPossiblePlayersOptions}
-                                                    value={performanceToList(newResult.scorers)}
-                                                    onChange={(selected) => handleDynamicListChange('scorers', selected)}
-                                                    placeholder="Joueurs de votre club..."
-                                                />
+                                                {newResult.scorers.map((scorer, index) => (
+                                                    <div key={index} className="flex items-center gap-2 mb-2">
+                                                        <Select value={scorer.playerName} onValueChange={(val) => handlePerformanceChange('scorers', index, 'playerName', val)}><SelectTrigger><SelectValue placeholder="Choisir joueur..."/></SelectTrigger><SelectContent>{allPossiblePlayersOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent></Select>
+                                                        <Input type="number" value={scorer.count} onChange={(e) => handlePerformanceChange('scorers', index, 'count', e.target.value)} className="w-20" min="1" />
+                                                        <Button type="button" variant="ghost" size="icon" onClick={() => removePerformanceItem('scorers', index)}><X className="h-4 w-4 text-destructive"/></Button>
+                                                    </div>
+                                                ))}
+                                                <Button type="button" variant="outline" size="sm" onClick={() => addPerformanceItem('scorers')} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter un buteur</Button>
                                             </div>
-                                            <div className="space-y-2">
+                                            <div>
                                                 <Label>Passeurs décisifs</Label>
-                                                <MultiSelect
-                                                    options={allPossiblePlayersOptions}
-                                                    value={performanceToList(newResult.assists)}
-                                                    onChange={(selected) => handleDynamicListChange('assists', selected)}
-                                                    placeholder="Joueurs de votre club..."
-                                                />
+                                                {newResult.assists.map((assist, index) => (
+                                                    <div key={index} className="flex items-center gap-2 mb-2">
+                                                        <Select value={assist.playerName} onValueChange={(val) => handlePerformanceChange('assists', index, 'playerName', val)}><SelectTrigger><SelectValue placeholder="Choisir joueur..."/></SelectTrigger><SelectContent>{allPossiblePlayersOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent></Select>
+                                                        <Input type="number" value={assist.count} onChange={(e) => handlePerformanceChange('assists', index, 'count', e.target.value)} className="w-20" min="1" />
+                                                        <Button type="button" variant="ghost" size="icon" onClick={() => removePerformanceItem('assists', index)}><X className="h-4 w-4 text-destructive"/></Button>
+                                                    </div>
+                                                ))}
+                                                <Button type="button" variant="outline" size="sm" onClick={() => addPerformanceItem('assists')} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter un passeur</Button>
                                             </div>
                                         </div>
                                     </div>
                                     <div>
-                                        <div className="font-semibold mb-2">
-                                            {newResult.homeOrAway === 'home' ? newResult.opponent || 'Adversaire' : clubInfo.name}
-                                        </div>
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
+                                        <div className="font-semibold mb-2 text-center">{newResult.homeOrAway === 'away' ? clubInfo.name : newResult.opponent}</div>
+                                        <div className="space-y-4 p-4 border rounded-md">
+                                            <div>
                                                 <Label htmlFor="manualOpponentScorers">Buteurs (un par ligne)</Label>
                                                 <Textarea id="manualOpponentScorers" value={manualOpponentScorers} onChange={(e) => setManualOpponentScorers(e.target.value)} rows={3} />
                                             </div>
-                                            <div className="space-y-2">
+                                            <div>
                                                 <Label htmlFor="manualOpponentAssists">Passeurs (un par ligne)</Label>
                                                 <Textarea id="manualOpponentAssists" value={manualOpponentAssists} onChange={(e) => setManualOpponentAssists(e.target.value)} rows={3} />
                                             </div>
@@ -666,17 +704,17 @@ export default function ResultsPage() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div>
-                                        <div className="font-semibold mb-2">{newResult.homeTeam || 'Équipe Domicile'}</div>
-                                        <div className="space-y-2">
+                                        <div className="font-semibold mb-2 text-center">{newResult.homeTeam}</div>
+                                        <div className="space-y-2 p-4 border rounded-md">
                                             <Label>Buteurs (un par ligne)</Label>
                                             <Textarea value={manualScorers} onChange={e => setManualScorers(e.target.value)} rows={3} />
                                         </div>
                                     </div>
                                     <div>
-                                        <div className="font-semibold mb-2">{newResult.awayTeam || 'Équipe Extérieur'}</div>
-                                        <div className="space-y-2">
+                                        <div className="font-semibold mb-2 text-center">{newResult.awayTeam}</div>
+                                        <div className="space-y-2 p-4 border rounded-md">
                                             <Label>Passeurs (un par ligne)</Label>
                                             <Textarea value={manualAssists} onChange={e => setManualAssists(e.target.value)} rows={3} />
                                         </div>
@@ -772,7 +810,7 @@ export default function ResultsPage() {
             </DialogHeader>
             {selectedResult && (
               <div className="space-y-4 py-4">
-                 <div className="flex justify-center">
+                <div className="flex justify-center">
                     <Badge variant="secondary">{selectedResult.category}</Badge>
                 </div>
                 <Separator />
