@@ -12,7 +12,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit, PlusCircle, Trash2, X, Eye, MoreHorizontal } from 'lucide-react';
+import { Edit, PlusCircle, Trash2, X, Eye, MoreHorizontal, Calendar as CalendarIcon, MapPin, Hash, Trophy, Star } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -66,7 +66,7 @@ export default function CalendarPage() {
   }
 
   const { calendarEvents, loading: calendarLoading, addEvent, updateEvent, deleteEvent } = calendarContext;
-  const { results, addResult, loading: resultsLoading } = resultsContext;
+  const { results, addResult, loading: resultsLoading, updateResult, deleteResult } = resultsContext;
   const { players, loading: playersLoading } = playersContext;
   const { opponents, loading: opponentsLoading } = opponentsContext;
 
@@ -344,10 +344,11 @@ export default function CalendarPage() {
   const handleResultRadioChange = (value: "home" | "away") => {
     setNewResult(prev => ({...prev, homeOrAway: value}));
   }
-
-  const handleResultSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  
+    const handleResultSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const finalResult = { ...newResult };
+  
+    const finalResult: NewResult = { ...newResult };
     
     let allScorers: PerformanceDetail[] = [...(finalResult.scorers || [])].filter(s => s.playerName);
     let allAssists: PerformanceDetail[] = [...(finalResult.assists || [])].filter(a => a.playerName);
@@ -473,6 +474,34 @@ export default function CalendarPage() {
     const awayTeam = result.homeOrAway === 'home' ? opponentName : clubName;
     return `${homeTeam} vs ${awayTeam}`;
   };
+  
+    const performanceByTeam = (performance: PerformanceDetail[] | undefined) => {
+    if (!performance) return {};
+    return performance.reduce((acc, item) => {
+      const match = item.playerName.match(/(.*) \((.*)\)/);
+      const team = match ? match[2] : clubInfo.name;
+      
+      const teamKey = team.trim();
+      if (!acc[teamKey]) {
+        acc[teamKey] = [];
+      }
+      acc[teamKey].push({ ...item, playerName: match ? match[1].trim() : item.playerName.trim() });
+      return acc;
+    }, {} as Record<string, PerformanceDetail[]>);
+  };
+  
+  const selectedScorersByTeam = performanceByTeam(selectedResult?.scorers);
+  const selectedAssistsByTeam = performanceByTeam(selectedResult?.assists);
+
+  const teamNames = useMemo(() => {
+    if (!selectedResult) return ['', ''];
+    if (selectedResult.matchType === 'opponent-vs-opponent' || selectedResult.matchType === 'opponent_vs_opponent') {
+        return [selectedResult.homeTeam || '', selectedResult.awayTeam || ''];
+    }
+    const teamA = selectedResult.homeOrAway === 'home' ? clubInfo.name : selectedResult.opponent;
+    const teamB = selectedResult.homeOrAway === 'home' ? selectedResult.opponent : clubInfo.name;
+    return [teamA, teamB];
+  }, [selectedResult, clubInfo.name]);
 
   if (loading || !date) {
     return (
@@ -1036,28 +1065,64 @@ export default function CalendarPage() {
     </Dialog>
 
     <Dialog open={resultDetailsOpen} onOpenChange={setResultDetailsOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-4xl">
             <DialogHeader>
-                <DialogTitle>Détails du match {selectedResult ? getResultTitle(selectedResult) : ''}</DialogTitle>
-                    <DialogDescription>
-                    {selectedResult?.date} - Score final : {selectedResult?.score}
-                </DialogDescription>
+              {selectedResult && (
+                <>
+                   <DialogTitle className="text-xl text-center mb-2">{getResultTitle(selectedResult)}</DialogTitle>
+                    <DialogDescription className="text-center">Score final : <span className="font-bold text-foreground text-lg">{selectedResult.score}</span></DialogDescription>
+                </>
+              )}
             </DialogHeader>
             {selectedResult && (
-                <div className="space-y-4 py-4">
-                    <p>
-                        <strong>Catégorie :</strong> {selectedResult.gender === 'Féminin' ? `${selectedResult.teamCategory} F` : selectedResult.teamCategory}
-                    </p>
-                    <p>
-                        <strong>Lieu :</strong> {selectedResult.location || "Non spécifié"}
-                    </p>
-                    <p>
-                        <strong>Buteurs :</strong> {formatPerformance(selectedResult.scorers)}
-                    </p>
-                    <p>
-                        <strong>Passeurs :</strong> {formatPerformance(selectedResult.assists)}
-                    </p>
+              <div className="space-y-4 py-4">
+                 <div className="flex justify-center">
+                    <Badge variant="secondary">{selectedResult.category}</Badge>
                 </div>
+                <Separator />
+                <div className="grid grid-cols-3 gap-4 text-sm text-center">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="flex items-center gap-2">
+                      <Hash className="h-4 w-4 text-muted-foreground" />
+                      <strong>Catégorie</strong>
+                    </div>
+                    <span>{selectedResult.gender === 'Féminin' ? `${selectedResult.teamCategory} F` : selectedResult.teamCategory}</span>
+                  </div>
+                   <div className="flex flex-col items-center gap-1">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <strong>Lieu</strong>
+                    </div>
+                    <span>{selectedResult.location || "Non spécifié"}</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                     <div className="flex items-center gap-2">
+                        <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                        <strong>Date et Heure</strong>
+                     </div>
+                     <div className="flex flex-col items-center">
+                        <span>{format(parseISO(selectedResult.date), "dd/MM/yyyy")}</span>
+                        <span className="text-muted-foreground text-xs">{selectedResult.time}</span>
+                     </div>
+                  </div>
+                </div>
+                <Separator />
+                 <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                  {[teamNames[0], teamNames[1]].map((team, index) => (
+                    <div key={`${team}-${index}`} className="space-y-3">
+                        <h4 className="font-semibold text-center">{team}</h4>
+                        <div>
+                            <strong className="text-sm flex items-center gap-2 mb-1"><Trophy className="h-4 w-4 text-muted-foreground" />Buteurs</strong>
+                            <p className="text-sm text-muted-foreground pl-2">{formatPerformance(selectedScorersByTeam[team])}</p>
+                        </div>
+                        <div>
+                            <strong className="text-sm flex items-center gap-2 mb-1"><Star className="h-4 w-4 text-muted-foreground" />Passeurs</strong>
+                            <p className="text-sm text-muted-foreground pl-2">{formatPerformance(selectedAssistsByTeam[team])}</p>
+                        </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
             <DialogFooter>
                 <Button onClick={() => setResultDetailsOpen(false)}>Fermer</Button>
@@ -1069,4 +1134,5 @@ export default function CalendarPage() {
   );
 }
 
+    
     
