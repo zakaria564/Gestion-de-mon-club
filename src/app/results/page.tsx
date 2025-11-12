@@ -533,7 +533,15 @@ export default function ResultsPage() {
   const selectedScorersByTeam = performanceByTeam(selectedResult?.scorers);
   const selectedAssistsByTeam = performanceByTeam(selectedResult?.assists);
 
-  const teamNames = selectedResult ? [Object.keys(selectedScorersByTeam)[0] || '', Object.keys(selectedScorersByTeam)[1] || ''] : ['', ''];
+  const teamNames = useMemo(() => {
+    if (!selectedResult) return ['', ''];
+    if (selectedResult.matchType === 'opponent-vs-opponent' || selectedResult.matchType === 'opponent_vs_opponent') {
+        return [selectedResult.homeTeam || '', selectedResult.awayTeam || ''];
+    }
+    const teamA = selectedResult.homeOrAway === 'home' ? clubInfo.name : selectedResult.opponent;
+    const teamB = selectedResult.homeOrAway === 'home' ? selectedResult.opponent : clubInfo.name;
+    return [teamA, teamB];
+  }, [selectedResult, clubInfo.name]);
 
 
   return (
@@ -810,7 +818,7 @@ export default function ResultsPage() {
         </Tabs>
         
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-          <DialogContent className="sm:max-w-2xl">
+          <DialogContent className="sm:max-w-4xl">
             <DialogHeader>
               {selectedResult && (
                 <>
@@ -825,7 +833,7 @@ export default function ResultsPage() {
                     <Badge variant="secondary">{selectedResult.category}</Badge>
                 </div>
                 <Separator />
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-3 gap-4 text-sm text-center">
                   <div className="flex flex-col items-center gap-1">
                     <div className="flex items-center gap-2">
                       <Hash className="h-4 w-4 text-muted-foreground" />
@@ -840,7 +848,7 @@ export default function ResultsPage() {
                     </div>
                     <span>{selectedResult.location || "Non spécifié"}</span>
                   </div>
-                  <div className="col-span-2 flex flex-col items-center gap-1">
+                  <div className="flex flex-col items-center gap-1">
                      <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <strong>Date et Heure</strong>
@@ -852,20 +860,18 @@ export default function ResultsPage() {
                   </div>
                 </div>
                 <Separator />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                  {Object.entries(selectedScorersByTeam).map(([team, scorers]) => (
-                    <div key={`scorers-${team}`} className="space-y-2">
+                <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                  {[teamNames[0], teamNames[1]].map((team, index) => (
+                    <div key={`${team}-${index}`} className="space-y-3">
                         <h4 className="font-semibold text-center">{team}</h4>
                         <div>
                             <strong className="text-sm flex items-center gap-2 mb-1"><Trophy className="h-4 w-4 text-muted-foreground" />Buteurs</strong>
-                            <p className="text-sm text-muted-foreground pl-2">{formatPerformance(scorers)}</p>
+                            <p className="text-sm text-muted-foreground pl-2">{formatPerformance(selectedScorersByTeam[team])}</p>
                         </div>
-                        {selectedAssistsByTeam[team] && (
-                            <div>
-                                <strong className="text-sm flex items-center gap-2 mb-1"><Star className="h-4 w-4 text-muted-foreground" />Passeurs</strong>
-                                <p className="text-sm text-muted-foreground pl-2">{formatPerformance(selectedAssistsByTeam[team])}</p>
-                            </div>
-                        )}
+                        <div>
+                            <strong className="text-sm flex items-center gap-2 mb-1"><Star className="h-4 w-4 text-muted-foreground" />Passeurs</strong>
+                            <p className="text-sm text-muted-foreground pl-2">{formatPerformance(selectedAssistsByTeam[team])}</p>
+                        </div>
                     </div>
                   ))}
                 </div>
