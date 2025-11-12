@@ -520,16 +520,21 @@ export default function ResultsPage() {
       const match = item.playerName.match(/(.*) \((.*)\)/);
       const team = match ? match[2] : clubInfo.name;
       const name = match ? match[1] : item.playerName;
-      if (!acc[team]) {
-        acc[team] = [];
+      
+      const teamKey = team.trim();
+      if (!acc[teamKey]) {
+        acc[teamKey] = [];
       }
-      acc[team].push({ ...item, playerName: name });
+      acc[teamKey].push({ ...item, playerName: name.trim() });
       return acc;
     }, {} as Record<string, PerformanceDetail[]>);
   };
   
   const selectedScorersByTeam = performanceByTeam(selectedResult?.scorers);
   const selectedAssistsByTeam = performanceByTeam(selectedResult?.assists);
+
+  const teamNames = selectedResult ? [Object.keys(selectedScorersByTeam)[0] || '', Object.keys(selectedScorersByTeam)[1] || ''] : ['', ''];
+
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -805,7 +810,7 @@ export default function ResultsPage() {
         </Tabs>
         
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-          <DialogContent className="sm:max-w-lg">
+          <DialogContent className="sm:max-w-2xl">
             <DialogHeader>
               {selectedResult && (
                 <>
@@ -816,53 +821,53 @@ export default function ResultsPage() {
             </DialogHeader>
             {selectedResult && (
               <div className="space-y-4 py-4">
+                 <div className="flex justify-center">
+                    <Badge variant="secondary">{selectedResult.category}</Badge>
+                </div>
                 <Separator />
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Hash className="h-4 w-4 text-muted-foreground" />
-                    <strong>Catégorie:</strong>
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="flex items-center gap-2">
+                      <Hash className="h-4 w-4 text-muted-foreground" />
+                      <strong>Catégorie</strong>
+                    </div>
                     <span>{selectedResult.gender === 'Féminin' ? `${selectedResult.teamCategory} F` : selectedResult.teamCategory}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <strong>Date:</strong>
-                    <span>{format(parseISO(selectedResult.date), "dd/MM/yyyy")}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <strong>Heure:</strong>
-                    <span>{selectedResult.time}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <strong>Lieu:</strong>
+                   <div className="flex flex-col items-center gap-1">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <strong>Lieu</strong>
+                    </div>
                     <span>{selectedResult.location || "Non spécifié"}</span>
+                  </div>
+                  <div className="col-span-2 flex flex-col items-center gap-1">
+                     <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <strong>Date et Heure</strong>
+                     </div>
+                     <div className="flex flex-col items-center">
+                        <span>{format(parseISO(selectedResult.date), "dd/MM/yyyy")}</span>
+                        <span className="text-muted-foreground text-xs">{selectedResult.time}</span>
+                     </div>
                   </div>
                 </div>
                 <Separator />
-                <div className="space-y-4">
-                  <div>
-                    <strong className="text-sm flex items-center gap-2 mb-2"><Trophy className="h-4 w-4 text-muted-foreground" />Buteurs</strong>
-                    <div className="pl-2 space-y-2">
-                      {Object.entries(selectedScorersByTeam).map(([team, scorers]) => (
-                        <div key={team}>
-                          <p className="text-sm font-semibold">{team}</p>
-                          <p className="text-sm text-muted-foreground pl-2">{formatPerformance(scorers)}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                  {Object.entries(selectedScorersByTeam).map(([team, scorers]) => (
+                    <div key={`scorers-${team}`} className="space-y-2">
+                        <h4 className="font-semibold text-center">{team}</h4>
+                        <div>
+                            <strong className="text-sm flex items-center gap-2 mb-1"><Trophy className="h-4 w-4 text-muted-foreground" />Buteurs</strong>
+                            <p className="text-sm text-muted-foreground pl-2">{formatPerformance(scorers)}</p>
                         </div>
-                      ))}
+                        {selectedAssistsByTeam[team] && (
+                            <div>
+                                <strong className="text-sm flex items-center gap-2 mb-1"><Star className="h-4 w-4 text-muted-foreground" />Passeurs</strong>
+                                <p className="text-sm text-muted-foreground pl-2">{formatPerformance(selectedAssistsByTeam[team])}</p>
+                            </div>
+                        )}
                     </div>
-                  </div>
-                  <div>
-                    <strong className="text-sm flex items-center gap-2 mb-2"><Star className="h-4 w-4 text-muted-foreground" />Passeurs</strong>
-                    <div className="pl-2 space-y-2">
-                      {Object.entries(selectedAssistsByTeam).map(([team, assists]) => (
-                        <div key={team}>
-                          <p className="text-sm font-semibold">{team}</p>
-                          <p className="text-sm text-muted-foreground pl-2">{formatPerformance(assists)}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             )}
