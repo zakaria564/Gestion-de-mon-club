@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useResultsContext, NewResult, Result, PerformanceDetail } from "@/context/results-context";
-import { Edit, PlusCircle, Trash2, X, FilterX, Eye, MoreHorizontal, UserPlus, Calendar, MapPin, Trophy, Star, Hash } from "lucide-react";
+import { Edit, PlusCircle, Trash2, X, FilterX, Eye, MoreHorizontal, UserPlus, Calendar, MapPin, Trophy, Star, Hash, Clock } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -514,6 +514,23 @@ export default function ResultsPage() {
       );
   };
 
+  const performanceByTeam = (performance: PerformanceDetail[] | undefined) => {
+    if (!performance) return {};
+    return performance.reduce((acc, item) => {
+      const match = item.playerName.match(/(.*) \((.*)\)/);
+      const team = match ? match[2] : clubInfo.name;
+      const name = match ? match[1] : item.playerName;
+      if (!acc[team]) {
+        acc[team] = [];
+      }
+      acc[team].push({ ...item, playerName: name });
+      return acc;
+    }, {} as Record<string, PerformanceDetail[]>);
+  };
+  
+  const selectedScorersByTeam = performanceByTeam(selectedResult?.scorers);
+  const selectedAssistsByTeam = performanceByTeam(selectedResult?.assists);
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -788,82 +805,93 @@ export default function ResultsPage() {
         </Tabs>
         
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    {selectedResult && (
-                    <>
-                        <DialogTitle className="text-xl text-center mb-2">{getResultTitle(selectedResult)}</DialogTitle>
-                        <DialogDescription className="text-center">Score final : <span className="font-bold text-foreground text-lg">{selectedResult.score}</span></DialogDescription>
-                    </>
-                    )}
-                </DialogHeader>
-                {selectedResult && (
-                    <div className="space-y-4 py-4">
-                        <Separator />
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div className="flex items-center gap-2">
-                                <Hash className="h-4 w-4 text-muted-foreground" />
-                                <strong>Catégorie:</strong>
-                                <span>{selectedResult.gender === 'Féminin' ? `${selectedResult.teamCategory} F` : selectedResult.teamCategory}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4 text-muted-foreground" />
-                                <strong>Date:</strong>
-                                <span>{format(parseISO(selectedResult.date), "dd/MM/yyyy")}</span>
-                            </div>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              {selectedResult && (
+                <>
+                  <DialogTitle className="text-xl text-center mb-2">{getResultTitle(selectedResult)}</DialogTitle>
+                  <DialogDescription className="text-center">Score final : <span className="font-bold text-foreground text-lg">{selectedResult.score}</span></DialogDescription>
+                </>
+              )}
+            </DialogHeader>
+            {selectedResult && (
+              <div className="space-y-4 py-4">
+                <Separator />
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Hash className="h-4 w-4 text-muted-foreground" />
+                    <strong>Catégorie:</strong>
+                    <span>{selectedResult.gender === 'Féminin' ? `${selectedResult.teamCategory} F` : selectedResult.teamCategory}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <strong>Date:</strong>
+                    <span>{format(parseISO(selectedResult.date), "dd/MM/yyyy")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <strong>Heure:</strong>
+                    <span>{selectedResult.time}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <strong>Lieu:</strong>
+                    <span>{selectedResult.location || "Non spécifié"}</span>
+                  </div>
+                </div>
+                <Separator />
+                <div className="space-y-4">
+                  <div>
+                    <strong className="text-sm flex items-center gap-2 mb-2"><Trophy className="h-4 w-4 text-muted-foreground" />Buteurs</strong>
+                    <div className="pl-2 space-y-2">
+                      {Object.entries(selectedScorersByTeam).map(([team, scorers]) => (
+                        <div key={team}>
+                          <p className="text-sm font-semibold">{team}</p>
+                          <p className="text-sm text-muted-foreground pl-2">{formatPerformance(scorers)}</p>
                         </div>
-                        <div className="flex items-center gap-2 text-sm">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <strong>Lieu:</strong>
-                            <span>{selectedResult.location || "Non spécifié"}</span>
-                        </div>
-                        <Separator />
-                        <div className="space-y-3">
-                            <div className="flex items-start gap-2">
-                                <Trophy className="h-4 w-4 text-muted-foreground mt-0.5" />
-                                <div>
-                                    <strong className="text-sm">Buteurs:</strong>
-                                    <p className="text-sm text-muted-foreground">{formatPerformance(selectedResult.scorers)}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-2">
-                                <Star className="h-4 w-4 text-muted-foreground mt-0.5" />
-                                <div>
-                                    <strong className="text-sm">Passeurs:</strong>
-                                    <p className="text-sm text-muted-foreground">{formatPerformance(selectedResult.assists)}</p>
-                                </div>
-                            </div>
-                        </div>
+                      ))}
                     </div>
-                )}
-                <DialogFooter className="justify-end gap-2">
-                    <Button variant="outline" onClick={() => openEditDialog(selectedResult!)}>
-                        <Edit className="mr-2 h-4 w-4" /> Modifier
-                    </Button>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="destructive">
-                                <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Cette action ne peut pas être annulée. Cela supprimera définitivement ce résultat.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete(selectedResult!.id)}>Supprimer</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </DialogFooter>
-            </DialogContent>
+                  </div>
+                  <div>
+                    <strong className="text-sm flex items-center gap-2 mb-2"><Star className="h-4 w-4 text-muted-foreground" />Passeurs</strong>
+                    <div className="pl-2 space-y-2">
+                      {Object.entries(selectedAssistsByTeam).map(([team, assists]) => (
+                        <div key={team}>
+                          <p className="text-sm font-semibold">{team}</p>
+                          <p className="text-sm text-muted-foreground pl-2">{formatPerformance(assists)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <DialogFooter className="justify-end gap-2">
+              <Button variant="outline" onClick={() => openEditDialog(selectedResult!)}>
+                <Edit className="mr-2 h-4 w-4" /> Modifier
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive">
+                    <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Cette action ne peut pas être annulée. Cela supprimera définitivement ce résultat.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleDelete(selectedResult!.id)}>Supprimer</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </DialogFooter>
+          </DialogContent>
         </Dialog>
     </div>
   );
 }
-
-    
