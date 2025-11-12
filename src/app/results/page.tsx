@@ -83,6 +83,9 @@ export default function ResultsPage() {
   
   const [manualOpponentScorers, setManualOpponentScorers] = useState<PerformanceDetail[]>([]);
   const [manualOpponentAssists, setManualOpponentAssists] = useState<PerformanceDetail[]>([]);
+  const [manualAwayScorers, setManualAwayScorers] = useState<PerformanceDetail[]>([]);
+  const [manualAwayAssists, setManualAwayAssists] = useState<PerformanceDetail[]>([]);
+
 
   const [newResult, setNewResult] = useState<NewResult>({
     opponent: '',
@@ -153,52 +156,45 @@ export default function ResultsPage() {
   };
 
   const handleManualPerformanceChange = (
-    listName: 'scorers' | 'assists',
+    list: PerformanceDetail[],
+    setList: React.Dispatch<React.SetStateAction<PerformanceDetail[]>>,
     index: number,
     field: 'playerName' | 'count',
     value: string | number
   ) => {
-      const list = listName === 'scorers' ? [...manualOpponentScorers] : [...manualOpponentAssists];
-      const item = { ...list[index] };
+      const updatedList = [...list];
+      const item = { ...updatedList[index] };
 
       if (field === 'playerName') {
           item.playerName = value as string;
       } else {
           item.count = Math.max(1, Number(value));
       }
-      list[index] = item;
-
-      if (listName === 'scorers') {
-          setManualOpponentScorers(list);
-      } else {
-          setManualOpponentAssists(list);
-      }
+      updatedList[index] = item;
+      setList(updatedList);
   };
 
-  const addManualPerformanceItem = (listName: 'scorers' | 'assists') => {
-      const list = listName === 'scorers' ? [...manualOpponentScorers] : [...manualOpponentAssists];
-      list.push({ playerName: '', count: 1 });
-      if (listName === 'scorers') {
-          setManualOpponentScorers(list);
-      } else {
-          setManualOpponentAssists(list);
-      }
+  const addManualPerformanceItem = (
+    list: PerformanceDetail[],
+    setList: React.Dispatch<React.SetStateAction<PerformanceDetail[]>>
+  ) => {
+      setList([...list, { playerName: '', count: 1 }]);
   };
 
-  const removeManualPerformanceItem = (listName: 'scorers' | 'assists', index: number) => {
-      let list = listName === 'scorers' ? [...manualOpponentScorers] : [...manualOpponentAssists];
-      list = list.filter((_, i) => i !== index);
-      if (listName === 'scorers') {
-          setManualOpponentScorers(list);
-      } else {
-          setManualOpponentAssists(list);
-      }
+  const removeManualPerformanceItem = (
+    list: PerformanceDetail[],
+    setList: React.Dispatch<React.SetStateAction<PerformanceDetail[]>>,
+    index: number
+  ) => {
+      setList(list.filter((_, i) => i !== index));
   };
   
   const resetForm = () => {
     setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: '', teamCategory: '', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
     setManualOpponentScorers([]);
     setManualOpponentAssists([]);
+    setManualAwayScorers([]);
+    setManualAwayAssists([]);
     setOpen(false);
     setIsEditing(false);
     setEditingResult(null);
@@ -226,10 +222,15 @@ export default function ResultsPage() {
       allAssists = [...allAssists, ...opponentAssists];
     } else { // opponent-vs-opponent
       finalResult.opponent = `${finalResult.homeTeam} vs ${finalResult.awayTeam}`;
+      
       const homeScorers = manualOpponentScorers.map(s => ({...s, playerName: `${s.playerName} (${finalResult.homeTeam})`}));
-      const awayScorers = manualOpponentAssists.map(s => ({...s, playerName: `${s.playerName} (${finalResult.awayTeam})`}));
+      const homeAssists = manualOpponentAssists.map(a => ({...a, playerName: `${a.playerName} (${finalResult.homeTeam})`}));
+      
+      const awayScorers = manualAwayScorers.map(s => ({...s, playerName: `${s.playerName} (${finalResult.awayTeam})`}));
+      const awayAssists = manualAwayAssists.map(a => ({...a, playerName: `${a.playerName} (${finalResult.awayTeam})`}));
+      
       allScorers = [...homeScorers, ...awayScorers];
-      allAssists = []; // Assuming no assists tracking for opponent-vs-opponent
+      allAssists = [...homeAssists, ...awayAssists];
     }
 
     finalResult.scorers = allScorers;
@@ -255,6 +256,8 @@ export default function ResultsPage() {
     
     let opponentScorers: PerformanceDetail[] = [];
     let opponentAssists: PerformanceDetail[] = [];
+    let awayScorers: PerformanceDetail[] = [];
+    let awayAssists: PerformanceDetail[] = [];
 
     if (resultMatchType === 'club-match') {
         opponentScorers = result.scorers
@@ -267,9 +270,16 @@ export default function ResultsPage() {
         opponentScorers = result.scorers
             ?.filter(s => s.playerName.includes(`(${result.homeTeam})`))
             .map(s => ({ ...s, playerName: s.playerName.replace(` (${result.homeTeam})`, '') })) || [];
-        opponentAssists = result.scorers
+        opponentAssists = result.assists
+            ?.filter(a => a.playerName.includes(`(${result.homeTeam})`))
+            .map(a => ({ ...a, playerName: a.playerName.replace(` (${result.homeTeam})`, '') })) || [];
+
+        awayScorers = result.scorers
             ?.filter(s => s.playerName.includes(`(${result.awayTeam})`))
             .map(s => ({ ...s, playerName: s.playerName.replace(` (${result.awayTeam})`, '') })) || [];
+        awayAssists = result.assists
+            ?.filter(a => a.playerName.includes(`(${result.awayTeam})`))
+            .map(a => ({ ...a, playerName: a.playerName.replace(` (${result.awayTeam})`, '') })) || [];
     }
 
     setNewResult({
@@ -289,13 +299,10 @@ export default function ResultsPage() {
       matchType: resultMatchType,
     });
   
-    if (resultMatchType === 'club-match') {
-      setManualOpponentScorers(opponentScorers);
-      setManualOpponentAssists(opponentAssists);
-    } else {
-      setManualOpponentScorers(opponentScorers);
-      setManualOpponentAssists(opponentAssists); // away team scorers are in assists field
-    }
+    setManualOpponentScorers(opponentScorers);
+    setManualOpponentAssists(opponentAssists);
+    setManualAwayScorers(awayScorers);
+    setManualAwayAssists(awayAssists);
   
     setOpen(true);
   }
@@ -316,7 +323,7 @@ export default function ResultsPage() {
 
   const opponentOptions = useMemo(() => {
     const allOpponents = results.flatMap(r => {
-        if (r.matchType === 'opponent-vs-opponent') {
+        if (r.matchType === 'opponent-vs-opponent' || r.matchType === 'opponent_vs_opponent') {
             return [r.homeTeam, r.awayTeam];
         }
         return [r.opponent];
@@ -396,7 +403,7 @@ export default function ResultsPage() {
   }
   
   const getMatchOutcome = (result: Result) => {
-    if (result.matchType === 'opponent-vs-opponent') {
+    if (result.matchType === 'opponent-vs-opponent' || result.matchType === 'opponent_vs_opponent') {
         return 'bg-primary'; // Blue for opponent vs opponent
     }
 
@@ -561,13 +568,12 @@ export default function ResultsPage() {
     return performance.reduce((acc, item) => {
       const match = item.playerName.match(/(.*) \((.*)\)/);
       const team = match ? match[2] : clubInfo.name;
-      const name = match ? match[1] : item.playerName;
       
       const teamKey = team.trim();
       if (!acc[teamKey]) {
         acc[teamKey] = [];
       }
-      acc[teamKey].push({ ...item, playerName: name.trim() });
+      acc[teamKey].push({ ...item, playerName: match ? match[1].trim() : item.playerName.trim() });
       return acc;
     }, {} as Record<string, PerformanceDetail[]>);
   };
@@ -615,7 +621,7 @@ export default function ResultsPage() {
                             
                             <Separator/>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
                                 <div className="grid gap-2">
                                     <Label htmlFor="date">Date</Label>
                                     <Input id="date" type="date" value={newResult.date} onChange={handleInputChange} required />
@@ -628,10 +634,6 @@ export default function ResultsPage() {
                                     <Label htmlFor="location">Lieu</Label>
                                     <Input id="location" value={newResult.location} onChange={handleInputChange} required />
                                 </div>
-                                 <div className="grid gap-2">
-                                    <Label htmlFor="score">Score final (ex: 3-1)</Label>
-                                    <Input id="score" value={newResult.score} onChange={handleInputChange} required className="text-center text-lg font-bold" />
-                                </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="category">Type de match</Label>
                                     <Select onValueChange={(v) => handleSelectChange('category', v)} value={newResult.category} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{matchCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select>
@@ -643,6 +645,10 @@ export default function ResultsPage() {
                                 <div className="grid gap-2">
                                     <Label htmlFor="gender">Genre</Label>
                                     <Select onValueChange={(v) => handleSelectChange('gender', v)} value={newResult.gender} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select>
+                                </div>
+                                 <div className="grid gap-2 md:col-span-3">
+                                    <Label htmlFor="score" className="text-center">Score final (ex: 3-1)</Label>
+                                    <Input id="score" value={newResult.score} onChange={handleInputChange} required className="text-center text-xl font-bold" />
                                 </div>
                                 {matchType === 'club-match' && (
                                     <>
@@ -700,23 +706,23 @@ export default function ResultsPage() {
                                                 <Label>Buteurs</Label>
                                                 {manualOpponentScorers.map((scorer, index) => (
                                                   <div key={index} className="flex items-center gap-2 mb-2">
-                                                      <Input placeholder="Nom du joueur" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange('scorers', index, 'playerName', e.target.value)} />
-                                                      <Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange('scorers', index, 'count', e.target.value)} className="w-20" min="1" />
-                                                      <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem('scorers', index)}><X className="h-4 w-4 text-destructive"/></Button>
+                                                      <Input placeholder="Nom du joueur" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'playerName', e.target.value)} />
+                                                      <Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'count', e.target.value)} className="w-20" min="1" />
+                                                      <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers, index)}><X className="h-4 w-4 text-destructive"/></Button>
                                                   </div>
                                                 ))}
-                                                <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem('scorers')} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button>
+                                                <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button>
                                             </div>
                                             <div>
                                                 <Label>Passeurs</Label>
                                                 {manualOpponentAssists.map((assist, index) => (
                                                   <div key={index} className="flex items-center gap-2 mb-2">
-                                                      <Input placeholder="Nom du joueur" value={assist.playerName} onChange={(e) => handleManualPerformanceChange('assists', index, 'playerName', e.target.value)} />
-                                                      <Input type="number" value={assist.count} onChange={(e) => handleManualPerformanceChange('assists', index, 'count', e.target.value)} className="w-20" min="1" />
-                                                      <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem('assists', index)}><X className="h-4 w-4 text-destructive"/></Button>
+                                                      <Input placeholder="Nom du joueur" value={assist.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'playerName', e.target.value)} />
+                                                      <Input type="number" value={assist.count} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'count', e.target.value)} className="w-20" min="1" />
+                                                      <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists, index)}><X className="h-4 w-4 text-destructive"/></Button>
                                                   </div>
                                                 ))}
-                                                <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem('assists')} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button>
+                                                <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button>
                                             </div>
                                       </div>
                                   </div>
@@ -724,7 +730,7 @@ export default function ResultsPage() {
                                ) : (
                                 <>
                                   <div>
-                                    <div className="font-semibold mb-2 text-center">{newResult.homeTeam || 'Équipe à Domicile'}</div>
+                                    <div className="font-semibold mb-2">Équipe à Domicile</div>
                                     <Select onValueChange={(v) => handleSelectChange('homeTeam', v)} value={newResult.homeTeam} required>
                                       <SelectTrigger><SelectValue placeholder="Équipe Domicile..."/></SelectTrigger>
                                       <SelectContent>{filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent>
@@ -734,17 +740,28 @@ export default function ResultsPage() {
                                           <Label>Buteurs</Label>
                                           {manualOpponentScorers.map((scorer, index) => (
                                             <div key={index} className="flex items-center gap-2 mb-2">
-                                                <Input placeholder="Nom du joueur" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange('scorers', index, 'playerName', e.target.value)} />
-                                                <Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange('scorers', index, 'count', e.target.value)} className="w-20" min="1" />
-                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem('scorers', index)}><X className="h-4 w-4 text-destructive"/></Button>
+                                                <Input placeholder="Nom du joueur" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'playerName', e.target.value)} />
+                                                <Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'count', e.target.value)} className="w-20" min="1" />
+                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers, index)}><X className="h-4 w-4 text-destructive"/></Button>
                                             </div>
                                           ))}
-                                          <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem('scorers')} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button>
+                                          <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button>
+                                      </div>
+                                      <div>
+                                          <Label>Passeurs</Label>
+                                          {manualOpponentAssists.map((assist, index) => (
+                                            <div key={index} className="flex items-center gap-2 mb-2">
+                                                <Input placeholder="Nom du joueur" value={assist.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'playerName', e.target.value)} />
+                                                <Input type="number" value={assist.count} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'count', e.target.value)} className="w-20" min="1" />
+                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists, index)}><X className="h-4 w-4 text-destructive"/></Button>
+                                            </div>
+                                          ))}
+                                          <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button>
                                       </div>
                                     </div>
                                   </div>
                                    <div>
-                                    <div className="font-semibold mb-2 text-center">{newResult.awayTeam || 'Équipe à l\'Extérieur'}</div>
+                                    <div className="font-semibold mb-2">Équipe à l'Extérieur</div>
                                      <Select onValueChange={(v) => handleSelectChange('awayTeam', v)} value={newResult.awayTeam} required>
                                       <SelectTrigger><SelectValue placeholder="Équipe Extérieur..." /></SelectTrigger>
                                       <SelectContent>{filteredOpponentOptions.filter(op => op.name !== newResult.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent>
@@ -752,14 +769,25 @@ export default function ResultsPage() {
                                      <div className="space-y-4 p-4 border rounded-md mt-4">
                                         <div>
                                             <Label>Buteurs</Label>
-                                            {manualOpponentAssists.map((scorer, index) => (
+                                            {manualAwayScorers.map((scorer, index) => (
                                               <div key={index} className="flex items-center gap-2 mb-2">
-                                                  <Input placeholder="Nom du joueur" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange('assists', index, 'playerName', e.target.value)} />
-                                                  <Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange('assists', index, 'count', e.target.value)} className="w-20" min="1" />
-                                                  <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem('assists', index)}><X className="h-4 w-4 text-destructive"/></Button>
+                                                  <Input placeholder="Nom du joueur" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange(manualAwayScorers, setManualAwayScorers, index, 'playerName', e.target.value)} />
+                                                  <Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange(manualAwayScorers, setManualAwayScorers, index, 'count', e.target.value)} className="w-20" min="1" />
+                                                  <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualAwayScorers, setManualAwayScorers, index)}><X className="h-4 w-4 text-destructive"/></Button>
                                               </div>
                                             ))}
-                                            <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem('assists')} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button>
+                                            <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualAwayScorers, setManualAwayScorers)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button>
+                                        </div>
+                                        <div>
+                                            <Label>Passeurs</Label>
+                                            {manualAwayAssists.map((assist, index) => (
+                                              <div key={index} className="flex items-center gap-2 mb-2">
+                                                  <Input placeholder="Nom du joueur" value={assist.playerName} onChange={(e) => handleManualPerformanceChange(manualAwayAssists, setManualAwayAssists, index, 'playerName', e.target.value)} />
+                                                  <Input type="number" value={assist.count} onChange={(e) => handleManualPerformanceChange(manualAwayAssists, setManualAwayAssists, index, 'count', e.target.value)} className="w-20" min="1" />
+                                                  <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualAwayAssists, setManualAwayAssists, index)}><X className="h-4 w-4 text-destructive"/></Button>
+                                              </div>
+                                            ))}
+                                            <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualAwayAssists, setManualAwayAssists)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button>
                                         </div>
                                       </div>
                                   </div>
@@ -855,7 +883,7 @@ export default function ResultsPage() {
             </DialogHeader>
             {selectedResult && (
               <div className="space-y-4 py-4">
-                <div className="flex justify-center">
+                 <div className="flex justify-center">
                     <Badge variant="secondary">{selectedResult.category}</Badge>
                 </div>
                 <Separator />
