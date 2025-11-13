@@ -106,10 +106,11 @@ export default function FinancesPage() {
         const totalPaid = memberPayments.reduce((sum, p) => sum + p.paidAmount, 0);
         const paymentCount = memberPayments.length;
         
-        let status: MemberStatus = 'À jour';
+        let status: MemberStatus;
 
         const hasUnpaidFromPreviousMonths = memberPayments.some(p => {
           const paymentDate = parseISO(`${p.dueDate}-01`);
+          // A payment is considered late if it's for a month before the current one, and it's not fully paid.
           return !isFuture(paymentDate) && p.dueDate < currentMonth && (p.status === 'non payé' || p.status === 'partiel');
         });
         
@@ -117,15 +118,17 @@ export default function FinancesPage() {
 
         if (hasUnpaidFromPreviousMonths) {
             status = 'En attente';
-        } else if (paymentForCurrentMonth && (paymentForCurrentMonth.status === 'non payé' || paymentForCurrentMonth.status === 'partiel')) {
-            status = paymentForCurrentMonth.status === 'partiel' ? 'Partiel' : 'En attente';
-        } else if (paymentForCurrentMonth && paymentForCurrentMonth.status === 'payé') {
-            status = 'À jour';
-        } else if (!paymentForCurrentMonth) {
-            // If no payment for the current month, check if there are unpaid months *before* today
-            // but after the last payment. This is complex. A simpler rule is better.
-            // If all past months are paid, they are "A jour" until a new invoice for the current month is missed.
-            status = 'À jour';
+        } else if (paymentForCurrentMonth) {
+            if (paymentForCurrentMonth.status === 'partiel') {
+                status = 'Partiel';
+            } else if (paymentForCurrentMonth.status === 'payé') {
+                status = 'À jour';
+            } else { // 'non payé'
+                status = 'En attente';
+            }
+        } else {
+            // No payment for the current month, so they are pending
+            status = 'En attente';
         }
 
         return {
