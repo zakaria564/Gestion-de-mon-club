@@ -23,7 +23,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 export function PlayerPaymentHistoryClient() {
   const params = useParams();
-  const memberName = decodeURIComponent(params.id as string);
+  const id = params.id as string;
+  const memberName = decodeURIComponent(id);
   const context = useFinancialContext();
   const { toast } = useToast();
 
