@@ -6,8 +6,6 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, writeBatch } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Coach } from "@/lib/data";
-import { useFinancialContext } from "./financial-context";
-import { usePlayersContext } from "./players-context";
 
 interface CoachesContextType {
   coaches: Coach[];
@@ -25,9 +23,6 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
-  const financialCtx = useFinancialContext();
-  const playersCtx = usePlayersContext();
-
 
   const getCoachesCollection = useCallback(() => {
     if (!user) return null;
@@ -62,7 +57,7 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
         setCoaches([]);
         setLoading(false);
     }
-  }, [user]);
+  }, [user, fetchCoaches]);
 
   const addCoach = async (coachData: Omit<Coach, 'id' | 'uid'>) => {
     const collectionRef = getCoachesCollection();
@@ -77,7 +72,7 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
   };
 
   const updateCoach = async (coachData: Coach) => {
-    if (!user || !financialCtx || !playersCtx) return;
+    if (!user) return;
     const oldCoach = coaches.find(c => c.id === coachData.id);
     if (!oldCoach) return;
 
@@ -93,6 +88,7 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
       batch.update(coachDocRef, dataToUpdate);
 
       if (nameHasChanged) {
+        // Update salaries
         const salariesRef = collection(db, "users", user.uid, "coachSalaries");
         const salariesSnap = await getDocs(query(salariesRef));
         salariesSnap.forEach(salaryDoc => {
@@ -101,6 +97,7 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
           }
         });
 
+        // Update players' coachName
         const playersRef = collection(db, "users", user.uid, "players");
         const playersSnap = await getDocs(query(playersRef));
         playersSnap.forEach(playerDoc => {
@@ -111,10 +108,11 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
       }
 
       await batch.commit();
-      await fetchCoaches();
+
       if (nameHasChanged) {
-        await financialCtx.fetchFinancialData();
-        await playersCtx.fetchPlayers();
+        window.location.reload();
+      } else {
+        await fetchCoaches();
       }
 
     } catch (err) {

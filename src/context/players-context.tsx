@@ -6,8 +6,6 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, writeBatch } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Player } from "@/lib/data";
-import { useResultsContext } from "./results-context";
-import { useFinancialContext } from "./financial-context";
 
 type NewPlayer = Omit<Player, 'id' | 'uid'>;
 
@@ -27,8 +25,6 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
-  const resultsCtx = useResultsContext();
-  const financialCtx = useFinancialContext();
 
   const getPlayersCollection = useCallback(() => {
     if (!user) return null;
@@ -63,7 +59,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
       setPlayers([]);
       setLoading(false);
     }
-  }, [user]);
+  }, [user, fetchPlayers]);
 
   const addPlayer = async (playerData: NewPlayer) => {
     const collectionRef = getPlayersCollection();
@@ -78,7 +74,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
   };
 
   const updatePlayer = async (playerData: Player) => {
-    if (!user || !resultsCtx || !financialCtx) return;
+    if (!user) return;
     const oldPlayer = players.find(p => p.id === playerData.id);
     if (!oldPlayer) return;
 
@@ -94,6 +90,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
       batch.update(playerDocRef, dataToUpdate);
 
       if (nameHasChanged) {
+        // Update results
         const resultsRef = collection(db, "users", user.uid, "results");
         const resultsSnap = await getDocs(resultsRef);
         resultsSnap.forEach(resultDoc => {
@@ -121,6 +118,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
           }
         });
         
+        // Update payments
         const paymentsRef = collection(db, "users", user.uid, "playerPayments");
         const paymentsQuery = query(paymentsRef, where("member", "==", oldName));
         const paymentsSnap = await getDocs(paymentsQuery);
@@ -130,10 +128,11 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
       }
 
       await batch.commit();
-      await fetchPlayers();
-      if(nameHasChanged){
-        await resultsCtx.fetchResults();
-        await financialCtx.fetchFinancialData();
+      
+      if(nameHasChanged) {
+        window.location.reload();
+      } else {
+        await fetchPlayers();
       }
 
     } catch (err) {
