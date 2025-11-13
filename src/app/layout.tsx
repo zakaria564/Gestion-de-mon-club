@@ -4,11 +4,11 @@
 import * as React from "react";
 import { Inter } from "next/font/google";
 import { AuthProvider, useAuth } from "@/context/auth-context";
-import { PlayersProvider, usePlayersContext } from "@/context/players-context";
-import { CoachesProvider, useCoachesContext } from "@/context/coaches-context";
-import { CalendarProvider, useCalendarContext } from "@/context/calendar-context";
-import { FinancialProvider, useFinancialContext } from "@/context/financial-context";
-import { ResultsProvider, useResultsContext } from "@/context/results-context";
+import { PlayersProvider } from "@/context/players-context";
+import { CoachesProvider } from "@/context/coaches-context";
+import { CalendarProvider } from "@/context/calendar-context";
+import { FinancialProvider } from "@/context/financial-context";
+import { ResultsProvider } from "@/context/results-context";
 import { ClubProvider, useClubContext } from "@/context/club-context";
 import { AppLayout } from "@/components/app-layout";
 import { Toaster } from "@/components/ui/toaster";
@@ -16,7 +16,7 @@ import { usePathname, useRouter } from "next/navigation";
 import "./globals.css";
 import { ClubLogo } from "@/components/club-logo";
 import { ThemeProvider } from "@/components/theme-provider";
-import { OpponentsProvider, useOpponentsContext } from "@/context/opponents-context";
+import { OpponentsProvider } from "@/context/opponents-context";
 
 
 const inter = Inter({
@@ -27,35 +27,10 @@ const inter = Inter({
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const { loading: clubLoading, fetchClubInfo } = useClubContext();
-  const { loading: playersLoading, fetchPlayers } = usePlayersContext();
-  const { loading: coachesLoading, fetchCoaches } = useCoachesContext();
-  const { loading: calendarLoading, fetchCalendarEvents } = useCalendarContext();
-  const { loading: financialLoading, fetchFinancialData } = useFinancialContext();
-  const { loading: resultsLoading, fetchResults } = useResultsContext();
-  const { loading: opponentsLoading, fetchOpponents } = useOpponentsContext();
-  
+  const { loading: clubLoading } = useClubContext();
   const pathname = usePathname();
   const router = useRouter();
   const isAuthPage = ["/login", "/signup", "/forgot-password"].includes(pathname);
-
-  const fetchAllData = React.useCallback(() => {
-    fetchClubInfo();
-    fetchPlayers();
-    fetchCoaches();
-    fetchOpponents();
-    fetchCalendarEvents();
-    fetchFinancialData();
-    fetchResults();
-  }, [fetchClubInfo, fetchPlayers, fetchCoaches, fetchOpponents, fetchCalendarEvents, fetchFinancialData, fetchResults]);
-  
-  React.useEffect(() => {
-    if (user) {
-      fetchAllData();
-    }
-  }, [user, fetchAllData]);
-
-  const isLoading = authLoading || clubLoading || playersLoading || coachesLoading || calendarLoading || financialLoading || resultsLoading || opponentsLoading;
 
   React.useEffect(() => {
     if (authLoading) return; 
@@ -70,7 +45,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   }, [user, authLoading, isAuthPage, pathname, router]);
 
   // Global loading state for the whole app
-  if (isLoading && !isAuthPage) {
+  if ((authLoading || (user && clubLoading)) && !isAuthPage) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <ClubLogo className="size-12" imageClassName="animate-pulse" />
@@ -116,21 +91,21 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <AuthProvider>
-                <ClubProvider>
-                  <PlayersProvider>
-                    <CoachesProvider>
+              <ClubProvider>
+                <ResultsProvider>
+                  <FinancialProvider>
+                    <PlayersProvider>
+                      <CoachesProvider>
                         <OpponentsProvider>
-                            <CalendarProvider>
-                                <ResultsProvider>
-                                    <FinancialProvider>
-                                        <AppContent>{children}</AppContent>
-                                    </FinancialProvider>
-                                </ResultsProvider>
-                            </CalendarProvider>
+                          <CalendarProvider>
+                            <AppContent>{children}</AppContent>
+                          </CalendarProvider>
                         </OpponentsProvider>
-                    </CoachesProvider>
-                  </PlayersProvider>
-                </ClubProvider>
+                      </CoachesProvider>
+                    </PlayersProvider>
+                  </FinancialProvider>
+                </ResultsProvider>
+              </ClubProvider>
             </AuthProvider>
             <Toaster />
         </ThemeProvider>

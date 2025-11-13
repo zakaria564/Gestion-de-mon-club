@@ -43,6 +43,12 @@ export function FinancialProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const fetchFinancialData = useCallback(async () => {
+    if (!user) {
+        setPlayerPayments([]);
+        setCoachSalaries([]);
+        setLoading(false);
+        return;
+    }
     setLoading(true);
     const playerPaymentsRef = getPlayerPaymentsCollection();
     const coachSalariesRef = getCoachSalariesCollection();
@@ -80,7 +86,7 @@ export function FinancialProvider({ children }: { children: ReactNode }) {
         setCoachSalaries([]);
         setLoading(false);
     }
-  }, [user]);
+  }, [user, fetchFinancialData]);
 
 
   const calculateStatus = (total: number, paid: number): 'payé' | 'non payé' | 'partiel' => {

@@ -81,7 +81,7 @@ export function ResultsProvider({ children }: { children: ReactNode }) {
         setResults([]);
         setLoading(false);
     }
-  }, [user]);
+  }, [user, fetchResults]);
 
   const addResult = async (resultData: NewResult) => {
     const collectionRef = getResultsCollection();
