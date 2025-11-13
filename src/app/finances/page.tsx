@@ -42,7 +42,7 @@ import { usePlayersContext } from "@/context/players-context";
 import { useCoachesContext } from "@/context/coaches-context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isFuture } from 'date-fns';
 import type { Payment } from "@/lib/financial-data";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -108,22 +108,25 @@ export default function FinancesPage() {
         
         let status: MemberStatus = 'À jour';
 
+        const hasUnpaidFromPreviousMonths = memberPayments.some(p => {
+          const paymentDate = parseISO(`${p.dueDate}-01`);
+          return !isFuture(paymentDate) && p.dueDate < currentMonth && (p.status === 'non payé' || p.status === 'partiel');
+        });
+        
         const paymentForCurrentMonth = memberPayments.find(p => p.dueDate === currentMonth);
-        const hasUnpaidFromPreviousMonths = memberPayments.some(p => p.dueDate < currentMonth && (p.status === 'non payé' || p.status === 'partiel'));
 
         if (hasUnpaidFromPreviousMonths) {
             status = 'En attente';
-        } else if (paymentForCurrentMonth) {
-            if (paymentForCurrentMonth.status === 'partiel') {
-                status = 'Partiel';
-            } else if (paymentForCurrentMonth.status === 'non payé') {
-                status = 'En attente';
-            }
-        } else {
-             // No payment entry for the current month yet
-            status = 'En attente';
+        } else if (paymentForCurrentMonth && (paymentForCurrentMonth.status === 'non payé' || paymentForCurrentMonth.status === 'partiel')) {
+            status = paymentForCurrentMonth.status === 'partiel' ? 'Partiel' : 'En attente';
+        } else if (paymentForCurrentMonth && paymentForCurrentMonth.status === 'payé') {
+            status = 'À jour';
+        } else if (!paymentForCurrentMonth) {
+            // If no payment for the current month, check if there are unpaid months *before* today
+            // but after the last payment. This is complex. A simpler rule is better.
+            // If all past months are paid, they are "A jour" until a new invoice for the current month is missed.
+            status = 'À jour';
         }
-
 
         return {
             member: member.name,
