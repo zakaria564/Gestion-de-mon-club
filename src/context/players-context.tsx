@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, writeBatch } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, writeBatch } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Player } from "@/lib/data";
 
@@ -121,11 +121,10 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
 
         // 3. Update player payments
         const paymentsRef = collection(db, "users", user.uid, "playerPayments");
-        const paymentsSnap = await getDocs(paymentsRef);
+        const paymentsQuery = query(paymentsRef, where("member", "==", oldName));
+        const paymentsSnap = await getDocs(paymentsQuery);
         paymentsSnap.forEach(paymentDoc => {
-          if (paymentDoc.data().member === oldName) {
             batch.update(paymentDoc.ref, { member: newName });
-          }
         });
       }
 
