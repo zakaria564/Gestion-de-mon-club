@@ -39,24 +39,16 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const isAuthPage = ["/login", "/signup", "/forgot-password"].includes(pathname);
 
-  const allContexts = {
-    fetchClubInfo,
-    fetchPlayers,
-    fetchCoaches,
-    fetchCalendarEvents,
-    fetchFinancialData,
-    fetchResults,
-    fetchOpponents,
-  };
-  
   const fetchAllData = React.useCallback(() => {
-    for (const fetchFn of Object.values(allContexts)) {
-      if (typeof fetchFn === 'function') {
-        fetchFn();
-      }
-    }
-  }, [allContexts]);
-
+    fetchClubInfo();
+    fetchPlayers();
+    fetchCoaches();
+    fetchOpponents();
+    fetchCalendarEvents();
+    fetchFinancialData();
+    fetchResults();
+  }, [fetchClubInfo, fetchPlayers, fetchCoaches, fetchOpponents, fetchCalendarEvents, fetchFinancialData, fetchResults]);
+  
   React.useEffect(() => {
     if (user) {
       fetchAllData();

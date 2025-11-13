@@ -14,6 +14,7 @@ interface CoachesContextType {
   updateCoach: (coach: Coach) => Promise<void>;
   deleteCoach: (id: string) => Promise<void>;
   getCoachById: (id: string) => Coach | undefined;
+  fetchCoaches: () => Promise<void>;
 }
 
 const CoachesContext = createContext<CoachesContextType | undefined>(undefined);
@@ -56,7 +57,7 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
         setCoaches([]);
         setLoading(false);
     }
-  }, [user, fetchCoaches]);
+  }, [user]);
 
   const addCoach = async (coachData: Omit<Coach, 'id' | 'uid'>) => {
     const collectionRef = getCoachesCollection();
@@ -131,7 +132,7 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
   }, [coaches]);
 
   return (
-    <CoachesContext.Provider value={{ coaches, loading, addCoach, updateCoach, deleteCoach, getCoachById }}>
+    <CoachesContext.Provider value={{ coaches, loading, addCoach, updateCoach, deleteCoach, getCoachById, fetchCoaches }}>
       {children}
     </CoachesContext.Provider>
   );

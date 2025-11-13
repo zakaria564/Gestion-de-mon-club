@@ -16,6 +16,7 @@ interface PlayersContextType {
   updatePlayer: (player: Player) => Promise<void>;
   deletePlayer: (id: string) => Promise<void>;
   getPlayerById: (id: string) => Player | undefined;
+  fetchPlayers: () => Promise<void>;
 }
 
 const PlayersContext = createContext<PlayersContextType | undefined>(undefined);
@@ -58,7 +59,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
       setPlayers([]);
       setLoading(false);
     }
-  }, [user, fetchPlayers]);
+  }, [user]);
 
   const addPlayer = async (playerData: NewPlayer) => {
     const collectionRef = getPlayersCollection();
@@ -129,9 +130,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
       }
 
       await batch.commit();
-      // We will rely on the global fetch in AppLayout to refetch all data,
-      // or we can fetch selectively if needed. For simplicity, we'll let the next render handle it.
-      await fetchPlayers(); // Explicitly refetch players after update
+      await fetchPlayers();
 
     } catch (err) {
       console.error("Error updating player and cascading changes: ", err);
@@ -154,7 +153,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
   }, [players]);
 
   return (
-    <PlayersContext.Provider value={{ players, loading, addPlayer, updatePlayer, deletePlayer, getPlayerById }}>
+    <PlayersContext.Provider value={{ players, loading, addPlayer, updatePlayer, deletePlayer, getPlayerById, fetchPlayers }}>
       {children}
     </PlayersContext.Provider>
   );
