@@ -129,7 +129,9 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
       }
 
       await batch.commit();
-      await fetchPlayers(); // Refetch players to update local state
+      // We will rely on the global fetch in AppLayout to refetch all data,
+      // or we can fetch selectively if needed. For simplicity, we'll let the next render handle it.
+      await fetchPlayers(); // Explicitly refetch players after update
 
     } catch (err) {
       console.error("Error updating player and cascading changes: ", err);

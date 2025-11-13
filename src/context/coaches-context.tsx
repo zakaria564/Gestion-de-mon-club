@@ -90,7 +90,7 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
       if (nameHasChanged) {
         // 2. Update coachSalaries
         const salariesRef = collection(db, "users", user.uid, "coachSalaries");
-        const salariesSnap = await getDocs(salariesRef);
+        const salariesSnap = await getDocs(query(salariesRef));
         salariesSnap.forEach(salaryDoc => {
           if (salaryDoc.data().member === oldName) {
             batch.update(salaryDoc.ref, { member: newName });
@@ -99,7 +99,7 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
 
         // 3. Update coachName in players collection
         const playersRef = collection(db, "users", user.uid, "players");
-        const playersSnap = await getDocs(playersRef);
+        const playersSnap = await getDocs(query(playersRef));
         playersSnap.forEach(playerDoc => {
           if (playerDoc.data().coachName === oldName) {
             batch.update(playerDoc.ref, { coachName: newName });
