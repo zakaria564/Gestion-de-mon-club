@@ -16,6 +16,7 @@ interface ClubContextType {
   loading: boolean;
   updateClubInfo: (name: string, logoUrl?: string) => Promise<void>;
   restoreData: (file: File) => Promise<void>;
+  fetchClubInfo: () => Promise<void>;
 }
 
 const ClubContext = createContext<ClubContextType | undefined>(undefined);
@@ -61,7 +62,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
       setClubInfo({ name: "Gestion de mon club", logoUrl: "https://d1csarkz8obe9u.cloudfront.net/posterpreviews/football-logos-2023-design-template-ba96ccb6c8645a69c9eef50607d84d34_screen.jpg?ts=1667330722" });
       setLoading(false);
     }
-  }, [user, fetchClubInfo]);
+  }, [user]);
 
   const updateClubInfo = async (name: string, logoUrl?: string) => {
     const docRef = getClubInfoDocRef();
@@ -148,6 +149,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
     loading,
     updateClubInfo,
     restoreData,
+    fetchClubInfo,
   };
 
   return (

@@ -21,6 +21,7 @@ interface FinancialContextType {
   coachSalariesOverview: Overview;
   getPlayerPaymentById: (id: string) => Payment | undefined;
   getCoachSalaryById: (id: string) => Payment | undefined;
+  fetchFinancialData: () => Promise<void>;
 }
 
 const FinancialContext = createContext<FinancialContextType | undefined>(undefined);
@@ -79,7 +80,7 @@ export function FinancialProvider({ children }: { children: ReactNode }) {
         setCoachSalaries([]);
         setLoading(false);
     }
-  }, [user, fetchFinancialData]);
+  }, [user]);
 
 
   const calculateStatus = (total: number, paid: number): 'payé' | 'non payé' | 'partiel' => {
@@ -204,7 +205,8 @@ export function FinancialProvider({ children }: { children: ReactNode }) {
       playerPaymentsOverview: calculateOverview(playerPayments),
       coachSalariesOverview: calculateOverview(coachSalaries),
       getPlayerPaymentById,
-      getCoachSalaryById
+      getCoachSalaryById,
+      fetchFinancialData
     }}>
       {children}
     </FinancialContext.Provider>
@@ -218,4 +220,3 @@ export const useFinancialContext = () => {
     }
     return context;
 };
-

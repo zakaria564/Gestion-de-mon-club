@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
@@ -16,6 +15,7 @@ interface CalendarContextType {
   addEvent: (event: NewCalendarEvent) => Promise<void>;
   updateEvent: (event: CalendarEvent) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
+  fetchCalendarEvents: () => Promise<void>;
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -69,7 +69,7 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
         setCalendarEvents([]);
         setLoading(false);
     }
-  }, [user, fetchCalendarEvents]);
+  }, [user]);
 
 
   const addEvent = async (eventData: NewCalendarEvent) => {
@@ -108,7 +108,7 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CalendarContext.Provider value={{ calendarEvents, loading, addEvent, updateEvent, deleteEvent }}>
+    <CalendarContext.Provider value={{ calendarEvents, loading, addEvent, updateEvent, deleteEvent, fetchCalendarEvents }}>
       {children}
     </CalendarContext.Provider>
   );
@@ -121,4 +121,3 @@ export const useCalendarContext = () => {
     }
     return context;
 };
-    

@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, writeBatch } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Coach } from "@/lib/data";
 
@@ -72,13 +72,46 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
 
   const updateCoach = async (coachData: Coach) => {
     if (!user) return;
+    const oldCoach = coaches.find(c => c.id === coachData.id);
+    if (!oldCoach) return;
+
+    const oldName = oldCoach.name;
+    const newName = coachData.name;
+    const nameHasChanged = oldName !== newName;
+
     try {
-      const coachDoc = doc(db, "users", user.uid, "coaches", coachData.id);
+      const batch = writeBatch(db);
+
+      // 1. Update the coach document itself
+      const coachDocRef = doc(db, "users", user.uid, "coaches", coachData.id);
       const { id, ...dataToUpdate } = coachData;
-      await updateDoc(coachDoc, dataToUpdate);
-      await fetchCoaches();
+      batch.update(coachDocRef, dataToUpdate);
+
+      if (nameHasChanged) {
+        // 2. Update coachSalaries
+        const salariesRef = collection(db, "users", user.uid, "coachSalaries");
+        const salariesSnap = await getDocs(salariesRef);
+        salariesSnap.forEach(salaryDoc => {
+          if (salaryDoc.data().member === oldName) {
+            batch.update(salaryDoc.ref, { member: newName });
+          }
+        });
+
+        // 3. Update coachName in players collection
+        const playersRef = collection(db, "users", user.uid, "players");
+        const playersSnap = await getDocs(playersRef);
+        playersSnap.forEach(playerDoc => {
+          if (playerDoc.data().coachName === oldName) {
+            batch.update(playerDoc.ref, { coachName: newName });
+          }
+        });
+      }
+
+      await batch.commit();
+      await fetchCoaches(); // Refetch to update local state
+
     } catch (err) {
-      console.error("Error updating coach: ", err);
+      console.error("Error updating coach and cascading changes: ", err);
     }
   };
 

@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, writeBatch } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Player } from "@/lib/data";
 
@@ -74,13 +74,65 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
 
   const updatePlayer = async (playerData: Player) => {
     if (!user) return;
+    const oldPlayer = players.find(p => p.id === playerData.id);
+    if (!oldPlayer) return;
+
+    const oldName = oldPlayer.name;
+    const newName = playerData.name;
+    const nameHasChanged = oldName !== newName;
+
     try {
-      const playerDoc = doc(db, "users", user.uid, "players", playerData.id);
+      const batch = writeBatch(db);
+      
+      // 1. Update the player document itself
+      const playerDocRef = doc(db, "users", user.uid, "players", playerData.id);
       const { id, ...dataToUpdate } = playerData;
-      await updateDoc(playerDoc, dataToUpdate);
-      await fetchPlayers();
+      batch.update(playerDocRef, dataToUpdate);
+
+      if (nameHasChanged) {
+        // 2. Update results (scorers & assists)
+        const resultsRef = collection(db, "users", user.uid, "results");
+        const resultsSnap = await getDocs(resultsRef);
+        resultsSnap.forEach(resultDoc => {
+          const result = resultDoc.data();
+          let updated = false;
+
+          const newScorers = result.scorers.map((scorer: any) => {
+            if (scorer.playerName === oldName) {
+              updated = true;
+              return { ...scorer, playerName: newName };
+            }
+            return scorer;
+          });
+
+          const newAssists = result.assists.map((assist: any) => {
+            if (assist.playerName === oldName) {
+              updated = true;
+              return { ...assist, playerName: newName };
+            }
+            return assist;
+          });
+
+          if (updated) {
+            batch.update(resultDoc.ref, { scorers: newScorers, assists: newAssists });
+          }
+        });
+
+        // 3. Update player payments
+        const paymentsRef = collection(db, "users", user.uid, "playerPayments");
+        const paymentsSnap = await getDocs(paymentsRef);
+        paymentsSnap.forEach(paymentDoc => {
+          if (paymentDoc.data().member === oldName) {
+            batch.update(paymentDoc.ref, { member: newName });
+          }
+        });
+      }
+
+      await batch.commit();
+      await fetchPlayers(); // Refetch players to update local state
+
     } catch (err) {
-      console.error("Error updating player: ", err);
+      console.error("Error updating player and cascading changes: ", err);
     }
   };
 

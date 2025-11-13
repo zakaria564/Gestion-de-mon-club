@@ -38,6 +38,7 @@ interface ResultsContextType {
   addResult: (result: NewResult) => Promise<void>;
   updateResult: (result: Omit<Result, 'uid'>) => Promise<void>;
   deleteResult: (id: string) => Promise<void>;
+  fetchResults: () => Promise<void>;
 }
 
 const ResultsContext = createContext<ResultsContextType | undefined>(undefined);
@@ -80,7 +81,7 @@ export function ResultsProvider({ children }: { children: ReactNode }) {
         setResults([]);
         setLoading(false);
     }
-  }, [user, fetchResults]);
+  }, [user]);
 
   const addResult = async (resultData: NewResult) => {
     const collectionRef = getResultsCollection();
@@ -121,7 +122,7 @@ export function ResultsProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ResultsContext.Provider value={{ results, loading, addResult, updateResult, deleteResult }}>
+    <ResultsContext.Provider value={{ results, loading, addResult, updateResult, deleteResult, fetchResults }}>
       {children}
     </ResultsContext.Provider>
   );

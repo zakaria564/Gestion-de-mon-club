@@ -27,17 +27,41 @@ const inter = Inter({
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const { loading: clubLoading } = useClubContext();
-  const { loading: playersLoading } = usePlayersContext();
-  const { loading: coachesLoading } = useCoachesContext();
-  const { loading: calendarLoading } = useCalendarContext();
-  const { loading: financialLoading } = useFinancialContext();
-  const { loading: resultsLoading } = useResultsContext();
-  const { loading: opponentsLoading } = useOpponentsContext();
+  const { loading: clubLoading, fetchClubInfo } = useClubContext();
+  const { loading: playersLoading, fetchPlayers } = usePlayersContext();
+  const { loading: coachesLoading, fetchCoaches } = useCoachesContext();
+  const { loading: calendarLoading, fetchCalendarEvents } = useCalendarContext();
+  const { loading: financialLoading, fetchFinancialData } = useFinancialContext();
+  const { loading: resultsLoading, fetchResults } = useResultsContext();
+  const { loading: opponentsLoading, fetchOpponents } = useOpponentsContext();
   
   const pathname = usePathname();
   const router = useRouter();
   const isAuthPage = ["/login", "/signup", "/forgot-password"].includes(pathname);
+
+  const allContexts = {
+    fetchClubInfo,
+    fetchPlayers,
+    fetchCoaches,
+    fetchCalendarEvents,
+    fetchFinancialData,
+    fetchResults,
+    fetchOpponents,
+  };
+  
+  const fetchAllData = React.useCallback(() => {
+    for (const fetchFn of Object.values(allContexts)) {
+      if (typeof fetchFn === 'function') {
+        fetchFn();
+      }
+    }
+  }, [allContexts]);
+
+  React.useEffect(() => {
+    if (user) {
+      fetchAllData();
+    }
+  }, [user, fetchAllData]);
 
   const isLoading = authLoading || clubLoading || playersLoading || coachesLoading || calendarLoading || financialLoading || resultsLoading || opponentsLoading;
 

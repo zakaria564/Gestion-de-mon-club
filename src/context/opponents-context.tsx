@@ -22,6 +22,7 @@ interface OpponentsContextType {
   addOpponent: (opponent: NewOpponent) => Promise<void>;
   updateOpponent: (opponent: Opponent) => Promise<void>;
   deleteOpponent: (id: string) => Promise<void>;
+  fetchOpponents: () => Promise<void>;
 }
 
 const OpponentsContext = createContext<OpponentsContextType | undefined>(undefined);
@@ -64,7 +65,7 @@ export function OpponentsProvider({ children }: { children: ReactNode }) {
         setOpponents([]);
         setLoading(false);
     }
-  }, [user, fetchOpponents]);
+  }, [user]);
 
   const addOpponent = async (opponentData: NewOpponent) => {
     const collectionRef = getOpponentsCollection();
@@ -102,7 +103,7 @@ export function OpponentsProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <OpponentsContext.Provider value={{ opponents, loading, addOpponent, updateOpponent, deleteOpponent }}>
+    <OpponentsContext.Provider value={{ opponents, loading, addOpponent, updateOpponent, deleteOpponent, fetchOpponents }}>
       {children}
     </OpponentsContext.Provider>
   );
