@@ -52,18 +52,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
     }
   }, [getPlayersCollection]);
   
-  useEffect(() => {
-    if(user) {
-      fetchPlayers();
-      // Run clean up for "Salam Chaddani" to "Salma Chaddani" if needed
-      cleanupSalmaPayments();
-    } else {
-      setPlayers([]);
-      setLoading(false);
-    }
-  }, [user]);
-
-  const cleanupSalmaPayments = async () => {
+  const cleanupSalmaPayments = useCallback(async () => {
     if (!user) return;
     try {
       const batch = writeBatch(db);
@@ -81,7 +70,17 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       console.error("Cleanup error", e);
     }
-  }
+  }, [user]);
+
+  useEffect(() => {
+    if(user) {
+      fetchPlayers();
+      cleanupSalmaPayments();
+    } else {
+      setPlayers([]);
+      setLoading(false);
+    }
+  }, [user, fetchPlayers, cleanupSalmaPayments]);
 
   const addPlayer = async (playerData: NewPlayer) => {
     const collectionRef = getPlayersCollection();

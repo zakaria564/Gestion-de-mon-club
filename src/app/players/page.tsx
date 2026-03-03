@@ -38,7 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import React from 'react';
 import { usePlayersContext } from "@/context/players-context";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -51,6 +51,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useCoachesContext } from "@/context/coaches-context";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 const playerCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
@@ -83,7 +84,6 @@ const playerSchema = z.object({
   coachName: z.string().optional(),
   documents: z.array(documentSchema).optional(),
 });
-
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
 
@@ -142,11 +142,13 @@ const categoryColors: Record<string, string> = {
   'U7': 'hsl(var(--chart-11))',
 };
 
-
-export default function PlayersPage() {
+function PlayersContent() {
     const context = usePlayersContext();
     const coachesContext = useCoachesContext();
     const { toast } = useToast();
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
     
     if (!context || !coachesContext) {
       throw new Error("PlayersPage must be used within a PlayersProvider and CoachesProvider");
@@ -158,6 +160,19 @@ export default function PlayersPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterKey, setFilterKey] = useState("name");
 
+    // Sync Tabs with URL
+    const activeGender = searchParams.get('gender') || 'male';
+    const activeCategory = searchParams.get('category');
+
+    const handleTabChange = (key: 'gender' | 'category', value: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set(key, value);
+        // Reset category when gender changes if current category doesn't exist in new gender
+        if (key === 'gender') {
+            params.delete('category');
+        }
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    };
 
     const form = useForm<PlayerFormValues>({
       resolver: zodResolver(playerSchema),
@@ -301,10 +316,14 @@ export default function PlayersPage() {
             );
         }
         
-        const defaultCategory = categories[0];
+        const defaultCategory = activeCategory && groupedData[activeCategory] ? activeCategory : categories[0];
 
         return (
-            <Tabs defaultValue={defaultCategory} className="w-full mt-4">
+            <Tabs 
+                value={defaultCategory} 
+                onValueChange={(val) => handleTabChange('category', val)}
+                className="w-full mt-4"
+            >
                 <TabsList className="h-auto p-1 bg-muted rounded-md text-muted-foreground justify-start items-center flex-wrap">
                     {categories.map((category) => (
                         <TabsTrigger key={`${gender}-${category}`} value={category} style={{ backgroundColor: categoryColors[category.replace(' F', '')] }} className={cn("data-[state=active]:shadow-none", getCategoryStyle(category))}>
@@ -859,7 +878,11 @@ export default function PlayersPage() {
                     </div>
                 ))
             ) : filteredPlayers.length > 0 ? (
-                <Tabs defaultValue="male" className="w-full">
+                <Tabs 
+                    value={activeGender} 
+                    onValueChange={(val) => handleTabChange('gender', val)}
+                    className="w-full"
+                >
                      <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="male">Masculin</TabsTrigger>
                         <TabsTrigger value="female">Féminin</TabsTrigger>
@@ -881,4 +904,10 @@ export default function PlayersPage() {
     );
 }
 
-    
+export default function PlayersPage() {
+    return (
+        <Suspense fallback={<div className="p-8">Chargement...</div>}>
+            <PlayersContent />
+        </Suspense>
+    );
+}

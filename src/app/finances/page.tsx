@@ -92,7 +92,6 @@ export default function FinancesPage() {
     allMembers: { id: string; name: string }[]
   ) => {
     const currentMonthStr = format(new Date(), "yyyy-MM");
-    const currentMonthStart = startOfMonth(new Date());
     
     const paymentsByMember = payments.reduce((acc, p) => {
         if (!acc[p.member]) {
@@ -109,6 +108,8 @@ export default function FinancesPage() {
         
         let status: MemberStatus = 'En attente';
 
+        // Logique stricte demandée :
+        // 1. S'il y a un arriéré (mois passés non payés ou partiels) -> En attente
         const hasArrears = memberPayments.some(p => {
           if (p.dueDate >= currentMonthStr) return false;
           return p.status === 'partiel' || p.status === 'non payé';
@@ -127,6 +128,7 @@ export default function FinancesPage() {
                 status = 'En attente';
             }
         } else {
+            // Aucun paiement pour le mois en cours et pas d'arriérés
             status = 'En attente';
         }
 
