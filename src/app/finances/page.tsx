@@ -108,7 +108,7 @@ export default function FinancesPage() {
         
         let status: MemberStatus = 'En attente';
 
-        // Logique stricte demandée :
+        // Logique stricte :
         // 1. S'il y a un arriéré (mois passés non payés ou partiels) -> En attente
         const hasArrears = memberPayments.some(p => {
           if (p.dueDate >= currentMonthStr) return false;
@@ -442,7 +442,7 @@ export default function FinancesPage() {
                 <Banknote className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                {loading ? <Skeleton className="h-6 w-3/4" /> : <div className="text-xl font-bold">{playerPaymentsOverview.paymentsMade.toFixed(2)} DH</div>}
+                {loading ? <Skeleton className="h-6 w-3/4" /> : <div className="text-xl font-bold">{playerPaymentsMade.toFixed(2)} DH</div>}
               </CardContent>
             </Card>
             <Card>

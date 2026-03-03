@@ -252,6 +252,22 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
                         </div>
                     </div>
                 )}
+
+                <div className="mt-16 flex justify-between items-start px-4">
+                    <div className="text-center">
+                        <p className="font-semibold text-sm underline mb-12">Signature de l'entraîneur</p>
+                        <div className="h-20 w-40 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400 text-xs">
+                            Signature
+                        </div>
+                    </div>
+                    <div className="text-center">
+                        <p className="font-semibold text-sm underline mb-12">Signature et Cachet du Club</p>
+                        <div className="h-24 w-40 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400 text-xs">
+                            Cachet Officiel
+                        </div>
+                    </div>
+                </div>
+
             </CardContent>
         </div>
       </Card>

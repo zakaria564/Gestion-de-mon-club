@@ -57,6 +57,8 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
     try {
       const batch = writeBatch(db);
       const paymentsRef = collection(db, "users", user.uid, "playerPayments");
+      
+      // Rechercher les paiements sous l'ancien nom
       const q = query(paymentsRef, where("member", "==", "Salam Chaddani"));
       const snapshot = await getDocs(q);
       
@@ -65,10 +67,10 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
           batch.update(paymentDoc.ref, { member: "Salma Chaddani" });
         });
         await batch.commit();
-        console.log("Salma cleanup complete");
+        console.log("Migration des paiements de Salma effectuée");
       }
     } catch (e) {
-      console.error("Cleanup error", e);
+      console.error("Erreur de nettoyage Salma", e);
     }
   }, [user]);
 
@@ -111,7 +113,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
       batch.update(playerDocRef, dataToUpdate);
 
       if (nameHasChanged) {
-        // Update results
+        // Mettre à jour les résultats (buteurs et passeurs)
         const resultsRef = collection(db, "users", user.uid, "results");
         const resultsSnap = await getDocs(resultsRef);
         resultsSnap.forEach(resultDoc => {
@@ -123,10 +125,6 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
               updated = true;
               return { ...scorer, playerName: newName };
             }
-            if (scorer.playerName === `${oldName} (${result.opponent})`) {
-                updated = true;
-                return { ...scorer, playerName: `${newName} (${result.opponent})` };
-            }
             return scorer;
           });
 
@@ -134,10 +132,6 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
             if (assist.playerName === oldName) {
               updated = true;
               return { ...assist, playerName: newName };
-            }
-            if (assist.playerName === `${oldName} (${result.opponent})`) {
-                updated = true;
-                return { ...assist, playerName: `${newName} (${result.opponent})` };
             }
             return assist;
           });
@@ -147,7 +141,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
           }
         });
         
-        // Update payments
+        // Mettre à jour les paiements
         const paymentsRef = collection(db, "users", user.uid, "playerPayments");
         const paymentsQuery = query(paymentsRef, where("member", "==", oldName));
         const paymentsSnap = await getDocs(paymentsQuery);
@@ -159,6 +153,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
       await batch.commit();
       
       if(nameHasChanged) {
+        // Forcer un rechargement pour que tout soit synchrone
         window.location.reload();
       } else {
         await fetchPlayers();
