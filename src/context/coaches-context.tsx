@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, writeBatch } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, writeBatch, where } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Coach } from "@/lib/data";
 
@@ -57,7 +57,7 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
         setCoaches([]);
         setLoading(false);
     }
-  }, [user, fetchCoaches]);
+  }, [user]);
 
   const addCoach = async (coachData: Omit<Coach, 'id' | 'uid'>) => {
     const collectionRef = getCoachesCollection();
@@ -90,20 +90,18 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
       if (nameHasChanged) {
         // Update salaries
         const salariesRef = collection(db, "users", user.uid, "coachSalaries");
-        const salariesSnap = await getDocs(query(salariesRef));
+        const salariesQuery = query(salariesRef, where("member", "==", oldName));
+        const salariesSnap = await getDocs(salariesQuery);
         salariesSnap.forEach(salaryDoc => {
-          if (salaryDoc.data().member === oldName) {
             batch.update(salaryDoc.ref, { member: newName });
-          }
         });
 
         // Update players' coachName
         const playersRef = collection(db, "users", user.uid, "players");
-        const playersSnap = await getDocs(query(playersRef));
+        const playersQuery = query(playersRef, where("coachName", "==", oldName));
+        const playersSnap = await getDocs(playersQuery);
         playersSnap.forEach(playerDoc => {
-          if (playerDoc.data().coachName === oldName) {
             batch.update(playerDoc.ref, { coachName: newName });
-          }
         });
       }
 

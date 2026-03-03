@@ -55,11 +55,33 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if(user) {
       fetchPlayers();
+      // Run clean up for "Salam Chaddani" to "Salma Chaddani" if needed
+      cleanupSalmaPayments();
     } else {
       setPlayers([]);
       setLoading(false);
     }
-  }, [user, fetchPlayers]);
+  }, [user]);
+
+  const cleanupSalmaPayments = async () => {
+    if (!user) return;
+    try {
+      const batch = writeBatch(db);
+      const paymentsRef = collection(db, "users", user.uid, "playerPayments");
+      const q = query(paymentsRef, where("member", "==", "Salam Chaddani"));
+      const snapshot = await getDocs(q);
+      
+      if (!snapshot.empty) {
+        snapshot.forEach(paymentDoc => {
+          batch.update(paymentDoc.ref, { member: "Salma Chaddani" });
+        });
+        await batch.commit();
+        console.log("Salma cleanup complete");
+      }
+    } catch (e) {
+      console.error("Cleanup error", e);
+    }
+  }
 
   const addPlayer = async (playerData: NewPlayer) => {
     const collectionRef = getPlayersCollection();
@@ -97,18 +119,26 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
           const result = resultDoc.data();
           let updated = false;
 
-          const newScorers = result.scorers.map((scorer: any) => {
+          const newScorers = (result.scorers || []).map((scorer: any) => {
             if (scorer.playerName === oldName) {
               updated = true;
               return { ...scorer, playerName: newName };
             }
+            if (scorer.playerName === `${oldName} (${result.opponent})`) {
+                updated = true;
+                return { ...scorer, playerName: `${newName} (${result.opponent})` };
+            }
             return scorer;
           });
 
-          const newAssists = result.assists.map((assist: any) => {
+          const newAssists = (result.assists || []).map((assist: any) => {
             if (assist.playerName === oldName) {
               updated = true;
               return { ...assist, playerName: newName };
+            }
+            if (assist.playerName === `${oldName} (${result.opponent})`) {
+                updated = true;
+                return { ...assist, playerName: `${newName} (${result.opponent})` };
             }
             return assist;
           });

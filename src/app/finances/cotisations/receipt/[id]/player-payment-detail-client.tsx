@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { notFound, useRouter, useParams } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -18,9 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useClubContext } from "@/context/club-context";
 import { ClubLogo } from "@/components/club-logo";
 
-export function PlayerPaymentDetailClient() {
-  const params = useParams();
-  const id = params.id as string;
+export function PlayerPaymentDetailClient({ id }: { id: string }) {
   const financialCtx = useFinancialContext();
   const playersCtx = usePlayersContext();
   const { clubInfo } = useClubContext();
@@ -56,7 +54,7 @@ export function PlayerPaymentDetailClient() {
   if (loading) {
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <Skeleton className="h-8 w-48 mb-4" />
+        <Skeleton className="h-8 w-24 mb-4" />
         <Card>
           <CardHeader>
             <Skeleton className="h-8 w-1/2" />
@@ -101,34 +99,6 @@ export function PlayerPaymentDetailClient() {
     return notFound();
   }
   
-  const historyLink = `/finances/cotisations/${encodeURIComponent(payment.member)}`;
-
-  const getBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'payé':
-        return 'default';
-      case 'non payé':
-        return 'destructive';
-      case 'partiel':
-        return 'accent';
-      default:
-        return 'outline';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-        case 'payé':
-            return <CheckCircle className="h-8 w-8 text-green-500" />;
-        case 'non payé':
-            return <XCircle className="h-8 w-8 text-red-500" />;
-        case 'partiel':
-            return <Clock className="h-8 w-8 text-amber-500" />;
-        default:
-            return null;
-    }
-  }
-
   const handleDownloadPDF = () => {
     const input = receiptRef.current;
     if (!input || !payment) return;
@@ -161,7 +131,11 @@ export function PlayerPaymentDetailClient() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={() => router.push(historyLink)} className="flex items-center text-sm text-muted-foreground hover:underline p-0 h-auto">
+        <Button 
+          variant="ghost" 
+          onClick={() => router.back()} 
+          className="flex items-center text-sm text-muted-foreground hover:underline p-0 h-auto"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Retour
         </Button>
@@ -260,4 +234,17 @@ export function PlayerPaymentDetailClient() {
         </Card>
     </div>
   );
+}
+
+const getStatusIcon = (status: string) => {
+    switch (status) {
+        case 'payé':
+            return <CheckCircle className="h-8 w-8 text-green-500" />;
+        case 'non payé':
+            return <XCircle className="h-8 w-8 text-red-500" />;
+        case 'partiel':
+            return <Clock className="h-8 w-8 text-amber-500" />;
+        default:
+            return null;
+    }
 }

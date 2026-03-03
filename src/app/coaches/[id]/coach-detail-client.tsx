@@ -3,7 +3,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import type { Coach } from "@/lib/data";
-import { notFound, useRouter, useParams } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -80,10 +80,8 @@ const documentOptions = [
 
 const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise", "Américaine", "Russe", "Japonaise", "Chinoise", "Indienne", "Turque", "Égyptienne", "Nigériane", "Sud-africaine", "Ghanéenne"];
 
-export function CoachDetailClient() {
+export function CoachDetailClient({ id }: { id: string }) {
   const router = useRouter();
-  const params = useParams();
-  const id = params.id as string;
   
   const context = useCoachesContext();
   
@@ -137,13 +135,13 @@ export function CoachDetailClient() {
   if (loading) {
     return (
        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-8 w-24" />
         <Card>
           <CardHeader className="flex flex-row items-center gap-6">
             <Skeleton className="h-32 w-32 rounded-full" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-8 w-1/2" />
-              <Skeleton className="h-6 w-1/3" />
+              <Skeleton className="h-6 w-1/3 mt-1" />
             </div>
           </CardHeader>
           <CardContent className="grid md:grid-cols-2 gap-6 pt-6">
@@ -206,10 +204,14 @@ export function CoachDetailClient() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <Link href="/coaches" className="flex items-center text-sm text-muted-foreground hover:underline">
+        <Button 
+          variant="ghost" 
+          onClick={() => router.back()} 
+          className="flex items-center text-sm text-muted-foreground hover:underline p-0 h-auto"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour à la liste des entraîneurs
-        </Link>
+          Retour
+        </Button>
       </div>
 
       <Card>
@@ -560,5 +562,3 @@ export function CoachDetailClient() {
     </div>
   );
 }
-
-    

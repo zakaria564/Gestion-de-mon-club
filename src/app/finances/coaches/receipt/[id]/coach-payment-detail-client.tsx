@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { notFound, useRouter, useParams } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -18,9 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useClubContext } from "@/context/club-context";
 import { ClubLogo } from "@/components/club-logo";
 
-export function CoachPaymentDetailClient() {
-  const params = useParams();
-  const id = params.id as string;
+export function CoachPaymentDetailClient({ id }: { id: string }) {
   const financialCtx = useFinancialContext();
   const coachesCtx = useCoachesContext();
   const { clubInfo } = useClubContext();
@@ -55,7 +53,7 @@ export function CoachPaymentDetailClient() {
   if (loading) {
      return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <Skeleton className="h-8 w-48 mb-4" />
+        <Skeleton className="h-8 w-24 mb-4" />
         <Card>
           <CardHeader>
             <Skeleton className="h-8 w-1/2" />
@@ -99,8 +97,6 @@ export function CoachPaymentDetailClient() {
   if (!payment) {
     return notFound();
   }
-
-  const historyLink = `/finances/coaches/${encodeURIComponent(payment.member)}`;
 
   const getBadgeVariant = (status: string) => {
     switch (status) {
@@ -160,7 +156,11 @@ export function CoachPaymentDetailClient() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={() => router.push(historyLink)} className="flex items-center text-sm text-muted-foreground hover:underline p-0 h-auto">
+        <Button 
+          variant="ghost" 
+          onClick={() => router.back()} 
+          className="flex items-center text-sm text-muted-foreground hover:underline p-0 h-auto"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Retour
         </Button>

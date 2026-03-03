@@ -4,7 +4,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import React from 'react';
 import type { Player } from "@/lib/data";
-import { notFound, useRouter, useParams } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -95,14 +95,11 @@ Object.keys(categoryColors).forEach(key => {
     categoryColors[`${key} F`] = categoryColors[key];
 });
 
-export function PlayerDetailClient() {
+export function PlayerDetailClient({ id }: { id: string }) {
   const router = useRouter();
-  const params = useParams();
-  const id = params.id as string;
   const { toast } = useToast();
   const context = usePlayersContext();
   const coachesContext = useCoachesContext();
-
 
   if (!context || !coachesContext) {
     throw new Error("PlayerDetailClient must be used within a PlayersProvider and CoachesProvider");
@@ -164,7 +161,7 @@ export function PlayerDetailClient() {
   if (loading || coachesLoading) {
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-8 w-24" />
         <Card>
           <CardHeader className="flex flex-row items-center gap-6">
             <Skeleton className="h-32 w-32 rounded-full" />
@@ -179,7 +176,6 @@ export function PlayerDetailClient() {
                 <Skeleton className="h-5 w-3/4" />
                  <Skeleton className="h-5 w-3/4" />
             </div>
-            
           </CardContent>
         </Card>
       </div>
@@ -230,10 +226,14 @@ export function PlayerDetailClient() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <Link href="/players" className="flex items-center text-sm text-muted-foreground hover:underline">
+        <Button 
+          variant="ghost" 
+          onClick={() => router.back()} 
+          className="flex items-center text-sm text-muted-foreground hover:underline p-0 h-auto"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour à la liste des joueurs
-        </Link>
+          Retour
+        </Button>
       </div>
 
       <Card>
@@ -820,6 +820,3 @@ export function PlayerDetailClient() {
     </div>
   );
 }
-
-
-    

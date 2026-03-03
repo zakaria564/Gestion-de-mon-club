@@ -2,7 +2,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { notFound, useParams } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { useFinancialContext } from "@/context/financial-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,12 +20,11 @@ import { cn } from "@/lib/utils";
 import type { Payment } from "@/lib/financial-data";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
-export function CoachPaymentHistoryClient() {
-  const params = useParams();
-  const id = params.id as string;
+export function CoachPaymentHistoryClient({ id }: { id: string }) {
   const memberName = decodeURIComponent(id);
   const context = useFinancialContext();
   const { toast } = useToast();
+  const router = useRouter();
 
   if (!context) {
     throw new Error("CoachPaymentHistoryClient must be used within a FinancialProvider");
@@ -88,7 +87,7 @@ export function CoachPaymentHistoryClient() {
   if (loading) {
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <Skeleton className="h-8 w-48 mb-4" />
+        <Skeleton className="h-8 w-24 mb-4" />
         <Card>
           <CardHeader>
             <Skeleton className="h-8 w-1/2" />
@@ -128,10 +127,14 @@ export function CoachPaymentHistoryClient() {
   if (memberPayments.length === 0 && !loading) {
      return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-             <Link href="/finances" className="flex items-center text-sm text-muted-foreground hover:underline mb-4">
+             <Button 
+                variant="ghost" 
+                onClick={() => router.back()} 
+                className="flex items-center text-sm text-muted-foreground hover:underline mb-4 p-0 h-auto"
+            >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Retour aux finances
-            </Link>
+                Retour
+            </Button>
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center text-2xl">
@@ -174,10 +177,14 @@ export function CoachPaymentHistoryClient() {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <Link href="/finances" className="flex items-center text-sm text-muted-foreground hover:underline mb-4">
+      <Button 
+        variant="ghost" 
+        onClick={() => router.back()} 
+        className="flex items-center text-sm text-muted-foreground hover:underline mb-4 p-0 h-auto"
+      >
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Retour aux finances
-      </Link>
+        Retour
+      </Button>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center text-2xl">

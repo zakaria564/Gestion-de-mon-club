@@ -42,7 +42,7 @@ import { usePlayersContext } from "@/context/players-context";
 import { useCoachesContext } from "@/context/coaches-context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, parseISO, isFuture } from 'date-fns';
+import { format, parseISO, isFuture, isBefore, startOfMonth } from 'date-fns';
 import type { Payment } from "@/lib/financial-data";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -91,7 +91,8 @@ export default function FinancesPage() {
     payments: Payment[],
     allMembers: { id: string; name: string }[]
   ) => {
-    const currentMonth = format(new Date(), "yyyy-MM");
+    const currentMonthStr = format(new Date(), "yyyy-MM");
+    const currentMonthStart = startOfMonth(new Date());
     
     const paymentsByMember = payments.reduce((acc, p) => {
         if (!acc[p.member]) {
@@ -106,28 +107,26 @@ export default function FinancesPage() {
         const totalPaid = memberPayments.reduce((sum, p) => sum + p.paidAmount, 0);
         const paymentCount = memberPayments.length;
         
-        let status: MemberStatus;
+        let status: MemberStatus = 'En attente';
 
-        const hasUnpaidFromPreviousMonths = memberPayments.some(p => {
-          const paymentDate = parseISO(`${p.dueDate}-01`);
-          // A payment is considered late if it's for a month before the current one, and it's not fully paid.
-          return !isFuture(paymentDate) && p.dueDate < currentMonth && (p.status === 'non payé' || p.status === 'partiel');
+        const hasArrears = memberPayments.some(p => {
+          if (p.dueDate >= currentMonthStr) return false;
+          return p.status === 'partiel' || p.status === 'non payé';
         });
         
-        const paymentForCurrentMonth = memberPayments.find(p => p.dueDate === currentMonth);
+        const currentMonthPayment = memberPayments.find(p => p.dueDate === currentMonthStr);
 
-        if (hasUnpaidFromPreviousMonths) {
+        if (hasArrears) {
             status = 'En attente';
-        } else if (paymentForCurrentMonth) {
-            if (paymentForCurrentMonth.status === 'partiel') {
-                status = 'Partiel';
-            } else if (paymentForCurrentMonth.status === 'payé') {
+        } else if (currentMonthPayment) {
+            if (currentMonthPayment.status === 'payé') {
                 status = 'À jour';
-            } else { // 'non payé'
+            } else if (currentMonthPayment.status === 'partiel') {
+                status = 'Partiel';
+            } else {
                 status = 'En attente';
             }
         } else {
-            // No payment for the current month, so they are pending
             status = 'En attente';
         }
 
@@ -226,7 +225,7 @@ export default function FinancesPage() {
             case 'À jour':
                 return { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' };
             case 'En attente':
-                 return { backgroundColor: '#F87171', color: 'hsl(var(--destructive-foreground))' }; // Rouge doux
+                 return { backgroundColor: '#F87171', color: 'hsl(var(--destructive-foreground))' };
             case 'Partiel':
                 return { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' };
             default:
@@ -373,7 +372,7 @@ export default function FinancesPage() {
                 </div>
                  <div className="grid gap-2">
                   <Label htmlFor="dueDate">Mois de la cotisation/paie</Label>
-                  <Input id="dueDate" type="month" value={newPaymentData.dueDate} onChange={(e) => setNewPaymentData(p => ({...p, dueDate: e.target.value}))} required readOnly />
+                  <Input id="dueDate" type="month" value={newPaymentData.dueDate} onChange={(e) => setNewPaymentData(p => ({...p, dueDate: e.target.value}))} required />
                 </div>
                  <div className="grid gap-2">
                   <Label htmlFor="member">Membre</Label>
@@ -493,9 +492,3 @@ export default function FinancesPage() {
     </div>
   );
 }
-
-
-
-
-
-    
