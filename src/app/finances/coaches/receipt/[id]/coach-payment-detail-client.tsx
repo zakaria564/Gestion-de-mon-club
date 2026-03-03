@@ -3,12 +3,11 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { notFound, useRouter } from "next/navigation";
-import jsPDF from "jsPDF";
+import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Banknote, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, UserCheck, PlusCircle, History, Download } from "lucide-react";
+import { ArrowLeft, Banknote, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, UserCheck, History, Download } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { useFinancialContext } from "@/context/financial-context";

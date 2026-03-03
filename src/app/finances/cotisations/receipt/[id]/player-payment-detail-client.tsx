@@ -5,9 +5,8 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { notFound, useRouter } from "next/navigation";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Banknote, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, User, History, Download } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -111,6 +110,19 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
         return 'outline';
     }
   };
+  
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+        case 'payé':
+            return <CheckCircle className="h-8 w-8 text-green-500" />;
+        case 'non payé':
+            return <XCircle className="h-8 w-8 text-red-500" />;
+        case 'partiel':
+            return <Clock className="h-8 w-8 text-amber-500" />;
+        default:
+            return null;
+    }
+  }
   
   const handleDownloadPDF = () => {
     const input = receiptRef.current;
@@ -262,17 +274,4 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
         </Card>
     </div>
   );
-}
-
-const getStatusIcon = (status: string) => {
-    switch (status) {
-        case 'payé':
-            return <CheckCircle className="h-8 w-8 text-green-500" />;
-        case 'non payé':
-            return <XCircle className="h-8 w-8 text-red-500" />;
-        case 'partiel':
-            return <Clock className="h-8 w-8 text-amber-500" />;
-        default:
-            return null;
-    }
 }

@@ -29,12 +29,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Banknote, PlusCircle, Users, UserCheck, Eye, Search, FilterX } from "lucide-react";
+import { Banknote, PlusCircle, Users, UserCheck, Eye, Search } from "lucide-react";
 import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
 import { useFinancialContext } from "@/context/financial-context";
@@ -42,7 +41,7 @@ import { usePlayersContext } from "@/context/players-context";
 import { useCoachesContext } from "@/context/coaches-context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, parseISO, isFuture, isBefore, startOfMonth } from 'date-fns';
+import { format } from 'date-fns';
 import type { Payment } from "@/lib/financial-data";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -108,8 +107,6 @@ export default function FinancesPage() {
         
         let status: MemberStatus = 'En attente';
 
-        // Logique stricte :
-        // 1. S'il y a un arriéré (mois passés non payés ou partiels) -> En attente
         const hasArrears = memberPayments.some(p => {
           if (p.dueDate >= currentMonthStr) return false;
           return p.status === 'partiel' || p.status === 'non payé';
@@ -128,7 +125,6 @@ export default function FinancesPage() {
                 status = 'En attente';
             }
         } else {
-            // Aucun paiement pour le mois en cours et pas d'arriérés
             status = 'En attente';
         }
 
@@ -345,12 +341,89 @@ export default function FinancesPage() {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Gestion Financière</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un paiement
-            </Button>
-          </DialogTrigger>
+        <Button onClick={() => openAddPaymentDialog('player')}>
+          <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un paiement
+        </Button>
+      </div>
+
+      <Tabs defaultValue="players" className="space-y-4" onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="players">
+             <Users className="mr-2 h-4 w-4" /> Cotisations Joueurs
+          </TabsTrigger>
+          <TabsTrigger value="coaches">
+            <UserCheck className="mr-2 h-4 w-4" /> Salaires Entraîneurs
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="players" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total à recevoir</CardTitle>
+                <Banknote className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                {loading ? <Skeleton className="h-6 w-3/4" /> : <div className="text-xl font-bold">{playerPaymentsOverview.totalDue.toFixed(2)} DH</div>}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total reçu</CardTitle>
+                <Banknote className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                {loading ? <Skeleton className="h-6 w-3/4" /> : <div className="text-xl font-bold">{playerPaymentsOverview.paymentsMade.toFixed(2)} DH</div>}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total restant</CardTitle>
+                <Banknote className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                {loading ? <Skeleton className="h-6 w-3/4" /> : <div className="text-xl font-bold">{playerPaymentsOverview.paymentsRemaining.toFixed(2)} DH</div>}
+              </CardContent>
+            </Card>
+          </div>
+          {renderTable(filteredPlayerMembers, 'players', playerPayments)}
+        </TabsContent>
+
+        <TabsContent value="coaches" className="space-y-4">
+           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total à payer</CardTitle>
+                <Banknote className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                {loading ? <Skeleton className="h-6 w-3/4" /> : <div className="text-xl font-bold">{coachSalariesOverview.totalDue.toFixed(2)} DH</div>}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total payé</CardTitle>
+                <Banknote className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+               {loading ? <Skeleton className="h-6 w-3/4" /> : <div className="text-xl font-bold">{coachSalariesOverview.paymentsMade.toFixed(2)} DH</div>}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total restant</CardTitle>
+                <Banknote className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                {loading ? <Skeleton className="h-6 w-3/4" /> : <div className="text-xl font-bold">{coachSalariesOverview.paymentsRemaining.toFixed(2)} DH</div>}
+              </CardContent>
+            </Card>
+          </div>
+          {renderTable(filteredCoachMembers, 'coaches', coachSalaries)}
+        </TabsContent>
+      </Tabs>
+
+      <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="sm:max-w-md">
             <form onSubmit={handleSubmit}>
               <DialogHeader>
@@ -413,84 +486,6 @@ export default function FinancesPage() {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
-
-      <Tabs defaultValue="players" className="space-y-4" onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="players">
-             <Users className="mr-2 h-4 w-4" /> Cotisations Joueurs
-          </TabsTrigger>
-          <TabsTrigger value="coaches">
-            <UserCheck className="mr-2 h-4 w-4" /> Salaires Entraîneurs
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="players" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total à recevoir</CardTitle>
-                <Banknote className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                {loading ? <Skeleton className="h-6 w-3/4" /> : <div className="text-xl font-bold">{playerPaymentsOverview.totalDue.toFixed(2)} DH</div>}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total reçu</CardTitle>
-                <Banknote className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                {loading ? <Skeleton className="h-6 w-3/4" /> : <div className="text-xl font-bold">{playerPaymentsMade.toFixed(2)} DH</div>}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total restant</CardTitle>
-                <Banknote className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                {loading ? <Skeleton className="h-6 w-3/4" /> : <div className="text-xl font-bold">{playerPaymentsOverview.paymentsRemaining.toFixed(2)} DH</div>}
-              </CardContent>
-            </Card>
-          </div>
-          {renderTable(filteredPlayerMembers, 'players', playerPayments)}
-        </TabsContent>
-
-        <TabsContent value="coaches" className="space-y-4">
-           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total à payer</CardTitle>
-                <Banknote className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                {loading ? <Skeleton className="h-6 w-3/4" /> : <div className="text-xl font-bold">{coachSalariesOverview.totalDue.toFixed(2)} DH</div>}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total payé</CardTitle>
-                <Banknote className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-               {loading ? <Skeleton className="h-6 w-3/4" /> : <div className="text-xl font-bold">{coachSalariesOverview.paymentsMade.toFixed(2)} DH</div>}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total restant</CardTitle>
-                <Banknote className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                {loading ? <Skeleton className="h-6 w-3/4" /> : <div className="text-xl font-bold">{coachSalariesOverview.paymentsRemaining.toFixed(2)} DH</div>}
-              </CardContent>
-            </Card>
-          </div>
-          {renderTable(filteredCoachMembers, 'coaches', coachSalaries)}
-        </TabsContent>
-      </Tabs>
     </div>
   );
 }
