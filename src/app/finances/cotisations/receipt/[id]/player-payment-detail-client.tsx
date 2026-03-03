@@ -98,6 +98,19 @@ export function PlayerPaymentDetailClient({ id }: { id: string }) {
   if (!payment) {
     return notFound();
   }
+
+  const getBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'payé':
+        return 'default';
+      case 'non payé':
+        return 'destructive';
+      case 'partiel':
+        return 'accent';
+      default:
+        return 'outline';
+    }
+  };
   
   const handleDownloadPDF = () => {
     const input = receiptRef.current;

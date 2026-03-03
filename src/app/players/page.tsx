@@ -160,14 +160,12 @@ function PlayersContent() {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterKey, setFilterKey] = useState("name");
 
-    // Sync Tabs with URL
     const activeGender = searchParams.get('gender') || 'male';
     const activeCategory = searchParams.get('category');
 
     const handleTabChange = (key: 'gender' | 'category', value: string) => {
         const params = new URLSearchParams(searchParams.toString());
         params.set(key, value);
-        // Reset category when gender changes if current category doesn't exist in new gender
         if (key === 'gender') {
             params.delete('category');
         }
@@ -248,7 +246,7 @@ function PlayersContent() {
 
     const handleCategoryChange = async (player: Player, newCategory: string) => {
         if (player.category !== newCategory) {
-            const updatedPlayer = { ...player, category: newCategory };
+            const updatedPlayer = { ...player, category: newCategory as Player['category'] };
             await updatePlayer(updatedPlayer);
             toast({
                 title: "Catégorie mise à jour",
