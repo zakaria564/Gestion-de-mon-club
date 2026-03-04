@@ -49,6 +49,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { Separator } from "@/components/ui/separator";
 
 const playerCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
@@ -148,7 +149,7 @@ function PlayersContent() {
     const pathname = usePathname();
     
     if (!context || !coachesContext) {
-      throw new Error("PlayersPage must be used within all required providers");
+      return null;
     }
 
     const { players, loading, addPlayer, updatePlayer } = context;
@@ -249,15 +250,32 @@ function PlayersContent() {
                                         <Card key={player.id} className="flex flex-col hover:shadow-lg transition-shadow group">
                                             <Link href={`/players/${player.id}?gender=${gender}&category=${category}`} className="flex flex-col h-full">
                                                 <CardHeader className="p-4 flex flex-row items-center gap-4">
-                                                    <Avatar className="h-16 w-16"><AvatarImage src={player.photo} alt={player.name} data-ai-hint="player photo" /></Avatar>
-                                                    <div className="flex-1"><CardTitle className="text-base font-bold">{player.name}</CardTitle><CardDescription>{player.poste}</CardDescription></div>
+                                                    <Avatar className="h-16 w-16">
+                                                        <AvatarImage src={player.photo} alt={player.name} data-ai-hint="player photo" />
+                                                        <AvatarFallback>{player.name.substring(0, 2)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex-1">
+                                                        <CardTitle className="text-base font-bold">{player.name}</CardTitle>
+                                                        <CardDescription>{player.poste}</CardDescription>
+                                                    </div>
                                                 </CardHeader>
                                             </Link>
                                             <CardContent className="p-4 pt-0 flex justify-between items-center mt-auto">
                                                 <Badge style={{ backgroundColor: categoryColors[player.category.replace(' F', '')], color: 'white' }}>{player.category}</Badge>
                                                 <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="h-auto p-0"><Badge variant={getBadgeVariant(player.status) as any}>{player.status}</Badge></Button></DropdownMenuTrigger>
-                                                    <DropdownMenuContent><DropdownMenuRadioGroup value={player.status} onValueChange={(s) => handleStatusChange(player, s)}><DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem><DropdownMenuRadioItem value="Blessé">Blessé</DropdownMenuRadioItem><DropdownMenuRadioItem value="Suspendu">Suspendu</DropdownMenuRadioItem></DropdownMenuRadioGroup></DropdownMenuContent>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="sm" className="h-auto p-0">
+                                                            <Badge variant={getBadgeVariant(player.status) as any}>{player.status}</Badge>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent>
+                                                        <DropdownMenuRadioGroup value={player.status} onValueChange={(s) => handleStatusChange(player, s)}>
+                                                            <DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem>
+                                                            <DropdownMenuRadioItem value="Blessé">Blessé</DropdownMenuRadioItem>
+                                                            <DropdownMenuRadioItem value="Suspendu">Suspendu</DropdownMenuRadioItem>
+                                                            <DropdownMenuRadioItem value="Inactif">Inactif</DropdownMenuRadioItem>
+                                                        </DropdownMenuRadioGroup>
+                                                    </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </CardContent>
                                         </Card>
@@ -292,11 +310,11 @@ function PlayersContent() {
             </Tabs>
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent className="sm:max-w-2xl max-h-[90vh]">
+                <DialogContent className="sm:max-w-4xl max-h-[90vh]">
                     <DialogHeader><DialogTitle>Nouveau Joueur</DialogTitle><DialogDescription>Remplissez toutes les informations pour enregistrer un nouveau joueur.</DialogDescription></DialogHeader>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)}>
-                            <ScrollArea className="h-[60vh] pr-4">
+                            <ScrollArea className="h-[65vh] pr-4">
                                 <div className="space-y-8 pb-4">
                                     <div className="flex flex-col items-center gap-4">
                                         <Avatar className="h-24 w-24 border">
@@ -335,7 +353,7 @@ function PlayersContent() {
                                                 <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
                                                 <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
                                                 <SelectItem value="Avant-centre">Avant-centre</SelectItem>
-                                            </SelectContent></Select><FormMessage /></FormItem>} />
+                                            </Select></FormControl><FormMessage /></FormItem>} />
                                             <FormField control={form.control} name="jerseyNumber" render={({field}) => <FormItem><FormLabel>Numéro de maillot</FormLabel><FormControl><Input type="number" {...field} required /></FormControl><FormMessage /></FormItem>} />
                                             <FormField control={form.control} name="coachName" render={({field}) => <FormItem><FormLabel>Entraîneur</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</Select><FormMessage /></FormItem>} />
                                             <FormField control={form.control} name="status" render={({field}) => <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} value={field.value} required><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="Blessé">Blessé</SelectItem><SelectItem value="Suspendu">Suspendu</SelectItem><SelectItem value="Inactif">Inactif</SelectItem></Select><FormMessage /></FormItem>} />

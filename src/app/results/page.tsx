@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useResultsContext, NewResult, Result, PerformanceDetail } from "@/context/results-context";
-import { Edit, PlusCircle, Trash2, X, FilterX, Eye, MoreHorizontal, UserPlus, Calendar, MapPin, Trophy, Star, Hash, Clock } from "lucide-react";
+import { Edit, PlusCircle, Trash2, X, FilterX, Eye, MoreHorizontal, Calendar, MapPin, Trophy, Star, Hash } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";

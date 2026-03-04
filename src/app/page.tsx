@@ -18,7 +18,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO, isAfter, isSameDay } from "date-fns";
 import Link from "next/link";
 import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell, Legend } from "recharts";
-import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 const categoryColors: Record<string, string> = {
   'Sénior': 'hsl(var(--chart-1))',
@@ -33,29 +32,6 @@ const categoryColors: Record<string, string> = {
   'U11': 'hsl(var(--chart-10))',
   'U7': 'hsl(var(--chart-11))',
   'U20': 'hsl(340, 80%, 55%)',
-};
-
-const CustomLegend = ({ payload }: any) => {
-  if (!payload) return null;
-  const half = Math.ceil(payload.length / 2);
-  const topPayload = payload.slice(0, half);
-  const bottomPayload = payload.slice(half);
-  const renderLegendItems = (items: any[]) => (
-    <div className="flex items-center justify-center flex-wrap gap-x-4 gap-y-1">
-      {items.map((entry, index) => (
-        <div key={`item-${index}`} className="flex items-center gap-1.5 text-xs">
-          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
-          <span>{entry.value}</span>
-        </div>
-      ))}
-    </div>
-  );
-  return (
-    <div className="flex flex-col gap-2">
-      {renderLegendItems(topPayload)}
-      {renderLegendItems(bottomPayload)}
-    </div>
-  );
 };
 
 export default function Dashboard() {
@@ -115,156 +91,51 @@ export default function Dashboard() {
       return acc;
     }, {} as Record<string, number>);
   
-    return Object.keys(counts)
-      .sort((a, b) => a.localeCompare(b))
-      .map(category => ({
+    return Object.keys(counts).map(category => ({
         name: category,
         value: counts[category],
         fill: categoryColors[category] || 'hsl(var(--chart-1))',
-      }));
+    }));
   }, [players]);
 
-  const chartConfig = useMemo(() => {
-    const config: ChartConfig = {};
-    playersByCategory.forEach((item) => {
-      config[item.name] = {
-        label: item.name,
-        color: item.fill,
-      };
-    });
-    return config;
-  }, [playersByCategory]);
-
   if (loading) {
-    return (
-       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <h2 className="text-3xl font-bold tracking-tight">Tableau de bord</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({length: 3}).map((_, i) => (
-                <Card key={i}>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <Skeleton className="h-5 w-2/3" />
-                    </CardHeader>
-                    <CardContent>
-                        <Skeleton className="h-8 w-1/3" />
-                        <Skeleton className="h-4 w-1/2 mt-1" />
-                    </CardContent>
-                </Card>
-            ))}
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="lg:col-span-4">
-                <CardHeader>
-                    <Skeleton className="h-6 w-1/2" />
-                    <Skeleton className="h-4 w-3/4" />
-                </CardHeader>
-                <CardContent className="pl-2">
-                   <Skeleton className="h-[350px] w-full" />
-                </CardContent>
-            </Card>
-            <Card className="lg:col-span-3">
-                <CardHeader><CardTitle>Événements à Venir</CardTitle></CardHeader>
-                <CardContent><Skeleton className="h-40 w-full" /></CardContent>
-            </Card>
-        </div>
-      </div>
-    )
+    return <div className="p-8"><Skeleton className="h-10 w-48 mb-8" /><div className="grid gap-4 md:grid-cols-3"><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /></div></div>
   }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <h2 className="text-3xl font-bold tracking-tight">Tableau de bord</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Joueurs</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{players.length}</div>
-            <p className="text-xs text-muted-foreground">membres actifs</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Entraîneurs</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{coaches.length}</div>
-            <p className="text-xs text-muted-foreground">membres du staff</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Prochains Événements</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{upcomingEvents.length}</div>
-            <p className="text-xs text-muted-foreground">événements prévus</p>
-          </CardContent>
-        </Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Joueurs</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{players.length}</div></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Entraîneurs</CardTitle><UserCheck className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{coaches.length}</div></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Événements</CardTitle><Calendar className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{upcomingEvents.length}</div></CardContent></Card>
       </div>
-      <div className="grid gap-4 grid-cols-1 lg:grid-cols-5">
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Répartition des Joueurs par Catégorie</CardTitle>
-            <CardDescription>Nombre de joueurs dans chaque catégorie d'âge.</CardDescription>
-          </CardHeader>
-          <CardContent className="pl-2">
-             <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[250px] sm:h-[350px]">
-                <ResponsiveContainer>
-                    <PieChart>
-                        <Tooltip
-                            cursor={false}
-                            content={<ChartTooltipContent
-                                nameKey="value"
-                                labelKey="name"
-                                hideLabel
-                                formatter={(value, name, item) => (
-                                    <div className="flex flex-col gap-1">
-                                        <span className="font-bold">{item.payload.name}</span>
-                                        <span className="text-muted-foreground">{value} joueurs</span>
-                                    </div>
-                                )}
-                            />}
-                        />
-                        <Pie data={playersByCategory} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
-                             {playersByCategory.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                            ))}
-                        </Pie>
-                         <Legend content={<CustomLegend />} />
-                    </PieChart>
-                </ResponsiveContainer>
-            </ChartContainer>
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+        <Card>
+          <CardHeader><CardTitle>Répartition par Catégorie</CardTitle></CardHeader>
+          <CardContent className="h-[300px]">
+             <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                    <Pie data={playersByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#8884d8" paddingAngle={5}><Cell fill="hsl(var(--primary))" /></Pie>
+                    <Tooltip />
+                    <Legend />
+                </PieChart>
+             </ResponsiveContainer>
           </CardContent>
         </Card>
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Événements à Venir</CardTitle>
-            <CardDescription>Les prochains matchs et entraînements.</CardDescription>
-          </CardHeader>
+        <Card>
+          <CardHeader><CardTitle>Événements à Venir</CardTitle></CardHeader>
           <CardContent>
              <div className="space-y-4">
               {upcomingEvents.map((event) => (
-                <Link href="/calendar" key={event.id} className="block hover:bg-muted/50 p-2 rounded-md transition-colors">
-                  <div className="flex items-center">
-                    <Calendar className="h-6 w-6 mr-4 text-primary" />
+                <div key={event.id} className="flex items-center gap-4 p-2 border rounded-md">
                     <div className="flex-1">
-                      <p className="text-sm font-medium leading-none">{event.type}</p>
-                      <p className="text-sm text-muted-foreground">
-                         {event.matchTitle ? `${event.matchTitle} - ` : ''}
-                         {event.formattedDate}
-                      </p>
+                        <p className="font-semibold">{event.type} {event.matchTitle && `: ${event.matchTitle}`}</p>
+                        <p className="text-sm text-muted-foreground">{event.formattedDate}</p>
                     </div>
-                  </div>
-                </Link>
+                </div>
               ))}
-               {upcomingEvents.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center">Aucun événement à venir.</p>
-              )}
+              {upcomingEvents.length === 0 && <p className="text-center text-muted-foreground">Aucun événement prévu.</p>}
             </div>
           </CardContent>
         </Card>

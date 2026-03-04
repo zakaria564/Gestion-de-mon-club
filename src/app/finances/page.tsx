@@ -227,8 +227,7 @@ export default function FinancesPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Membre</Label>
-                  <Select value={newPaymentData.member} onValueChange={v => setNewPaymentData({...newPaymentData, member: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(paymentType === 'player' ? players : coaches).map(m => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}</Select><FormMessage /></Select>
-                </div>
+                  <Select value={newPaymentData.member} onValueChange={v => setNewPaymentData({...newPaymentData, member: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(paymentType === 'player' ? players : coaches).map(m => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}</Select></div >
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2"><Label>Total dû</Label><Input type="number" value={newPaymentData.totalAmount} onChange={e => setNewPaymentData({...newPaymentData, totalAmount: e.target.value})} required /></div>
                   <div className="space-y-2"><Label>Versé</Label><Input type="number" value={newPaymentData.initialPaidAmount} onChange={e => setNewPaymentData({...newPaymentData, initialPaidAmount: e.target.value})} required /></div>

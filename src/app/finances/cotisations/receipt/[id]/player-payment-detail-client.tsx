@@ -7,7 +7,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Banknote, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, User, History, Download } from "lucide-react";
+import { ArrowLeft, Banknote, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, History, Download } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { useFinancialContext } from "@/context/financial-context";
@@ -27,7 +27,7 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
   const id = typeof idParam === 'string' ? idParam : use(idParam as unknown as Promise<{id: string}>).id;
 
   if (!financialCtx || !playersCtx) {
-    throw new Error("PlayerPaymentDetailClient must be used within a FinancialProvider and PlayersProvider");
+    return null;
   }
 
   const { loading: financialLoading, getPlayerPaymentById } = financialCtx;
@@ -35,19 +35,6 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
 
   const payment = useMemo(() => getPlayerPaymentById(id), [id, getPlayerPaymentById]);
   const loading = financialLoading || playersLoading;
-
-  const [formattedTransactions, setFormattedTransactions] = useState<{ id: number; date: string; amount: number; }[]>([]);
-
-  useEffect(() => {
-    if (payment) {
-      setFormattedTransactions(
-        payment.transactions.map(tx => ({
-          ...tx,
-          date: new Date(tx.date).toLocaleString('fr-FR'),
-        }))
-      );
-    }
-  }, [payment]);
 
   const getBadgeVariant = (status: string) => {
     switch (status) {
@@ -58,147 +45,76 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-        case 'payé': return <CheckCircle className="h-8 w-8 text-green-500" />;
-        case 'non payé': return <XCircle className="h-8 w-8 text-red-500" />;
-        case 'partiel': return <Clock className="h-8 w-8 text-amber-500" />;
-        default: return null;
-    }
-  }
-
   const professionalReceiptNumber = useMemo(() => {
     if (!payment) return "";
     const dateParts = payment.dueDate.split('-');
-    const year = dateParts[0];
-    const month = dateParts[1];
-    const shortId = payment.id.substring(0, 4).toUpperCase();
-    return `RC-${year}-${month}-${shortId}`;
+    return `RC-${dateParts[0]}-${dateParts[1]}-${payment.id.substring(0, 4).toUpperCase()}`;
   }, [payment]);
 
-  if (loading) {
-    return (
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <Skeleton className="h-8 w-24 mb-4" />
-        <Card><CardHeader><Skeleton className="h-8 w-1/2" /></CardHeader><Separator /><CardContent className="pt-6 space-y-6"><Skeleton className="h-6 w-full" /></CardContent></Card>
-      </div>
-    );
-  }
-
+  if (loading) return <div className="p-8"><Skeleton className="h-full w-full" /></div>;
   if (!payment) return notFound();
   
   const handleDownloadPDF = () => {
     const input = receiptRef.current;
-    if (!input || !payment) return;
-    const originalWidth = input.style.width;
-    input.style.width = '210mm';
+    if (!input) return;
     html2canvas(input, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgWidth = pdf.internal.pageSize.getWidth();
       const imgHeight = canvas.height * imgWidth / canvas.width;
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      pdf.save(`recu-cotisation-${payment.member.replace(/[\s/]/g, '-')}-${payment.dueDate}.pdf`);
-      input.style.width = originalWidth;
+      pdf.save(`recu-cotisation-${payment.member}-${payment.dueDate}.pdf`);
     });
   };
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={() => router.back()} className="flex items-center text-sm text-muted-foreground hover:underline p-0 h-auto">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Retour
-        </Button>
-         <Button variant="outline" onClick={handleDownloadPDF}><Download className="mr-2 h-4 w-4"/> Télécharger le reçu</Button>
+      <div className="flex items-center justify-between mb-4">
+        <Button variant="ghost" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
+        <Button variant="outline" onClick={handleDownloadPDF}><Download className="mr-2 h-4 w-4"/> PDF</Button>
       </div>
 
-        <Card className="border-none shadow-none bg-white">
-            <div ref={receiptRef} className="p-8 bg-white text-black min-h-[297mm]">
-                <CardHeader className="px-0">
-                <div className="flex flex-col sm:flex-row items-start justify-between mb-8 gap-4 border-b-2 border-black pb-6">
-                     <div className="flex items-center gap-4">
-                        <ClubLogo className="size-20" />
-                        <div>
-                            <h1 className="text-3xl font-bold">{clubInfo.name}</h1>
-                            <p className="text-muted-foreground text-lg">Reçu de Cotisation</p>
-                        </div>
-                    </div>
-                    <div className="text-left sm:text-right">
-                        <p className="font-bold text-xl">N° : {professionalReceiptNumber}</p>
-                        <p className="text-sm">Date d'émission: {new Date().toLocaleDateString('fr-FR')}</p>
-                    </div>
+      <Card className="border-none shadow-none bg-white">
+        <div ref={receiptRef} className="p-12 bg-white text-black min-h-[297mm]">
+            <header className="flex justify-between border-b-2 border-black pb-6 mb-8">
+                <div className="flex items-center gap-4">
+                    <ClubLogo className="size-20" />
+                    <div><h1 className="text-2xl font-bold">{clubInfo.name}</h1><p>Reçu de Cotisation</p></div>
                 </div>
-                <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                    <div>
-                        <CardTitle className="text-3xl font-bold flex items-center gap-3"><User className="h-8 w-8" />{payment.member}</CardTitle>
-                        <CardDescription className="text-lg text-muted-foreground mt-1">Détails de la cotisation mensuelle</CardDescription>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {getStatusIcon(payment.status)}
-                        <Badge variant={getBadgeVariant(payment.status) as any} className="text-lg px-4 py-1">
-                            {payment.status.toUpperCase()}
-                        </Badge>
-                    </div>
-                </div>
-                </CardHeader>
-                <Separator className="my-6 bg-black h-0.5" />
-                <CardContent className="px-0 pt-6">
-                    <div className="grid md:grid-cols-2 gap-x-12 gap-y-6 p-6 border-2 border-black rounded-lg bg-white">
-                        <div className="flex items-center gap-4 text-xl">
-                            <Banknote className="h-7 w-7" />
-                            <span>Montant total dû:</span>
-                            <span className="font-bold ml-auto">{payment.totalAmount.toFixed(2)} DH</span>
-                        </div>
-                        <div className="flex items-center gap-4 text-xl">
-                            <CheckCircle className="h-7 w-7 text-green-600" />
-                            <span>Montant déjà payé:</span>
-                            <span className="font-bold ml-auto text-green-600">{payment.paidAmount.toFixed(2)} DH</span>
-                        </div>
-                        <div className="flex items-center gap-4 text-xl border-t border-black pt-4">
-                            {payment.remainingAmount > 0 ? <XCircle className="h-7 w-7 text-red-600" /> : <CheckCircle className="h-7 w-7 text-green-600" />}
-                            <span>Reste à payer:</span>
-                            <span className={`font-bold ml-auto ${payment.remainingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                {payment.remainingAmount.toFixed(2)} DH
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-4 text-xl border-t border-black pt-4">
-                            <CalendarIcon className="h-7 w-7" />
-                            <span>Mois concerné:</span>
-                            <span className="font-bold ml-auto">{payment.dueDate}</span>
-                        </div>
-                    </div>
-
-                    {formattedTransactions.length > 0 && (
-                        <div className="mt-12">
-                            <h3 className="text-2xl font-bold mb-6 flex items-center border-b-2 border-black pb-2"><History className="mr-3 h-7 w-7" />Historique des Versements</h3>
-                            <Table className="border-collapse bg-transparent">
-                                <TableHeader>
-                                    <TableRow className="border-b-2 border-black hover:bg-transparent bg-transparent">
-                                        <TableHead className="text-lg font-bold text-black bg-transparent">Date et Heure</TableHead>
-                                        <TableHead className="text-right text-lg font-bold text-black bg-transparent">Montant Versé (DH)</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {formattedTransactions.map(tx => (
-                                        <TableRow key={tx.id} className="border-b border-gray-300 hover:bg-transparent">
-                                            <TableCell className="text-lg text-black">{tx.date}</TableCell>
-                                            <TableCell className="text-right font-bold text-lg text-black">{tx.amount.toFixed(2)}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    )}
-
-                    <div className="mt-32 flex justify-center w-full">
-                        <div className="text-center">
-                            <p className="font-bold text-xl underline mb-12">Signature et Cachet du Club</p>
-                            <div className="h-24"></div>
-                        </div>
-                    </div>
-                </CardContent>
+                <div className="text-right"><p className="font-bold">N° : {professionalReceiptNumber}</p><p>Émis le : {new Date().toLocaleDateString('fr-FR')}</p></div>
+            </header>
+            
+            <div className="flex justify-between items-start mb-12">
+                <div><h2 className="text-3xl font-bold">{payment.member}</h2><p className="text-muted-foreground">Cotisation Mensuelle</p></div>
+                <Badge variant={getBadgeVariant(payment.status) as any} className="text-lg px-4 py-1">{payment.status.toUpperCase()}</Badge>
             </div>
-        </Card>
+
+            <div className="grid grid-cols-2 gap-8 p-8 border-2 border-black rounded-lg mb-12 bg-white">
+                <div className="flex justify-between text-xl text-black"><span>Montant Total :</span><span className="font-bold">{payment.totalAmount.toFixed(2)} DH</span></div>
+                <div className="flex justify-between text-xl text-black"><span>Montant Payé :</span><span className="font-bold text-green-600">{payment.paidAmount.toFixed(2)} DH</span></div>
+                <div className="flex justify-between text-xl border-t border-black pt-4 text-black"><span>Reste :</span><span className="font-bold text-red-600">{payment.remainingAmount.toFixed(2)} DH</span></div>
+                <div className="flex justify-between text-xl border-t border-black pt-4 text-black"><span>Mois :</span><span className="font-bold">{payment.dueDate}</span></div>
+            </div>
+
+            {payment.transactions.length > 0 && (
+                <div className="mb-24">
+                    <h3 className="text-xl font-bold border-b-2 border-black mb-4 pb-2 text-black flex items-center gap-2"><History className="h-5 w-5" /> Historique des Versements</h3>
+                    <Table className="bg-transparent">
+                        <TableHeader><TableRow className="border-black bg-transparent hover:bg-transparent"><TableHead className="text-black font-bold bg-transparent">Date</TableHead><TableHead className="text-right text-black font-bold bg-transparent">Montant (DH)</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                            {payment.transactions.map(tx => (
+                                <TableRow key={tx.id} className="border-gray-200 hover:bg-transparent"><TableCell className="text-black bg-transparent">{new Date(tx.date).toLocaleString('fr-FR')}</TableCell><TableCell className="text-right font-bold text-black bg-transparent">{tx.amount.toFixed(2)}</TableCell></TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            )}
+
+            <div className="mt-auto flex justify-center w-full">
+                <div className="text-center"><p className="font-bold text-lg text-black">Signature et Cachet du Club</p></div>
+            </div>
+        </div>
+      </Card>
     </div>
   );
 }

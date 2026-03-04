@@ -1,41 +1,33 @@
 
 "use client";
 
-import { useState, useContext, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit, PlusCircle, Trash2, X, Eye, MoreHorizontal, Calendar as CalendarIcon, MapPin, Hash, Trophy, Star } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Edit, PlusCircle, Trash2, Calendar as CalendarIcon, MapPin } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { fr } from 'date-fns/locale';
-import { format, parse, parseISO, isPast, addHours } from 'date-fns';
-import { CalendarEvent, NewCalendarEvent, useCalendarContext } from '@/context/calendar-context';
-import { useResultsContext, NewResult, Result, PerformanceDetail } from '@/context/results-context';
+import { format, parseISO, isPast } from 'date-fns';
+import { CalendarEvent, useCalendarContext } from '@/context/calendar-context';
+import { useResultsContext, Result } from '@/context/results-context';
 import { usePlayersContext } from '@/context/players-context';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Player } from '@/lib/data';
-import { useToast } from '@/hooks/use-toast';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useClubContext } from '@/context/club-context';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useOpponentsContext } from '@/context/opponents-context';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 
-
-const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
-const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical', 'Match Tournoi'];
+const playerCategories: string[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
 const categoryColors: Record<string, string> = {
   'Sénior': 'hsl(var(--chart-1))',
@@ -58,22 +50,20 @@ export default function CalendarPage() {
   const playersContext = usePlayersContext();
   const opponentsContext = useOpponentsContext();
   const { clubInfo } = useClubContext();
-  const { toast } = useToast();
 
   if (!calendarContext || !resultsContext || !playersContext || !opponentsContext) {
-    throw new Error("CalendarPage must be used within all required providers");
+    return null;
   }
 
   const { calendarEvents, loading: calendarLoading, addEvent, updateEvent, deleteEvent } = calendarContext;
-  const { results, addResult, loading: resultsLoading, updateResult, deleteResult } = resultsContext;
+  const { results } = resultsContext;
   const { players, loading: playersLoading } = playersContext;
   const { opponents, loading: opponentsLoading } = opponentsContext;
 
-  const loading = calendarLoading || resultsLoading || playersLoading || opponentsLoading;
+  const loading = calendarLoading || playersLoading || opponentsLoading;
 
   const [date, setDate] = useState<Date | undefined>(new Date());
   
-  // State for Add/Edit Event Dialog
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
@@ -91,41 +81,8 @@ export default function CalendarPage() {
     matchType: 'club-match',
   });
 
-  // State for Add Result Dialog
-  const [resultDialogOpen, setResultDialogOpen] = useState(false);
-  const [resultMatchType, setResultMatchType] = useState<'club-match' | 'opponent-vs-opponent'>('club-match');
-  const [newResult, setNewResult] = useState<NewResult>({
-      opponent: '',
-      homeTeam: '',
-      awayTeam: '',
-      date: '',
-      time: '',
-      location: '',
-      score: '',
-      scorers: [],
-      assists: [],
-      category: '',
-      teamCategory: '',
-      gender: 'Masculin',
-      homeOrAway: 'home',
-      matchType: 'club-match',
-  });
-  
-  const [manualOpponentScorers, setManualOpponentScorers] = useState<PerformanceDetail[]>([]);
-  const [manualOpponentAssists, setManualOpponentAssists] = useState<PerformanceDetail[]>([]);
-  const [manualAwayScorers, setManualAwayScorers] = useState<PerformanceDetail[]>([]);
-  const [manualAwayAssists, setManualAwayAssists] = useState<PerformanceDetail[]>([]);
-
-  // State for Event Details Dialog
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
-  const [resultDetailsOpen, setResultDetailsOpen] = useState(false);
-  const [selectedResult, setSelectedResult] = useState<Result | null>(null);
-  
-  useEffect(() => {
-    setNewResult(prev => ({ ...prev, matchType: resultMatchType }));
-  }, [resultMatchType]);
   
   const handleEventInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -145,10 +102,7 @@ export default function CalendarPage() {
     }
 
     if (isEditing && editingEvent) {
-       await updateEvent({
-        id: editingEvent.id,
-        ...finalEvent,
-       });
+       await updateEvent({ id: editingEvent.id, ...finalEvent });
     } else {
       await addEvent(finalEvent);
     }
@@ -164,24 +118,8 @@ export default function CalendarPage() {
   }
 
   const handleEventClick = (event: CalendarEvent) => {
-    const isMatch = event.type.toLowerCase().includes('match');
-    const hasPassed = isPast(parseISO(event.date));
-
-    if (isMatch && hasPassed) {
-        const existingResult = results.find(
-            (r) => r.date === event.date && r.opponent === event.opponent && r.teamCategory === event.teamCategory
-        );
-
-        if (existingResult) {
-            setSelectedResult(existingResult);
-            setResultDetailsOpen(true);
-        } else {
-            openAddResultDialogFromEvent(event);
-        }
-    } else {
-        setSelectedEvent(event);
-        setDetailsOpen(true);
-    }
+    setSelectedEvent(event);
+    setDetailsOpen(true);
   };
   
   const openAddEventDialog = (selectedDate: Date) => {
@@ -234,279 +172,49 @@ export default function CalendarPage() {
     await deleteEvent(eventId);
     setDetailsOpen(false);
     setSelectedEvent(null);
-    setDeleteConfirmationOpen(false);
   }
-
- const openAddResultDialogFromEvent = (event: CalendarEvent) => {
-    setDetailsOpen(false);
-    setResultDialogOpen(true);
-    setResultMatchType(event.matchType || 'club-match');
-    setNewResult({
-      opponent: event.opponent,
-      homeTeam: event.homeTeam || '',
-      awayTeam: event.awayTeam || '',
-      date: format(parseISO(event.date), 'yyyy-MM-dd'),
-      time: event.time,
-      location: event.location,
-      score: '',
-      scorers: [],
-      assists: [],
-      category: event.type,
-      teamCategory: event.teamCategory,
-      gender: event.gender,
-      homeOrAway: event.homeOrAway || 'home',
-      matchType: event.matchType || 'club-match',
-    });
-  };
-
-  const handleResultInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setNewResult(prev => ({ ...prev, [id]: value }));
-  };
-
-  const handlePerformanceChange = (
-    listName: 'scorers' | 'assists',
-    index: number,
-    field: 'playerName' | 'count',
-    value: string | number
-  ) => {
-      const updatedList = [...newResult[listName]];
-      const item = { ...updatedList[index] };
-      if (field === 'playerName') {
-          item.playerName = value as string;
-      } else {
-          item.count = Math.max(1, Number(value));
-      }
-      updatedList[index] = item;
-      setNewResult(prev => ({ ...prev, [listName]: updatedList }));
-  };
-
-  const addPerformanceItem = (listName: 'scorers' | 'assists') => {
-      const list = [...newResult[listName], { playerName: '', count: 1 }];
-      setNewResult(prev => ({ ...prev, [listName]: list }));
-  };
-
-  const removePerformanceItem = (listName: 'scorers' | 'assists', index: number) => {
-      const list = newResult[listName].filter((_, i) => i !== index);
-      setNewResult(prev => ({ ...prev, [listName]: list }));
-  };
-  
-  const handleManualPerformanceChange = (
-    list: PerformanceDetail[],
-    setList: React.Dispatch<React.SetStateAction<PerformanceDetail[]>>,
-    index: number,
-    field: 'playerName' | 'count',
-    value: string | number
-  ) => {
-      const updatedList = [...list];
-      const item = { ...updatedList[index] };
-
-      if (field === 'playerName') {
-          item.playerName = value as string;
-      } else {
-          item.count = Math.max(1, Number(value));
-      }
-      updatedList[index] = item;
-      setList(updatedList);
-  };
-
-  const addManualPerformanceItem = (
-    list: PerformanceDetail[],
-    setList: React.Dispatch<React.SetStateAction<PerformanceDetail[]>>
-  ) => {
-      setList([...list, { playerName: '', count: 1 }]);
-  };
-
-  const removeManualPerformanceItem = (
-    list: PerformanceDetail[],
-    setList: React.Dispatch<React.SetStateAction<PerformanceDetail[]>>,
-    index: number
-  ) => {
-      setList(list.filter((_, i) => i !== index));
-  };
-
-
-  const resetResultForm = (keepOpen = false) => {
-    setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: '', teamCategory: '', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
-    setManualOpponentScorers([]);
-    setManualOpponentAssists([]);
-    setManualAwayScorers([]);
-    setManualAwayAssists([]);
-    if (!keepOpen) {
-      setResultDialogOpen(false);
-    }
-    setResultMatchType('club-match');
-  };
-  
-  const handleResultSelectChange = (field: 'category' | 'teamCategory' | 'opponent' | 'homeTeam' | 'awayTeam' | 'gender', value: string) => {
-    setNewResult(prev => ({ ...prev, [field]: value as any }));
-  };
-  
-  const handleResultSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-  
-    const finalResult: NewResult = { ...newResult };
-    
-    let allScorers: PerformanceDetail[] = [...(finalResult.scorers || [])].filter(s => s.playerName);
-    let allAssists: PerformanceDetail[] = [...(finalResult.assists || [])].filter(a => a.playerName);
-
-    if (resultMatchType === 'club-match') {
-      const opponentScorers = manualOpponentScorers.map(s => ({
-        playerName: `${s.playerName} (${finalResult.opponent})`,
-        count: s.count
-      }));
-      const opponentAssists = manualOpponentAssists.map(a => ({
-        playerName: `${a.playerName} (${finalResult.opponent})`,
-        count: a.count
-      }));
-      allScorers = [...allScorers, ...opponentScorers];
-      allAssists = [...allAssists, ...opponentAssists];
-    } else { // opponent-vs-opponent
-      finalResult.opponent = `${finalResult.homeTeam} vs ${finalResult.awayTeam}`;
-      
-      const homeScorers = manualOpponentScorers.map(s => ({...s, playerName: `${s.playerName} (${finalResult.homeTeam})`}));
-      const homeAssists = manualOpponentAssists.map(a => ({...a, playerName: `${a.playerName} (${finalResult.homeTeam})`}));
-      
-      const awayScorers = manualAwayScorers.map(s => ({...s, playerName: `${s.playerName} (${finalResult.awayTeam})`}));
-      const awayAssists = manualAwayAssists.map(a => ({...a, playerName: `${a.playerName} (${finalResult.awayTeam})`}));
-      
-      allScorers = [...homeScorers, ...awayScorers];
-      allAssists = [...homeAssists, ...awayAssists];
-    }
-
-    finalResult.scorers = allScorers;
-    finalResult.assists = allAssists;
-    
-    await addResult(finalResult);
-    toast({ title: "Résultat ajouté", description: "Le résultat du match a été enregistré." });
-    resetResultForm();
-  };
-
-  const formatPerformance = (items: PerformanceDetail[] | undefined): string => {
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return "Aucun";
-    }
-    return items.map(item => `${item.playerName}${item.count > 1 ? ` (${item.count})` : ''}`).join(", ");
-  };
-
-  const allPossiblePlayersOptions = useMemo(() => {
-    return players
-      .filter(p => p.category === newResult.teamCategory && p.gender === newResult.gender)
-      .map(p => ({
-        value: p.name,
-        label: p.name,
-      }));
-  }, [players, newResult.teamCategory, newResult.gender]);
-
 
   const filteredOpponentOptions = useMemo(() => {
     return opponents.filter(op => op.gender === newEvent.gender);
   }, [opponents, newEvent.gender]);
-  
-  const filteredOpponentOptionsForResult = useMemo(() => {
-    return opponents.filter(op => op.gender === newResult.gender);
-  }, [opponents, newResult.gender]);
 
   const eventsByDate = calendarEvents.reduce((acc, event) => {
     const eventDate = format(parseISO(event.date), 'yyyy-MM-dd');
-    if (!acc[eventDate]) {
-      acc[eventDate] = [];
-    }
+    if (!acc[eventDate]) acc[eventDate] = [];
     acc[eventDate].push(event);
     return acc;
   }, {} as Record<string, typeof calendarEvents>);
 
   const selectedDateString = date ? format(date, 'yyyy-MM-dd') : undefined;
   const eventsForSelectedDate = selectedDateString 
-    ? (eventsByDate[selectedDateString] || []).sort((a, b) => {
-        if (!a.time || !b.time) return 0;
-        const timeA = a.time.split(':').map(Number);
-        const timeB = b.time.split(':').map(Number);
-        if (timeA[0] !== timeB[0]) {
-          return timeA[0] - timeB[0];
-        }
-        return timeA[1] - timeB[1];
-      })
-    : undefined;
+    ? (eventsByDate[selectedDateString] || []).sort((a, b) => a.time.localeCompare(b.time))
+    : [];
 
   const getEventBadgeStyle = (eventType: string): React.CSSProperties => {
     const lowerType = eventType.toLowerCase();
     if (lowerType.includes('match')) return { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' };
     if (lowerType.includes('entraînement')) return { backgroundColor: 'hsl(var(--chart-2))', color: 'hsl(var(--primary-foreground))' };
     if (lowerType.includes('réunion')) return { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' };
-    if (lowerType.includes('événement spécial')) return { backgroundColor: '#A855F7', color: 'white' };
     return { backgroundColor: 'hsl(var(--secondary))', color: 'hsl(var(--secondary-foreground))' };
   };
 
   const getMatchTitle = (event: CalendarEvent) => {
     const isMatch = event.type.toLowerCase().includes('match');
     if (!isMatch || !event.opponent) return event.type;
-
-    if (event.matchType === 'opponent-vs-opponent') {
-        return event.opponent; 
-    }
-
+    if (event.matchType === 'opponent-vs-opponent') return event.opponent;
     const clubName = clubInfo.name;
-    const opponentName = event.opponent;
-    const homeTeam = event.homeOrAway === 'home' ? clubName : opponentName;
-    const awayTeam = event.homeOrAway === 'home' ? opponentName : clubName;
-    
+    const homeTeam = event.homeOrAway === 'home' ? clubName : event.opponent;
+    const awayTeam = event.homeOrAway === 'home' ? event.opponent : clubName;
     return `${homeTeam} vs ${awayTeam}`;
   }
-  
-  const getResultTitle = (result: Result) => {
-     if (result.matchType === 'opponent-vs-opponent') {
-        return `${result.homeTeam} vs ${result.awayTeam}`;
-    }
-    const clubName = clubInfo.name;
-    const opponentName = result.opponent;
-    const homeTeam = result.homeOrAway === 'home' ? clubName : opponentName;
-    const awayTeam = result.homeOrAway === 'home' ? opponentName : clubName;
-    return `${homeTeam} vs ${awayTeam}`;
-  };
-  
-    const performanceByTeam = (performance: PerformanceDetail[] | undefined) => {
-    if (!performance) return {};
-    return performance.reduce((acc, item) => {
-      const match = item.playerName.match(/(.*) \((.*)\)/);
-      const team = match ? match[2] : clubInfo.name;
-      
-      const teamKey = team.trim();
-      if (!acc[teamKey]) {
-        acc[teamKey] = [];
-      }
-      acc[teamKey].push({ ...item, playerName: match ? match[1].trim() : item.playerName.trim() });
-      return acc;
-    }, {} as Record<string, PerformanceDetail[]>);
-  };
-  
-  const selectedScorersByTeam = performanceByTeam(selectedResult?.scorers);
-  const selectedAssistsByTeam = performanceByTeam(selectedResult?.assists);
-
-  const teamNames = useMemo(() => {
-    if (!selectedResult) return ['', ''];
-    if (selectedResult.matchType === 'opponent-vs-opponent') {
-        return [selectedResult.homeTeam || '', selectedResult.awayTeam || ''];
-    }
-    const teamA = selectedResult.homeOrAway === 'home' ? clubInfo.name : selectedResult.opponent;
-    const teamB = selectedResult.homeOrAway === 'home' ? selectedResult.opponent : clubInfo.name;
-    return [teamA, teamB];
-  }, [selectedResult, clubInfo.name]);
 
   if (loading || !date) {
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <div className="flex items-center justify-between space-y-2">
-          <Skeleton className="h-10 w-48" />
-          <Skeleton className="h-10 w-48" />
-        </div>
+        <Skeleton className="h-10 w-48" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2">
-            <Card><CardContent className="p-0"><Skeleton className="w-full h-[700px]" /></CardContent></Card>
-          </div>
-          <div className="md:col-span-1">
-             <Card><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-5 w-full" /></CardContent></Card>
-          </div>
+          <div className="md:col-span-2"><Skeleton className="w-full h-[600px]" /></div>
+          <div className="md:col-span-1"><Skeleton className="h-[400px] w-full" /></div>
         </div>
       </div>
     )
@@ -518,376 +226,119 @@ export default function CalendarPage() {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Calendrier</h2>
-        <Dialog open={eventDialogOpen} onOpenChange={(isOpen) => { if (!isOpen) resetEventForm(); else setEventDialogOpen(true);}}>
-          <DialogTrigger asChild>
-            <Button onClick={() => openAddEventDialog(date)}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un événement
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un événement</DialogTitle>
-              <DialogDescription>Remplissez les détails ci-dessous.</DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleEventSubmit}>
-              <ScrollArea className="h-[70vh] p-4">
-                <div className="grid gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="type">Type d'événement</Label>
-                    <Select onValueChange={(v) => handleEventSelectChange('type', v)} value={newEvent.type} required>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Match Amical">Match Amical</SelectItem>
-                        <SelectItem value="Match Championnat">Match de Championnat</SelectItem>
-                        <SelectItem value="Match Coupe">Match Coupe</SelectItem>
-                        <SelectItem value="Match Tournoi">Match Tournoi</SelectItem>
-                        <SelectItem value="Entraînement Physique">Entraînement Physique</SelectItem>
-                        <SelectItem value="Entraînement Technique">Entraînement Technique</SelectItem>
-                        <SelectItem value="Entraînement Tactique">Entraînement Tactique</SelectItem>
-                        <SelectItem value="Réunion">Réunion</SelectItem>
-                        <SelectItem value="Événement Spécial">Événement Spécial</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                          <Label>Catégorie</Label>
-                          <Select onValueChange={(v) => handleEventSelectChange('teamCategory', v)} value={newEvent.teamCategory} required>
-                              <SelectTrigger><SelectValue /></SelectTrigger>
-                              <SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
-                          </Select>
-                      </div>
-                      <div className="grid gap-2">
-                          <Label>Genre</Label>
-                          <Select onValueChange={(v) => handleEventSelectChange('gender', v)} value={newEvent.gender} required>
-                              <SelectTrigger><SelectValue /></SelectTrigger>
-                              <SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent>
-                          </Select>
-                      </div>
-                  </div>
-                  {isNewEventMatch && (
-                    <div className="space-y-4 pt-2">
-                      <RadioGroup value={newEvent.matchType} onValueChange={(v) => handleEventSelectChange('matchType', v)} className="flex gap-4">
-                          <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="club-match" id="cal-club-match" />
-                              <Label htmlFor="cal-club-match">Match de mon club</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="opponent-vs-opponent" id="cal-opp-match" />
-                              <Label htmlFor="cal-opp-match">Entre adversaires</Label>
-                          </div>
-                      </RadioGroup>
-                      
-                      {newEvent.matchType === 'club-match' ? (
-                        <>
-                          <div className="grid gap-2">
-                              <Label>Domicile / Extérieur</Label>
-                              <RadioGroup value={newEvent.homeOrAway} onValueChange={(v) => handleEventSelectChange('homeOrAway', v)} className="flex gap-4">
-                                  <div className="flex items-center space-x-2"><RadioGroupItem value="home" id="cal-home" /><Label htmlFor="cal-home">Domicile</Label></div>
-                                  <div className="flex items-center space-x-2"><RadioGroupItem value="away" id="cal-away" /><Label htmlFor="cal-away">Extérieur</Label></div>
-                              </RadioGroup>
-                          </div>
-                          <div className="grid gap-2">
-                              <Label>Adversaire</Label>
-                              <Select onValueChange={(v) => handleEventSelectChange('opponent', v)} value={newEvent.opponent} required>
-                                  <SelectTrigger><SelectValue /></SelectTrigger>
-                                  <SelectContent>{filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent>
-                              </Select>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label>Équipe Domicile</Label>
-                                <Select onValueChange={(v) => handleEventSelectChange('homeTeam', v)} value={newEvent.homeTeam} required>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>{filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent>
-                                </Select>
-                            </div>
-                            <div className="grid gap-2">
-                                <Label>Équipe Extérieur</Label>
-                                <Select onValueChange={(v) => handleEventSelectChange('awayTeam', v)} value={newEvent.awayTeam} required>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>{filteredOpponentOptions.filter(o => o.name !== newEvent.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="date">Date</Label>
-                      <Input id="date" type="date" value={newEvent.date} onChange={handleEventInputChange} required/>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="time">Heure</Label>
-                      <Input id="time" type="time" value={newEvent.time} onChange={handleEventInputChange} required/>
-                    </div>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="location">Lieu</Label>
-                    <Input id="location" value={newEvent.location} onChange={handleEventInputChange} required/>
-                  </div>
-                </div>
-              </ScrollArea>
-              <DialogFooter className="mt-6 pt-4 border-t gap-2">
-                <Button type="button" variant="outline" onClick={resetEventForm}>Annuler</Button>
-                <Button type="submit">Sauvegarder</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => openAddEventDialog(date)}><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un événement</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
-          <Card>
-            <CardContent className="p-0">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={handleDayClick}
-                className="w-full"
-                locale={fr}
-                components={{
-                  DayContent: ({ date: dayDate }) => {
-                    const dayEvents = eventsByDate[format(dayDate, 'yyyy-MM-dd')];
-                    return (
-                      <div className="relative h-full w-full flex flex-col items-center justify-center group" onClick={() => handleDayClick(dayDate)}>
-                        <PlusCircle className="absolute top-1 right-1 h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" onClick={(e) => { e.stopPropagation(); openAddEventDialog(dayDate); }}/>
-                        <span>{dayDate.getDate()}</span>
-                        {dayEvents && (
-                          <div className="absolute bottom-1 flex space-x-1">
-                            {dayEvents.map(event => (
-                              <div key={event.id} className={`h-1.5 w-1.5 rounded-full ${event.type.toLowerCase().includes('match') ? 'bg-primary' : 'bg-green-500'}`} />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  },
-                }}
-                 classNames={{
-                  months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                  month: "space-y-4 w-full",
-                  table: "w-full border-collapse",
-                  head_row: "flex justify-around",
-                  head_cell: "w-full text-muted-foreground rounded-md font-normal text-[0.8rem]",
-                  row: "flex w-full mt-2 justify-around",
-                  cell: "h-16 w-full text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 md:h-24",
-                  day: "h-full w-full p-2 font-normal",
-                  day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-md",
-                  day_today: "bg-accent text-accent-foreground rounded-md",
-                  day_outside: "text-muted-foreground opacity-50",
-                }}
-              />
-            </CardContent>
-          </Card>
+          <Card><CardContent className="p-0"><Calendar mode="single" selected={date} onSelect={handleDayClick} className="w-full" locale={fr} /></CardContent></Card>
         </div>
-
         <div className="md:col-span-1">
-          {date && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Événements du {date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {eventsForSelectedDate && eventsForSelectedDate.length > 0 ? (
-                  <div className="space-y-4">
-                    {eventsForSelectedDate.map((event) => (
-                      <div key={event.id} className="p-4 rounded-md border flex flex-col items-start gap-2 cursor-pointer hover:bg-muted/50 relative group" onClick={() => handleEventClick(event)}>
-                          <div className="flex-1 w-full mb-2">
-                              <div className='flex gap-2 items-center justify-center mb-2'>
-                                  <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
-                                  {event.teamCategory && (
-                                      <Badge style={{backgroundColor: categoryColors[event.teamCategory], color: 'white'}} className="border-transparent">
-                                          {event.gender === 'Féminin' ? `${event.teamCategory} F` : event.teamCategory}
-                                      </Badge>
-                                  )}
-                              </div>
-                              <p className="font-semibold text-center">{getMatchTitle(event)}</p>
-                              <p className="text-sm text-muted-foreground text-center">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
-                              <p className="text-sm text-muted-foreground text-center">{event.location}</p>
-                          </div>
-                          <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <DropdownMenu>
-                                  <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                      <DropdownMenuItem onClick={(e) => openEditEventDialog(event, e)}><Edit className="mr-2 h-4 w-4" />Modifier</DropdownMenuItem>
-                                      <DropdownMenuSeparator />
-                                      <AlertDialog>
-                                          <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600"><Trash2 className="mr-2 h-4 w-4" />Supprimer</DropdownMenuItem></AlertDialogTrigger>
-                                          <AlertDialogContent>
-                                              <AlertDialogHeader><AlertDialogTitle>Confirmer la suppression</AlertDialogTitle></AlertDialogHeader>
-                                              <AlertDialogFooter><AlertDialogCancel>Annuler</AlertDialogCancel><AlertDialogAction onClick={(e) => handleDeleteEvent(event.id, e)}>Supprimer</AlertDialogAction></AlertDialogFooter>
-                                          </AlertDialogContent>
-                                      </AlertDialog>
-                                  </DropdownMenuContent>
-                              </DropdownMenu>
-                          </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">Aucun événement prévu.</p>
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </div>
-
-       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{selectedEvent?.type}</DialogTitle>
-            <DialogDescription>{selectedEvent && getMatchTitle(selectedEvent)}</DialogDescription>
-          </DialogHeader>
-          {selectedEvent && (
-            <>
-              <div className="grid gap-4 py-4">
-                  {selectedEvent.teamCategory && <p><strong>Catégorie:</strong> {selectedEvent.gender === 'Féminin' ? `${selectedEvent.teamCategory} F` : selectedEvent.teamCategory}</p>}
-                  <p><strong>Date:</strong> {format(parseISO(selectedEvent.date), 'dd/MM/yyyy')}</p>
-                  <p><strong>Heure:</strong> {selectedEvent.time}</p>
-                  <p><strong>Lieu:</strong> {selectedEvent.location}</p>
-              </div>
-              <DialogFooter className="flex-wrap justify-end gap-2 pt-4 border-t">
-                 {isPast(parseISO(selectedEvent.date)) && selectedEvent.type.toLowerCase().includes("match") && (
-                    <Button variant="outline" onClick={() => openAddResultDialogFromEvent(selectedEvent)}>
-                      <PlusCircle className="mr-2 h-4 w-4" /> Ajouter le score
-                    </Button>
-                  )}
-                  <Button variant="outline" onClick={(e) => openEditEventDialog(selectedEvent, e)}><Edit className="mr-2 h-4 w-4" /> Modifier</Button>
-                  <AlertDialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
-                      <AlertDialogTrigger asChild><Button variant="destructive"><Trash2 className="mr-2 h-4 w-4" /> Supprimer</Button></AlertDialogTrigger>
-                      <AlertDialogContent>
-                          <AlertDialogHeader><AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle></AlertDialogHeader>
-                          <AlertDialogFooter><AlertDialogCancel>Annuler</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteEvent(selectedEvent.id)}>Supprimer</AlertDialogAction></AlertDialogFooter>
-                      </AlertDialogContent>
-                  </AlertDialog>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={resultDialogOpen} onOpenChange={(isOpen) => { if (!isOpen) resetResultForm(); else setResultDialogOpen(true); }}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh]">
-            <DialogHeader><DialogTitle>Ajouter un résultat</DialogTitle></DialogHeader>
-            <form onSubmit={handleResultSubmit}>
-                 <ScrollArea className="h-[70vh] p-4">
-                        <div className="space-y-6">
-                            <RadioGroup value={resultMatchType} onValueChange={(v) => setResultMatchType(v as any)} className="flex gap-4">
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="club-match" id="res-club-match" /><Label htmlFor="res-club-match">Match de mon club</Label></div>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="opponent-vs-opponent" id="res-opp-match" /><Label htmlFor="res-opp-match">Match entre adversaires</Label></div>
-                            </RadioGroup>
-                            <Separator/><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-                                <div className="grid gap-2"><Label>Date</Label><Input type="date" value={newResult.date} onChange={handleResultInputChange} required id="date" /></div>
-                                <div className="grid gap-2"><Label>Heure</Label><Input type="time" value={newResult.time} onChange={handleResultInputChange} required id="time" /></div>
-                                <div className="grid gap-2"><Label>Lieu</Label><Input value={newResult.location} onChange={handleResultInputChange} required id="location" /></div>
-                                <div className="grid gap-2"><Label>Type</Label><Select onValueChange={(v) => handleResultSelectChange('category', v)} value={newResult.category} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{matchCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></div>
-                                <div className="grid gap-2"><Label>Catégorie</Label><Select onValueChange={(v) => handleResultSelectChange('teamCategory', v)} value={newResult.teamCategory} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></div>
-                                <div className="grid gap-2"><Label>Genre</Label><Select onValueChange={(v) => handleResultSelectChange('gender', v)} value={newResult.gender} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select></div>
-                                {resultMatchType === 'club-match' ? (
-                                    <>
-                                        <div className="grid gap-2">
-                                            <Label>Domicile / Extérieur</Label>
-                                            <RadioGroup value={newResult.homeOrAway} onValueChange={(v: any) => setNewResult(prev => ({...prev, homeOrAway: v}))} className="flex gap-4">
-                                                <div className="flex items-center space-x-2"><RadioGroupItem value="home" id="res-home" /><Label htmlFor="res-home">Domicile</Label></div>
-                                                <div className="flex items-center space-x-2"><RadioGroupItem value="away" id="res-away" /><Label htmlFor="res-away">Extérieur</Label></div>
-                                            </RadioGroup>
-                                        </div>
-                                        <div className="grid gap-2"><Label>Adversaire</Label><Select onValueChange={(v) => handleResultSelectChange('opponent', v)} value={newResult.opponent} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{filteredOpponentOptionsForResult.map(op => (<SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>))}</SelectContent></Select></div>
-                                    </>
-                                ) : (
-                                     <>
-                                        <div className="grid gap-2"><Label>Équipe Domicile</Label><Select onValueChange={(v) => handleResultSelectChange('homeTeam', v)} value={newResult.homeTeam} required><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{filteredOpponentOptionsForResult.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent></Select></div>
-                                         <div className="grid gap-2"><Label>Équipe Extérieur</Label><Select onValueChange={(v) => handleResultSelectChange('awayTeam', v)} value={newResult.awayTeam} required><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{filteredOpponentOptionsForResult.filter(op => op.name !== newResult.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent></Select></div>
-                                    </>
-                                )}
-                                <div className="grid gap-2"><Label className="text-center">Score final (ex: 3-1)</Label><Input id="score" value={newResult.score} onChange={handleResultInputChange} required className="text-center text-xl font-bold" /></div>
-                            </div>
-                            <Separator />
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {resultMatchType === 'club-match' ? (
-                                <>
-                                  <div>
-                                      <div className="font-semibold mb-2 text-center">{newResult.homeOrAway === 'home' ? clubInfo.name : newResult.opponent}</div>
-                                      <div className="space-y-4 p-4 border rounded-md">
-                                          <div><Label>Buteurs</Label>{newResult.scorers.map((scorer, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Select value={scorer.playerName} onValueChange={(val) => handlePerformanceChange('scorers', index, 'playerName', val)}><SelectTrigger><SelectValue placeholder="Joueur..."/></SelectTrigger><SelectContent>{allPossiblePlayersOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent></Select><Input type="number" value={scorer.count} onChange={(e) => handlePerformanceChange('scorers', index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removePerformanceItem('scorers', index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addPerformanceItem('scorers')} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button></div>
-                                          <div><Label>Passeurs</Label>{newResult.assists.map((assist, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Select value={assist.playerName} onValueChange={(val) => handlePerformanceChange('assists', index, 'playerName', val)}><SelectTrigger><SelectValue placeholder="Joueur..."/></SelectTrigger><SelectContent>{allPossiblePlayersOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent></Select><Input type="number" value={assist.count} onChange={(e) => handlePerformanceChange('assists', index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removePerformanceItem('assists', index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addPerformanceItem('assists')} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button></div>
-                                      </div>
-                                  </div>
-                                  <div>
-                                      <div className="font-semibold mb-2 text-center">{newResult.homeOrAway === 'away' ? clubInfo.name : newResult.opponent}</div>
-                                      <div className="space-y-4 p-4 border rounded-md">
-                                           <div><Label>Buteurs</Label>{manualOpponentScorers.map((scorer, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Input placeholder="Nom" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'playerName', e.target.value)} /><Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers, index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button></div>
-                                            <div><Label>Passeurs</Label>{manualOpponentAssists.map((assist, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Input placeholder="Nom" value={assist.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'playerName', e.target.value)} /><Input type="number" value={assist.count} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists, index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button></div>
-                                      </div>
-                                  </div>
-                                </>
-                               ) : (
-                                <>
-                                  <div>
-                                    <div className="font-semibold mb-2 text-center">{newResult.homeTeam || "Équipe Domicile"}</div>
-                                     <div className="space-y-4 p-4 border rounded-md">
-                                       <div><Label>Buteurs</Label>{manualOpponentScorers.map((scorer, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Input placeholder="Nom" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'playerName', e.target.value)} /><Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers, index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button></div>
-                                      <div><Label>Passeurs</Label>{manualOpponentAssists.map((assist, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Input placeholder="Nom" value={assist.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'playerName', e.target.value)} /><Input type="number" value={assist.count} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists, index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button></div>
-                                    </div>
-                                  </div>
-                                   <div>
-                                    <div className="font-semibold mb-2 text-center">{newResult.awayTeam || "Équipe Extérieur"}</div>
-                                     <div className="space-y-4 p-4 border rounded-md">
-                                        <div><Label>Buteurs</Label>{manualAwayScorers.map((scorer, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Input placeholder="Nom" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange(manualAwayScorers, setManualAwayScorers, index, 'playerName', e.target.value)} /><Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange(manualAwayScorers, setManualAwayScorers, index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualAwayScorers, setManualAwayScorers, index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualAwayScorers, setManualAwayScorers)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button></div>
-                                        <div><Label>Passeurs</Label>{manualAwayAssists.map((assist, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Input placeholder="Nom" value={assist.playerName} onChange={(e) => handleManualPerformanceChange(manualAwayAssists, setManualAwayAssists, index, 'playerName', e.target.value)} /><Input type="number" value={assist.count} onChange={(e) => handleManualPerformanceChange(manualAwayAssists, setManualAwayAssists, index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualAwayAssists, setManualAwayAssists, index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualAwayAssists, setManualAwayAssists)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button></div>
-                                      </div>
-                                  </div>
-                                </>
-                               )}
-                            </div>
+          <Card>
+            <CardHeader><CardTitle>Événements du {date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</CardTitle></CardHeader>
+            <CardContent>
+              {eventsForSelectedDate.length > 0 ? (
+                <div className="space-y-4">
+                  {eventsForSelectedDate.map((event) => (
+                    <div key={event.id} className="p-4 rounded-md border cursor-pointer hover:bg-muted/50 relative group" onClick={() => handleEventClick(event)}>
+                        <div className="mb-2 flex flex-wrap gap-2">
+                            <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
+                            <Badge style={{backgroundColor: categoryColors[event.teamCategory], color: 'white'}}>{event.gender === 'Féminin' ? `${event.teamCategory} F` : event.teamCategory}</Badge>
                         </div>
-                    </ScrollArea>
-                <DialogFooter className="mt-6 pt-4 border-t gap-2"><Button type="button" variant="outline" onClick={() => resetResultForm()}>Annuler</Button><Button type="submit">Sauvegarder le Résultat</Button></DialogFooter>
-            </form>
-        </DialogContent>
-    </Dialog>
-
-    <Dialog open={resultDetailsOpen} onOpenChange={setResultDetailsOpen}>
-        <DialogContent className="sm:max-w-4xl">
-            <DialogHeader>
-              {selectedResult && (
-                <>
-                   <DialogTitle className="text-xl text-center mb-2">{getResultTitle(selectedResult)}</DialogTitle>
-                    <DialogDescription className="text-center">Score final : <span className="font-bold text-foreground text-lg">{selectedResult.score}</span></DialogDescription>
-                </>
-              )}
-            </DialogHeader>
-            {selectedResult && (
-              <div className="space-y-4 py-4">
-                 <div className="flex justify-center"><Badge variant="secondary">{selectedResult.category}</Badge></div>
-                <Separator />
-                <div className="grid grid-cols-3 gap-4 text-sm text-center">
-                  <div className="flex flex-col items-center gap-1"><div className="flex items-center gap-2"><Hash className="h-4 w-4 text-muted-foreground" /><strong>Catégorie</strong></div><span>{selectedResult.gender === 'Féminin' ? `${selectedResult.teamCategory} F` : selectedResult.teamCategory}</span></div>
-                   <div className="flex flex-col items-center gap-1"><div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-muted-foreground" /><strong>Lieu</strong></div><span>{selectedResult.location || "Non spécifié"}</span></div>
-                  <div className="flex flex-col items-center gap-1"><div className="flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-muted-foreground" /><strong>Date et Heure</strong></div><div className="flex flex-col items-center"><span>{format(parseISO(selectedResult.date), "dd/MM/yyyy")}</span><span className="text-muted-foreground text-xs">{selectedResult.time}</span></div></div>
-                </div>
-                <Separator />
-                 <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                  {[teamNames[0], teamNames[1]].map((team, index) => (
-                    <div key={`${team}-${index}`} className="space-y-3">
-                        <h4 className="font-semibold text-center">{team}</h4>
-                        <div><strong className="text-sm flex items-center gap-2 mb-1"><Trophy className="h-4 w-4 text-muted-foreground" />Buteurs</strong><p className="text-sm text-muted-foreground pl-2">{formatPerformance(selectedScorersByTeam[team])}</p></div>
-                        <div><strong className="text-sm flex items-center gap-2 mb-1"><Star className="h-4 w-4 text-muted-foreground" />Passeurs</strong><p className="text-sm text-muted-foreground pl-2">{formatPerformance(selectedAssistsByTeam[team])}</p></div>
+                        <p className="font-semibold">{getMatchTitle(event)}</p>
+                        <p className="text-sm text-muted-foreground">{event.time} - {event.location}</p>
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-            <DialogFooter className="mt-4 pt-4 border-t"><Button onClick={() => setResultDetailsOpen(false)}>Fermer</Button></DialogFooter>
-        </DialogContent>
-    </Dialog>
+              ) : <p className="text-muted-foreground">Aucun événement.</p>}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
+      <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un événement</DialogTitle></DialogHeader>
+          <form onSubmit={handleEventSubmit}>
+            <ScrollArea className="h-[60vh] pr-4">
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label>Type d'événement</Label>
+                  <Select onValueChange={(v) => handleEventSelectChange('type', v)} value={newEvent.type}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Match Amical">Match Amical</SelectItem>
+                      <SelectItem value="Match Championnat">Match de Championnat</SelectItem>
+                      <SelectItem value="Match Coupe">Match Coupe</SelectItem>
+                      <SelectItem value="Entraînement Physique">Entraînement</SelectItem>
+                      <SelectItem value="Réunion">Réunion</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {isNewEventMatch && (
+                  <div className="space-y-4 pt-2">
+                    <RadioGroup value={newEvent.matchType} onValueChange={(v) => handleEventSelectChange('matchType', v)} className="flex gap-4">
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="club-match" id="cal-club" /><Label htmlFor="cal-club">Match Club</Label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="opponent-vs-opponent" id="cal-opp" /><Label htmlFor="cal-opp">Adversaires</Label></div>
+                    </RadioGroup>
+                    {newEvent.matchType === 'club-match' ? (
+                      <>
+                        <div className="grid gap-2">
+                            <Label>Lieu</Label>
+                            <RadioGroup value={newEvent.homeOrAway} onValueChange={(v: any) => handleEventSelectChange('homeOrAway', v)} className="flex gap-4">
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="home" id="h" /><Label htmlFor="h">Domicile</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="away" id="a" /><Label htmlFor="a">Extérieur</Label></div>
+                            </RadioGroup>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Adversaire</Label>
+                            <Select onValueChange={(v) => handleEventSelectChange('opponent', v)} value={newEvent.opponent}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>{filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent>
+                            </Select>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-4">
+                          <div className="grid gap-2"><Label>Équipe Dom.</Label><Select onValueChange={(v) => handleEventSelectChange('homeTeam', v)} value={newEvent.homeTeam}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent></Select></div>
+                          <div className="grid gap-2"><Label>Équipe Ext.</Label><Select onValueChange={(v) => handleEventSelectChange('awayTeam', v)} value={newEvent.awayTeam}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent></Select></div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2"><Label>Catégorie</Label><Select onValueChange={(v) => handleEventSelectChange('teamCategory', v)} value={newEvent.teamCategory}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="grid gap-2"><Label>Genre</Label><Select onValueChange={(v) => handleEventSelectChange('gender', v)} value={newEvent.gender}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select></div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2"><Label>Date</Label><Input id="date" type="date" value={newEvent.date} onChange={handleEventInputChange} /></div>
+                  <div className="grid gap-2"><Label>Heure</Label><Input id="time" type="time" value={newEvent.time} onChange={handleEventInputChange} /></div>
+                </div>
+                <div className="grid gap-2"><Label>Lieu exact</Label><Input id="location" value={newEvent.location} onChange={handleEventInputChange} /></div>
+              </div>
+            </ScrollArea>
+            <DialogFooter className="mt-6 pt-4 border-t gap-2">
+              <Button type="button" variant="outline" onClick={resetEventForm}>Annuler</Button>
+              <Button type="submit">Enregistrer</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{selectedEvent?.type}</DialogTitle></DialogHeader>
+          <div className="grid gap-4 py-4">
+              <p><strong>Affiche:</strong> {selectedEvent && getMatchTitle(selectedEvent)}</p>
+              <p><strong>Date:</strong> {selectedEvent && format(parseISO(selectedEvent.date), 'dd/MM/yyyy')}</p>
+              <p><strong>Lieu:</strong> {selectedEvent?.location}</p>
+          </div>
+          <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => openEditEventDialog(selectedEvent!)}>Modifier</Button>
+              <Button variant="destructive" onClick={() => handleDeleteEvent(selectedEvent!.id)}>Supprimer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
