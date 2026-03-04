@@ -21,7 +21,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -41,15 +40,13 @@ import {
 import { useState, useEffect, useMemo, Suspense } from "react";
 import React from 'react';
 import { usePlayersContext } from "@/context/players-context";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useCoachesContext } from "@/context/coaches-context";
 import { useToast } from "@/hooks/use-toast";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import { useCoachesContext } from "@/context/coaches-context";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
@@ -155,7 +152,7 @@ function PlayersContent() {
     }
 
     const { players, loading, addPlayer, updatePlayer } = context;
-    const { coaches, loading: coachesLoading } = coachesContext;
+    const { coaches } = coachesContext;
     const [dialogOpen, setDialogOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterKey, setFilterKey] = useState("name");
@@ -252,11 +249,11 @@ function PlayersContent() {
                                         <Card key={player.id} className="flex flex-col hover:shadow-lg transition-shadow group">
                                             <Link href={`/players/${player.id}`} className="flex flex-col h-full">
                                                 <CardHeader className="p-4 flex flex-row items-center gap-4">
-                                                    <Avatar className="h-16 w-16"><AvatarImage src={player.photo} /><AvatarFallback>{player.name.substring(0,2)}</AvatarFallback></Avatar>
+                                                    <Avatar className="h-16 w-16"><AvatarImage src={player.photo} alt={player.name} data-ai-hint="player photo" /></Avatar>
                                                     <div className="flex-1"><CardTitle className="text-base font-bold">{player.name}</CardTitle><CardDescription>{player.poste}</CardDescription></div>
                                                 </CardHeader>
                                             </Link>
-                                            <CardContent className="p-4 pt-0 flex justify-between items-center">
+                                            <CardContent className="p-4 pt-0 flex justify-between items-center mt-auto">
                                                 <Badge style={{ backgroundColor: categoryColors[player.category.replace(' F', '')], color: 'white' }}>{player.category}</Badge>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="h-auto p-0"><Badge variant={getBadgeVariant(player.status) as any}>{player.status}</Badge></Button></DropdownMenuTrigger>
@@ -298,12 +295,12 @@ function PlayersContent() {
                 <DialogContent className="sm:max-w-2xl max-h-[90vh]">
                     <DialogHeader><DialogTitle>Nouveau Joueur</DialogTitle><DialogDescription>Remplissez toutes les informations pour enregistrer un nouveau joueur.</DialogDescription></DialogHeader>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)}>
-                            <ScrollArea className="h-[70vh] pr-4">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+                            <ScrollArea className="h-[60vh] pr-4">
                                 <div className="space-y-8 pb-4">
                                     <div className="flex flex-col items-center gap-4">
                                         <Avatar className="h-24 w-24 border">
-                                            <AvatarImage src={photoPreview || undefined} alt="Aperçu" />
+                                            <AvatarImage src={photoPreview || undefined} alt="Aperçu" data-ai-hint="player photo" />
                                             <AvatarFallback className="bg-muted"><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
                                         </Avatar>
                                         <FormField control={form.control} name="photo" render={({field}) => <FormItem className="w-full max-w-sm"><FormLabel>URL de la photo</FormLabel><FormControl><Input {...field} placeholder="https://..." /></FormControl><FormMessage /></FormItem>} />
@@ -321,7 +318,7 @@ function PlayersContent() {
                                             <FormField control={form.control} name="cin" render={({field}) => <FormItem><FormLabel>N° CIN</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
                                             <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input {...field} required /></FormControl><FormMessage /></FormItem>} />
                                             <FormField control={form.control} name="email" render={({field}) => <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>} />
-                                            <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><FormControl><Input {...field} required /></FormControl><FormMessage /></FormItem>} />
+                                            <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><FormControl><Input {...field} required /></FormControl><FormMessage /></FormMessage>}</FormItem>} />
                                         </div>
 
                                         <div className="space-y-4">

@@ -10,7 +10,6 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -235,7 +234,7 @@ export default function FinancesPage() {
                   <div className="space-y-2"><Label>Versé</Label><Input type="number" value={newPaymentData.initialPaidAmount} onChange={e => setNewPaymentData({...newPaymentData, initialPaidAmount: e.target.value})} required /></div>
                 </div>
               </div>
-              <DialogFooter className="border-t pt-4 gap-2">
+              <DialogFooter className="mt-6 pt-4 border-t gap-2">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
                 <Button type="submit">Enregistrer</Button>
               </DialogFooter>
