@@ -49,6 +49,32 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
     }
   }, [payment]);
 
+  const getBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'payé':
+        return 'default';
+      case 'non payé':
+        return 'destructive';
+      case 'partiel':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+        case 'payé':
+            return <CheckCircle className="h-8 w-8 text-green-500" />;
+        case 'non payé':
+            return <XCircle className="h-8 w-8 text-red-500" />;
+        case 'partiel':
+            return <Clock className="h-8 w-8 text-amber-500" />;
+        default:
+            return null;
+    }
+  }
+
   if (loading) {
      return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -95,32 +121,6 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
 
   if (!payment) {
     return notFound();
-  }
-
-  const getBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'payé':
-        return 'default';
-      case 'non payé':
-        return 'destructive';
-      case 'partiel':
-        return 'accent';
-      default:
-        return 'outline';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-        case 'payé':
-            return <CheckCircle className="h-8 w-8 text-green-500" />;
-        case 'non payé':
-            return <XCircle className="h-8 w-8 text-red-500" />;
-        case 'partiel':
-            return <Clock className="h-8 w-8 text-amber-500" />;
-        default:
-            return null;
-    }
   }
   
   const handleDownloadPDF = () => {
@@ -252,13 +252,7 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
                     </div>
                 )}
 
-                <div className="mt-16 flex justify-between items-start px-4">
-                    <div className="text-center">
-                        <p className="font-semibold text-sm underline mb-12">Signature de l'entraîneur</p>
-                        <div className="h-20 w-40 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400 text-xs">
-                            Signature
-                        </div>
-                    </div>
+                <div className="mt-16 flex justify-end items-start px-4">
                     <div className="text-center">
                         <p className="font-semibold text-sm underline mb-12">Signature et Cachet du Club</p>
                         <div className="h-24 w-40 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400 text-xs">

@@ -102,23 +102,18 @@ export default function FinancesPage() {
 
     const memberSummaries = allMembers.map(member => {
         const memberPayments = paymentsByMember[member.name] || [];
-        const totalPaid = memberPayments.reduce((sum, p) => sum + p.paidAmount, 0);
-        const paymentCount = memberPayments.length;
+        const currentMonthPayment = memberPayments.find(p => p.dueDate === currentMonthStr);
         
-        let status: MemberStatus = 'En attente';
-
         const hasArrears = memberPayments.some(p => {
           if (p.dueDate >= currentMonthStr) return false;
           return p.status === 'partiel' || p.status === 'non payé';
         });
-        
-        const currentMonthPayment = memberPayments.find(p => p.dueDate === currentMonthStr);
 
-        if (hasArrears) {
-            status = 'En attente';
-        } else if (currentMonthPayment) {
+        let status: MemberStatus = 'En attente';
+
+        if (currentMonthPayment) {
             if (currentMonthPayment.status === 'payé') {
-                status = 'À jour';
+                status = hasArrears ? 'Partiel' : 'À jour';
             } else if (currentMonthPayment.status === 'partiel') {
                 status = 'Partiel';
             } else {
@@ -127,6 +122,9 @@ export default function FinancesPage() {
         } else {
             status = 'En attente';
         }
+
+        const totalPaid = memberPayments.reduce((sum, p) => sum + p.paidAmount, 0);
+        const paymentCount = memberPayments.length;
 
         return {
             member: member.name,
@@ -223,7 +221,7 @@ export default function FinancesPage() {
             case 'À jour':
                 return { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' };
             case 'En attente':
-                 return { backgroundColor: '#F87171', color: 'hsl(var(--destructive-foreground))' };
+                 return { backgroundColor: 'hsl(var(--destructive))', color: 'hsl(var(--destructive-foreground))' };
             case 'Partiel':
                 return { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' };
             default:
@@ -282,13 +280,7 @@ export default function FinancesPage() {
                     <TableCell className="hidden sm:table-cell">{item.paymentCount}</TableCell>
                     <TableCell>
                       <Badge style={getBadgeStyle(item.status)} className="h-auto">
-                        {item.status === 'En attente' ? (
-                          <span className="text-center leading-tight">
-                            En<br />attente
-                          </span>
-                        ) : (
-                          item.status
-                        )}
+                        {item.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
