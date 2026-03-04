@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo } from "react";
@@ -70,6 +69,7 @@ export default function Dashboard() {
     const now = new Date();
     return calendarEvents
       .filter(event => {
+        // Combiner la date et l'heure pour une comparaison précise
         const eventDateTime = new Date(`${event.date}T${event.time || '00:00'}`);
         return eventDateTime >= now;
       })
@@ -81,10 +81,16 @@ export default function Dashboard() {
       .map(event => {
         const isMatch = event.type.toLowerCase().includes('match');
         let matchTitle = "";
-        if (isMatch && event.opponent) {
-          const homeTeam = event.homeOrAway === 'home' ? clubInfo.name : event.opponent;
-          const awayTeam = event.homeOrAway === 'home' ? event.opponent : clubInfo.name;
-          matchTitle = `${homeTeam} vs ${awayTeam}`;
+        if (isMatch) {
+          if (event.matchType === 'opponent-vs-opponent') {
+            matchTitle = event.opponent;
+          } else {
+            const clubName = clubInfo.name;
+            const opponentName = event.opponent;
+            const homeTeam = event.homeOrAway === 'home' ? clubName : opponentName;
+            const awayTeam = event.homeOrAway === 'home' ? opponentName : clubName;
+            matchTitle = `${homeTeam} vs ${awayTeam}`;
+          }
         }
 
         return {
@@ -242,7 +248,7 @@ export default function Dashboard() {
                     <div className="flex-1">
                       <p className="text-sm font-medium leading-none">{event.type}</p>
                       <p className="text-sm text-muted-foreground">
-                         {event.matchTitle ? `${event.matchTitle} - ` : (event.opponent ? `vs ${event.opponent} - ` : '')}
+                         {event.matchTitle ? `${event.matchTitle} - ` : ''}
                          {event.formattedDate}
                       </p>
                     </div>

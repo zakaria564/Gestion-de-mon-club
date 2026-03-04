@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useContext, useEffect, useMemo } from 'react';
@@ -29,7 +28,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useClubContext } from '@/context/club-context';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useOpponentsContext } from '@/context/opponents-context';
-import { MultiSelect, MultiSelectOption } from '@/components/ui/multi-select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -78,15 +76,18 @@ export default function CalendarPage() {
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
-  const [newEvent, setNewEvent] = useState<NewCalendarEvent>({
+  const [newEvent, setNewEvent] = useState<any>({
     type: '',
     opponent: '',
+    homeTeam: '',
+    awayTeam: '',
     date: '',
     time: '',
     location: '',
     teamCategory: '',
     gender: 'Masculin',
     homeOrAway: 'home',
+    matchType: 'club-match',
   });
 
   // State for Add Result Dialog
@@ -127,34 +128,35 @@ export default function CalendarPage() {
   
   const handleEventInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setNewEvent(prev => ({ ...prev, [id]: value }));
+    setNewEvent((prev: any) => ({ ...prev, [id]: value }));
   };
 
-  const handleEventSelectChange = (field: keyof NewCalendarEvent, value: string) => {
-    setNewEvent(prev => ({ ...prev, [field]: value as any }));
-  };
-
-  const handleHomeAwayChange = (value: "home" | "away") => {
-    setNewEvent(prev => ({ ...prev, homeOrAway: value }));
+  const handleEventSelectChange = (field: string, value: string) => {
+    setNewEvent((prev: any) => ({ ...prev, [field]: value as any }));
   };
 
   const handleEventSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
+    let finalEvent = { ...newEvent };
+    if (finalEvent.matchType === 'opponent-vs-opponent') {
+        finalEvent.opponent = `${finalEvent.homeTeam} vs ${finalEvent.awayTeam}`;
+    }
+
     if (isEditing && editingEvent) {
        await updateEvent({
         id: editingEvent.id,
-        ...newEvent,
+        ...finalEvent,
        });
     } else {
-      await addEvent(newEvent);
+      await addEvent(finalEvent);
     }
     
     resetEventForm();
   };
 
   const resetEventForm = () => {
-    setNewEvent({ type: '', opponent: '', date: '', time: '', location: '', teamCategory: '', gender: 'Masculin', homeOrAway: 'home' });
+    setNewEvent({ type: '', opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', teamCategory: '', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
     setEventDialogOpen(false);
     setIsEditing(false);
     setEditingEvent(null);
@@ -166,7 +168,7 @@ export default function CalendarPage() {
 
     if (isMatch && hasPassed) {
         const existingResult = results.find(
-            (r) => r.date === event.date && r.opponent === event.opponent && r.teamCategory === event.teamCategory && (r.matchType === 'club-match' || !r.matchType)
+            (r) => r.date === event.date && r.opponent === event.opponent && r.teamCategory === event.teamCategory
         );
 
         if (existingResult) {
@@ -186,13 +188,16 @@ export default function CalendarPage() {
     setEditingEvent(null);
     setNewEvent({ 
         type: '', 
-        opponent: '', 
+        opponent: '',
+        homeTeam: '',
+        awayTeam: '',
         date: format(selectedDate, 'yyyy-MM-dd'), 
         time: '', 
         location: '',
         teamCategory: '',
-        gender: '' as 'Masculin',
+        gender: 'Masculin',
         homeOrAway: 'home',
+        matchType: 'club-match',
     });
     setEventDialogOpen(true);
   }
@@ -210,12 +215,15 @@ export default function CalendarPage() {
     setNewEvent({
       type: event.type,
       opponent: event.opponent,
+      homeTeam: event.homeTeam || '',
+      awayTeam: event.awayTeam || '',
       date: format(parseISO(event.date), 'yyyy-MM-dd'),
       time: event.time,
       location: event.location,
       teamCategory: event.teamCategory || '',
       gender: event.gender || 'Masculin',
       homeOrAway: event.homeOrAway || 'home',
+      matchType: event.matchType || 'club-match',
     });
     setEventDialogOpen(true);
   }
@@ -229,13 +237,13 @@ export default function CalendarPage() {
   }
 
  const openAddResultDialogFromEvent = (event: CalendarEvent) => {
-    setDetailsOpen(false); // Close any open detail view
+    setDetailsOpen(false);
     setResultDialogOpen(true);
-    setResultMatchType('club-match'); // Default to club match
+    setResultMatchType(event.matchType || 'club-match');
     setNewResult({
       opponent: event.opponent,
-      homeTeam: '',
-      awayTeam: '',
+      homeTeam: event.homeTeam || '',
+      awayTeam: event.awayTeam || '',
       date: format(parseISO(event.date), 'yyyy-MM-dd'),
       time: event.time,
       location: event.location,
@@ -246,17 +254,9 @@ export default function CalendarPage() {
       teamCategory: event.teamCategory,
       gender: event.gender,
       homeOrAway: event.homeOrAway || 'home',
-      matchType: 'club-match',
+      matchType: event.matchType || 'club-match',
     });
   };
-
-  const openAddResultDialog = () => {
-     setDetailsOpen(false);
-     setResultDialogOpen(true);
-     // Reset form for a clean slate, not pre-filled from calendar event
-     resetResultForm(true); 
-  };
-
 
   const handleResultInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -274,7 +274,7 @@ export default function CalendarPage() {
       if (field === 'playerName') {
           item.playerName = value as string;
       } else {
-          item.count = Math.max(1, Number(value)); // Ensure count is at least 1
+          item.count = Math.max(1, Number(value));
       }
       updatedList[index] = item;
       setNewResult(prev => ({ ...prev, [listName]: updatedList }));
@@ -341,11 +341,7 @@ export default function CalendarPage() {
     setNewResult(prev => ({ ...prev, [field]: value as any }));
   };
   
-  const handleResultRadioChange = (value: "home" | "away") => {
-    setNewResult(prev => ({...prev, homeOrAway: value}));
-  }
-  
-    const handleResultSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleResultSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
   
     const finalResult: NewResult = { ...newResult };
@@ -432,27 +428,22 @@ export default function CalendarPage() {
       })
     : undefined;
 
-  const getEventColor = (eventType: string) => {
-    const lowerType = eventType.toLowerCase();
-    if (lowerType.includes('match')) return 'bg-primary'; // Blue
-    if (lowerType.includes('entraînement')) return 'bg-green-500'; // Green
-    if (lowerType.includes('réunion')) return 'bg-orange-500'; // Orange
-    if (lowerType.includes('événement spécial')) return 'bg-purple-500'; // Purple
-    return 'bg-secondary-foreground'; // Default
-  }
-
   const getEventBadgeStyle = (eventType: string): React.CSSProperties => {
     const lowerType = eventType.toLowerCase();
     if (lowerType.includes('match')) return { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' };
     if (lowerType.includes('entraînement')) return { backgroundColor: 'hsl(var(--chart-2))', color: 'hsl(var(--primary-foreground))' };
     if (lowerType.includes('réunion')) return { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' };
-    if (lowerType.includes('événement spécial')) return { backgroundColor: '#A855F7', color: 'white' }; // Purple
+    if (lowerType.includes('événement spécial')) return { backgroundColor: '#A855F7', color: 'white' };
     return { backgroundColor: 'hsl(var(--secondary))', color: 'hsl(var(--secondary-foreground))' };
   };
 
   const getMatchTitle = (event: CalendarEvent) => {
     const isMatch = event.type.toLowerCase().includes('match');
     if (!isMatch || !event.opponent) return event.type;
+
+    if (event.matchType === 'opponent-vs-opponent') {
+        return event.opponent; // Déjà formaté comme "A vs B"
+    }
 
     const clubName = clubInfo.name;
     const opponentName = event.opponent;
@@ -464,9 +455,7 @@ export default function CalendarPage() {
   
   const getResultTitle = (result: Result) => {
      if (result.matchType === 'opponent-vs-opponent') {
-        const homeTeamName = result.homeTeam;
-        const awayTeamName = result.awayTeam;
-        return `${homeTeamName} vs ${awayTeamName}`;
+        return `${result.homeTeam} vs ${result.awayTeam}`;
     }
     const clubName = clubInfo.name;
     const opponentName = result.opponent;
@@ -495,7 +484,7 @@ export default function CalendarPage() {
 
   const teamNames = useMemo(() => {
     if (!selectedResult) return ['', ''];
-    if (selectedResult.matchType === 'opponent-vs-opponent' || selectedResult.matchType === 'opponent_vs_opponent') {
+    if (selectedResult.matchType === 'opponent-vs-opponent') {
         return [selectedResult.homeTeam || '', selectedResult.awayTeam || ''];
     }
     const teamA = selectedResult.homeOrAway === 'home' ? clubInfo.name : selectedResult.opponent;
@@ -512,21 +501,10 @@ export default function CalendarPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
-            <Card>
-              <CardContent className="p-0">
-                <Skeleton className="w-full h-[700px]" />
-              </CardContent>
-            </Card>
+            <Card><CardContent className="p-0"><Skeleton className="w-full h-[700px]" /></CardContent></Card>
           </div>
           <div className="md:col-span-1">
-             <Card>
-              <CardHeader>
-                <Skeleton className="h-6 w-3/4" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-5 w-full" />
-              </CardContent>
-            </Card>
+             <Card><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-5 w-full" /></CardContent></Card>
           </div>
         </div>
       </div>
@@ -534,7 +512,6 @@ export default function CalendarPage() {
   }
 
   const isNewEventMatch = newEvent.type.toLowerCase().includes('match');
-
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -549,19 +526,15 @@ export default function CalendarPage() {
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un événement</DialogTitle>
-              <DialogDescription>
-                Remplissez les détails ci-dessous.
-              </DialogDescription>
+              <DialogDescription>Remplissez les détails ci-dessous.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleEventSubmit}>
               <ScrollArea className="h-[70vh] p-4">
                 <div className="grid gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="type">Type d'événement</Label>
-                    <Select name="type" onValueChange={(v) => handleEventSelectChange('type', v)} value={newEvent.type} required>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
+                    <Select onValueChange={(v) => handleEventSelectChange('type', v)} value={newEvent.type} required>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Match Amical">Match Amical</SelectItem>
                         <SelectItem value="Match Championnat">Match de Championnat</SelectItem>
@@ -577,60 +550,69 @@ export default function CalendarPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                       <div className="grid gap-2">
-                          <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
+                          <Label>Catégorie</Label>
                           <Select onValueChange={(v) => handleEventSelectChange('teamCategory', v)} value={newEvent.teamCategory} required>
-                              <SelectTrigger>
-                                  <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                  {playerCategories.map(cat => (
-                                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                  ))}
-                              </SelectContent>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
                           </Select>
                       </div>
                       <div className="grid gap-2">
-                          <Label htmlFor="gender">Genre</Label>
+                          <Label>Genre</Label>
                           <Select onValueChange={(v) => handleEventSelectChange('gender', v)} value={newEvent.gender} required>
-                              <SelectTrigger>
-                                  <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                  <SelectItem value="Masculin">Masculin</SelectItem>
-                                  <SelectItem value="Féminin">Féminin</SelectItem>
-                              </SelectContent>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent>
                           </Select>
                       </div>
                   </div>
                   {isNewEventMatch && (
-                    <>
-                      <div className="grid gap-2">
-                          <Label>Domicile / Extérieur</Label>
-                          <RadioGroup value={newEvent.homeOrAway} onValueChange={handleHomeAwayChange} className="flex gap-4">
-                              <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="home" id="home" />
-                                  <Label htmlFor="home">Domicile</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="away" id="away" />
-                                  <Label htmlFor="away">Extérieur</Label>
-                              </div>
-                          </RadioGroup>
-                      </div>
-                      <div className="grid gap-2">
-                          <Label htmlFor="opponent">Adversaire</Label>
-                          <Select onValueChange={(v) => handleEventSelectChange('opponent', v)} value={newEvent.opponent} required>
-                              <SelectTrigger>
-                                  <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                  {filteredOpponentOptions.map(op => (
-                                      <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>
-                                  ))}
-                              </SelectContent>
-                          </Select>
-                      </div>
-                    </>
+                    <div className="space-y-4 pt-2">
+                      <RadioGroup value={newEvent.matchType} onValueChange={(v) => handleEventSelectChange('matchType', v)} className="flex gap-4">
+                          <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="club-match" id="cal-club-match" />
+                              <Label htmlFor="cal-club-match">Match de mon club</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="opponent-vs-opponent" id="cal-opp-match" />
+                              <Label htmlFor="cal-opp-match">Entre adversaires</Label>
+                          </div>
+                      </RadioGroup>
+                      
+                      {newEvent.matchType === 'club-match' ? (
+                        <>
+                          <div className="grid gap-2">
+                              <Label>Domicile / Extérieur</Label>
+                              <RadioGroup value={newEvent.homeOrAway} onValueChange={(v) => handleEventSelectChange('homeOrAway', v)} className="flex gap-4">
+                                  <div className="flex items-center space-x-2"><RadioGroupItem value="home" id="cal-home" /><Label htmlFor="cal-home">Domicile</Label></div>
+                                  <div className="flex items-center space-x-2"><RadioGroupItem value="away" id="cal-away" /><Label htmlFor="cal-away">Extérieur</Label></div>
+                              </RadioGroup>
+                          </div>
+                          <div className="grid gap-2">
+                              <Label>Adversaire</Label>
+                              <Select onValueChange={(v) => handleEventSelectChange('opponent', v)} value={newEvent.opponent} required>
+                                  <SelectTrigger><SelectValue /></SelectTrigger>
+                                  <SelectContent>{filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent>
+                              </Select>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label>Équipe Domicile</Label>
+                                <Select onValueChange={(v) => handleEventSelectChange('homeTeam', v)} value={newEvent.homeTeam} required>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>{filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label>Équipe Extérieur</Label>
+                                <Select onValueChange={(v) => handleEventSelectChange('awayTeam', v)} value={newEvent.awayTeam} required>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>{filteredOpponentOptions.filter(o => o.name !== newEvent.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
@@ -648,9 +630,7 @@ export default function CalendarPage() {
                   </div>
                 </div>
               </ScrollArea>
-              <DialogFooter>
-                <Button type="submit">Sauvegarder</Button>
-              </DialogFooter>
+              <DialogFooter><Button type="submit">Sauvegarder</Button></DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
@@ -670,22 +650,13 @@ export default function CalendarPage() {
                   DayContent: ({ date: dayDate }) => {
                     const dayEvents = eventsByDate[format(dayDate, 'yyyy-MM-dd')];
                     return (
-                      <div 
-                        className="relative h-full w-full flex flex-col items-center justify-center group"
-                        onClick={() => handleDayClick(dayDate)}
-                      >
-                        <PlusCircle 
-                          className="absolute top-1 right-1 h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openAddEventDialog(dayDate);
-                          }}
-                        />
+                      <div className="relative h-full w-full flex flex-col items-center justify-center group" onClick={() => handleDayClick(dayDate)}>
+                        <PlusCircle className="absolute top-1 right-1 h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" onClick={(e) => { e.stopPropagation(); openAddEventDialog(dayDate); }}/>
                         <span>{dayDate.getDate()}</span>
                         {dayEvents && (
                           <div className="absolute bottom-1 flex space-x-1">
                             {dayEvents.map(event => (
-                              <div key={event.id} className={`h-1.5 w-1.5 rounded-full ${getEventColor(event.type)}`} />
+                              <div key={event.id} className={`h-1.5 w-1.5 rounded-full ${event.type.toLowerCase().includes('match') ? 'bg-primary' : 'bg-green-500'}`} />
                             ))}
                           </div>
                         )}
@@ -712,82 +683,54 @@ export default function CalendarPage() {
         </div>
 
         <div className="md:col-span-1">
-          {date && eventsForSelectedDate && eventsForSelectedDate.length > 0 && (
+          {date && (
             <Card>
               <CardHeader>
                 <CardTitle>Événements du {date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {eventsForSelectedDate.map((event) => (
-                    <div key={event.id} className="p-4 rounded-md border flex flex-col items-start gap-2 cursor-pointer hover:bg-muted/50 relative group" onClick={() => handleEventClick(event)}>
-                        <div className="flex-1 w-full mb-2">
-                            <div className='flex gap-2 items-center justify-center mb-2'>
-                                <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
-                                {event.teamCategory && (
-                                    <Badge 
-                                        style={{backgroundColor: categoryColors[event.teamCategory], color: 'white'}} 
-                                        className="border-transparent"
-                                    >
-                                        {event.gender === 'Féminin' ? `${event.teamCategory} F` : event.teamCategory}
-                                    </Badge>
-                                )}
-                            </div>
-                            <p className="font-semibold text-center">{getMatchTitle(event)}</p>
-                            <p className="text-sm text-muted-foreground text-center">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
-                            <p className="text-sm text-muted-foreground text-center">{event.location}</p>
-                        </div>
-                        <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
-                                        <span className="sr-only">Ouvrir le menu</span>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                    <DropdownMenuItem onClick={(e) => openEditEventDialog(event, e)}>
-                                        <Edit className="mr-2 h-4 w-4" />
-                                        Modifier
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
-                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                Supprimer
-                                            </DropdownMenuItem>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                                                <AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                                <AlertDialogAction onClick={(e) => handleDeleteEvent(event.id, e)}>Supprimer</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </div>
-                  ))}
-                </div>
+                {eventsForSelectedDate && eventsForSelectedDate.length > 0 ? (
+                  <div className="space-y-4">
+                    {eventsForSelectedDate.map((event) => (
+                      <div key={event.id} className="p-4 rounded-md border flex flex-col items-start gap-2 cursor-pointer hover:bg-muted/50 relative group" onClick={() => handleEventClick(event)}>
+                          <div className="flex-1 w-full mb-2">
+                              <div className='flex gap-2 items-center justify-center mb-2'>
+                                  <Badge style={getEventBadgeStyle(event.type)}>{event.type}</Badge>
+                                  {event.teamCategory && (
+                                      <Badge style={{backgroundColor: categoryColors[event.teamCategory], color: 'white'}} className="border-transparent">
+                                          {event.gender === 'Féminin' ? `${event.teamCategory} F` : event.teamCategory}
+                                      </Badge>
+                                  )}
+                              </div>
+                              <p className="font-semibold text-center">{getMatchTitle(event)}</p>
+                              <p className="text-sm text-muted-foreground text-center">{format(parseISO(event.date), 'dd/MM/yyyy')} à {event.time}</p>
+                              <p className="text-sm text-muted-foreground text-center">{event.location}</p>
+                          </div>
+                          <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <DropdownMenu>
+                                  <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                      <DropdownMenuItem onClick={(e) => openEditEventDialog(event, e)}><Edit className="mr-2 h-4 w-4" />Modifier</DropdownMenuItem>
+                                      <DropdownMenuSeparator />
+                                      <AlertDialog>
+                                          <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600"><Trash2 className="mr-2 h-4 w-4" />Supprimer</DropdownMenuItem></AlertDialogTrigger>
+                                          <AlertDialogContent>
+                                              <AlertDialogHeader><AlertDialogTitle>Confirmer la suppression</AlertDialogTitle></AlertDialogHeader>
+                                              <AlertDialogFooter><AlertDialogCancel>Annuler</AlertDialogCancel><AlertDialogAction onClick={(e) => handleDeleteEvent(event.id, e)}>Supprimer</AlertDialogAction></AlertDialogFooter>
+                                          </AlertDialogContent>
+                                      </AlertDialog>
+                                  </DropdownMenuContent>
+                              </DropdownMenu>
+                          </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">Aucun événement prévu.</p>
+                )}
               </CardContent>
             </Card>
           )}
-           {(!eventsForSelectedDate || eventsForSelectedDate.length === 0) && date && (
-                <Card>
-                <CardHeader>
-                    <CardTitle>Événements du {date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-muted-foreground">Aucun événement prévu pour cette date.</p>
-                </CardContent>
-                </Card>
-            )}
         </div>
       </div>
 
@@ -795,9 +738,7 @@ export default function CalendarPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{selectedEvent?.type}</DialogTitle>
-            <DialogDescription>
-              {selectedEvent?.type.toLowerCase().includes('match') ? getMatchTitle(selectedEvent!) : 'Détails de l\'événement'}
-            </DialogDescription>
+            <DialogDescription>{selectedEvent && getMatchTitle(selectedEvent)}</DialogDescription>
           </DialogHeader>
           {selectedEvent && (
             <>
@@ -806,7 +747,6 @@ export default function CalendarPage() {
                   <p><strong>Date:</strong> {format(parseISO(selectedEvent.date), 'dd/MM/yyyy')}</p>
                   <p><strong>Heure:</strong> {selectedEvent.time}</p>
                   <p><strong>Lieu:</strong> {selectedEvent.location}</p>
-                  {selectedEvent.type.toLowerCase().includes('match') && selectedEvent.opponent && <p><strong>Adversaire:</strong> {selectedEvent.opponent}</p>}
               </div>
               <DialogFooter className="flex-wrap justify-end gap-2">
                  {isPast(parseISO(selectedEvent.date)) && selectedEvent.type.toLowerCase().includes("match") && (
@@ -814,28 +754,12 @@ export default function CalendarPage() {
                       <PlusCircle className="mr-2 h-4 w-4" /> Ajouter le score
                     </Button>
                   )}
-                  
-                  <Button variant="outline" onClick={(e) => openEditEventDialog(selectedEvent, e)}>
-                      <Edit className="mr-2 h-4 w-4" /> Modifier
-                  </Button>
-                  
+                  <Button variant="outline" onClick={(e) => openEditEventDialog(selectedEvent, e)}><Edit className="mr-2 h-4 w-4" /> Modifier</Button>
                   <AlertDialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
-                      <AlertDialogTrigger asChild>
-                          <Button variant="destructive">
-                              <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                          </Button>
-                      </AlertDialogTrigger>
+                      <AlertDialogTrigger asChild><Button variant="destructive"><Trash2 className="mr-2 h-4 w-4" /> Supprimer</Button></AlertDialogTrigger>
                       <AlertDialogContent>
-                          <AlertDialogHeader>
-                          <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                              Cette action ne peut pas être annulée. Cela supprimera définitivement cet événement.
-                          </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                          <AlertDialogCancel>Annuler</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeleteEvent(selectedEvent.id)}>Supprimer</AlertDialogAction>
-                          </AlertDialogFooter>
+                          <AlertDialogHeader><AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle></AlertDialogHeader>
+                          <AlertDialogFooter><AlertDialogCancel>Annuler</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteEvent(selectedEvent.id)}>Supprimer</AlertDialogAction></AlertDialogFooter>
                       </AlertDialogContent>
                   </AlertDialog>
               </DialogFooter>
@@ -846,152 +770,56 @@ export default function CalendarPage() {
 
       <Dialog open={resultDialogOpen} onOpenChange={(isOpen) => { if (!isOpen) resetResultForm(); else setResultDialogOpen(true); }}>
         <DialogContent className="sm:max-w-4xl max-h-[90vh]">
-            <DialogHeader>
-                <DialogTitle>Ajouter un résultat</DialogTitle>
-                <DialogDescription>
-                    Remplissez les détails du match ci-dessous.
-                </DialogDescription>
-            </DialogHeader>
+            <DialogHeader><DialogTitle>Ajouter un résultat</DialogTitle></DialogHeader>
             <form onSubmit={handleResultSubmit}>
                  <ScrollArea className="h-[70vh] p-4">
                         <div className="space-y-6">
                             <RadioGroup value={resultMatchType} onValueChange={(v) => setResultMatchType(v as any)} className="flex gap-4">
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="club-match" id="club-match" />
-                                    <Label htmlFor="club-match">Match de mon club</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="opponent-vs-opponent" id="opponent-match" />
-                                    <Label htmlFor="opponent-match">Match entre adversaires</Label>
-                                </div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="club-match" id="res-club-match" /><Label htmlFor="res-club-match">Match de mon club</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="opponent-vs-opponent" id="res-opp-match" /><Label htmlFor="res-opp-match">Match entre adversaires</Label></div>
                             </RadioGroup>
-                            
-                            <Separator/>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="date">Date</Label>
-                                    <Input id="date" type="date" value={newResult.date} onChange={handleResultInputChange} required />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="time">Heure</Label>
-                                    <Input id="time" type="time" value={newResult.time} onChange={handleResultInputChange} required />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="location">Lieu</Label>
-                                    <Input id="location" value={newResult.location} onChange={handleResultInputChange} required />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="category">Type de match</Label>
-                                    <Select onValueChange={(v) => handleResultSelectChange('category', v)} value={newResult.category} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{matchCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="teamCategory">Catégorie de l'équipe</Label>
-                                    <Select onValueChange={(v) => handleResultSelectChange('teamCategory', v)} value={newResult.teamCategory} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="gender">Genre</Label>
-                                    <Select onValueChange={(v) => handleResultSelectChange('gender', v)} value={newResult.gender} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select>
-                                </div>
+                            <Separator/><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+                                <div className="grid gap-2"><Label>Date</Label><Input type="date" value={newResult.date} onChange={handleResultInputChange} required id="date" /></div>
+                                <div className="grid gap-2"><Label>Heure</Label><Input type="time" value={newResult.time} onChange={handleResultInputChange} required id="time" /></div>
+                                <div className="grid gap-2"><Label>Lieu</Label><Input value={newResult.location} onChange={handleResultInputChange} required id="location" /></div>
+                                <div className="grid gap-2"><Label>Type</Label><Select onValueChange={(v) => handleResultSelectChange('category', v)} value={newResult.category} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{matchCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></div>
+                                <div className="grid gap-2"><Label>Catégorie</Label><Select onValueChange={(v) => handleResultSelectChange('teamCategory', v)} value={newResult.teamCategory} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></div>
+                                <div className="grid gap-2"><Label>Genre</Label><Select onValueChange={(v) => handleResultSelectChange('gender', v)} value={newResult.gender} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select></div>
                                 {resultMatchType === 'club-match' ? (
                                     <>
                                         <div className="grid gap-2">
                                             <Label>Domicile / Extérieur</Label>
-                                            <RadioGroup value={newResult.homeOrAway} onValueChange={handleResultRadioChange} className="flex gap-4">
-                                                <div className="flex items-center space-x-2"><RadioGroupItem value="home" id="home-res" /><Label htmlFor="home-res">Domicile</Label></div>
-                                                <div className="flex items-center space-x-2"><RadioGroupItem value="away" id="away-res" /><Label htmlFor="away-res">Extérieur</Label></div>
+                                            <RadioGroup value={newResult.homeOrAway} onValueChange={(v: any) => setNewResult(prev => ({...prev, homeOrAway: v}))} className="flex gap-4">
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="home" id="res-home" /><Label htmlFor="res-home">Domicile</Label></div>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="away" id="res-away" /><Label htmlFor="res-away">Extérieur</Label></div>
                                             </RadioGroup>
                                         </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="opponent">Adversaire</Label>
-                                            <Select onValueChange={(v) => handleResultSelectChange('opponent', v)} value={newResult.opponent} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{filteredOpponentOptionsForResult.map(op => (<SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>))}</SelectContent></Select>
-                                        </div>
-                                        <div className="grid gap-2 lg:col-span-1">
-                                            <Label htmlFor="score" className="text-center">Score final (ex: 3-1)</Label>
-                                            <Input id="score" value={newResult.score} onChange={handleResultInputChange} required className="text-center text-xl font-bold" />
-                                        </div>
+                                        <div className="grid gap-2"><Label>Adversaire</Label><Select onValueChange={(v) => handleResultSelectChange('opponent', v)} value={newResult.opponent} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{filteredOpponentOptionsForResult.map(op => (<SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>))}</SelectContent></Select></div>
                                     </>
                                 ) : (
                                      <>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="homeTeam">Équipe à Domicile</Label>
-                                            <Select onValueChange={(v) => handleResultSelectChange('homeTeam', v)} value={newResult.homeTeam} required>
-                                                <SelectTrigger><SelectValue placeholder="Équipe Domicile..."/></SelectTrigger>
-                                                <SelectContent>{filteredOpponentOptionsForResult.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent>
-                                            </Select>
-                                        </div>
-                                         <div className="grid gap-2">
-                                            <Label htmlFor="awayTeam">Équipe à l'Extérieur</Label>
-                                             <Select onValueChange={(v) => handleResultSelectChange('awayTeam', v)} value={newResult.awayTeam} required>
-                                                <SelectTrigger><SelectValue placeholder="Équipe Extérieur..." /></SelectTrigger>
-                                                <SelectContent>{filteredOpponentOptionsForResult.filter(op => op.name !== newResult.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="grid gap-2 lg:col-span-1">
-                                            <Label htmlFor="score" className="text-center">Score final (ex: 3-1)</Label>
-                                            <Input id="score" value={newResult.score} onChange={handleResultInputChange} required className="text-center text-xl font-bold" />
-                                        </div>
+                                        <div className="grid gap-2"><Label>Équipe Domicile</Label><Select onValueChange={(v) => handleResultSelectChange('homeTeam', v)} value={newResult.homeTeam} required><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{filteredOpponentOptionsForResult.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent></Select></div>
+                                         <div className="grid gap-2"><Label>Équipe Extérieur</Label><Select onValueChange={(v) => handleResultSelectChange('awayTeam', v)} value={newResult.awayTeam} required><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{filteredOpponentOptionsForResult.filter(op => op.name !== newResult.homeTeam).map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent></Select></div>
                                     </>
                                 )}
+                                <div className="grid gap-2"><Label className="text-center">Score final (ex: 3-1)</Label><Input id="score" value={newResult.score} onChange={handleResultInputChange} required className="text-center text-xl font-bold" /></div>
                             </div>
-
                             <Separator />
-                            
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {resultMatchType === 'club-match' ? (
                                 <>
                                   <div>
                                       <div className="font-semibold mb-2 text-center">{newResult.homeOrAway === 'home' ? clubInfo.name : newResult.opponent}</div>
                                       <div className="space-y-4 p-4 border rounded-md">
-                                          <div>
-                                              <Label>Buteurs</Label>
-                                                {newResult.scorers.map((scorer, index) => (
-                                                  <div key={index} className="flex items-center gap-2 mb-2">
-                                                      <Select value={scorer.playerName} onValueChange={(val) => handlePerformanceChange('scorers', index, 'playerName', val)}><SelectTrigger><SelectValue placeholder="Joueur..."/></SelectTrigger><SelectContent>{allPossiblePlayersOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent></Select>
-                                                      <Input type="number" value={scorer.count} onChange={(e) => handlePerformanceChange('scorers', index, 'count', e.target.value)} className="w-20" min="1" />
-                                                      <Button type="button" variant="ghost" size="icon" onClick={() => removePerformanceItem('scorers', index)}><X className="h-4 w-4 text-destructive"/></Button>
-                                                  </div>
-                                                ))}
-                                              <Button type="button" variant="outline" size="sm" onClick={() => addPerformanceItem('scorers')} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button>
-                                          </div>
-                                          <div>
-                                              <Label>Passeurs décisifs</Label>
-                                               {newResult.assists.map((assist, index) => (
-                                                  <div key={index} className="flex items-center gap-2 mb-2">
-                                                      <Select value={assist.playerName} onValueChange={(val) => handlePerformanceChange('assists', index, 'playerName', val)}><SelectTrigger><SelectValue placeholder="Joueur..."/></SelectTrigger><SelectContent>{allPossiblePlayersOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent></Select>
-                                                      <Input type="number" value={assist.count} onChange={(e) => handlePerformanceChange('assists', index, 'count', e.target.value)} className="w-20" min="1" />
-                                                      <Button type="button" variant="ghost" size="icon" onClick={() => removePerformanceItem('assists', index)}><X className="h-4 w-4 text-destructive"/></Button>
-                                                  </div>
-                                                ))}
-                                              <Button type="button" variant="outline" size="sm" onClick={() => addPerformanceItem('assists')} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button>
-                                          </div>
+                                          <div><Label>Buteurs</Label>{newResult.scorers.map((scorer, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Select value={scorer.playerName} onValueChange={(val) => handlePerformanceChange('scorers', index, 'playerName', val)}><SelectTrigger><SelectValue placeholder="Joueur..."/></SelectTrigger><SelectContent>{allPossiblePlayersOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent></Select><Input type="number" value={scorer.count} onChange={(e) => handlePerformanceChange('scorers', index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removePerformanceItem('scorers', index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addPerformanceItem('scorers')} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button></div>
+                                          <div><Label>Passeurs</Label>{newResult.assists.map((assist, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Select value={assist.playerName} onValueChange={(val) => handlePerformanceChange('assists', index, 'playerName', val)}><SelectTrigger><SelectValue placeholder="Joueur..."/></SelectTrigger><SelectContent>{allPossiblePlayersOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent></Select><Input type="number" value={assist.count} onChange={(e) => handlePerformanceChange('assists', index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removePerformanceItem('assists', index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addPerformanceItem('assists')} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button></div>
                                       </div>
                                   </div>
                                   <div>
                                       <div className="font-semibold mb-2 text-center">{newResult.homeOrAway === 'away' ? clubInfo.name : newResult.opponent}</div>
                                       <div className="space-y-4 p-4 border rounded-md">
-                                           <div>
-                                                <Label>Buteurs</Label>
-                                                {manualOpponentScorers.map((scorer, index) => (
-                                                  <div key={index} className="flex items-center gap-2 mb-2">
-                                                      <Input placeholder="Nom du joueur" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'playerName', e.target.value)} />
-                                                      <Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'count', e.target.value)} className="w-20" min="1" />
-                                                      <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers, index)}><X className="h-4 w-4 text-destructive"/></Button>
-                                                  </div>
-                                                ))}
-                                                <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button>
-                                            </div>
-                                            <div>
-                                                <Label>Passeurs</Label>
-                                                {manualOpponentAssists.map((assist, index) => (
-                                                  <div key={index} className="flex items-center gap-2 mb-2">
-                                                      <Input placeholder="Nom du joueur" value={assist.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'playerName', e.target.value)} />
-                                                      <Input type="number" value={assist.count} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'count', e.target.value)} className="w-20" min="1" />
-                                                      <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists, index)}><X className="h-4 w-4 text-destructive"/></Button>
-                                                  </div>
-                                                ))}
-                                                <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button>
-                                            </div>
+                                           <div><Label>Buteurs</Label>{manualOpponentScorers.map((scorer, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Input placeholder="Nom" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'playerName', e.target.value)} /><Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers, index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button></div>
+                                            <div><Label>Passeurs</Label>{manualOpponentAssists.map((assist, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Input placeholder="Nom" value={assist.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'playerName', e.target.value)} /><Input type="number" value={assist.count} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists, index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button></div>
                                       </div>
                                   </div>
                                 </>
@@ -999,56 +827,16 @@ export default function CalendarPage() {
                                 <>
                                   <div>
                                     <div className="font-semibold mb-2 text-center">{newResult.homeTeam || "Équipe Domicile"}</div>
-                                     <div className="space-y-4 p-4 border rounded-md mt-4">
-                                       <div>
-                                          <Label>Buteurs</Label>
-                                          {manualOpponentScorers.map((scorer, index) => (
-                                            <div key={index} className="flex items-center gap-2 mb-2">
-                                                <Input placeholder="Nom du joueur" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'playerName', e.target.value)} />
-                                                <Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'count', e.target.value)} className="w-20" min="1" />
-                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers, index)}><X className="h-4 w-4 text-destructive"/></Button>
-                                            </div>
-                                          ))}
-                                          <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button>
-                                      </div>
-                                      <div>
-                                          <Label>Passeurs</Label>
-                                          {manualOpponentAssists.map((assist, index) => (
-                                            <div key={index} className="flex items-center gap-2 mb-2">
-                                                <Input placeholder="Nom du joueur" value={assist.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'playerName', e.target.value)} />
-                                                <Input type="number" value={assist.count} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'count', e.target.value)} className="w-20" min="1" />
-                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists, index)}><X className="h-4 w-4 text-destructive"/></Button>
-                                            </div>
-                                          ))}
-                                          <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button>
-                                      </div>
+                                     <div className="space-y-4 p-4 border rounded-md">
+                                       <div><Label>Buteurs</Label>{manualOpponentScorers.map((scorer, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Input placeholder="Nom" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'playerName', e.target.value)} /><Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange(manualOpponentScorers, setManualOpponentScorers, index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers, index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentScorers, setManualOpponentScorers)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button></div>
+                                      <div><Label>Passeurs</Label>{manualOpponentAssists.map((assist, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Input placeholder="Nom" value={assist.playerName} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'playerName', e.target.value)} /><Input type="number" value={assist.count} onChange={(e) => handleManualPerformanceChange(manualOpponentAssists, setManualOpponentAssists, index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists, index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualOpponentAssists, setManualOpponentAssists)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button></div>
                                     </div>
                                   </div>
                                    <div>
                                     <div className="font-semibold mb-2 text-center">{newResult.awayTeam || "Équipe Extérieur"}</div>
-                                     <div className="space-y-4 p-4 border rounded-md mt-4">
-                                        <div>
-                                            <Label>Buteurs</Label>
-                                            {manualAwayScorers.map((scorer, index) => (
-                                              <div key={index} className="flex items-center gap-2 mb-2">
-                                                  <Input placeholder="Nom du joueur" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange(manualAwayScorers, setManualAwayScorers, index, 'playerName', e.target.value)} />
-                                                  <Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange(manualAwayScorers, setManualAwayScorers, index, 'count', e.target.value)} className="w-20" min="1" />
-                                                  <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualAwayScorers, setManualAwayScorers, index)}><X className="h-4 w-4 text-destructive"/></Button>
-                                              </div>
-                                            ))}
-                                            <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualAwayScorers, setManualAwayScorers)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button>
-                                        </div>
-                                        <div>
-                                            <Label>Passeurs</Label>
-                                            {manualAwayAssists.map((assist, index) => (
-                                              <div key={index} className="flex items-center gap-2 mb-2">
-                                                  <Input placeholder="Nom du joueur" value={assist.playerName} onChange={(e) => handleManualPerformanceChange(manualAwayAssists, setManualAwayAssists, index, 'playerName', e.target.value)} />
-                                                  <Input type="number" value={assist.count} onChange={(e) => handleManualPerformanceChange(manualAwayAssists, setManualAwayAssists, index, 'count', e.target.value)} className="w-20" min="1" />
-                                                  <Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualAwayAssists, setManualAwayAssists, index)}><X className="h-4 w-4 text-destructive"/></Button>
-                                              </div>
-                                            ))}
-                                            <Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualAwayAssists, setManualAwayAssists)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button>
-                                        </div>
+                                     <div className="space-y-4 p-4 border rounded-md">
+                                        <div><Label>Buteurs</Label>{manualAwayScorers.map((scorer, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Input placeholder="Nom" value={scorer.playerName} onChange={(e) => handleManualPerformanceChange(manualAwayScorers, setManualAwayScorers, index, 'playerName', e.target.value)} /><Input type="number" value={scorer.count} onChange={(e) => handleManualPerformanceChange(manualAwayScorers, setManualAwayScorers, index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualAwayScorers, setManualAwayScorers, index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualAwayScorers, setManualAwayScorers)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Buteur</Button></div>
+                                        <div><Label>Passeurs</Label>{manualAwayAssists.map((assist, index) => (<div key={index} className="flex items-center gap-2 mb-2"><Input placeholder="Nom" value={assist.playerName} onChange={(e) => handleManualPerformanceChange(manualAwayAssists, setManualAwayAssists, index, 'playerName', e.target.value)} /><Input type="number" value={assist.count} onChange={(e) => handleManualPerformanceChange(manualAwayAssists, setManualAwayAssists, index, 'count', e.target.value)} className="w-20" min="1" /><Button type="button" variant="ghost" size="icon" onClick={() => removeManualPerformanceItem(manualAwayAssists, setManualAwayAssists, index)}><X className="h-4 w-4 text-destructive"/></Button></div>))}<Button type="button" variant="outline" size="sm" onClick={() => addManualPerformanceItem(manualAwayAssists, setManualAwayAssists)} className="w-full"><PlusCircle className="mr-2 h-4 w-4" />Ajouter Passeur</Button></div>
                                       </div>
                                   </div>
                                 </>
@@ -1056,10 +844,7 @@ export default function CalendarPage() {
                             </div>
                         </div>
                     </ScrollArea>
-                <DialogFooter>
-                    <Button type="button" variant="secondary" onClick={() => resetResultForm()}>Annuler</Button>
-                    <Button type="submit">Sauvegarder le Résultat</Button>
-                </DialogFooter>
+                <DialogFooter><Button type="button" variant="secondary" onClick={() => resetResultForm()}>Annuler</Button><Button type="submit">Sauvegarder le Résultat</Button></DialogFooter>
             </form>
         </DialogContent>
     </Dialog>
@@ -1076,63 +861,29 @@ export default function CalendarPage() {
             </DialogHeader>
             {selectedResult && (
               <div className="space-y-4 py-4">
-                 <div className="flex justify-center">
-                    <Badge variant="secondary">{selectedResult.category}</Badge>
-                </div>
+                 <div className="flex justify-center"><Badge variant="secondary">{selectedResult.category}</Badge></div>
                 <Separator />
                 <div className="grid grid-cols-3 gap-4 text-sm text-center">
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="flex items-center gap-2">
-                      <Hash className="h-4 w-4 text-muted-foreground" />
-                      <strong>Catégorie</strong>
-                    </div>
-                    <span>{selectedResult.gender === 'Féminin' ? `${selectedResult.teamCategory} F` : selectedResult.teamCategory}</span>
-                  </div>
-                   <div className="flex flex-col items-center gap-1">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <strong>Lieu</strong>
-                    </div>
-                    <span>{selectedResult.location || "Non spécifié"}</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1">
-                     <div className="flex items-center gap-2">
-                        <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                        <strong>Date et Heure</strong>
-                     </div>
-                     <div className="flex flex-col items-center">
-                        <span>{format(parseISO(selectedResult.date), "dd/MM/yyyy")}</span>
-                        <span className="text-muted-foreground text-xs">{selectedResult.time}</span>
-                     </div>
-                  </div>
+                  <div className="flex flex-col items-center gap-1"><div className="flex items-center gap-2"><Hash className="h-4 w-4 text-muted-foreground" /><strong>Catégorie</strong></div><span>{selectedResult.gender === 'Féminin' ? `${selectedResult.teamCategory} F` : selectedResult.teamCategory}</span></div>
+                   <div className="flex flex-col items-center gap-1"><div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-muted-foreground" /><strong>Lieu</strong></div><span>{selectedResult.location || "Non spécifié"}</span></div>
+                  <div className="flex flex-col items-center gap-1"><div className="flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-muted-foreground" /><strong>Date et Heure</strong></div><div className="flex flex-col items-center"><span>{format(parseISO(selectedResult.date), "dd/MM/yyyy")}</span><span className="text-muted-foreground text-xs">{selectedResult.time}</span></div></div>
                 </div>
                 <Separator />
                  <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                   {[teamNames[0], teamNames[1]].map((team, index) => (
                     <div key={`${team}-${index}`} className="space-y-3">
                         <h4 className="font-semibold text-center">{team}</h4>
-                        <div>
-                            <strong className="text-sm flex items-center gap-2 mb-1"><Trophy className="h-4 w-4 text-muted-foreground" />Buteurs</strong>
-                            <p className="text-sm text-muted-foreground pl-2">{formatPerformance(selectedScorersByTeam[team])}</p>
-                        </div>
-                        <div>
-                            <strong className="text-sm flex items-center gap-2 mb-1"><Star className="h-4 w-4 text-muted-foreground" />Passeurs</strong>
-                            <p className="text-sm text-muted-foreground pl-2">{formatPerformance(selectedAssistsByTeam[team])}</p>
-                        </div>
+                        <div><strong className="text-sm flex items-center gap-2 mb-1"><Trophy className="h-4 w-4 text-muted-foreground" />Buteurs</strong><p className="text-sm text-muted-foreground pl-2">{formatPerformance(selectedScorersByTeam[team])}</p></div>
+                        <div><strong className="text-sm flex items-center gap-2 mb-1"><Star className="h-4 w-4 text-muted-foreground" />Passeurs</strong><p className="text-sm text-muted-foreground pl-2">{formatPerformance(selectedAssistsByTeam[team])}</p></div>
                     </div>
                   ))}
                 </div>
               </div>
             )}
-            <DialogFooter>
-                <Button onClick={() => setResultDetailsOpen(false)}>Fermer</Button>
-            </DialogFooter>
+            <DialogFooter><Button onClick={() => setResultDetailsOpen(false)}>Fermer</Button></DialogFooter>
         </DialogContent>
     </Dialog>
 
     </div>
   );
 }
-
-    
-    

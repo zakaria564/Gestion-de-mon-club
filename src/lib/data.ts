@@ -1,5 +1,3 @@
-
-
 export type PlayerDocument = {
   name: string;
   url: string;
@@ -55,6 +53,9 @@ export type CalendarEvent = {
   uid: string;
   type: string;
   opponent: string;
+  homeTeam?: string;
+  awayTeam?: string;
+  matchType?: 'club-match' | 'opponent-vs-opponent';
   date: string;
   time: string;
   location: string;
@@ -83,4 +84,3 @@ export const results = [
   { id: 2, opponent: 'Paris SG', date: '2024-07-25', score: '0-2', scorers: [], notes: 'Match difficile contre une équipe solide.' },
   { id: 3, opponent: 'OGC Nice', date: '2024-07-18', score: '2-2', scorers: ['J. Dupont', 'M. Curie'], notes: 'Match nul arraché en fin de partie.' },
 ];
-    
