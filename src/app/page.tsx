@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo } from "react";
@@ -14,7 +15,7 @@ import { useCoachesContext } from "@/context/coaches-context";
 import { useCalendarContext } from "@/context/calendar-context";
 import { useClubContext } from "@/context/club-context";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isAfter, isSameDay } from "date-fns";
 import Link from "next/link";
 import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell, Legend } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
@@ -69,9 +70,15 @@ export default function Dashboard() {
     const now = new Date();
     return calendarEvents
       .filter(event => {
-        // Combiner la date et l'heure pour une comparaison précise
-        const eventDateTime = new Date(`${event.date}T${event.time || '00:00'}`);
-        return eventDateTime >= now;
+        const eventDate = parseISO(event.date);
+        if (isSameDay(eventDate, now)) {
+            if (!event.time) return true;
+            const [hours, minutes] = event.time.split(':').map(Number);
+            const eventDateTime = new Date(eventDate);
+            eventDateTime.setHours(hours, minutes, 0, 0);
+            return isAfter(eventDateTime, now) || eventDateTime.getTime() === now.getTime();
+        }
+        return isAfter(eventDate, now);
       })
       .sort((a, b) => {
         if (a.date !== b.date) return a.date.localeCompare(b.date);

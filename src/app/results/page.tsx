@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import {
@@ -29,8 +28,6 @@ import { useOpponentsContext } from "@/context/opponents-context";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, parseISO } from 'date-fns';
-import { MultiSelect, MultiSelectOption } from "@/components/ui/multi-select";
-import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
@@ -139,7 +136,7 @@ export default function ResultsPage() {
       if (field === 'playerName') {
           item.playerName = value as string;
       } else {
-          item.count = Math.max(1, Number(value)); // Ensure count is at least 1
+          item.count = Math.max(1, Number(value));
       }
       updatedList[index] = item;
       setNewResult(prev => ({ ...prev, [listName]: updatedList }));
@@ -404,20 +401,20 @@ export default function ResultsPage() {
   
   const getMatchOutcome = (result: Result) => {
     if (result.matchType === 'opponent-vs-opponent' || result.matchType === 'opponent_vs_opponent') {
-        return 'bg-primary'; // Blue for opponent vs opponent
+        return 'bg-primary';
     }
 
     const parts = result.score.split('-').map(s => parseInt(s.trim()));
     if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) {
-        return 'bg-gray-500'; // Default for invalid score
+        return 'bg-gray-500';
     }
     
     const usdsGoals = result.homeOrAway === 'home' ? parts[0] : parts[1];
     const opponentGoals = result.homeOrAway === 'home' ? parts[1] : parts[0];
 
-    if (usdsGoals > opponentGoals) return 'bg-green-500'; // Win
-    if (usdsGoals < opponentGoals) return 'bg-red-500'; // Loss
-    return 'bg-orange-500'; // Draw
+    if (usdsGoals > opponentGoals) return 'bg-green-500';
+    if (usdsGoals < opponentGoals) return 'bg-red-500';
+    return 'bg-orange-500';
   }
 
   const getResultTitle = (result: Result) => {
@@ -796,8 +793,8 @@ export default function ResultsPage() {
                             </div>
                         </div>
                     </ScrollArea>
-                    <DialogFooter>
-                        <Button type="button" variant="secondary" onClick={resetForm}>Annuler</Button>
+                    <DialogFooter className="mt-6 pt-4 border-t gap-2">
+                        <Button type="button" variant="outline" onClick={resetForm}>Annuler</Button>
                         <Button type="submit">Sauvegarder</Button>
                     </DialogFooter>
                 </form>
@@ -931,7 +928,7 @@ export default function ResultsPage() {
                 </div>
               </div>
             )}
-            <DialogFooter className="justify-end gap-2">
+            <DialogFooter className="mt-4 pt-4 border-t justify-end gap-2">
               <Button variant="outline" onClick={() => openEditDialog(selectedResult!)}>
                 <Edit className="mr-2 h-4 w-4" /> Modifier
               </Button>
@@ -960,7 +957,3 @@ export default function ResultsPage() {
     </div>
   );
 }
-
-
-
-    

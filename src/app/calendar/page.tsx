@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useContext, useEffect, useMemo } from 'react';
@@ -442,7 +443,7 @@ export default function CalendarPage() {
     if (!isMatch || !event.opponent) return event.type;
 
     if (event.matchType === 'opponent-vs-opponent') {
-        return event.opponent; // Déjà formaté comme "A vs B"
+        return event.opponent; 
     }
 
     const clubName = clubInfo.name;
@@ -630,7 +631,10 @@ export default function CalendarPage() {
                   </div>
                 </div>
               </ScrollArea>
-              <DialogFooter><Button type="submit">Sauvegarder</Button></DialogFooter>
+              <DialogFooter className="mt-6 pt-4 border-t gap-2">
+                <Button type="button" variant="outline" onClick={resetEventForm}>Annuler</Button>
+                <Button type="submit">Sauvegarder</Button>
+              </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
@@ -748,7 +752,7 @@ export default function CalendarPage() {
                   <p><strong>Heure:</strong> {selectedEvent.time}</p>
                   <p><strong>Lieu:</strong> {selectedEvent.location}</p>
               </div>
-              <DialogFooter className="flex-wrap justify-end gap-2">
+              <DialogFooter className="flex-wrap justify-end gap-2 pt-4 border-t">
                  {isPast(parseISO(selectedEvent.date)) && selectedEvent.type.toLowerCase().includes("match") && (
                     <Button variant="outline" onClick={() => openAddResultDialogFromEvent(selectedEvent)}>
                       <PlusCircle className="mr-2 h-4 w-4" /> Ajouter le score
@@ -844,7 +848,7 @@ export default function CalendarPage() {
                             </div>
                         </div>
                     </ScrollArea>
-                <DialogFooter><Button type="button" variant="secondary" onClick={() => resetResultForm()}>Annuler</Button><Button type="submit">Sauvegarder le Résultat</Button></DialogFooter>
+                <DialogFooter className="mt-6 pt-4 border-t gap-2"><Button type="button" variant="outline" onClick={() => resetResultForm()}>Annuler</Button><Button type="submit">Sauvegarder le Résultat</Button></DialogFooter>
             </form>
         </DialogContent>
     </Dialog>
@@ -880,7 +884,7 @@ export default function CalendarPage() {
                 </div>
               </div>
             )}
-            <DialogFooter><Button onClick={() => setResultDetailsOpen(false)}>Fermer</Button></DialogFooter>
+            <DialogFooter className="mt-4 pt-4 border-t"><Button onClick={() => setResultDetailsOpen(false)}>Fermer</Button></DialogFooter>
         </DialogContent>
     </Dialog>
 

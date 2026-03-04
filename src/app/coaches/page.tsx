@@ -245,8 +245,8 @@ export default function CoachesPage() {
               </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
-                <ScrollArea className="h-[70vh] p-4">
-                  <div className="space-y-6">
+                <ScrollArea className="h-[70vh] pr-4">
+                  <div className="space-y-6 pb-4">
                       <div className="flex flex-col items-center gap-4">
                           <Avatar className="h-24 w-24 border">
                             <AvatarImage src={photoPreview || undefined} alt="Aperçu de l'entraîneur" data-ai-hint="coach photo"/>
@@ -461,8 +461,8 @@ export default function CoachesPage() {
                     </div>
                   </div>
                 </ScrollArea>
-                <DialogFooter>
-                  <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
+                <DialogFooter className="mt-6 pt-4 border-t gap-2">
+                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Annuler</Button>
                   <Button type="submit">Enregistrer</Button>
                 </DialogFooter>
               </form>
@@ -583,7 +583,3 @@ export default function CoachesPage() {
     </div>
   );
 }
-
-    
-
-    

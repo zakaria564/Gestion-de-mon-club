@@ -215,25 +215,30 @@ export default function FinancesPage() {
 
       <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="sm:max-w-md">
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit}>
               <DialogHeader><DialogTitle>Nouveau Paiement</DialogTitle></DialogHeader>
-              <div className="space-y-2">
-                <Label>Type</Label>
-                <Select value={paymentType} onValueChange={(v: any) => setPaymentType(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="player">Cotisation</SelectItem><SelectItem value="coach">Salaire</SelectItem></SelectContent></Select>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Type</Label>
+                  <Select value={paymentType} onValueChange={(v: any) => setPaymentType(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="player">Cotisation</SelectItem><SelectItem value="coach">Salaire</SelectItem></SelectContent></Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Mois</Label>
+                  <Input type="month" value={newPaymentData.dueDate} onChange={e => setNewPaymentData({...newPaymentData, dueDate: e.target.value})} required />
+                </div>
+                <div className="space-y-2">
+                  <Label>Membre</Label>
+                  <Select value={newPaymentData.member} onValueChange={v => setNewPaymentData({...newPaymentData, member: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(paymentType === 'player' ? players : coaches).map(m => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}</SelectContent></Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label>Total dû</Label><Input type="number" value={newPaymentData.totalAmount} onChange={e => setNewPaymentData({...newPaymentData, totalAmount: e.target.value})} required /></div>
+                  <div className="space-y-2"><Label>Versé</Label><Input type="number" value={newPaymentData.initialPaidAmount} onChange={e => setNewPaymentData({...newPaymentData, initialPaidAmount: e.target.value})} required /></div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Mois</Label>
-                <Input type="month" value={newPaymentData.dueDate} onChange={e => setNewPaymentData({...newPaymentData, dueDate: e.target.value})} required />
-              </div>
-              <div className="space-y-2">
-                <Label>Membre</Label>
-                <Select value={newPaymentData.member} onValueChange={v => setNewPaymentData({...newPaymentData, member: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(paymentType === 'player' ? players : coaches).map(m => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}</SelectContent></Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label>Total dû</Label><Input type="number" value={newPaymentData.totalAmount} onChange={e => setNewPaymentData({...newPaymentData, totalAmount: e.target.value})} required /></div>
-                <div className="space-y-2"><Label>Versé</Label><Input type="number" value={newPaymentData.initialPaidAmount} onChange={e => setNewPaymentData({...newPaymentData, initialPaidAmount: e.target.value})} required /></div>
-              </div>
-              <DialogFooter><Button type="submit">Enregistrer</Button></DialogFooter>
+              <DialogFooter className="border-t pt-4 gap-2">
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
+                <Button type="submit">Enregistrer</Button>
+              </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
