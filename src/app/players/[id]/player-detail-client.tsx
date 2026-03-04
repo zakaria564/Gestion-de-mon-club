@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, use } from 'react';
 import React from 'react';
 import type { Player } from "@/lib/data";
 import { notFound, useRouter } from "next/navigation";
@@ -91,15 +91,14 @@ const categoryColors: Record<string, string> = {
   'U7': 'hsl(var(--chart-11))',
 };
 
-Object.keys(categoryColors).forEach(key => {
-    categoryColors[`${key} F`] = categoryColors[key];
-});
-
-export function PlayerDetailClient({ id }: { id: string }) {
+export function PlayerDetailClient({ id: idParam }: { id: string }) {
   const router = useRouter();
   const { toast } = useToast();
   const context = usePlayersContext();
   const coachesContext = useCoachesContext();
+
+  // Next.js 15 pattern for unwrapping params
+  const id = typeof idParam === 'string' ? idParam : use(idParam as unknown as Promise<{id: string}>).id;
 
   if (!context || !coachesContext) {
     throw new Error("PlayerDetailClient must be used within a PlayersProvider and CoachesProvider");
@@ -171,10 +170,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
           </CardHeader>
           <CardContent className="pt-6">
             <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Informations</h3>
                 <Skeleton className="h-5 w-3/4" />
                 <Skeleton className="h-5 w-3/4" />
-                 <Skeleton className="h-5 w-3/4" />
             </div>
           </CardContent>
         </Card>
@@ -267,12 +264,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <Phone className="h-5 w-5 text-muted-foreground" />
                     <a href={`tel:${player.phone}`} className="text-primary hover:underline">{player.phone}</a>
                 </div>
-                {player.email && (
-                  <div className="flex items-center gap-4">
-                    <Mail className="h-5 w-5 text-muted-foreground" />
-                    <a href={`mailto:${player.email}`} className="text-primary hover:underline">{player.email}</a>
-                  </div>
-                )}
                 <div className="flex items-center gap-4">
                     <MapPin className="h-5 w-5 text-muted-foreground" />
                      <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(player.address)}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
@@ -306,12 +297,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                         <a href={`tel:${player.tutorPhone}`} className="text-primary hover:underline">{player.tutorPhone}</a>
                     </div>
                   )}
-                  {player.tutorEmail && (
-                    <div className="flex items-center gap-4">
-                        <Mail className="h-5 w-5 text-muted-foreground" />
-                        <a href={`mailto:${player.tutorEmail}`} className="text-primary hover:underline">{player.tutorEmail}</a>
-                    </div>
-                  )}
               </div>
             )}
 
@@ -339,12 +324,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <LogIn className="h-5 w-5 text-muted-foreground" />
                     <span>Entrée : {formattedEntryDate}</span>
                 </div>
-                {player.exitDate && (
-                  <div className="flex items-center gap-4">
-                      <LogOut className="h-5 w-5 text-muted-foreground" />
-                      <span>Sortie : {formattedExitDate}</span>
-                  </div>
-                )}
             </div>
 
             {player.documents && player.documents.length > 0 && (
@@ -508,19 +487,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                               />
                             <FormField
                                 control={form.control}
-                                name="email"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl>
-                                      <Input type="email" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            <FormField
-                                control={form.control}
                                 name="address"
                                 render={({ field }) => (
                                   <FormItem>
@@ -656,32 +622,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                                     </FormItem>
                                   )}
                                 />
-                                <FormField
-                                    control={form.control}
-                                    name="entryDate"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Date d'entrée au club</FormLabel>
-                                        <FormControl>
-                                        <Input type="date" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="exitDate"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Date de sortie du club</FormLabel>
-                                        <FormControl>
-                                        <Input type="date" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
                         </div>
                     </div>
                      <div className="space-y-4">
@@ -725,19 +665,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                               </FormItem>
                             )}
                           />
-                          <FormField
-                              control={form.control}
-                              name="tutorEmail"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Email du tuteur</FormLabel>
-                                  <FormControl>
-                                    <Input type="email" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
                         </div>
 
                     <div className="space-y-4">

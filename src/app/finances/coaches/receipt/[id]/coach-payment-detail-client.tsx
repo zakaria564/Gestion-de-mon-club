@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, use } from "react";
 import { notFound, useRouter } from "next/navigation";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -17,12 +17,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useClubContext } from "@/context/club-context";
 import { ClubLogo } from "@/components/club-logo";
 
-export function CoachPaymentDetailClient({ id }: { id: string }) {
+export function CoachPaymentDetailClient({ id: idParam }: { id: string }) {
   const financialCtx = useFinancialContext();
   const coachesCtx = useCoachesContext();
   const { clubInfo } = useClubContext();
   const receiptRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  const id = typeof idParam === 'string' ? idParam : use(idParam as unknown as Promise<{id: string}>).id;
 
   if (!financialCtx || !coachesCtx) {
     throw new Error("CoachPaymentDetailClient must be used within FinancialProvider and CoachesProvider");
@@ -91,27 +93,6 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
-            </div>
-             <div className="mt-8">
-                <Skeleton className="h-7 w-1/3 mb-4" />
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead><Skeleton className="h-5 w-24" /></TableHead>
-                            <TableHead className="text-right"><Skeleton className="h-5 w-24" /></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow>
-                            <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                            <TableCell className="text-right"><Skeleton className="h-5 w-20" /></TableCell>
-                        </TableRow>
-                         <TableRow>
-                            <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                            <TableCell className="text-right"><Skeleton className="h-5 w-20" /></TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
             </div>
           </CardContent>
         </Card>
@@ -252,12 +233,9 @@ export function CoachPaymentDetailClient({ id }: { id: string }) {
                     </div>
                 )}
 
-                <div className="mt-16 flex justify-end items-start px-4">
+                <div className="mt-20 flex justify-center items-center px-4">
                     <div className="text-center">
-                        <p className="font-semibold text-sm underline mb-12">Signature et Cachet du Club</p>
-                        <div className="h-24 w-40 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400 text-xs">
-                            Cachet Officiel
-                        </div>
+                        <p className="font-bold text-lg underline">Signature et Cachet du Club</p>
                     </div>
                 </div>
 

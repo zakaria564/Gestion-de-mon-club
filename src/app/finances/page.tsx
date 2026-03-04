@@ -104,6 +104,7 @@ export default function FinancesPage() {
         const memberPayments = paymentsByMember[member.name] || [];
         const currentMonthPayment = memberPayments.find(p => p.dueDate === currentMonthStr);
         
+        // Check for arrears: any payment from past months that isn't fully paid
         const hasArrears = memberPayments.some(p => {
           if (p.dueDate >= currentMonthStr) return false;
           return p.status === 'partiel' || p.status === 'non payé';
@@ -120,6 +121,7 @@ export default function FinancesPage() {
                 status = 'En attente';
             }
         } else {
+            // No payment for current month
             status = 'En attente';
         }
 

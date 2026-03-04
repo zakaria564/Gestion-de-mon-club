@@ -52,13 +52,14 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
     }
   }, [getPlayersCollection]);
   
+  // Cleanup logic for Salma Chaddani (Salam -> Salma)
   const cleanupSalmaPayments = useCallback(async () => {
     if (!user) return;
     try {
       const batch = writeBatch(db);
       const paymentsRef = collection(db, "users", user.uid, "playerPayments");
       
-      // Rechercher les paiements sous l'ancien nom
+      // Search for payments under old name "Salam Chaddani"
       const q = query(paymentsRef, where("member", "==", "Salam Chaddani"));
       const snapshot = await getDocs(q);
       
@@ -68,6 +69,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
         });
         await batch.commit();
         console.log("Migration des paiements de Salma effectuée");
+        window.location.reload(); // Force reload to sync all contexts
       }
     } catch (e) {
       console.error("Erreur de nettoyage Salma", e);
@@ -113,7 +115,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
       batch.update(playerDocRef, dataToUpdate);
 
       if (nameHasChanged) {
-        // Mettre à jour les résultats (buteurs et passeurs)
+        // Update results (scorers and assists)
         const resultsRef = collection(db, "users", user.uid, "results");
         const resultsSnap = await getDocs(resultsRef);
         resultsSnap.forEach(resultDoc => {
@@ -141,7 +143,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
           }
         });
         
-        // Mettre à jour les paiements
+        // Update payments
         const paymentsRef = collection(db, "users", user.uid, "playerPayments");
         const paymentsQuery = query(paymentsRef, where("member", "==", oldName));
         const paymentsSnap = await getDocs(paymentsQuery);
@@ -153,7 +155,7 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
       await batch.commit();
       
       if(nameHasChanged) {
-        // Forcer un rechargement pour que tout soit synchrone
+        // Direct reload is the most reliable way to sync name changes across all components
         window.location.reload();
       } else {
         await fetchPlayers();
