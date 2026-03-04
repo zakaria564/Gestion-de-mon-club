@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useContext, useMemo } from "react";
+import { useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -12,12 +12,12 @@ import {
 import { Users, UserCheck, Calendar } from "lucide-react";
 import { usePlayersContext } from "@/context/players-context";
 import { useCoachesContext } from "@/context/coaches-context";
-import { useCalendarContext, CalendarEvent } from "@/context/calendar-context";
+import { useCalendarContext } from "@/context/calendar-context";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import Link from "next/link";
 import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell, Legend } from "recharts";
-import { ChartConfig, ChartContainer, ChartTooltipContent, ChartLegendContent } from "@/components/ui/chart";
+import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 const categoryColors: Record<string, string> = {
   'Sénior': 'hsl(var(--chart-1))',
@@ -34,14 +34,11 @@ const categoryColors: Record<string, string> = {
   'U20': 'hsl(340, 80%, 55%)',
 };
 
-
 const CustomLegend = ({ payload }: any) => {
   if (!payload) return null;
-
   const half = Math.ceil(payload.length / 2);
   const topPayload = payload.slice(0, half);
   const bottomPayload = payload.slice(half);
-
   const renderLegendItems = (items: any[]) => (
     <div className="flex items-center justify-center flex-wrap gap-x-4 gap-y-1">
       {items.map((entry, index) => (
@@ -52,7 +49,6 @@ const CustomLegend = ({ payload }: any) => {
       ))}
     </div>
   );
-
   return (
     <div className="flex flex-col gap-2">
       {renderLegendItems(topPayload)}
@@ -62,27 +58,28 @@ const CustomLegend = ({ payload }: any) => {
 };
 
 export default function Dashboard() {
-  const playersContext = usePlayersContext();
-  const coachesContext = useCoachesContext();
-  const calendarContext = useCalendarContext();
-
-  if (!playersContext || !coachesContext || !calendarContext) {
-    throw new Error("Dashboard must be used within all required providers");
-  }
-
-  const { players, loading: playersLoading } = playersContext;
-  const { coaches, loading: coachesLoading } = coachesContext;
-  const { calendarEvents, loading: calendarLoading } = calendarContext;
+  const { players, loading: playersLoading } = usePlayersContext();
+  const { coaches, loading: coachesLoading } = useCoachesContext();
+  const { calendarEvents, loading: calendarLoading } = useCalendarContext();
   
   const loading = playersLoading || coachesLoading || calendarLoading;
 
   const upcomingEvents = useMemo(() => {
+    const now = new Date();
     return calendarEvents
-      .filter(event => new Date(event.date) >= new Date())
+      .filter(event => {
+        // On construit une date complète avec l'heure pour la comparaison
+        const eventDateTime = new Date(`${event.date}T${event.time || '00:00'}`);
+        return eventDateTime >= now;
+      })
+      .sort((a, b) => {
+        if (a.date !== b.date) return a.date.localeCompare(b.date);
+        return (a.time || "").localeCompare(b.time || "");
+      })
       .slice(0, 5)
       .map(event => ({
         ...event,
-        formattedDate: `${format(new Date(event.date), 'dd/MM/yyyy')} à ${event.time} - ${event.location}`
+        formattedDate: `${format(parseISO(event.date), 'dd/MM/yyyy')} à ${event.time} - ${event.location}`
       }));
   }, [calendarEvents]);
 
@@ -113,7 +110,6 @@ export default function Dashboard() {
     return config;
   }, [playersByCategory]);
 
-
   if (loading) {
     return (
        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -142,12 +138,8 @@ export default function Dashboard() {
                 </CardContent>
             </Card>
             <Card className="lg:col-span-3">
-                <CardHeader>
-                    <CardTitle>Événements à Venir</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Skeleton className="h-40 w-full" />
-                </CardContent>
+                <CardHeader><CardTitle>Événements à Venir</CardTitle></CardHeader>
+                <CardContent><Skeleton className="h-40 w-full" /></CardContent>
             </Card>
         </div>
       </div>
@@ -160,44 +152,32 @@ export default function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Joueurs
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Total Joueurs</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{players.length}</div>
-            <p className="text-xs text-muted-foreground">
-              membres actifs
-            </p>
+            <p className="text-xs text-muted-foreground">membres actifs</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Entraîneurs
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Total Entraîneurs</CardTitle>
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{coaches.length}</div>
-            <p className="text-xs text-muted-foreground">
-              membres du staff
-            </p>
+            <p className="text-xs text-muted-foreground">membres du staff</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Prochains Événements
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Prochains Événements</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{upcomingEvents.length}</div>
-            <p className="text-xs text-muted-foreground">
-              dans les prochains jours
-            </p>
+            <p className="text-xs text-muted-foreground">événements prévus</p>
           </CardContent>
         </Card>
       </div>
@@ -205,9 +185,7 @@ export default function Dashboard() {
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Répartition des Joueurs par Catégorie</CardTitle>
-            <CardDescription>
-              Nombre de joueurs dans chaque catégorie d'âge.
-            </CardDescription>
+            <CardDescription>Nombre de joueurs dans chaque catégorie d'âge.</CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
              <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[250px] sm:h-[350px]">
@@ -241,9 +219,7 @@ export default function Dashboard() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Événements à Venir</CardTitle>
-            <CardDescription>
-              Les prochains matchs et entraînements.
-            </CardDescription>
+            <CardDescription>Les prochains matchs et entraînements.</CardDescription>
           </CardHeader>
           <CardContent>
              <div className="space-y-4">
@@ -251,10 +227,8 @@ export default function Dashboard() {
                 <Link href="/calendar" key={event.id} className="block hover:bg-muted/50 p-2 rounded-md transition-colors">
                   <div className="flex items-center">
                     <Calendar className="h-6 w-6 mr-4 text-primary" />
-                    <div className="flex-1 text-center">
-                      <p className="text-sm font-medium leading-none">
-                        {event.type}
-                      </p>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium leading-none">{event.type}</p>
                       <p className="text-sm text-muted-foreground">
                          {event.opponent && `vs ${event.opponent} - `}{event.formattedDate}
                       </p>

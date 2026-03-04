@@ -34,7 +34,6 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
   const { loading: playersLoading } = playersCtx;
 
   const payment = useMemo(() => getPlayerPaymentById(id), [id, getPlayerPaymentById]);
-
   const loading = financialLoading || playersLoading;
 
   const [formattedTransactions, setFormattedTransactions] = useState<{ id: number; date: string; amount: number; }[]>([]);
@@ -113,10 +112,10 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
          <Button variant="outline" onClick={handleDownloadPDF}><Download className="mr-2 h-4 w-4"/> Télécharger le reçu</Button>
       </div>
 
-        <Card>
+        <Card className="border-none shadow-none">
             <div ref={receiptRef} className="p-8 bg-white text-black min-h-[297mm]">
                 <CardHeader className="px-0">
-                <div className="flex flex-col sm:flex-row items-start justify-between mb-8 gap-4 border-b pb-6">
+                <div className="flex flex-col sm:flex-row items-start justify-between mb-8 gap-4 border-b-2 border-black pb-6">
                      <div className="flex items-center gap-4">
                         <ClubLogo className="size-20" />
                         <div>
@@ -125,14 +124,14 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
                         </div>
                     </div>
                     <div className="text-left sm:text-right">
-                        <p className="font-bold">N° : {professionalReceiptNumber}</p>
+                        <p className="font-bold text-xl">N° : {professionalReceiptNumber}</p>
                         <p className="text-sm">Date d'émission: {new Date().toLocaleDateString('fr-FR')}</p>
                     </div>
                 </div>
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                     <div>
                         <CardTitle className="text-3xl font-bold flex items-center gap-3"><User className="h-8 w-8" />{payment.member}</CardTitle>
-                        <CardDescription className="text-lg text-muted-foreground mt-1">Historique de paiement pour la cotisation mensuelle</CardDescription>
+                        <CardDescription className="text-lg text-muted-foreground mt-1">Détails de la cotisation mensuelle</CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
                         {getStatusIcon(payment.status)}
@@ -142,28 +141,28 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
                     </div>
                 </div>
                 </CardHeader>
-                <Separator className="my-6" />
+                <Separator className="my-6 bg-black h-0.5" />
                 <CardContent className="px-0 pt-6">
-                    <div className="grid md:grid-cols-2 gap-x-12 gap-y-6 p-6 rounded-lg border">
+                    <div className="grid md:grid-cols-2 gap-x-12 gap-y-6 p-6 border-2 border-black rounded-lg">
                         <div className="flex items-center gap-4 text-xl">
-                            <Banknote className="h-7 w-7 text-muted-foreground" />
+                            <Banknote className="h-7 w-7" />
                             <span>Montant total dû:</span>
                             <span className="font-bold ml-auto">{payment.totalAmount.toFixed(2)} DH</span>
                         </div>
                         <div className="flex items-center gap-4 text-xl">
-                            <CheckCircle className="h-7 w-7 text-green-500" />
+                            <CheckCircle className="h-7 w-7 text-green-600" />
                             <span>Montant déjà payé:</span>
                             <span className="font-bold ml-auto text-green-600">{payment.paidAmount.toFixed(2)} DH</span>
                         </div>
-                        <div className="flex items-center gap-4 text-xl border-t pt-4">
-                            {payment.remainingAmount > 0 ? <XCircle className="h-7 w-7 text-red-500" /> : <CheckCircle className="h-7 w-7 text-green-500" />}
+                        <div className="flex items-center gap-4 text-xl border-t border-black pt-4">
+                            {payment.remainingAmount > 0 ? <XCircle className="h-7 w-7 text-red-600" /> : <CheckCircle className="h-7 w-7 text-green-600" />}
                             <span>Reste à payer:</span>
                             <span className={`font-bold ml-auto ${payment.remainingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
                                 {payment.remainingAmount.toFixed(2)} DH
                             </span>
                         </div>
-                        <div className="flex items-center gap-4 text-xl border-t pt-4">
-                            <CalendarIcon className="h-7 w-7 text-muted-foreground" />
+                        <div className="flex items-center gap-4 text-xl border-t border-black pt-4">
+                            <CalendarIcon className="h-7 w-7" />
                             <span>Mois concerné:</span>
                             <span className="font-bold ml-auto">{payment.dueDate}</span>
                         </div>
@@ -171,19 +170,19 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
 
                     {formattedTransactions.length > 0 && (
                         <div className="mt-12">
-                            <h3 className="text-2xl font-bold mb-6 flex items-center border-b pb-2"><History className="mr-3 h-7 w-7" />Historique des Versements</h3>
-                            <Table>
+                            <h3 className="text-2xl font-bold mb-6 flex items-center border-b-2 border-black pb-2"><History className="mr-3 h-7 w-7" />Historique des Versements</h3>
+                            <Table className="border-collapse">
                                 <TableHeader>
-                                    <TableRow className="border-b">
-                                        <TableHead className="text-lg font-bold">Date et Heure</TableHead>
-                                        <TableHead className="text-right text-lg font-bold">Montant Versé (DH)</TableHead>
+                                    <TableRow className="border-b-2 border-black">
+                                        <TableHead className="text-lg font-bold text-black">Date et Heure</TableHead>
+                                        <TableHead className="text-right text-lg font-bold text-black">Montant Versé (DH)</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {formattedTransactions.map(tx => (
-                                        <TableRow key={tx.id} className="border-b">
-                                            <TableCell className="text-lg">{tx.date}</TableCell>
-                                            <TableCell className="text-right font-bold text-lg">{tx.amount.toFixed(2)}</TableCell>
+                                        <TableRow key={tx.id} className="border-b border-gray-300">
+                                            <TableCell className="text-lg text-black">{tx.date}</TableCell>
+                                            <TableCell className="text-right font-bold text-lg text-black">{tx.amount.toFixed(2)}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
