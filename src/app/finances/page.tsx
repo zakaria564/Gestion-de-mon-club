@@ -33,7 +33,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Banknote, PlusCircle, Users, UserCheck, Eye, Search } from "lucide-react";
+import { PlusCircle, Eye, Search } from "lucide-react";
 import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
 import { useFinancialContext } from "@/context/financial-context";
@@ -101,22 +101,19 @@ export default function FinancesPage() {
     return allMembers.map(member => {
         const memberPayments = paymentsByMember[member.name] || [];
         const currentMonthPayment = memberPayments.find(p => p.dueDate === currentMonthStr);
-        
-        // Vérification des arriérés (mois passés non soldés)
-        const hasArrears = memberPayments.some(p => p.dueDate < currentMonthStr && p.status !== 'payé');
+        const hasPastArrears = memberPayments.some(p => p.dueDate < currentMonthStr && p.status !== 'payé');
 
         let status: MemberStatus = 'En attente';
 
         if (currentMonthPayment) {
-            if (currentMonthPayment.status === 'payé') {
-                status = hasArrears ? 'Partiel' : 'À jour';
-            } else if (currentMonthPayment.status === 'partiel') {
+            if (currentMonthPayment.status === 'payé' && !hasPastArrears) {
+                status = 'À jour';
+            } else if (currentMonthPayment.status === 'partiel' || (currentMonthPayment.status === 'payé' && hasPastArrears)) {
                 status = 'Partiel';
             } else {
                 status = 'En attente';
             }
         } else {
-            // Aucun paiement pour le mois en cours
             status = 'En attente';
         }
 
@@ -124,7 +121,7 @@ export default function FinancesPage() {
         const paymentCount = memberPayments.length;
 
         return { member: member.name, totalPaid, paymentCount, status };
-    });
+    }).sort((a, b) => a.member.localeCompare(b.member));
   };
 
   const aggregatedPlayerPayments = useMemo(() => aggregatePayments(playerPayments, players), [playerPayments, players]);

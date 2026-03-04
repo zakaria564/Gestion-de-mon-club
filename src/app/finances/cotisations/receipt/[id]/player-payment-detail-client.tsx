@@ -31,7 +31,7 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
   }
 
   const { loading: financialLoading, getPlayerPaymentById } = financialCtx;
-  const { players, loading: playersLoading } = playersCtx;
+  const { loading: playersLoading } = playersCtx;
 
   const payment = useMemo(() => getPlayerPaymentById(id), [id, getPlayerPaymentById]);
 
@@ -68,7 +68,6 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
     }
   }
 
-  // Format de reçu professionnel : RC-ANNEE-MOIS-SHORTID
   const professionalReceiptNumber = useMemo(() => {
     if (!payment) return "";
     const dateParts = payment.dueDate.split('-');
@@ -145,7 +144,7 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
                 </CardHeader>
                 <Separator className="my-6" />
                 <CardContent className="px-0 pt-6">
-                    <div className="grid md:grid-cols-2 gap-x-12 gap-y-6 bg-muted/30 p-6 rounded-lg">
+                    <div className="grid md:grid-cols-2 gap-x-12 gap-y-6 p-6 rounded-lg border">
                         <div className="flex items-center gap-4 text-xl">
                             <Banknote className="h-7 w-7 text-muted-foreground" />
                             <span>Montant total dû:</span>
@@ -175,9 +174,9 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
                             <h3 className="text-2xl font-bold mb-6 flex items-center border-b pb-2"><History className="mr-3 h-7 w-7" />Historique des Versements</h3>
                             <Table>
                                 <TableHeader>
-                                    <TableRow className="bg-muted/50">
-                                        <TableHead className="text-lg">Date et Heure</TableHead>
-                                        <TableHead className="text-right text-lg">Montant Versé (DH)</TableHead>
+                                    <TableRow className="border-b">
+                                        <TableHead className="text-lg font-bold">Date et Heure</TableHead>
+                                        <TableHead className="text-right text-lg font-bold">Montant Versé (DH)</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
