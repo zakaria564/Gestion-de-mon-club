@@ -148,7 +148,7 @@ function PlayersContent() {
     const pathname = usePathname();
     
     if (!context || !coachesContext) {
-      throw new Error("PlayersPage must be used within a PlayersProvider and CoachesProvider");
+      throw new Error("PlayersPage must be used within all required providers");
     }
 
     const { players, loading, addPlayer, updatePlayer } = context;
@@ -247,7 +247,7 @@ function PlayersContent() {
                                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                     {playersInPoste.map(player => (
                                         <Card key={player.id} className="flex flex-col hover:shadow-lg transition-shadow group">
-                                            <Link href={`/players/${player.id}`} className="flex flex-col h-full">
+                                            <Link href={`/players/${player.id}?gender=${gender}&category=${category}`} className="flex flex-col h-full">
                                                 <CardHeader className="p-4 flex flex-row items-center gap-4">
                                                     <Avatar className="h-16 w-16"><AvatarImage src={player.photo} alt={player.name} data-ai-hint="player photo" /></Avatar>
                                                     <div className="flex-1"><CardTitle className="text-base font-bold">{player.name}</CardTitle><CardDescription>{player.poste}</CardDescription></div>
@@ -295,7 +295,7 @@ function PlayersContent() {
                 <DialogContent className="sm:max-w-2xl max-h-[90vh]">
                     <DialogHeader><DialogTitle>Nouveau Joueur</DialogTitle><DialogDescription>Remplissez toutes les informations pour enregistrer un nouveau joueur.</DialogDescription></DialogHeader>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+                        <form onSubmit={form.handleSubmit(onSubmit)}>
                             <ScrollArea className="h-[60vh] pr-4">
                                 <div className="space-y-8 pb-4">
                                     <div className="flex flex-col items-center gap-4">
@@ -318,7 +318,7 @@ function PlayersContent() {
                                             <FormField control={form.control} name="cin" render={({field}) => <FormItem><FormLabel>N° CIN</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
                                             <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input {...field} required /></FormControl><FormMessage /></FormItem>} />
                                             <FormField control={form.control} name="email" render={({field}) => <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>} />
-                                            <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><FormControl><Input {...field} required /></FormControl><FormMessage /></FormMessage>}</FormItem>} />
+                                            <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><FormControl><Input {...field} required /></FormControl><FormMessage /></FormItem>} />
                                         </div>
 
                                         <div className="space-y-4">
