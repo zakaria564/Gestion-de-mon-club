@@ -137,8 +137,8 @@ function PlayersContent() {
     const filteredPlayers = useMemo(() => {
         if (!searchQuery) return players;
         return players.filter(player => {
-            const value = player[filterKey as keyof Player] as string;
-            return value?.toLowerCase().includes(searchQuery.toLowerCase());
+            const value = player[filterKey as keyof Player];
+            return String(value ?? '').toLowerCase().includes(searchQuery.toLowerCase());
         });
     }, [players, searchQuery, filterKey]);
 
