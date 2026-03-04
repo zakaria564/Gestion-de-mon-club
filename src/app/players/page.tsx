@@ -93,7 +93,7 @@ const defaultValues: PlayerFormValues = {
     address: '',
     phone: '',
     email: '',
-    country: '',
+    country: 'Marocaine',
     poste: '',
     jerseyNumber: '' as unknown as number,
     photo: '',
@@ -112,6 +112,20 @@ const defaultValues: PlayerFormValues = {
 };
 
 const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise", "Américaine", "Russe", "Japonaise", "Chinoise", "Indienne", "Turque", "Égyptienne", "Nigériane", "Sud-africaine", "Ghanéenne"];
+
+const documentOptions = [
+  "Certificat Médical",
+  "Carte d'identité",
+  "Passeport",
+  "Extrait de naissance",
+  "Photo d'identité",
+  "Autorisation Parentale",
+  "Fiche de renseignements",
+  "Justificatif de domicile",
+  "Licence sportive",
+  "Assurance",
+  "Autre"
+];
 
 const categoryColors: Record<string, string> = {
   'Sénior': 'hsl(var(--chart-1))',
@@ -192,13 +206,6 @@ function PlayersContent() {
       }
     };
 
-    const handleCategoryChange = async (player: Player, newCategory: string) => {
-        if (player.category !== newCategory) {
-            await updatePlayer({ ...player, category: newCategory as Player['category'] });
-            toast({ title: "Catégorie mise à jour", description: `La catégorie de ${player.name} est maintenant ${newCategory}.` });
-        }
-    };
-
     const filteredPlayers = useMemo(() => {
         if (!searchQuery) return players;
         return players.filter(player => {
@@ -267,6 +274,8 @@ function PlayersContent() {
         );
     };
 
+    const photoPreview = form.watch('photo');
+
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
             <div className="flex items-center justify-between">
@@ -287,22 +296,85 @@ function PlayersContent() {
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogContent className="sm:max-w-2xl max-h-[90vh]">
-                    <DialogHeader><DialogTitle>Nouveau Joueur</DialogTitle></DialogHeader>
+                    <DialogHeader><DialogTitle>Nouveau Joueur</DialogTitle><DialogDescription>Remplissez toutes les informations pour enregistrer un nouveau joueur.</DialogDescription></DialogHeader>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)}><ScrollArea className="h-[70vh] p-4"><div className="space-y-6">
-                            <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>} />
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="gender" render={({field}) => <FormItem><FormLabel>Genre</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select></FormItem>} />
-                                <FormField control={form.control} name="category" render={({field}) => <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="poste" render={({field}) => <FormItem><FormLabel>Poste</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>} />
-                                <FormField control={form.control} name="jerseyNumber" render={({field}) => <FormItem><FormLabel>Numéro</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>} />
-                            </div>
-                            <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>} />
-                            <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>} />
-                            <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de naissance</FormLabel><FormControl><Input type="date" {...field} /></FormControl></FormItem>} />
-                        </div></ScrollArea><DialogFooter className="mt-4"><Button type="submit">Enregistrer</Button></DialogFooter></form>
+                        <form onSubmit={form.handleSubmit(onSubmit)}>
+                            <ScrollArea className="h-[70vh] p-4">
+                                <div className="space-y-8">
+                                    <div className="flex flex-col items-center gap-4">
+                                        <Avatar className="h-24 w-24 border">
+                                            <AvatarImage src={photoPreview || undefined} alt="Aperçu" />
+                                            <AvatarFallback className="bg-muted"><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
+                                        </Avatar>
+                                        <FormField control={form.control} name="photo" render={({field}) => <FormItem className="w-full max-w-sm"><FormLabel>URL de la photo</FormLabel><FormControl><Input {...field} placeholder="https://..." /></FormControl><FormMessage /></FormItem>} />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                                        <div className="space-y-4">
+                                            <h4 className="text-lg font-medium border-b pb-2">Informations Personnelles</h4>
+                                            <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+                                            <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de naissance</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>} />
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <FormField control={form.control} name="gender" render={({field}) => <FormItem><FormLabel>Genre</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select><FormMessage /></FormItem>} />
+                                                <FormField control={form.control} name="country" render={({field}) => <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
+                                            </div>
+                                            <FormField control={form.control} name="cin" render={({field}) => <FormItem><FormLabel>N° CIN</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+                                            <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+                                            <FormField control={form.control} name="email" render={({field}) => <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>} />
+                                            <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <h4 className="text-lg font-medium border-b pb-2">Informations Sportives</h4>
+                                            <FormField control={form.control} name="category" render={({field}) => <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
+                                            <FormField control={form.control} name="poste" render={({field}) => <FormItem><FormLabel>Poste</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>
+                                                <SelectItem value="Gardien">Gardien</SelectItem>
+                                                <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
+                                                <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
+                                                <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
+                                                <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
+                                                <SelectItem value="Milieu Central">Milieu Central</SelectItem>
+                                                <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
+                                                <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
+                                                <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
+                                                <SelectItem value="Avant-centre">Avant-centre</SelectItem>
+                                            </SelectContent></Select><FormMessage /></FormItem>} />
+                                            <FormField control={form.control} name="jerseyNumber" render={({field}) => <FormItem><FormLabel>Numéro de maillot</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>} />
+                                            <FormField control={form.control} name="coachName" render={({field}) => <FormItem><FormLabel>Entraîneur</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
+                                            <FormField control={form.control} name="status" render={({field}) => <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="Blessé">Blessé</SelectItem><SelectItem value="Suspendu">Suspendu</SelectItem><SelectItem value="Inactif">Inactif</SelectItem></SelectContent></Select><FormMessage /></FormItem>} />
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <FormField control={form.control} name="entryDate" render={({field}) => <FormItem><FormLabel>Date d'entrée</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>} />
+                                                <FormField control={form.control} name="exitDate" render={({field}) => <FormItem><FormLabel>Date de sortie</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <h4 className="text-lg font-medium border-b pb-2">Tuteur Légal (si mineur)</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <FormField control={form.control} name="tutorName" render={({field}) => <FormItem><FormLabel>Nom du tuteur</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+                                            <FormField control={form.control} name="tutorCin" render={({field}) => <FormItem><FormLabel>N° CIN du tuteur</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+                                            <FormField control={form.control} name="tutorPhone" render={({field}) => <FormItem><FormLabel>Téléphone du tuteur</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+                                            <FormField control={form.control} name="tutorEmail" render={({field}) => <FormItem><FormLabel>Email du tuteur</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>} />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <h4 className="text-lg font-medium border-b pb-2">Documents</h4>
+                                        {fields.map((field, index) => (
+                                            <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
+                                                <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)}><X className="h-4 w-4" /></Button>
+                                                <FormField control={form.control} name={`documents.${index}.name`} render={({ field }) => <FormItem><FormLabel>Nom du document</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{documentOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
+                                                <FormField control={form.control} name={`documents.${index}.url`} render={({ field }) => <FormItem><FormLabel>URL du document</FormLabel><FormControl><Input type="url" {...field} /></FormControl><FormMessage /></FormItem>} />
+                                                <FormField control={form.control} name={`documents.${index}.expirationDate`} render={({ field }) => <FormItem><FormLabel>Date d'expiration (optionnel)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>} />
+                                            </div>
+                                        ))}
+                                        <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "", expirationDate: ""})}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un document</Button>
+                                    </div>
+                                </div>
+                            </ScrollArea>
+                            <DialogFooter className="mt-4"><Button type="submit">Enregistrer</Button></DialogFooter>
+                        </form>
                     </Form>
                 </DialogContent>
             </Dialog>
