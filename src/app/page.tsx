@@ -13,6 +13,7 @@ import { Users, UserCheck, Calendar } from "lucide-react";
 import { usePlayersContext } from "@/context/players-context";
 import { useCoachesContext } from "@/context/coaches-context";
 import { useCalendarContext } from "@/context/calendar-context";
+import { useClubContext } from "@/context/club-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO } from "date-fns";
 import Link from "next/link";
@@ -61,6 +62,7 @@ export default function Dashboard() {
   const { players, loading: playersLoading } = usePlayersContext();
   const { coaches, loading: coachesLoading } = useCoachesContext();
   const { calendarEvents, loading: calendarLoading } = useCalendarContext();
+  const { clubInfo } = useClubContext();
   
   const loading = playersLoading || coachesLoading || calendarLoading;
 
@@ -68,7 +70,6 @@ export default function Dashboard() {
     const now = new Date();
     return calendarEvents
       .filter(event => {
-        // On construit une date complète avec l'heure pour la comparaison
         const eventDateTime = new Date(`${event.date}T${event.time || '00:00'}`);
         return eventDateTime >= now;
       })
@@ -77,11 +78,22 @@ export default function Dashboard() {
         return (a.time || "").localeCompare(b.time || "");
       })
       .slice(0, 5)
-      .map(event => ({
-        ...event,
-        formattedDate: `${format(parseISO(event.date), 'dd/MM/yyyy')} à ${event.time} - ${event.location}`
-      }));
-  }, [calendarEvents]);
+      .map(event => {
+        const isMatch = event.type.toLowerCase().includes('match');
+        let matchTitle = "";
+        if (isMatch && event.opponent) {
+          const homeTeam = event.homeOrAway === 'home' ? clubInfo.name : event.opponent;
+          const awayTeam = event.homeOrAway === 'home' ? event.opponent : clubInfo.name;
+          matchTitle = `${homeTeam} vs ${awayTeam}`;
+        }
+
+        return {
+          ...event,
+          matchTitle,
+          formattedDate: `${format(parseISO(event.date), 'dd/MM/yyyy')} à ${event.time} - ${event.location}`
+        };
+      });
+  }, [calendarEvents, clubInfo.name]);
 
   const playersByCategory = useMemo(() => {
     const counts = players.reduce((acc, player) => {
@@ -230,7 +242,8 @@ export default function Dashboard() {
                     <div className="flex-1">
                       <p className="text-sm font-medium leading-none">{event.type}</p>
                       <p className="text-sm text-muted-foreground">
-                         {event.opponent && `vs ${event.opponent} - `}{event.formattedDate}
+                         {event.matchTitle ? `${event.matchTitle} - ` : (event.opponent ? `vs ${event.opponent} - ` : '')}
+                         {event.formattedDate}
                       </p>
                     </div>
                   </div>

@@ -112,7 +112,7 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
          <Button variant="outline" onClick={handleDownloadPDF}><Download className="mr-2 h-4 w-4"/> Télécharger le reçu</Button>
       </div>
 
-        <Card className="border-none shadow-none">
+        <Card className="border-none shadow-none bg-white">
             <div ref={receiptRef} className="p-8 bg-white text-black min-h-[297mm]">
                 <CardHeader className="px-0">
                 <div className="flex flex-col sm:flex-row items-start justify-between mb-8 gap-4 border-b-2 border-black pb-6">
@@ -143,7 +143,7 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
                 </CardHeader>
                 <Separator className="my-6 bg-black h-0.5" />
                 <CardContent className="px-0 pt-6">
-                    <div className="grid md:grid-cols-2 gap-x-12 gap-y-6 p-6 border-2 border-black rounded-lg">
+                    <div className="grid md:grid-cols-2 gap-x-12 gap-y-6 p-6 border-2 border-black rounded-lg bg-white">
                         <div className="flex items-center gap-4 text-xl">
                             <Banknote className="h-7 w-7" />
                             <span>Montant total dû:</span>
@@ -171,16 +171,16 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
                     {formattedTransactions.length > 0 && (
                         <div className="mt-12">
                             <h3 className="text-2xl font-bold mb-6 flex items-center border-b-2 border-black pb-2"><History className="mr-3 h-7 w-7" />Historique des Versements</h3>
-                            <Table className="border-collapse">
+                            <Table className="border-collapse bg-transparent">
                                 <TableHeader>
-                                    <TableRow className="border-b-2 border-black">
-                                        <TableHead className="text-lg font-bold text-black">Date et Heure</TableHead>
-                                        <TableHead className="text-right text-lg font-bold text-black">Montant Versé (DH)</TableHead>
+                                    <TableRow className="border-b-2 border-black hover:bg-transparent bg-transparent">
+                                        <TableHead className="text-lg font-bold text-black bg-transparent">Date et Heure</TableHead>
+                                        <TableHead className="text-right text-lg font-bold text-black bg-transparent">Montant Versé (DH)</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {formattedTransactions.map(tx => (
-                                        <TableRow key={tx.id} className="border-b border-gray-300">
+                                        <TableRow key={tx.id} className="border-b border-gray-300 hover:bg-transparent">
                                             <TableCell className="text-lg text-black">{tx.date}</TableCell>
                                             <TableCell className="text-right font-bold text-lg text-black">{tx.amount.toFixed(2)}</TableCell>
                                         </TableRow>
@@ -190,7 +190,7 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
                         </div>
                     )}
 
-                    <div className="mt-32 flex justify-center">
+                    <div className="mt-32 flex justify-center w-full">
                         <div className="text-center">
                             <p className="font-bold text-xl underline mb-12">Signature et Cachet du Club</p>
                             <div className="h-24"></div>
