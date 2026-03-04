@@ -43,6 +43,7 @@ import { format } from 'date-fns';
 import type { Payment } from "@/lib/financial-data";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type MemberStatus = 'À jour' | 'En attente' | 'Partiel';
 
@@ -68,7 +69,7 @@ export default function FinancesPage() {
   }, [activeTab]);
 
   if (!financialContext || !playersContext || !coachesContext) {
-    throw new Error("FinancesPage must be used within all required providers");
+    return null;
   }
 
   const { 
@@ -212,27 +213,29 @@ export default function FinancesPage() {
       </Tabs>
 
       <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="sm:max-w-md flex flex-col p-0">
-            <form onSubmit={handleSubmit} className="flex flex-col">
-              <DialogHeader className="p-6 pb-2"><DialogTitle>Nouveau Paiement</DialogTitle></DialogHeader>
-              <div className="space-y-4 p-6">
-                <div className="space-y-2">
-                  <Label>Type</Label>
-                  <Select value={paymentType} onValueChange={(v: any) => setPaymentType(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="player">Cotisation</SelectItem><SelectItem value="coach">Salaire</SelectItem></SelectContent></Select>
+          <DialogContent className="sm:max-w-md flex flex-col p-0 overflow-hidden">
+            <DialogHeader className="p-6 pb-2"><DialogTitle>Nouveau Paiement</DialogTitle></DialogHeader>
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <ScrollArea className="flex-1 px-6">
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Type</Label>
+                    <Select value={paymentType} onValueChange={(v: any) => setPaymentType(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="player">Cotisation</SelectItem><SelectItem value="coach">Salaire</SelectItem></SelectContent></Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Mois</Label>
+                    <Input type="month" value={newPaymentData.dueDate} onChange={e => setNewPaymentData({...newPaymentData, dueDate: e.target.value})} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Membre</Label>
+                    <Select value={newPaymentData.member} onValueChange={v => setNewPaymentData({...newPaymentData, member: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(paymentType === 'player' ? players : coaches).map(m => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}</Select></div >
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Total dû</Label><Input type="number" value={newPaymentData.totalAmount} onChange={e => setNewPaymentData({...newPaymentData, totalAmount: e.target.value})} required /></div>
+                    <div className="space-y-2"><Label>Versé</Label><Input type="number" value={newPaymentData.initialPaidAmount} onChange={e => setNewPaymentData({...newPaymentData, initialPaidAmount: e.target.value})} required /></div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Mois</Label>
-                  <Input type="month" value={newPaymentData.dueDate} onChange={e => setNewPaymentData({...newPaymentData, dueDate: e.target.value})} required />
-                </div>
-                <div className="space-y-2">
-                  <Label>Membre</Label>
-                  <Select value={newPaymentData.member} onValueChange={v => setNewPaymentData({...newPaymentData, member: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(paymentType === 'player' ? players : coaches).map(m => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}</Select></div >
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label>Total dû</Label><Input type="number" value={newPaymentData.totalAmount} onChange={e => setNewPaymentData({...newPaymentData, totalAmount: e.target.value})} required /></div>
-                  <div className="space-y-2"><Label>Versé</Label><Input type="number" value={newPaymentData.initialPaidAmount} onChange={e => setNewPaymentData({...newPaymentData, initialPaidAmount: e.target.value})} required /></div>
-                </div>
-              </div>
-              <DialogFooter className="p-6 pt-4 border-t gap-2 bg-background">
+              </ScrollArea>
+              <DialogFooter className="p-6 pt-4 border-t gap-2 bg-background mt-auto">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
                 <Button type="submit">Enregistrer</Button>
               </DialogFooter>

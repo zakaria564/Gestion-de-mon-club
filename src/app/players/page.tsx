@@ -21,13 +21,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -84,27 +77,7 @@ const playerSchema = z.object({
 type PlayerFormValues = z.infer<typeof playerSchema>;
 
 const defaultValues: PlayerFormValues = {
-    name: '',
-    birthDate: '',
-    address: '',
-    phone: '',
-    email: '',
-    country: 'Marocaine',
-    poste: '',
-    jerseyNumber: '' as unknown as number,
-    photo: '',
-    cin: '',
-    tutorName: '',
-    tutorPhone: '',
-    tutorEmail: '',
-    tutorCin: '',
-    status: 'Actif',
-    category: '',
-    gender: 'Masculin',
-    entryDate: '',
-    exitDate: '',
-    coachName: '',
-    documents: [],
+    name: '', birthDate: '', address: '', phone: '', email: '', country: 'Marocaine', poste: '', jerseyNumber: '' as unknown as number, photo: '', cin: '', tutorName: '', tutorPhone: '', tutorEmail: '', tutorCin: '', status: 'Actif', category: '', gender: 'Masculin', entryDate: '', exitDate: '', coachName: '', documents: [],
 };
 
 const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise", "Américaine", "Russe", "Japonaise", "Chinoise", "Indienne", "Turque", "Égyptienne", "Nigériane", "Sud-africaine", "Ghanéenne"];
@@ -125,7 +98,7 @@ function PlayersContent() {
     const router = useRouter();
     const pathname = usePathname();
     
-    const { players, loading, addPlayer, updatePlayer } = context;
+    const { players, loading, addPlayer } = context;
     const { coaches } = coachesContext;
     const [dialogOpen, setDialogOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -161,22 +134,6 @@ function PlayersContent() {
         if (!dialogOpen) form.reset(defaultValues);
     }, [dialogOpen, form]);
 
-    const getBadgeVariant = (status: string) => {
-      switch (status) {
-        case 'Actif': return 'default';
-        case 'Blessé': return 'destructive';
-        case 'Suspendu': return 'secondary';
-        default: return 'outline';
-      }
-    };
-    
-    const handleStatusChange = async (player: Player, newStatus: string) => {
-      if (player.status !== newStatus) {
-          await updatePlayer({ ...player, status: newStatus as Player['status'] });
-          toast({ title: "Statut mis à jour", description: `Le statut de ${player.name} est maintenant ${newStatus}.` });
-      }
-    };
-
     const filteredPlayers = useMemo(() => {
         if (!searchQuery) return players;
         return players.filter(player => {
@@ -186,17 +143,17 @@ function PlayersContent() {
     }, [players, searchQuery, filterKey]);
 
     const { maleGroups, femaleGroups } = useMemo(() => {
-        const maleGroups: Record<string, Record<string, Player[]>> = {};
-        const femaleGroups: Record<string, Record<string, Player[]>> = {};
+        const male: Record<string, Record<string, Player[]>> = {};
+        const female: Record<string, Record<string, Player[]>> = {};
         [...filteredPlayers].sort((a,b) => a.name.localeCompare(b.name)).forEach(player => {
             const category = player.category || 'Sénior';
             const poste = player.poste || 'Non défini';
-            const targetGroup = player.gender === 'Féminin' ? femaleGroups : maleGroups;
+            const targetGroup = player.gender === 'Féminin' ? female : male;
             if (!targetGroup[category]) targetGroup[category] = {};
             if (!targetGroup[category][poste]) targetGroup[category][poste] = [];
             targetGroup[category][poste].push(player);
         });
-        return { maleGroups, femaleGroups };
+        return { maleGroups: male, femaleGroups: female };
     }, [filteredPlayers]);
 
     const photoPreview = form.watch('photo');
@@ -237,21 +194,7 @@ function PlayersContent() {
                                             </Link>
                                             <CardContent className="p-4 pt-0 flex justify-between items-center mt-auto">
                                                 <Badge style={{ backgroundColor: categoryColors[player.category.replace(' F', '')], color: 'white' }}>{player.category}</Badge>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="h-auto p-0">
-                                                            <Badge variant={getBadgeVariant(player.status) as any}>{player.status}</Badge>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent>
-                                                        <DropdownMenuRadioGroup value={player.status} onValueChange={(s) => handleStatusChange(player, s)}>
-                                                            <DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Blessé">Blessé</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Suspendu">Suspendu</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="Inactif">Inactif</DropdownMenuRadioItem>
-                                                        </DropdownMenuRadioGroup>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
+                                                <Badge variant={player.status === 'Actif' ? 'default' : player.status === 'Blessé' ? 'destructive' : 'secondary'}>{player.status}</Badge>
                                             </CardContent>
                                         </Card>
                                     ))}

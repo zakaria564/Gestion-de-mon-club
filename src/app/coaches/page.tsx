@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -90,33 +89,15 @@ const defaultValues: Omit<CoachFormValues, 'status' | 'gender'> = {
 };
 
 const documentOptions = [
-  "Contrat",
-  "Diplôme",
-  "Certificat de Formation",
-  "Carte d'identité",
-  "Passeport",
-  "Assurance",
-  "Autre"
+  "Contrat", "Diplôme", "Certificat de Formation", "Carte d'identité", "Passeport", "Assurance", "Autre"
 ];
 
 const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise", "Américaine", "Russe", "Japonaise", "Chinoise", "Indienne", "Turque", "Égyptienne", "Nigériane", "Sud-africaine", "Ghanéenne"];
 
 const categoryColors: Record<string, string> = {
-  'Sénior': 'hsl(var(--chart-1))',
-  'U23': 'hsl(var(--chart-2))',
-  'U20': 'hsl(340, 80%, 55%)',
-  'U19': 'hsl(var(--chart-3))',
-  'U18': 'hsl(var(--chart-4))',
-  'U17': 'hsl(var(--chart-5))',
-  'U16': 'hsl(var(--chart-6))',
-  'U15': 'hsl(var(--chart-7))',
-  'U13': 'hsl(var(--chart-8))',
-  'U9': 'hsl(25 60% 45%)',
-  'U11': 'hsl(var(--chart-10))',
-  'U7': 'hsl(var(--chart-11))',
+  'Sénior': 'hsl(var(--chart-1))', 'U23': 'hsl(var(--chart-2))', 'U20': 'hsl(340, 80%, 55%)', 'U19': 'hsl(var(--chart-3))', 'U18': 'hsl(var(--chart-4))', 'U17': 'hsl(var(--chart-5))', 'U16': 'hsl(var(--chart-6))', 'U15': 'hsl(var(--chart-7))', 'U13': 'hsl(var(--chart-8))', 'U9': 'hsl(25 60% 45%)', 'U11': 'hsl(var(--chart-10))', 'U7': 'hsl(var(--chart-11))',
 };
 
-// Add colors for female categories
 Object.keys(categoryColors).forEach(key => {
     categoryColors[`${key} F`] = categoryColors[key];
 });
@@ -155,12 +136,9 @@ export default function CoachesPage() {
 
   const getBadgeVariant = (status: string) => {
     switch (status) {
-      case 'Actif':
-        return 'default';
-      case 'Inactif':
-        return 'secondary';
-      default:
-        return 'outline';
+      case 'Actif': return 'default';
+      case 'Inactif': return 'secondary';
+      default: return 'outline';
     }
   };
 
@@ -168,10 +146,7 @@ export default function CoachesPage() {
     if (coach.status !== newStatus) {
       const updatedCoach = { ...coach, status: newStatus as Coach['status'] };
       await updateCoach(updatedCoach);
-      toast({
-          title: "Statut mis à jour",
-          description: `Le statut de ${coach.name} est maintenant ${newStatus}.`
-      });
+      toast({ title: "Statut mis à jour", description: `Le statut de ${coach.name} est maintenant ${newStatus}.` });
     }
   };
 
@@ -193,32 +168,12 @@ export default function CoachesPage() {
   }, {} as Record<string, typeof coaches>);
 
   const onSubmit = async (data: CoachFormValues) => {
-     const existingCoach = coaches.find(c => c.name.trim().toLowerCase() === data.name.trim().toLowerCase());
-      if (existingCoach) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: `Un entraîneur avec le nom "${data.name}" existe déjà.`,
-        });
+     if (coaches.find(c => c.name.trim().toLowerCase() === data.name.trim().toLowerCase())) {
+        toast({ variant: "destructive", title: "Erreur", description: `Un entraîneur avec le nom "${data.name}" existe déjà.` });
         return;
       }
-      
-      const existingPlayer = players.find(p => p.name.trim().toLowerCase() === data.name.trim().toLowerCase());
-      if (existingPlayer) {
-          toast({
-              variant: "destructive",
-              title: "Erreur",
-              description: `Un joueur avec le nom "${data.name}" existe déjà.`,
-          });
-          return;
-      }
-      
      const gender = data.category.endsWith(' F') ? 'Féminin' : 'Masculin';
-     const coachData = {
-        ...data,
-        gender,
-        status: 'Actif',
-      }
+     const coachData = { ...data, gender, status: 'Actif' };
     await addCoach(coachData as any);
     setDialogOpen(false);
   };
@@ -232,236 +187,66 @@ export default function CoachesPage() {
         
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-                <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un entraîneur
-            </Button>
+            <Button><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un entraîneur</Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-2xl max-h-[90vh]">
-             <DialogHeader>
+          <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
+             <DialogHeader className="p-6 pb-2">
                 <DialogTitle>Ajouter un entraîneur</DialogTitle>
-                <DialogDescription>
-                  Remplissez les informations du nouvel entraîneur ci-dessous.
-                </DialogDescription>
+                <DialogDescription>Remplissez les informations du nouvel entraîneur ci-dessous.</DialogDescription>
               </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)}>
-                <ScrollArea className="h-[70vh] pr-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+                <ScrollArea className="flex-1 px-6">
                   <div className="space-y-6 pb-4">
-                      <div className="flex flex-col items-center gap-4">
+                      <div className="flex flex-col items-center gap-4 mt-2">
                           <Avatar className="h-24 w-24 border">
-                            <AvatarImage src={photoPreview || undefined} alt="Aperçu de l'entraîneur" data-ai-hint="coach photo"/>
-                            <AvatarFallback className="bg-muted">
-                              <Camera className="h-8 w-8 text-muted-foreground" />
-                            </AvatarFallback>
+                            <AvatarImage src={photoPreview || undefined} alt="Aperçu" data-ai-hint="coach photo"/>
+                            <AvatarFallback className="bg-muted"><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
                           </Avatar>
-                          <FormField
-                            control={form.control}
-                            name="photo"
-                            render={({ field }) => (
-                              <FormItem className="w-full max-w-sm">
-                                <FormLabel>URL de la photo</FormLabel>
-                                <FormControl>
-                                  <Input type="text" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                          <FormField control={form.control} name="photo" render={({ field }) => (
+                              <FormItem className="w-full max-w-sm"><FormLabel>URL de la photo</FormLabel><FormControl><Input type="text" {...field} /></FormControl><FormMessage /></FormItem>
+                          )} />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Nom complet</FormLabel>
-                              <FormControl><Input {...field} required /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                         <FormField
-                          control={form.control}
-                          name="cin"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>N° CIN</FormLabel>
-                              <FormControl><Input {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="specialization"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Spécialité</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value} required>
-                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                  <SelectItem value="Entraîneur Principal">Entraîneur Principal</SelectItem>
-                                  <SelectItem value="Entraîneur Adjoint">Entraîneur Adjoint</SelectItem>
-                                  <SelectItem value="Entraîneur des Gardiens">Entraîneur des Gardiens</SelectItem>
-                                  <SelectItem value="Préparateur Physique">Préparateur Physique</SelectItem>
-                                  <SelectItem value="Analyste Vidéo">Analyste Vidéo</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="category"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Catégorie</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value} required>
-                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                  {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                         <FormField
-                          control={form.control}
-                          name="phone"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Téléphone</FormLabel>
-                              <FormControl><Input {...field} required /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email</FormLabel>
-                              <FormControl><Input type="email" {...field} required /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                         <FormField
-                            control={form.control}
-                            name="address"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Adresse</FormLabel>
-                                <FormControl><Input {...field} required /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="country"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Nationalité</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value} required>
-                                    <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                    {nationalities.map(nationality => <SelectItem key={nationality} value={nationality}>{nationality}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                         <FormField
-                          control={form.control}
-                          name="experience"
-                          render={({ field }) => (
-                            <FormItem className="md:col-span-2">
-                              <FormLabel>Expérience (années)</FormLabel>
-                              <FormControl><Input type="number" {...field} required /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <FormField control={form.control} name="name" render={({ field }) => <FormItem><FormLabel>Nom complet</FormLabel><FormControl><Input {...field} required /></FormControl><FormMessage /></FormItem>} />
+                        <FormField control={form.control} name="cin" render={({ field }) => <FormItem><FormLabel>N° CIN</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+                        <FormField control={form.control} name="specialization" render={({ field }) => (
+                            <FormItem><FormLabel>Spécialité</FormLabel><Select onValueChange={field.onChange} value={field.value} required><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>
+                                <SelectItem value="Entraîneur Principal">Entraîneur Principal</SelectItem>
+                                <SelectItem value="Entraîneur Adjoint">Entraîneur Adjoint</SelectItem>
+                                <SelectItem value="Entraîneur des Gardiens">Entraîneur des Gardiens</SelectItem>
+                                <SelectItem value="Préparateur Physique">Préparateur Physique</SelectItem>
+                                <SelectItem value="Analyste Vidéo">Analyste Vidéo</SelectItem>
+                            </SelectContent></Select><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="category" render={({ field }) => (
+                            <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value} required><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="phone" render={({ field }) => <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input {...field} required /></FormControl><FormMessage /></FormItem>} />
+                        <FormField control={form.control} name="email" render={({ field }) => <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} required /></FormControl><FormMessage /></FormItem>} />
+                        <FormField control={form.control} name="address" render={({ field }) => <FormItem><FormLabel>Adresse</FormLabel><FormControl><Input {...field} required /></FormControl><FormMessage /></FormItem>} />
+                        <FormField control={form.control} name="country" render={({ field }) => (
+                            <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value} required><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="experience" render={({ field }) => <FormItem className="md:col-span-2"><FormLabel>Expérience (années)</FormLabel><FormControl><Input type="number" {...field} required /></FormControl><FormMessage /></FormItem>} />
                       </div>
                        <div className="space-y-4">
                         <h4 className="text-lg font-medium border-b pb-2">Documents</h4>
                           {fields.map((field, index) => (
                            <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
-                             <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)}>
-                               <X className="h-4 w-4" />
-                             </Button>
-                              <FormField
-                                control={form.control}
-                                name={`documents.${index}.name`}
-                                render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Nom du document</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                        <SelectValue />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {documentOptions.map(option => (
-                                        <SelectItem key={option} value={option}>{option}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                    </Select>
-                                  <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                             <FormField
-                                control={form.control}
-                                name={`documents.${index}.url`}
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>URL du document</FormLabel>
-                                    <FormControl>
-                                    <Input type="url" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                             <FormField
-                                control={form.control}
-                                name={`documents.${index}.expirationDate`}
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Date d'expiration (optionnel)</FormLabel>
-                                    <FormControl>
-                                    <Input type="date" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
+                             <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)}><X className="h-4 w-4" /></Button>
+                              <FormField control={form.control} name={`documents.${index}.name`} render={({ field }) => (
+                                <FormItem><FormLabel>Nom du document</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{documentOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                              )} />
+                              <FormField control={form.control} name={`documents.${index}.url`} render={({ field }) => <FormItem><FormLabel>URL du document</FormLabel><FormControl><Input type="url" {...field} /></FormControl><FormMessage /></FormItem>} />
+                              <FormField control={form.control} name={`documents.${index}.expirationDate`} render={({ field }) => <FormItem><FormLabel>Date d'expiration (optionnel)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>} />
                            </div>
                         ))}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => append({ name: "", url: "", expirationDate: ""})}
-                        >
-                           <PlusCircle className="mr-2 h-4 w-4" />
-                          Ajouter un document
-                        </Button>
+                        <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "", expirationDate: ""})}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un document</Button>
                     </div>
                   </div>
                 </ScrollArea>
-                <DialogFooter className="mt-6 pt-4 border-t gap-2">
+                <DialogFooter className="p-6 pt-4 border-t gap-2 bg-background mt-auto">
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Annuler</Button>
                   <Button type="submit">Enregistrer</Button>
                 </DialogFooter>
@@ -474,51 +259,16 @@ export default function CoachesPage() {
        <div className="flex flex-col sm:flex-row items-center gap-4 my-4">
             <div className="relative w-full sm:max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                    placeholder={`Rechercher par ${filterKey === 'name' ? 'nom' : filterKey}...`}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                />
+                <Input placeholder={`Rechercher par ${filterKey === 'name' ? 'nom' : filterKey}...`} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
             </div>
-            <Select value={filterKey} onValueChange={setFilterKey}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="name">Nom</SelectItem>
-                    <SelectItem value="specialization">Spécialité</SelectItem>
-                    <SelectItem value="category">Catégorie</SelectItem>
-                    <SelectItem value="status">Statut</SelectItem>
-                </SelectContent>
-            </Select>
+            <Select value={filterKey} onValueChange={setFilterKey}><SelectTrigger className="w-full sm:w-[180px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="name">Nom</SelectItem><SelectItem value="specialization">Spécialité</SelectItem><SelectItem value="category">Catégorie</SelectItem><SelectItem value="status">Statut</SelectItem></SelectContent></Select>
         </div>
 
        {loading ? (
-        Array.from({ length: 2 }).map((_, index) => (
-          <div key={index} className="space-y-4">
+        Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="space-y-4">
             <Skeleton className="h-8 w-32 mt-6" />
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {Array.from({ length: 4 }).map((_, cardIndex) => (
-                <Card key={cardIndex}>
-                  <CardHeader className="p-4">
-                    <div className="flex items-center gap-4">
-                      <Skeleton className="h-16 w-16 rounded-full" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-3/4" />
-                        <Skeleton className="h-4 w-1/2" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0">
-                    <div className="flex justify-between items-center">
-                      <Skeleton className="h-5 w-1/4" />
-                      <Skeleton className="h-5 w-1/4" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{Array.from({ length: 4 }).map((_, ci) => <Card key={ci}><CardHeader className="p-4"><div className="flex items-center gap-4"><Skeleton className="h-16 w-16 rounded-full" /><div className="flex-1 space-y-2"><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-1/2" /></div></div></CardHeader><CardContent className="p-4 pt-0"><div className="flex justify-between items-center"><Skeleton className="h-5 w-1/4" /><Skeleton className="h-5 w-1/4" /></div></CardContent></Card>)}</div>
           </div>
         ))
        ) : (
@@ -530,42 +280,14 @@ export default function CoachesPage() {
                 {coachesInCategory.map((coach) => (
                     <Card key={coach.id} className="flex flex-col w-full hover:shadow-lg transition-shadow h-full group">
                         <Link href={`/coaches/${coach.id}`} className="flex flex-col h-full">
-                            <CardHeader className="p-4">
-                                <div className="flex items-center gap-4">
-                                <Avatar className="h-16 w-16">
-                                    <AvatarImage src={coach.photo ?? undefined} alt={coach.name} data-ai-hint="coach photo" />
-                                    <AvatarFallback>{coach.name.substring(0, 2)}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1">
-                                    <CardTitle className="text-base font-bold">{coach.name}</CardTitle>
-                                    <CardDescription>{coach.specialization}</CardDescription>
-                                </div>
-                                </div>
-                            </CardHeader>
+                            <CardHeader className="p-4"><div className="flex items-center gap-4"><Avatar className="h-16 w-16"><AvatarImage src={coach.photo} alt={coach.name} data-ai-hint="coach photo" /><AvatarFallback>{coach.name.substring(0, 2)}</AvatarFallback></Avatar><div className="flex-1"><CardTitle className="text-base font-bold">{coach.name}</CardTitle><CardDescription>{coach.specialization}</CardDescription></div></div></CardHeader>
                         </Link>
                         <CardContent className="p-4 pt-0 flex-grow flex flex-col justify-end">
                             <div className="flex justify-between items-center">
-                                <Badge 
-                                    style={{ backgroundColor: categoryColors[coach.category.replace(' F', '')], color: 'white' }}
-                                    className="text-xs border-transparent"
-                                >
-                                    {coach.category}
-                                </Badge>
+                                <Badge style={{ backgroundColor: categoryColors[coach.category.replace(' F', '')], color: 'white' }} className="text-xs border-transparent">{coach.category}</Badge>
                                 <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
-                                            <Badge variant={getBadgeVariant(coach.status) as any} className="text-xs cursor-pointer">{coach.status}</Badge>
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40">
-                                        <DropdownMenuRadioGroup
-                                            value={coach.status}
-                                            onValueChange={(newStatus) => handleStatusChange(coach, newStatus)}
-                                        >
-                                            <DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="Inactif">Inactif</DropdownMenuRadioItem>
-                                        </DropdownMenuRadioGroup>
-                                    </DropdownMenuContent>
+                                    <DropdownMenuTrigger asChild><Button variant="ghost" className="p-0 h-auto"><Badge variant={getBadgeVariant(coach.status) as any} className="text-xs cursor-pointer">{coach.status}</Badge></Button></DropdownMenuTrigger>
+                                    <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-40"><DropdownMenuRadioGroup value={coach.status} onValueChange={(ns) => handleStatusChange(coach, ns)}><DropdownMenuRadioItem value="Actif">Actif</DropdownMenuRadioItem><DropdownMenuRadioItem value="Inactif">Inactif</DropdownMenuRadioItem></DropdownMenuRadioGroup></DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
                         </CardContent>
@@ -574,11 +296,7 @@ export default function CoachesPage() {
                 </div>
             </div>
           ))
-        ) : (
-          <div className="text-center py-10">
-              <p className="text-muted-foreground">Aucun entraîneur trouvé.</p>
-          </div>
-        )
+        ) : <div className="text-center py-10"><p className="text-muted-foreground">Aucun entraîneur trouvé.</p></div>
       )}
     </div>
   );

@@ -14,7 +14,7 @@ import { useCoachesContext } from "@/context/coaches-context";
 import { useCalendarContext } from "@/context/calendar-context";
 import { useClubContext } from "@/context/club-context";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, parseISO, isAfter, isSameDay } from "date-fns";
+import { format, parseISO, isAfter } from "date-fns";
 import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell, Legend } from "recharts";
 
 const categoryColors: Record<string, string> = {
@@ -33,15 +33,10 @@ export default function Dashboard() {
     const now = new Date();
     return calendarEvents
       .filter(event => {
-        const eventDate = parseISO(event.date);
-        if (isSameDay(eventDate, now)) {
-            if (!event.time) return true;
-            const [hours, minutes] = event.time.split(':').map(Number);
-            const eventDateTime = new Date(eventDate);
-            eventDateTime.setHours(hours, minutes, 0, 0);
-            return isAfter(eventDateTime, now) || eventDateTime.getTime() === now.getTime();
-        }
-        return isAfter(eventDate, now);
+        const eventDateTime = parseISO(`${event.date}T${event.time || '00:00'}`);
+        // Afficher les matchs tant qu'ils ne sont pas passés de plus de 2 heures
+        const limitTime = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+        return isAfter(eventDateTime, limitTime);
       })
       .sort((a, b) => {
         if (a.date !== b.date) return a.date.localeCompare(b.date);
@@ -85,47 +80,19 @@ export default function Dashboard() {
     }));
   }, [players]);
 
-  if (loading) {
-    return <div className="p-8"><Skeleton className="h-10 w-48 mb-8" /><div className="grid gap-4 md:grid-cols-3"><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /></div></div>
-  }
+  if (loading) return <div className="p-8"><Skeleton className="h-10 w-48 mb-8" /><div className="grid gap-4 md:grid-cols-3"><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /></div></div>;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <h2 className="text-3xl font-bold tracking-tight">Tableau de bord</h2>
+      <h2 className="text-3xl font-bold tracking-tight">Tableau de bord - {clubInfo.name}</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Joueurs</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{players.length}</div></CardContent></Card>
         <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Entraîneurs</CardTitle><UserCheck className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{coaches.length}</div></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Événements</CardTitle><Calendar className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{upcomingEvents.length}</div></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Événements à venir</CardTitle><Calendar className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{upcomingEvents.length}</div></CardContent></Card>
       </div>
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <Card>
-          <CardHeader><CardTitle>Répartition par Catégorie</CardTitle></CardHeader>
-          <CardContent className="h-[300px]">
-             <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                    <Pie data={playersByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#8884d8" paddingAngle={5}><Cell fill="hsl(var(--primary))" /></Pie>
-                    <Tooltip />
-                    <Legend />
-                </PieChart>
-             </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Événements à Venir</CardTitle></CardHeader>
-          <CardContent>
-             <div className="space-y-4">
-              {upcomingEvents.map((event) => (
-                <div key={event.id} className="flex items-center gap-4 p-2 border rounded-md">
-                    <div className="flex-1">
-                        <p className="font-semibold">{event.type} {event.matchTitle && `: ${event.matchTitle}`}</p>
-                        <p className="text-sm text-muted-foreground">{event.formattedDate}</p>
-                    </div>
-                </div>
-              ))}
-              {upcomingEvents.length === 0 && <p className="text-center text-muted-foreground">Aucun événement prévu.</p>}
-            </div>
-          </CardContent>
-        </Card>
+        <Card><CardHeader><CardTitle>Répartition par Catégorie</CardTitle></CardHeader><CardContent className="h-[300px]"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={playersByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5}><Cell fill="hsl(var(--primary))" /></Pie><Tooltip /><Legend /></PieChart></ResponsiveContainer></CardContent></Card>
+        <Card><CardHeader><CardTitle>Événements à Venir</CardTitle></CardHeader><CardContent><div className="space-y-4">{upcomingEvents.map((event) => (<div key={event.id} className="flex items-center gap-4 p-2 border rounded-md"><div className="flex-1"><p className="font-semibold">{event.type} {event.matchTitle && `: ${event.matchTitle}`}</p><p className="text-sm text-muted-foreground">{event.formattedDate}</p></div></div>))}{upcomingEvents.length === 0 && <p className="text-center text-muted-foreground">Aucun événement prévu.</p>}</div></CardContent></Card>
       </div>
     </div>
   );
