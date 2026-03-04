@@ -33,9 +33,9 @@ export default function Dashboard() {
     const now = new Date();
     return calendarEvents
       .filter(event => {
+        // Pour les événements d'aujourd'hui, on les garde tant que l'heure n'est pas passée
         const eventDateTime = parseISO(`${event.date}T${event.time || '00:00'}`);
-        // Afficher les matchs tant qu'ils ne sont pas passés de plus de 2 heures
-        const limitTime = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+        const limitTime = new Date(now.getTime() - 15 * 60 * 1000); // On garde jusqu'à 15min après le début
         return isAfter(eventDateTime, limitTime);
       })
       .sort((a, b) => {

@@ -67,7 +67,7 @@ export function CoachPaymentDetailClient({ id: idParam }: { id: any }) {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between mb-4">
         <Button variant="ghost" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
-        <Button variant="outline" onClick={handleDownloadPDF}><Download className="mr-2 h-4 w-4"/> PDF</Button>
+        <Button variant="outline" onClick={handleDownloadPDF}><Download className="mr-2 h-4 w-4" /> PDF</Button>
       </div>
 
       <Card className="border-none shadow-none bg-white">

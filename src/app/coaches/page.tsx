@@ -220,13 +220,13 @@ export default function CoachesPage() {
                             </SelectContent></Select><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="category" render={({ field }) => (
-                            <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value} required><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value} required><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</Select><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="phone" render={({ field }) => <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input {...field} required /></FormControl><FormMessage /></FormItem>} />
                         <FormField control={form.control} name="email" render={({ field }) => <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} required /></FormControl><FormMessage /></FormItem>} />
                         <FormField control={form.control} name="address" render={({ field }) => <FormItem><FormLabel>Adresse</FormLabel><FormControl><Input {...field} required /></FormControl><FormMessage /></FormItem>} />
                         <FormField control={form.control} name="country" render={({ field }) => (
-                            <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value} required><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value} required><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</Select><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="experience" render={({ field }) => <FormItem className="md:col-span-2"><FormLabel>Expérience (années)</FormLabel><FormControl><Input type="number" {...field} required /></FormControl><FormMessage /></FormItem>} />
                       </div>
@@ -236,7 +236,7 @@ export default function CoachesPage() {
                            <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
                              <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)}><X className="h-4 w-4" /></Button>
                               <FormField control={form.control} name={`documents.${index}.name`} render={({ field }) => (
-                                <FormItem><FormLabel>Nom du document</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{documentOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Nom du document</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{documentOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}</Select><FormMessage /></FormItem>
                               )} />
                               <FormField control={form.control} name={`documents.${index}.url`} render={({ field }) => <FormItem><FormLabel>URL du document</FormLabel><FormControl><Input type="url" {...field} /></FormControl><FormMessage /></FormItem>} />
                               <FormField control={form.control} name={`documents.${index}.expirationDate`} render={({ field }) => <FormItem><FormLabel>Date d'expiration (optionnel)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>} />
