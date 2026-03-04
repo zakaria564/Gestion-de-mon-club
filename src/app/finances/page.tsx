@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -38,7 +39,7 @@ export default function FinancesPage() {
 
   if (!financialContext || !playersContext || !coachesContext) return null;
 
-  const { playerPayments, coachSalaries, addPlayerPayment, addCoachSalary, playerPaymentsOverview, coachSalariesOverview } = financialContext;
+  const { playerPayments, coachSalaries, addPlayerPayment, addCoachSalary, playerPaymentsOverview, coachSalariesOverview, loading } = financialContext;
   const { players } = playersContext;
   const { coaches } = coachesContext;
 

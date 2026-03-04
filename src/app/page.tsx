@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo } from "react";
@@ -8,7 +9,7 @@ import { useCoachesContext } from "@/context/coaches-context";
 import { useCalendarContext } from "@/context/calendar-context";
 import { useClubContext } from "@/context/club-context";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, parseISO, isAfter } from "date-fns";
+import { format, parseISO, isSameDay, isAfter, startOfDay } from "date-fns";
 import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell, Legend } from "recharts";
 import { Badge } from "@/components/ui/badge";
 
@@ -25,31 +26,48 @@ export default function Dashboard() {
   const loading = playersLoading || coachesLoading || calendarLoading;
 
   const upcomingEvents = useMemo(() => {
-    const now = new Date();
-    // On garde les événements d'aujourd'hui s'ils ne sont pas terminés (marge de 2h après le début)
-    const limit = new Date(now.getTime() - 120 * 60 * 1000);
+    const today = startOfDay(new Date());
 
     return calendarEvents
-      .filter(event => isAfter(parseISO(`${event.date}T${event.time || '00:00'}`), limit))
+      .filter(event => {
+        try {
+          const eventDate = parseISO(event.date);
+          // Garder les événements d'aujourd'hui et futurs
+          return isSameDay(eventDate, today) || isAfter(eventDate, today);
+        } catch (e) { return false; }
+      })
       .sort((a, b) => a.date.localeCompare(b.date) || (a.time || "").localeCompare(b.time || ""))
       .slice(0, 5)
       .map(event => {
         let title = event.type;
         if (event.type.toLowerCase().includes('match')) {
-          if (event.matchType === 'opponent-vs-opponent') title = event.opponent;
-          else {
+          if (event.matchType === 'opponent-vs-opponent') {
+            title = event.opponent;
+          } else {
             const h = event.homeOrAway === 'home' ? clubInfo.name : event.opponent;
             const a = event.homeOrAway === 'home' ? event.opponent : clubInfo.name;
             title = `${h} vs ${a}`;
           }
         }
-        return { ...event, title, displayDate: `${format(parseISO(event.date), 'dd/MM/yyyy')} à ${event.time}` };
+        return { 
+          ...event, 
+          title, 
+          displayDate: `${format(parseISO(event.date), 'dd/MM/yyyy')} à ${event.time || '10:00'}` 
+        };
       });
   }, [calendarEvents, clubInfo.name]);
 
   const stats = useMemo(() => {
-    const counts = players.reduce((acc, p) => { acc[p.category] = (acc[p.category] || 0) + 1; return acc; }, {} as Record<string, number>);
-    return Object.entries(counts).map(([name, value]) => ({ name, value, fill: categoryColors[name] || 'hsl(var(--primary))' }));
+    const counts = players.reduce((acc, p) => { 
+      const cat = p.category || 'Non classé';
+      acc[cat] = (acc[cat] || 0) + 1; 
+      return acc; 
+    }, {} as Record<string, number>);
+    return Object.entries(counts).map(([name, value]) => ({ 
+      name, 
+      value, 
+      fill: categoryColors[name] || 'hsl(var(--primary))' 
+    }));
   }, [players]);
 
   if (loading) return <div className="p-8 space-y-8"><Skeleton className="h-10 w-64" /><div className="grid gap-4 md:grid-cols-3"><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /></div></div>;

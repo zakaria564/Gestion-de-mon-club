@@ -23,7 +23,7 @@ import { PlusCircle, MapPin, Calendar as CalendarIcon } from 'lucide-react';
 const playerCategories = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
 export default function CalendarPage() {
-  const { calendarEvents, addEvent, deleteEvent } = useCalendarContext();
+  const { calendarEvents, addEvent, loading } = useCalendarContext();
   const { opponents } = useOpponentsContext();
   const { clubInfo } = useClubContext();
 
@@ -34,7 +34,9 @@ export default function CalendarPage() {
   });
 
   const selectedDateStr = date ? format(date, 'yyyy-MM-dd') : '';
-  const dayEvents = calendarEvents.filter(e => e.date === selectedDateStr).sort((a,b) => a.time.localeCompare(b.time));
+  const dayEvents = useMemo(() => {
+    return calendarEvents.filter(e => e.date === selectedDateStr).sort((a,b) => a.time.localeCompare(b.time));
+  }, [calendarEvents, selectedDateStr]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,21 +52,40 @@ export default function CalendarPage() {
     return e.homeOrAway === 'home' ? `${clubInfo.name} vs ${e.opponent}` : `${e.opponent} vs ${clubInfo.name}`;
   };
 
+  if (loading) return <div className="p-8">Chargement...</div>;
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
-      <div className="flex items-center justify-between"><h2 className="text-3xl font-bold tracking-tight">Calendrier</h2><Button onClick={() => setOpen(true)}><PlusCircle className="mr-2 h-4 w-4" /> Ajouter</Button></div>
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold tracking-tight">Calendrier</h2>
+        <Button onClick={() => setOpen(true)}><PlusCircle className="mr-2 h-4 w-4" /> Ajouter</Button>
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2"><Card><CardContent className="p-0"><Calendar mode="single" selected={date} onSelect={setDate} className="w-full" locale={fr} /></CardContent></Card></div>
+        <div className="md:col-span-2">
+          <Card>
+            <CardContent className="p-0">
+              <Calendar mode="single" selected={date} onSelect={setDate} className="w-full" locale={fr} />
+            </CardContent>
+          </Card>
+        </div>
         <div className="md:col-span-1">
           <Card className="h-full">
-            <CardHeader><CardTitle>Événements du {date ? format(date, 'dd MMMM', {locale: fr}) : ''}</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Événements du {date ? format(date, 'dd MMMM', {locale: fr}) : ''}</CardTitle>
+            </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {dayEvents.map(e => (
                   <div key={e.id} className="p-4 rounded-xl border bg-muted/30">
-                    <div className="flex justify-between mb-2"><Badge>{e.type}</Badge><Badge variant="outline">{e.teamCategory}</Badge></div>
+                    <div className="flex justify-between mb-2">
+                      <Badge>{e.type}</Badge>
+                      <Badge variant="outline">{e.teamCategory}</Badge>
+                    </div>
                     <p className="font-black text-lg">{getTitle(e)}</p>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1"><CalendarIcon className="size-3" /> {e.time} - <MapPin className="size-3" /> {e.location}</p>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                      <CalendarIcon className="size-3" /> {e.time} - <MapPin className="size-3" /> {e.location}
+                    </p>
                   </div>
                 ))}
                 {dayEvents.length === 0 && <p className="text-center py-10 text-muted-foreground">Aucun événement ce jour.</p>}
@@ -75,30 +96,109 @@ export default function CalendarPage() {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0">
-          <DialogHeader className="p-6 pb-2"><DialogTitle>Nouvel Événement</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2">
+            <DialogTitle>Nouvel Événement</DialogTitle>
+          </DialogHeader>
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
             <ScrollArea className="flex-1 px-6">
               <div className="space-y-6 py-4">
-                <div className="grid gap-2"><Label>Type</Label><Select value={newEvent.type} onValueChange={v => setNewEvent({...newEvent, type: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Match Championnat">Championnat</SelectItem><SelectItem value="Match Amical">Amical</SelectItem><SelectItem value="Entraînement">Entraînement</SelectItem></SelectContent></Select></div>
+                <div className="grid gap-2">
+                  <Label>Type</Label>
+                  <Select value={newEvent.type} onValueChange={v => setNewEvent({...newEvent, type: v})}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Match Championnat">Championnat</SelectItem>
+                      <SelectItem value="Match Amical">Amical</SelectItem>
+                      <SelectItem value="Entraînement">Entraînement</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 {newEvent.type.includes('Match') && (
                   <div className="space-y-4 p-4 border rounded-xl bg-muted/20">
                     <RadioGroup value={newEvent.matchType} onValueChange={v => setNewEvent({...newEvent, matchType: v})} className="flex gap-4">
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="club-match" id="c1" /><Label htmlFor="c1">Mon Club</Label></div>
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="opponent-vs-opponent" id="c2" /><Label htmlFor="c2">Adversaires</Label></div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="club-match" id="c1" />
+                        <Label htmlFor="c1">Mon Club</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="opponent-vs-opponent" id="c2" />
+                        <Label htmlFor="c2">Adversaires</Label>
+                      </div>
                     </RadioGroup>
                     {newEvent.matchType === 'club-match' ? (
-                      <div className="grid gap-4"><Select value={newEvent.opponent} onValueChange={v => setNewEvent({...newEvent, opponent: v})}><SelectTrigger><SelectValue placeholder="Adversaire" /></SelectTrigger><SelectContent>{opponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent></Select></div>
+                      <div className="grid gap-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="grid gap-2">
+                            <Label>Lieu</Label>
+                            <Select value={newEvent.homeOrAway} onValueChange={v => setNewEvent({...newEvent, homeOrAway: v})}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="home">Domicile</SelectItem>
+                                <SelectItem value="away">Extérieur</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid gap-2">
+                            <Label>Adversaire</Label>
+                            <Select value={newEvent.opponent} onValueChange={v => setNewEvent({...newEvent, opponent: v})}>
+                              <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
+                              <SelectContent>
+                                {opponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
                     ) : (
-                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Dom." value={newEvent.homeTeam} onChange={e => setNewEvent({...newEvent, homeTeam: e.target.value})} /><Input placeholder="Ext." value={newEvent.awayTeam} onChange={e => setNewEvent({...newEvent, awayTeam: e.target.value})} /></div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="grid gap-2">
+                          <Label>Équipe Domicile</Label>
+                          <Input placeholder="Nom..." value={newEvent.homeTeam} onChange={e => setNewEvent({...newEvent, homeTeam: e.target.value})} />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Équipe Extérieur</Label>
+                          <Input placeholder="Nom..." value={newEvent.awayTeam} onChange={e => setNewEvent({...newEvent, awayTeam: e.target.value})} />
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2"><Label>Date</Label><Input type="date" value={newEvent.date} onChange={e => setNewEvent({...newEvent, date: e.target.value})} /></div>
-                  <div className="grid gap-2"><Label>Heure</Label><Input type="time" value={newEvent.time} onChange={e => setNewEvent({...newEvent, time: e.target.value})} /></div>
+                  <div className="grid gap-2">
+                    <Label>Date</Label>
+                    <Input type="date" value={newEvent.date} onChange={e => setNewEvent({...newEvent, date: e.target.value})} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Heure</Label>
+                    <Input type="time" value={newEvent.time} onChange={e => setNewEvent({...newEvent, time: e.target.value})} />
+                  </div>
                 </div>
-                <div className="grid gap-2"><Label>Lieu</Label><Input value={newEvent.location} onChange={e => setNewEvent({...newEvent, location: e.target.value})} placeholder="Stade..." /></div>
+                <div className="grid gap-2">
+                  <Label>Lieu</Label>
+                  <Input value={newEvent.location} onChange={e => setNewEvent({...newEvent, location: e.target.value})} placeholder="Stade..." />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Catégorie</Label>
+                    <Select value={newEvent.teamCategory} onValueChange={v => setNewEvent({...newEvent, teamCategory: v})}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Genre</Label>
+                    <Select value={newEvent.gender} onValueChange={v => setNewEvent({...newEvent, gender: v})}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Masculin">Masculin</SelectItem>
+                        <SelectItem value="Féminin">Féminin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
             </ScrollArea>
             <DialogFooter className="p-6 border-t bg-background flex gap-2">

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useRef, use } from "react";
@@ -30,7 +31,7 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
     switch (status) {
       case 'payé': return 'default';
       case 'partiel': return 'secondary';
-      default: return 'destructive';
+      default: return 'outline';
     }
   };
 
@@ -50,7 +51,7 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
   };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 bg-muted/10 min-h-screen">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 bg-muted/5 min-h-screen">
       <div className="flex items-center justify-between mb-6 max-w-4xl mx-auto">
         <Button variant="ghost" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
         <Button variant="default" onClick={handleDownloadPDF}><Download className="mr-2 h-4 w-4" /> Télécharger PDF</Button>
@@ -62,19 +63,19 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
             <div className="flex items-center gap-6 bg-white">
               <ClubLogo className="size-24" />
               <div className="bg-white">
-                <h1 className="text-3xl font-black bg-white uppercase">{clubInfo.name}</h1>
-                <p className="bg-white text-sm font-semibold tracking-widest text-muted-foreground uppercase">Reçu de Cotisation</p>
+                <h1 className="text-3xl font-black uppercase bg-white">{clubInfo.name}</h1>
+                <p className="text-sm font-semibold tracking-widest text-muted-foreground uppercase bg-white">Reçu de Cotisation</p>
               </div>
             </div>
             <div className="text-right bg-white">
               <p className="font-bold text-xl bg-white">N° {receiptNumber}</p>
-              <p className="bg-white text-sm text-muted-foreground">Date: {new Date().toLocaleDateString('fr-FR')}</p>
+              <p className="text-sm text-muted-foreground bg-white">Date: {new Date().toLocaleDateString('fr-FR')}</p>
             </div>
           </header>
 
           <div className="flex justify-between items-start mb-12 bg-white">
             <div className="bg-white">
-              <h2 className="text-4xl font-black bg-white mb-1">{payment.member}</h2>
+              <h2 className="text-4xl font-black mb-1 bg-white">{payment.member}</h2>
               <p className="text-lg text-muted-foreground font-medium bg-white">Période: {payment.dueDate}</p>
             </div>
             <Badge variant={getBadgeVariant(payment.status) as any} className="text-xl px-6 py-2 uppercase tracking-tighter">{payment.status}</Badge>
@@ -83,12 +84,12 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
           <div className="grid grid-cols-2 gap-8 p-10 border-2 border-black rounded-2xl mb-12 bg-white">
             <div className="flex justify-between text-2xl bg-white"><span>Total dû</span><span className="font-bold bg-white">{payment.totalAmount.toFixed(2)} DH</span></div>
             <div className="flex justify-between text-2xl bg-white"><span>Versé</span><span className="font-bold text-green-600 bg-white">{payment.paidAmount.toFixed(2)} DH</span></div>
-            <div className="flex justify-between text-2xl border-t border-black pt-6 bg-white col-span-2"><span>Reste à payer</span><span className="font-bold text-red-600 bg-white">{payment.remainingAmount.toFixed(2)} DH</span></div>
+            <div className="flex justify-between text-2xl border-t border-black pt-6 col-span-2 bg-white"><span>Reste à payer</span><span className="font-bold text-red-600 bg-white">{payment.remainingAmount.toFixed(2)} DH</span></div>
           </div>
 
           {payment.transactions.length > 0 && (
-            <div className="mb-20 bg-white flex-1">
-              <h3 className="text-xl font-black border-b border-black mb-6 pb-2 flex items-center gap-3 bg-white uppercase"><History className="h-6 w-6" /> Historique des versements</h3>
+            <div className="mb-20 flex-1 bg-white">
+              <h3 className="text-xl font-black border-b border-black mb-6 pb-2 flex items-center gap-3 uppercase bg-white"><History className="h-6 w-6" /> Historique des versements</h3>
               <Table className="bg-white">
                 <TableHeader><TableRow className="border-black bg-white hover:bg-white"><TableHead className="text-black font-bold uppercase text-xs">Date et Heure</TableHead><TableHead className="text-right text-black font-bold uppercase text-xs">Montant (DH)</TableHead></TableRow></TableHeader>
                 <TableBody>
@@ -103,10 +104,10 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
             </div>
           )}
 
-          <div className="mt-auto pt-12 text-center bg-white border-t border-dotted border-gray-300">
+          <div className="mt-auto pt-12 text-center border-t border-dotted border-gray-300 bg-white">
             <p className="font-black text-xl uppercase tracking-widest bg-white">Signature et Cachet du Club</p>
-            <div className="h-32 flex items-center justify-center text-gray-200 italic bg-white">
-              [Signature du Trésorier]
+            <div className="h-32 flex items-center justify-center text-gray-300 italic bg-white">
+              [Document officiel - Trésorerie {clubInfo.name}]
             </div>
           </div>
         </div>

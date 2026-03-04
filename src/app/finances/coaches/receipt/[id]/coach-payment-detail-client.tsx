@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useRef, use } from "react";
@@ -50,7 +51,7 @@ export function CoachPaymentDetailClient({ id: idParam }: { id: any }) {
   };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 bg-muted/10 min-h-screen">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 bg-muted/5 min-h-screen">
       <div className="flex items-center justify-between mb-6 max-w-4xl mx-auto">
         <Button variant="ghost" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
         <Button variant="default" onClick={handleDownloadPDF}><Download className="mr-2 h-4 w-4" /> Télécharger PDF</Button>
@@ -105,7 +106,7 @@ export function CoachPaymentDetailClient({ id: idParam }: { id: any }) {
 
           <div className="mt-auto pt-12 text-center bg-white border-t border-dotted border-gray-300">
             <p className="font-black text-xl uppercase tracking-widest bg-white">Signature et Cachet du Club</p>
-            <div className="h-32 flex items-center justify-center text-gray-200 italic bg-white">
+            <div className="h-32 flex items-center justify-center text-gray-300 italic bg-white">
               [Signature de la Direction]
             </div>
           </div>
