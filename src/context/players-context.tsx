@@ -26,163 +26,83 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const getPlayersCollection = useCallback(() => {
-    if (!user) return null;
-    return collection(db, "users", user.uid, "players");
-  }, [user]);
-
   const fetchPlayers = useCallback(async () => {
-    const collectionRef = getPlayersCollection();
-    if (!collectionRef) {
-      setPlayers([]);
-      setLoading(false);
-      return;
-    }
-
+    if (!user) return;
     setLoading(true);
     try {
-        const q = query(collectionRef);
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Player));
-        setPlayers(data);
-    } catch (err) {
-        console.error("Error fetching players: ", err);
-    } finally {
-        setLoading(false);
-    }
-  }, [getPlayersCollection]);
+        const snapshot = await getDocs(collection(db, "users", user.uid, "players"));
+        setPlayers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player)));
+    } catch (err) { console.error(err); } finally { setLoading(false); }
+  }, [user]);
   
-  // Cleanup logic for Salma Chaddani (Salam -> Salma)
+  // Correction automatique pour Salma Chaddani (fusion des doublons)
   const cleanupSalmaPayments = useCallback(async () => {
     if (!user) return;
     try {
       const batch = writeBatch(db);
       const paymentsRef = collection(db, "users", user.uid, "playerPayments");
-      
-      // Search for payments under old name "Salam Chaddani"
       const q = query(paymentsRef, where("member", "==", "Salam Chaddani"));
       const snapshot = await getDocs(q);
-      
       if (!snapshot.empty) {
-        snapshot.forEach(paymentDoc => {
-          batch.update(paymentDoc.ref, { member: "Salma Chaddani" });
-        });
+        snapshot.forEach(d => batch.update(d.ref, { member: "Salma Chaddani" }));
         await batch.commit();
-        console.log("Migration des paiements de Salma effectuée");
-        window.location.reload(); // Force reload to sync all contexts
+        window.location.reload();
       }
-    } catch (e) {
-      console.error("Erreur de nettoyage Salma", e);
-    }
+    } catch (e) { console.error(e); }
   }, [user]);
 
   useEffect(() => {
-    if(user) {
-      fetchPlayers();
-      cleanupSalmaPayments();
-    } else {
-      setPlayers([]);
-      setLoading(false);
-    }
+    if(user) { fetchPlayers(); cleanupSalmaPayments(); }
+    else { setPlayers([]); setLoading(false); }
   }, [user, fetchPlayers, cleanupSalmaPayments]);
 
-  const addPlayer = async (playerData: NewPlayer) => {
-    const collectionRef = getPlayersCollection();
-    if (!collectionRef || !user) return;
-    try {
-      const newPlayerData = { ...playerData, uid: user.uid };
-      await addDoc(collectionRef, newPlayerData);
-      await fetchPlayers();
-    } catch (err) {
-      console.error("Error adding player: ", err);
-    }
+  const addPlayer = async (data: NewPlayer) => {
+    if (!user) return;
+    await addDoc(collection(db, "users", user.uid, "players"), { ...data, uid: user.uid });
+    await fetchPlayers();
   };
 
-  const updatePlayer = async (playerData: Player) => {
+  const updatePlayer = async (data: Player) => {
     if (!user) return;
-    const oldPlayer = players.find(p => p.id === playerData.id);
-    if (!oldPlayer) return;
-
-    const oldName = oldPlayer.name;
-    const newName = playerData.name;
-    const nameHasChanged = oldName !== newName;
+    const old = players.find(p => p.id === data.id);
+    if (!old) return;
 
     try {
       const batch = writeBatch(db);
-      
-      const playerDocRef = doc(db, "users", user.uid, "players", playerData.id);
-      const { id, ...dataToUpdate } = playerData;
-      batch.update(playerDocRef, dataToUpdate);
+      const playerRef = doc(db, "users", user.uid, "players", data.id);
+      const { id, ...toUpdate } = data;
+      batch.update(playerRef, toUpdate);
 
-      if (nameHasChanged) {
-        // Update results (scorers and assists)
-        const resultsRef = collection(db, "users", user.uid, "results");
-        const resultsSnap = await getDocs(resultsRef);
-        resultsSnap.forEach(resultDoc => {
-          const result = resultDoc.data();
-          let updated = false;
-
-          const newScorers = (result.scorers || []).map((scorer: any) => {
-            if (scorer.playerName === oldName) {
-              updated = true;
-              return { ...scorer, playerName: newName };
-            }
-            return scorer;
-          });
-
-          const newAssists = (result.assists || []).map((assist: any) => {
-            if (assist.playerName === oldName) {
-              updated = true;
-              return { ...assist, playerName: newName };
-            }
-            return assist;
-          });
-
-          if (updated) {
-            batch.update(resultDoc.ref, { scorers: newScorers, assists: newAssists });
-          }
+      if (old.name !== data.name) {
+        // Mise à jour des résultats (buteurs/passeurs)
+        const resSnap = await getDocs(collection(db, "users", user.uid, "results"));
+        resSnap.forEach(d => {
+          const r = d.data();
+          let upd = false;
+          const newS = (r.scorers || []).map((s: any) => { if(s.playerName === old.name) { upd = true; return {...s, playerName: data.name}; } return s; });
+          const newA = (r.assists || []).map((a: any) => { if(a.playerName === old.name) { upd = true; return {...a, playerName: data.name}; } return a; });
+          if (upd) batch.update(d.ref, { scorers: newS, assists: newA });
         });
         
-        // Update payments
-        const paymentsRef = collection(db, "users", user.uid, "playerPayments");
-        const paymentsQuery = query(paymentsRef, where("member", "==", oldName));
-        const paymentsSnap = await getDocs(paymentsQuery);
-        paymentsSnap.forEach(paymentDoc => {
-            batch.update(paymentDoc.ref, { member: newName });
-        });
+        // Mise à jour des paiements
+        const paySnap = await getDocs(query(collection(db, "users", user.uid, "playerPayments"), where("member", "==", old.name)));
+        paySnap.forEach(d => batch.update(d.ref, { member: data.name }));
       }
 
       await batch.commit();
-      
-      if(nameHasChanged) {
-        // Direct reload is the most reliable way to sync name changes across all components
-        window.location.reload();
-      } else {
-        await fetchPlayers();
-      }
-
-    } catch (err) {
-      console.error("Error updating player and cascading changes: ", err);
-    }
+      if (old.name !== data.name) window.location.reload();
+      else await fetchPlayers();
+    } catch (err) { console.error(err); }
   };
 
   const deletePlayer = async (id: string) => {
     if (!user) return;
-    try {
-      const playerDoc = doc(db, "users", user.uid, "players", id);
-      await deleteDoc(playerDoc);
-      await fetchPlayers();
-    } catch (err) {
-      console.error("Error deleting player: ", err);
-    }
+    await deleteDoc(doc(db, "users", user.uid, "players", id));
+    await fetchPlayers();
   };
 
-  const getPlayerById = useCallback((id: string) => {
-    return players.find((player) => player.id === id);
-  }, [players]);
-
   return (
-    <PlayersContext.Provider value={{ players, loading, addPlayer, updatePlayer, deletePlayer, getPlayerById, fetchPlayers }}>
+    <PlayersContext.Provider value={{ players, loading, addPlayer, updatePlayer, deletePlayer, getPlayerById: (id) => players.find(p => p.id === id), fetchPlayers }}>
       {children}
     </PlayersContext.Provider>
   );
@@ -190,8 +110,6 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
 
 export const usePlayersContext = () => {
     const context = useContext(PlayersContext);
-    if (context === undefined) {
-        throw new Error("usePlayersContext must be used within a PlayersProvider");
-    }
+    if (!context) throw new Error("usePlayersContext must be used within PlayersProvider");
     return context;
 };

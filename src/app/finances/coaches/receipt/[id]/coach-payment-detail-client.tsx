@@ -17,7 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useClubContext } from "@/context/club-context";
 import { ClubLogo } from "@/components/club-logo";
 
-export function CoachPaymentDetailClient({ id: idParam }: { id: string }) {
+export function CoachPaymentDetailClient({ id: idParam }: { id: any }) {
   const financialCtx = useFinancialContext();
   const coachesCtx = useCoachesContext();
   const { clubInfo } = useClubContext();
@@ -31,10 +31,9 @@ export function CoachPaymentDetailClient({ id: idParam }: { id: string }) {
   }
 
   const { loading: financialLoading, getCoachSalaryById } = financialCtx;
-  const { loading: coachesLoading, coaches } = coachesCtx;
+  const { loading: coachesLoading } = coachesCtx;
   
   const payment = useMemo(() => getCoachSalaryById(id), [id, getCoachSalaryById]);
-  const coach = useMemo(() => coaches.find(c => c.name === payment?.member), [coaches, payment]);
 
   const loading = financialLoading || coachesLoading;
   
@@ -53,82 +52,54 @@ export function CoachPaymentDetailClient({ id: idParam }: { id: string }) {
 
   const getBadgeVariant = (status: string) => {
     switch (status) {
-      case 'payé':
-        return 'default';
-      case 'non payé':
-        return 'destructive';
-      case 'partiel':
-        return 'secondary';
-      default:
-        return 'outline';
+      case 'payé': return 'default';
+      case 'non payé': return 'destructive';
+      case 'partiel': return 'secondary';
+      default: return 'outline';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-        case 'payé':
-            return <CheckCircle className="h-8 w-8 text-green-500" />;
-        case 'non payé':
-            return <XCircle className="h-8 w-8 text-red-500" />;
-        case 'partiel':
-            return <Clock className="h-8 w-8 text-amber-500" />;
-        default:
-            return null;
+        case 'payé': return <CheckCircle className="h-8 w-8 text-green-500" />;
+        case 'non payé': return <XCircle className="h-8 w-8 text-red-500" />;
+        case 'partiel': return <Clock className="h-8 w-8 text-amber-500" />;
+        default: return null;
     }
   }
+
+  const professionalReceiptNumber = useMemo(() => {
+    if (!payment) return "";
+    const dateParts = payment.dueDate.split('-');
+    const year = dateParts[0];
+    const month = dateParts[1];
+    const shortId = payment.id.substring(0, 4).toUpperCase();
+    return `RS-${year}-${month}-${shortId}`;
+  }, [payment]);
 
   if (loading) {
      return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <Skeleton className="h-8 w-24 mb-4" />
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-8 w-1/2" />
-            <Skeleton className="h-6 w-1/3 mt-1" />
-          </CardHeader>
-          <Separator />
-          <CardContent className="pt-6 space-y-6">
-            <div className="grid md:grid-cols-2 gap-x-8 gap-y-6">
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-full" />
-            </div>
-          </CardContent>
-        </Card>
+        <Card><CardHeader><Skeleton className="h-8 w-1/2" /></CardHeader><Separator /><CardContent className="pt-6 space-y-6"><Skeleton className="h-6 w-full" /></CardContent></Card>
       </div>
     );
   }
 
-  if (!payment) {
-    return notFound();
-  }
+  if (!payment) return notFound();
   
   const handleDownloadPDF = () => {
     const input = receiptRef.current;
     if (!input || !payment) return;
-
     const originalWidth = input.style.width;
     input.style.width = '210mm';
-    
-    input.classList.add('pdf-export');
-    
-    html2canvas(input, { 
-        scale: 2,
-        backgroundColor: '#ffffff',
-        useCORS: true
-    }).then(canvas => {
+    html2canvas(input, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      
-      const imgWidth = pdfWidth;
+      const imgWidth = pdf.internal.pageSize.getWidth();
       const imgHeight = canvas.height * imgWidth / canvas.width;
-      
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
       pdf.save(`recu-salaire-${payment.member.replace(/[\s/]/g, '-')}-${payment.dueDate}.pdf`);
-      
-      input.classList.remove('pdf-export');
       input.style.width = originalWidth;
     });
   };
@@ -136,109 +107,95 @@ export function CoachPaymentDetailClient({ id: idParam }: { id: string }) {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <Button 
-          variant="ghost" 
-          onClick={() => router.back()} 
-          className="flex items-center text-sm text-muted-foreground hover:underline p-0 h-auto"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour
+        <Button variant="ghost" onClick={() => router.back()} className="flex items-center text-sm text-muted-foreground hover:underline p-0 h-auto">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Retour
         </Button>
-         <Button variant="outline" onClick={handleDownloadPDF}>
-            <Download className="mr-2 h-4 w-4"/>
-            Télécharger en PDF
-        </Button>
+         <Button variant="outline" onClick={handleDownloadPDF}><Download className="mr-2 h-4 w-4"/> Télécharger en PDF</Button>
       </div>
 
       <Card>
-        <div ref={receiptRef} className="p-4 bg-white text-black">
-            <CardHeader>
-            <div className="flex flex-col sm:flex-row items-start justify-between mb-8 gap-4">
+        <div ref={receiptRef} className="p-8 bg-white text-black min-h-[297mm]">
+            <CardHeader className="px-0">
+            <div className="flex flex-col sm:flex-row items-start justify-between mb-8 gap-4 border-b pb-6">
                     <div className="flex items-center gap-4">
-                        <ClubLogo className="size-16" />
+                        <ClubLogo className="size-20" />
                         <div>
-                            <h1 className="text-2xl font-bold">{clubInfo.name}</h1>
-                            <p className="text-muted-foreground">Reçu de Salaire</p>
+                            <h1 className="text-3xl font-bold">{clubInfo.name}</h1>
+                            <p className="text-muted-foreground text-lg">Reçu de Salaire</p>
                         </div>
                     </div>
                     <div className="text-left sm:text-right">
-                        <p className="text-sm">Reçu n°: {payment.id.substring(0,8)}</p>
-                        <p className="text-sm">Date: {new Date().toLocaleDateString('fr-FR')}</p>
+                        <p className="font-bold">N° : {professionalReceiptNumber}</p>
+                        <p className="text-sm">Date d'émission: {new Date().toLocaleDateString('fr-FR')}</p>
                     </div>
                 </div>
             <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                 <div>
-                    <CardTitle className="text-2xl md:text-3xl font-bold flex items-center"><UserCheck className="mr-3 h-8 w-8" />{payment.member}</CardTitle>
-                    <CardDescription className="text-base md:text-lg text-muted-foreground mt-1">Détails du Salaire</CardDescription>
+                    <CardTitle className="text-3xl font-bold flex items-center gap-3"><UserCheck className="h-8 w-8" />{payment.member}</CardTitle>
+                    <CardDescription className="text-lg text-muted-foreground mt-1">Détails du Salaire mensuel</CardDescription>
                 </div>
-                <div className="flex items-center gap-2 self-start sm:self-center">
+                <div className="flex items-center gap-2">
                     {getStatusIcon(payment.status)}
-                    <Badge variant={getBadgeVariant(payment.status) as any} className="text-base md:text-lg">
-                        {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                    <Badge variant={getBadgeVariant(payment.status) as any} className="text-lg px-4 py-1">
+                        {payment.status.toUpperCase()}
                     </Badge>
                 </div>
             </div>
             </CardHeader>
-            <Separator />
-            <CardContent className="pt-6">
-                <div className="grid md:grid-cols-2 gap-x-8 gap-y-4">
-                    <div className="flex items-center gap-4 text-base md:text-lg">
-                        <Banknote className="h-6 w-6 text-muted-foreground" />
+            <Separator className="my-6" />
+            <CardContent className="px-0 pt-6">
+                <div className="grid md:grid-cols-2 gap-x-12 gap-y-6 bg-muted/30 p-6 rounded-lg">
+                    <div className="flex items-center gap-4 text-xl">
+                        <Banknote className="h-7 w-7 text-muted-foreground" />
                         <span>Salaire Total:</span>
                         <span className="font-bold ml-auto">{payment.totalAmount.toFixed(2)} DH</span>
                     </div>
-                    <div className="flex items-center gap-4 text-base md:text-lg">
-                        <CheckCircle className="h-6 w-6 text-green-500" />
-                        <span>Montant payé:</span>
+                    <div className="flex items-center gap-4 text-xl">
+                        <CheckCircle className="h-7 w-7 text-green-500" />
+                        <span>Montant déjà versé:</span>
                         <span className="font-bold ml-auto text-green-600">{payment.paidAmount.toFixed(2)} DH</span>
                     </div>
-                    <div className="flex items-center gap-4 text-base md:text-lg">
-                       {payment.remainingAmount > 0 ? (
-                            <XCircle className="h-6 w-6 text-red-500" />
-                        ) : (
-                            <CheckCircle className="h-6 w-6 text-green-500" />
-                        )}
+                    <div className="flex items-center gap-4 text-xl border-t pt-4">
+                       {payment.remainingAmount > 0 ? <XCircle className="h-7 w-7 text-red-500" /> : <CheckCircle className="h-7 w-7 text-green-500" />}
                         <span>Reste à payer:</span>
                         <span className={`font-bold ml-auto ${payment.remainingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
                             {payment.remainingAmount.toFixed(2)} DH
                         </span>
                     </div>
-                    <div className="flex items-center gap-4 text-base md:text-lg">
-                        <CalendarIcon className="h-6 w-6 text-muted-foreground" />
+                    <div className="flex items-center gap-4 text-xl border-t pt-4">
+                        <CalendarIcon className="h-7 w-7 text-muted-foreground" />
                         <span>Mois de paie:</span>
                         <span className="font-bold ml-auto">{payment.dueDate}</span>
                     </div>
                 </div>
                 {formattedTransactions.length > 0 && (
-                    <div className="mt-8">
-                        <h3 className="text-xl font-bold mb-4 flex items-center"><History className="mr-2 h-6 w-6" />Historique des transactions</h3>
-                         <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Date et Heure</TableHead>
-                                        <TableHead className="text-right">Montant (DH)</TableHead>
+                    <div className="mt-12">
+                        <h3 className="text-2xl font-bold mb-6 flex items-center border-b pb-2"><History className="mr-3 h-7 w-7" />Historique des Paiements</h3>
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-muted/50">
+                                    <TableHead className="text-lg">Date et Heure</TableHead>
+                                    <TableHead className="text-right text-lg">Montant Versé (DH)</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {formattedTransactions.map(tx => (
+                                    <TableRow key={tx.id} className="border-b">
+                                        <TableCell className="text-lg">{tx.date}</TableCell>
+                                        <TableCell className="text-right font-bold text-lg">{tx.amount.toFixed(2)}</TableCell>
                                     </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {formattedTransactions.map(tx => (
-                                        <TableRow key={tx.id}>
-                                            <TableCell>{tx.date}</TableCell>
-                                            <TableCell className="text-right font-medium">{tx.amount.toFixed(2)}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                ))}
+                            </TableBody>
+                        </Table>
                     </div>
                 )}
 
-                <div className="mt-20 flex justify-center items-center px-4">
+                <div className="mt-32 flex justify-center">
                     <div className="text-center">
-                        <p className="font-bold text-lg underline">Signature et Cachet du Club</p>
+                        <p className="font-bold text-xl underline mb-12">Signature et Cachet du Club</p>
+                        <div className="h-24"></div>
                     </div>
                 </div>
-
             </CardContent>
         </div>
       </Card>
