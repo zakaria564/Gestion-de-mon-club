@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -49,7 +48,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { Separator } from "@/components/ui/separator";
 
 const playerCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
@@ -112,32 +110,11 @@ const defaultValues: PlayerFormValues = {
 const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise", "Américaine", "Russe", "Japonaise", "Chinoise", "Indienne", "Turque", "Égyptienne", "Nigériane", "Sud-africaine", "Ghanéenne"];
 
 const documentOptions = [
-  "Certificat Médical",
-  "Carte d'identité",
-  "Passeport",
-  "Extrait de naissance",
-  "Photo d'identité",
-  "Autorisation Parentale",
-  "Fiche de renseignements",
-  "Justificatif de domicile",
-  "Licence sportive",
-  "Assurance",
-  "Autre"
+  "Certificat Médical", "Carte d'identité", "Passeport", "Extrait de naissance", "Photo d'identité", "Autorisation Parentale", "Fiche de renseignements", "Justificatif de domicile", "Licence sportive", "Assurance", "Autre"
 ];
 
 const categoryColors: Record<string, string> = {
-  'Sénior': 'hsl(var(--chart-1))',
-  'U23': 'hsl(var(--chart-2))',
-  'U20': 'hsl(340, 80%, 55%)',
-  'U19': 'hsl(var(--chart-3))',
-  'U18': 'hsl(var(--chart-4))',
-  'U17': 'hsl(var(--chart-5))',
-  'U16': 'hsl(var(--chart-6))',
-  'U15': 'hsl(var(--chart-7))',
-  'U13': 'hsl(var(--chart-8))',
-  'U9': 'hsl(25 60% 45%)',
-  'U11': 'hsl(var(--chart-10))',
-  'U7': 'hsl(var(--chart-11))',
+  'Sénior': 'hsl(var(--chart-1))', 'U23': 'hsl(var(--chart-2))', 'U20': 'hsl(340, 80%, 55%)', 'U19': 'hsl(var(--chart-3))', 'U18': 'hsl(var(--chart-4))', 'U17': 'hsl(var(--chart-5))', 'U16': 'hsl(var(--chart-6))', 'U15': 'hsl(var(--chart-7))', 'U13': 'hsl(var(--chart-8))', 'U9': 'hsl(25 60% 45%)', 'U11': 'hsl(var(--chart-10))', 'U7': 'hsl(var(--chart-11))',
 };
 
 function PlayersContent() {
@@ -148,10 +125,6 @@ function PlayersContent() {
     const router = useRouter();
     const pathname = usePathname();
     
-    if (!context || !coachesContext) {
-      return null;
-    }
-
     const { players, loading, addPlayer, updatePlayer } = context;
     const { coaches } = coachesContext;
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -226,6 +199,8 @@ function PlayersContent() {
         return { maleGroups, femaleGroups };
     }, [filteredPlayers]);
 
+    const photoPreview = form.watch('photo');
+
     const renderCategoryTabs = (groupedData: Record<string, Record<string, Player[]>>, gender: 'male' | 'female') => {
         const categories = Object.keys(groupedData).sort((a,b) => playerCategories.indexOf(a as any) - playerCategories.indexOf(b as any));
         if (categories.length === 0) return <div className="text-center py-10"><p className="text-muted-foreground">Aucun joueur trouvé.</p></div>;
@@ -289,8 +264,6 @@ function PlayersContent() {
         );
     };
 
-    const photoPreview = form.watch('photo');
-
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
             <div className="flex items-center justify-between">
@@ -310,13 +283,16 @@ function PlayersContent() {
             </Tabs>
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent className="sm:max-w-4xl max-h-[90vh]">
-                    <DialogHeader><DialogTitle>Nouveau Joueur</DialogTitle><DialogDescription>Remplissez toutes les informations pour enregistrer un nouveau joueur.</DialogDescription></DialogHeader>
+                <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
+                    <DialogHeader className="p-6 pb-2">
+                        <DialogTitle>Nouveau Joueur</DialogTitle>
+                        <DialogDescription>Remplissez toutes les informations pour enregistrer un nouveau joueur.</DialogDescription>
+                    </DialogHeader>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)}>
-                            <ScrollArea className="h-[65vh] pr-4">
-                                <div className="space-y-8 pb-4">
-                                    <div className="flex flex-col items-center gap-4">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+                            <ScrollArea className="flex-1 px-6">
+                                <div className="space-y-8 pb-6">
+                                    <div className="flex flex-col items-center gap-4 mt-2">
                                         <Avatar className="h-24 w-24 border">
                                             <AvatarImage src={photoPreview || undefined} alt="Aperçu" data-ai-hint="player photo" />
                                             <AvatarFallback className="bg-muted"><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
@@ -388,7 +364,7 @@ function PlayersContent() {
                                     </div>
                                 </div>
                             </ScrollArea>
-                            <DialogFooter className="mt-6 pt-4 border-t gap-2">
+                            <DialogFooter className="p-6 pt-4 border-t gap-2 bg-background mt-auto">
                                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Annuler</Button>
                                 <Button type="submit">Enregistrer</Button>
                             </DialogFooter>
@@ -401,5 +377,9 @@ function PlayersContent() {
 }
 
 export default function PlayersPage() {
-    return <Suspense fallback={<div>Chargement...</div>}><PlayersContent /></Suspense>;
+    return (
+        <Suspense fallback={<div className="p-8">Chargement...</div>}>
+            <PlayersContent />
+        </Suspense>
+    );
 }

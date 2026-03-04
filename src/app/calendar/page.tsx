@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -17,15 +16,15 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { fr } from 'date-fns/locale';
-import { format, parseISO, isPast } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { CalendarEvent, useCalendarContext } from '@/context/calendar-context';
-import { useResultsContext, Result } from '@/context/results-context';
 import { usePlayersContext } from '@/context/players-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useClubContext } from '@/context/club-context';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useOpponentsContext } from '@/context/opponents-context';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 
 const playerCategories: string[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
@@ -46,21 +45,18 @@ const categoryColors: Record<string, string> = {
 
 export default function CalendarPage() {
   const calendarContext = useCalendarContext();
-  const resultsContext = useResultsContext();
   const playersContext = usePlayersContext();
   const opponentsContext = useOpponentsContext();
   const { clubInfo } = useClubContext();
 
-  if (!calendarContext || !resultsContext || !playersContext || !opponentsContext) {
+  if (!calendarContext || !playersContext || !opponentsContext) {
     return null;
   }
 
   const { calendarEvents, loading: calendarLoading, addEvent, updateEvent, deleteEvent } = calendarContext;
-  const { results } = resultsContext;
-  const { players, loading: playersLoading } = playersContext;
   const { opponents, loading: opponentsLoading } = opponentsContext;
 
-  const loading = calendarLoading || playersLoading || opponentsLoading;
+  const loading = calendarLoading || opponentsLoading;
 
   const [date, setDate] = useState<Date | undefined>(new Date());
   
@@ -141,11 +137,6 @@ export default function CalendarPage() {
     setEventDialogOpen(true);
   }
   
-  const handleDayClick = (day: Date | undefined) => {
-    if (!day) return;
-    setDate(day);
-  };
-
   const openEditEventDialog = (event: CalendarEvent, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setDetailsOpen(false);
@@ -231,7 +222,7 @@ export default function CalendarPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
-          <Card><CardContent className="p-0"><Calendar mode="single" selected={date} onSelect={handleDayClick} className="w-full" locale={fr} /></CardContent></Card>
+          <Card><CardContent className="p-0"><Calendar mode="single" selected={date} onSelect={setDate} className="w-full" locale={fr} /></CardContent></Card>
         </div>
         <div className="md:col-span-1">
           <Card>
@@ -257,11 +248,11 @@ export default function CalendarPage() {
       </div>
 
       <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un événement</DialogTitle></DialogHeader>
-          <form onSubmit={handleEventSubmit}>
-            <ScrollArea className="h-[60vh] pr-4">
-              <div className="grid gap-4">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0">
+          <DialogHeader className="p-6 pb-2"><DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un événement</DialogTitle></DialogHeader>
+          <form onSubmit={handleEventSubmit} className="flex flex-col flex-1 overflow-hidden">
+            <ScrollArea className="flex-1 px-6">
+              <div className="grid gap-4 py-2 pb-6">
                 <div className="grid gap-2">
                   <Label>Type d'événement</Label>
                   <Select onValueChange={(v) => handleEventSelectChange('type', v)} value={newEvent.type}>
@@ -270,8 +261,12 @@ export default function CalendarPage() {
                       <SelectItem value="Match Amical">Match Amical</SelectItem>
                       <SelectItem value="Match Championnat">Match de Championnat</SelectItem>
                       <SelectItem value="Match Coupe">Match Coupe</SelectItem>
-                      <SelectItem value="Entraînement Physique">Entraînement</SelectItem>
+                      <SelectItem value="Match Tournoi">Match Tournoi</SelectItem>
+                      <SelectItem value="Entraînement Physique">Entraînement Physique</SelectItem>
+                      <SelectItem value="Entraînement Technique">Entraînement Technique</SelectItem>
+                      <SelectItem value="Entraînement Tactique">Entraînement Tactique</SelectItem>
                       <SelectItem value="Réunion">Réunion</SelectItem>
+                      <SelectItem value="Événement Spécial">Événement Spécial</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -281,6 +276,7 @@ export default function CalendarPage() {
                         <div className="flex items-center space-x-2"><RadioGroupItem value="club-match" id="cal-club" /><Label htmlFor="cal-club">Match Club</Label></div>
                         <div className="flex items-center space-x-2"><RadioGroupItem value="opponent-vs-opponent" id="cal-opp" /><Label htmlFor="cal-opp">Adversaires</Label></div>
                     </RadioGroup>
+                    <Separator />
                     {newEvent.matchType === 'club-match' ? (
                       <>
                         <div className="grid gap-2">
@@ -293,31 +289,31 @@ export default function CalendarPage() {
                         <div className="grid gap-2">
                             <Label>Adversaire</Label>
                             <Select onValueChange={(v) => handleEventSelectChange('opponent', v)} value={newEvent.opponent}>
-                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="Choisir un adversaire..." /></SelectTrigger>
                                 <SelectContent>{filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
                       </>
                     ) : (
                       <div className="grid grid-cols-2 gap-4">
-                          <div className="grid gap-2"><Label>Équipe Dom.</Label><Select onValueChange={(v) => handleEventSelectChange('homeTeam', v)} value={newEvent.homeTeam}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent></Select></div>
-                          <div className="grid gap-2"><Label>Équipe Ext.</Label><Select onValueChange={(v) => handleEventSelectChange('awayTeam', v)} value={newEvent.awayTeam}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent></Select></div>
+                          <div className="grid gap-2"><Label>Équipe Dom.</Label><Select onValueChange={(v) => handleEventSelectChange('homeTeam', v)} value={newEvent.homeTeam}><SelectTrigger><SelectValue placeholder="Equipe Dom..." /></SelectTrigger><SelectContent>{filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent></Select></div>
+                          <div className="grid gap-2"><Label>Équipe Ext.</Label><Select onValueChange={(v) => handleEventSelectChange('awayTeam', v)} value={newEvent.awayTeam}><SelectTrigger><SelectValue placeholder="Equipe Ext..." /></SelectTrigger><SelectContent>{filteredOpponentOptions.map(op => <SelectItem key={op.id} value={op.name}>{op.name}</SelectItem>)}</SelectContent></Select></div>
                       </div>
                     )}
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2"><Label>Catégorie</Label><Select onValueChange={(v) => handleEventSelectChange('teamCategory', v)} value={newEvent.teamCategory}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="grid gap-2"><Label>Catégorie</Label><Select onValueChange={(v) => handleEventSelectChange('teamCategory', v)} value={newEvent.teamCategory}><SelectTrigger><SelectValue placeholder="Catégorie..." /></SelectTrigger><SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</Select><FormMessage /></FormItem></div>
                     <div className="grid gap-2"><Label>Genre</Label><Select onValueChange={(v) => handleEventSelectChange('gender', v)} value={newEvent.gender}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2"><Label>Date</Label><Input id="date" type="date" value={newEvent.date} onChange={handleEventInputChange} /></div>
                   <div className="grid gap-2"><Label>Heure</Label><Input id="time" type="time" value={newEvent.time} onChange={handleEventInputChange} /></div>
                 </div>
-                <div className="grid gap-2"><Label>Lieu exact</Label><Input id="location" value={newEvent.location} onChange={handleEventInputChange} /></div>
+                <div className="grid gap-2"><Label>Lieu exact</Label><Input id="location" value={newEvent.location} onChange={handleEventInputChange} placeholder="ex: Stade Oulfa" /></div>
               </div>
             </ScrollArea>
-            <DialogFooter className="mt-6 pt-4 border-t gap-2">
+            <DialogFooter className="p-6 pt-4 border-t gap-2 bg-background mt-auto">
               <Button type="button" variant="outline" onClick={resetEventForm}>Annuler</Button>
               <Button type="submit">Enregistrer</Button>
             </DialogFooter>
@@ -331,6 +327,7 @@ export default function CalendarPage() {
           <div className="grid gap-4 py-4">
               <p><strong>Affiche:</strong> {selectedEvent && getMatchTitle(selectedEvent)}</p>
               <p><strong>Date:</strong> {selectedEvent && format(parseISO(selectedEvent.date), 'dd/MM/yyyy')}</p>
+              <p><strong>Heure:</strong> {selectedEvent?.time}</p>
               <p><strong>Lieu:</strong> {selectedEvent?.location}</p>
           </div>
           <DialogFooter className="gap-2">

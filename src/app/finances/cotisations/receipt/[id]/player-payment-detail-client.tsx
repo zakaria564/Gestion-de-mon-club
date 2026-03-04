@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useEffect, useRef, use } from "react";
@@ -7,8 +6,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Banknote, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, History, Download } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, History, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFinancialContext } from "@/context/financial-context";
 import { usePlayersContext } from "@/context/players-context";
@@ -63,7 +61,7 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
       const imgWidth = pdf.internal.pageSize.getWidth();
       const imgHeight = canvas.height * imgWidth / canvas.width;
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      pdf.save(`recu-cotisation-${payment.member}-${payment.dueDate}.pdf`);
+      pdf.save(`recu-cotisation-${payment.member.replace(/[\s/]/g, '-')}-${payment.dueDate}.pdf`);
     });
   };
 
@@ -76,42 +74,42 @@ export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
 
       <Card className="border-none shadow-none bg-white">
         <div ref={receiptRef} className="p-12 bg-white text-black min-h-[297mm]">
-            <header className="flex justify-between border-b-2 border-black pb-6 mb-8">
-                <div className="flex items-center gap-4">
+            <header className="flex justify-between border-b-2 border-black pb-6 mb-8 bg-white">
+                <div className="flex items-center gap-4 bg-white">
                     <ClubLogo className="size-20" />
-                    <div><h1 className="text-2xl font-bold">{clubInfo.name}</h1><p>Reçu de Cotisation</p></div>
+                    <div className="bg-white"><h1 className="text-2xl font-bold bg-white">{clubInfo.name}</h1><p className="bg-white">Reçu de Cotisation</p></div>
                 </div>
-                <div className="text-right"><p className="font-bold">N° : {professionalReceiptNumber}</p><p>Émis le : {new Date().toLocaleDateString('fr-FR')}</p></div>
+                <div className="text-right bg-white"><p className="font-bold bg-white">N° : {professionalReceiptNumber}</p><p className="bg-white">Émis le : {new Date().toLocaleDateString('fr-FR')}</p></div>
             </header>
             
-            <div className="flex justify-between items-start mb-12">
-                <div><h2 className="text-3xl font-bold">{payment.member}</h2><p className="text-muted-foreground">Cotisation Mensuelle</p></div>
+            <div className="flex justify-between items-start mb-12 bg-white">
+                <div className="bg-white"><h2 className="text-3xl font-bold bg-white">{payment.member}</h2><p className="text-muted-foreground bg-white">Cotisation Mensuelle</p></div>
                 <Badge variant={getBadgeVariant(payment.status) as any} className="text-lg px-4 py-1">{payment.status.toUpperCase()}</Badge>
             </div>
 
             <div className="grid grid-cols-2 gap-8 p-8 border-2 border-black rounded-lg mb-12 bg-white">
-                <div className="flex justify-between text-xl text-black"><span>Montant Total :</span><span className="font-bold">{payment.totalAmount.toFixed(2)} DH</span></div>
-                <div className="flex justify-between text-xl text-black"><span>Montant Payé :</span><span className="font-bold text-green-600">{payment.paidAmount.toFixed(2)} DH</span></div>
-                <div className="flex justify-between text-xl border-t border-black pt-4 text-black"><span>Reste :</span><span className="font-bold text-red-600">{payment.remainingAmount.toFixed(2)} DH</span></div>
-                <div className="flex justify-between text-xl border-t border-black pt-4 text-black"><span>Mois :</span><span className="font-bold">{payment.dueDate}</span></div>
+                <div className="flex justify-between text-xl text-black bg-white"><span>Montant Total :</span><span className="font-bold bg-white">{payment.totalAmount.toFixed(2)} DH</span></div>
+                <div className="flex justify-between text-xl text-black bg-white"><span>Montant Payé :</span><span className="font-bold text-green-600 bg-white">{payment.paidAmount.toFixed(2)} DH</span></div>
+                <div className="flex justify-between text-xl border-t border-black pt-4 text-black bg-white"><span>Reste à payer :</span><span className="font-bold text-red-600 bg-white">{payment.remainingAmount.toFixed(2)} DH</span></div>
+                <div className="flex justify-between text-xl border-t border-black pt-4 text-black bg-white"><span>Mois concerné :</span><span className="font-bold bg-white">{payment.dueDate}</span></div>
             </div>
 
             {payment.transactions.length > 0 && (
-                <div className="mb-24">
-                    <h3 className="text-xl font-bold border-b-2 border-black mb-4 pb-2 text-black flex items-center gap-2"><History className="h-5 w-5" /> Historique des Versements</h3>
-                    <Table className="bg-transparent">
-                        <TableHeader><TableRow className="border-black bg-transparent hover:bg-transparent"><TableHead className="text-black font-bold bg-transparent">Date</TableHead><TableHead className="text-right text-black font-bold bg-transparent">Montant (DH)</TableHead></TableRow></TableHeader>
-                        <TableBody>
+                <div className="mb-24 bg-white">
+                    <h3 className="text-xl font-bold border-b-2 border-black mb-4 pb-2 text-black flex items-center gap-2 bg-white"><History className="h-5 w-5 bg-white" /> Historique des Versements</h3>
+                    <Table className="bg-white border-none">
+                        <TableHeader className="bg-white"><TableRow className="border-black bg-white hover:bg-white"><TableHead className="text-black font-bold bg-white border-none">Date et Heure</TableHead><TableHead className="text-right text-black font-bold bg-white border-none">Montant (DH)</TableHead></TableRow></TableHeader>
+                        <TableBody className="bg-white">
                             {payment.transactions.map(tx => (
-                                <TableRow key={tx.id} className="border-gray-200 hover:bg-transparent"><TableCell className="text-black bg-transparent">{new Date(tx.date).toLocaleString('fr-FR')}</TableCell><TableCell className="text-right font-bold text-black bg-transparent">{tx.amount.toFixed(2)}</TableCell></TableRow>
+                                <TableRow key={tx.id} className="border-gray-200 hover:bg-white bg-white"><TableCell className="text-black bg-white border-none">{new Date(tx.date).toLocaleString('fr-FR')}</TableCell><TableCell className="text-right font-bold text-black bg-white border-none">{tx.amount.toFixed(2)}</TableCell></TableRow>
                             ))}
                         </TableBody>
                     </Table>
                 </div>
             )}
 
-            <div className="mt-auto flex justify-center w-full">
-                <div className="text-center"><p className="font-bold text-lg text-black">Signature et Cachet du Club</p></div>
+            <div className="mt-auto flex justify-center w-full bg-white">
+                <div className="text-center bg-white"><p className="font-bold text-lg text-black bg-white">Signature et Cachet du Club</p></div>
             </div>
         </div>
       </Card>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -213,10 +212,10 @@ export default function FinancesPage() {
       </Tabs>
 
       <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="sm:max-w-md">
-            <form onSubmit={handleSubmit}>
-              <DialogHeader><DialogTitle>Nouveau Paiement</DialogTitle></DialogHeader>
-              <div className="space-y-4 py-4">
+          <DialogContent className="sm:max-w-md flex flex-col p-0">
+            <form onSubmit={handleSubmit} className="flex flex-col">
+              <DialogHeader className="p-6 pb-2"><DialogTitle>Nouveau Paiement</DialogTitle></DialogHeader>
+              <div className="space-y-4 p-6">
                 <div className="space-y-2">
                   <Label>Type</Label>
                   <Select value={paymentType} onValueChange={(v: any) => setPaymentType(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="player">Cotisation</SelectItem><SelectItem value="coach">Salaire</SelectItem></SelectContent></Select>
@@ -233,7 +232,7 @@ export default function FinancesPage() {
                   <div className="space-y-2"><Label>Versé</Label><Input type="number" value={newPaymentData.initialPaidAmount} onChange={e => setNewPaymentData({...newPaymentData, initialPaidAmount: e.target.value})} required /></div>
                 </div>
               </div>
-              <DialogFooter className="mt-6 pt-4 border-t gap-2">
+              <DialogFooter className="p-6 pt-4 border-t gap-2 bg-background">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
                 <Button type="submit">Enregistrer</Button>
               </DialogFooter>
