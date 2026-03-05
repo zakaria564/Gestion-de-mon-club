@@ -142,7 +142,11 @@ function PlayersContent() {
           {cats.length > 0 ? (
             <Tabs value={currentCat} onValueChange={(v) => handleTabChange('category', v)}>
               <TabsList className="h-auto p-1 bg-muted rounded-md flex-wrap justify-start">
-                {cats.map(c => <TabsTrigger key={c} value={c} style={{ backgroundColor: categoryColors[c] }} className="text-white m-1">{c}</TabsTrigger>)}
+                {cats.map(c => (
+                  <TabsTrigger key={c} value={c} style={{ backgroundColor: categoryColors[c] }} className="text-white m-1">
+                    {c}
+                  </TabsTrigger>
+                ))}
               </TabsList>
               {currentCat && currentGroups[currentCat] && (
                 <div className="mt-6 space-y-8">
@@ -345,5 +349,9 @@ function PlayersContent() {
 }
 
 export default function PlayersPage() {
-  return <Suspense fallback={<div className="p-8 text-center">Chargement...</div>}><PlayersContent /></Suspense>;
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Chargement...</div>}>
+      <PlayersContent />
+    </Suspense>
+  );
 }

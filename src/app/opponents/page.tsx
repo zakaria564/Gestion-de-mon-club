@@ -117,7 +117,7 @@ export default function OpponentsPage() {
           <Card key={group.name} className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center gap-4 pb-4">
               <Avatar className="h-12 w-12 border">
-                <AvatarImage src={group.logoUrl || undefined} alt={group.name} />
+                <AvatarImage src={group.logoUrl || undefined} />
                 <AvatarFallback>{group.name.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
