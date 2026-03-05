@@ -58,13 +58,16 @@ export function PlayerDetailClient({ id }: { id: string }) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!context || !coachesContext) throw new Error("Context error");
-
-  const { loading, updatePlayer, deletePlayer, getPlayerById } = context;
+  const { players, loading, updatePlayer, deletePlayer, getPlayerById } = context;
   const { coaches } = coachesContext;
+  
   const player = useMemo(() => getPlayerById(id), [id, getPlayerById]);
   
-  const form = useForm<PlayerFormValues>({ resolver: zodResolver(playerSchema), defaultValues: {} });
+  const form = useForm<PlayerFormValues>({ 
+    resolver: zodResolver(playerSchema), 
+    defaultValues: { name: '', birthDate: '', phone: '', email: '', address: '', poste: '', jerseyNumber: 0, photo: '', country: 'Marocaine', cin: '', status: 'Actif', category: 'Sénior', gender: 'Masculin', coachName: '', documents: [] }
+  });
+
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "documents" });
 
   useEffect(() => {
@@ -95,6 +98,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
       await updatePlayer({ ...player, ...data } as any);
       setOpen(false);
       toast({ title: "Joueur mis à jour" });
+    } catch (e) {
+      toast({ variant: "destructive", title: "Erreur lors de la mise à jour" });
     } finally {
       setIsSubmitting(false);
     }
@@ -131,7 +136,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold border-b pb-1">Club</h3>
             <div className="flex items-center gap-3"><Shirt className="h-4 w-4 text-muted-foreground" /><span>{player.poste} (# {player.jerseyNumber})</span></div>
-            <div className="flex items-center gap-3"><Home className="h-4 w-4 text-muted-foreground" /><Badge style={{ backgroundColor: categoryColors[player.category], color: 'white' }}>{player.category}</Badge></div>
+            <div className="flex items-center gap-3"><Home className="h-4 w-4 text-muted-foreground" /><Badge style={{ backgroundColor: categoryColors[player.category as keyof typeof categoryColors], color: 'white' }}>{player.category}</Badge></div>
             <div className="flex items-center gap-3"><UserCheck className="h-4 w-4 text-muted-foreground" /><span>{player.coachName || 'Sans coach'}</span></div>
             <Badge variant="outline">{player.status}</Badge>
           </div>

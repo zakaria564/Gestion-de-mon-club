@@ -124,7 +124,9 @@ export default function OpponentsPage() {
                 <AvatarImage src={group.logoUrl || undefined} />
                 <AvatarFallback>{group.name.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
-              <div className="flex-1"><CardTitle className="text-lg">{group.name}</CardTitle></div>
+              <div className="flex-1">
+                <CardTitle className="text-lg">{group.name}</CardTitle>
+              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
