@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useMemo, Suspense } from "react";
@@ -271,7 +270,7 @@ function PlayersContent() {
                         </FormItem>
                       )} />
                       <FormField control={form.control} name="status" render={({field}) => (
-                        <FormItem><FormLabel>Statut</FormLabel>
+                        <FormItem><FormLabel>Statut</Label>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
@@ -289,7 +288,7 @@ function PlayersContent() {
                     <h4 className="font-bold text-sm uppercase text-primary tracking-wider border-b pb-1">Tuteur</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField control={form.control} name="tutorName" render={({field}) => <FormItem><FormLabel>Nom tuteur</FormLabel><Input {...field} /></FormItem>} />
-                      <FormField control={form.control} name="tutorPhone" render={({field}) => <FormItem><FormLabel>Téléphone tuteur</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="tutorPhone" render={({field}) => <FormItem><FormLabel>Téléphone tuteur</Label><Input {...field} /></FormItem>} />
                       <FormField control={form.control} name="tutorEmail" render={({field}) => <FormItem><FormLabel>Email tuteur</FormLabel><Input type="email" {...field} /></FormItem>} />
                       <FormField control={form.control} name="tutorCin" render={({field}) => <FormItem><FormLabel>N° CIN tuteur</FormLabel><Input {...field} /></FormItem>} />
                     </div>
