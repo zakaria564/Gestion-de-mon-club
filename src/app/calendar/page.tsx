@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { PlusCircle, MapPin, Calendar as CalendarIcon } from 'lucide-react';
+import { PlusCircle, MapPin, Calendar as CalendarIcon, Loader2 } from 'lucide-react';
 
 const playerCategories = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 
@@ -28,6 +28,7 @@ export default function CalendarPage() {
 
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newEvent, setNewEvent] = useState<any>({
     type: 'Match Championnat', opponent: '', homeTeam: '', awayTeam: '', date: format(new Date(), 'yyyy-MM-dd'), time: '10:00', location: '', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match',
   });
@@ -39,10 +40,15 @@ export default function CalendarPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    let final = { ...newEvent };
-    if (final.matchType === 'opponent-vs-opponent') final.opponent = `${final.homeTeam} vs ${final.awayTeam}`;
-    await addEvent(final);
-    setOpen(false);
+    setIsSubmitting(true);
+    try {
+      let final = { ...newEvent };
+      if (final.matchType === 'opponent-vs-opponent') final.opponent = `${final.homeTeam} vs ${final.awayTeam}`;
+      await addEvent(final);
+      setOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getTitle = (e: any) => {
@@ -51,7 +57,7 @@ export default function CalendarPage() {
     return e.homeOrAway === 'home' ? `${clubInfo.name} vs ${e.opponent}` : `${e.opponent} vs ${clubInfo.name}`;
   };
 
-  if (loading) return <div className="p-8">Chargement...</div>;
+  if (loading && calendarEvents.length === 0) return <div className="p-8">Chargement...</div>;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
@@ -96,9 +102,7 @@ export default function CalendarPage() {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>Nouvel Événement</DialogTitle>
-          </DialogHeader>
+          <DialogHeader className="p-6 pb-2"><DialogTitle>Nouvel Événement</DialogTitle></DialogHeader>
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
             <div className="flex-1 overflow-y-auto px-6 py-4">
               <div className="space-y-6">
@@ -116,14 +120,8 @@ export default function CalendarPage() {
                 {newEvent.type.includes('Match') && (
                   <div className="space-y-4 p-4 border rounded-xl bg-muted/20">
                     <RadioGroup value={newEvent.matchType} onValueChange={v => setNewEvent({...newEvent, matchType: v})} className="flex gap-4">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="club-match" id="c1" />
-                        <Label htmlFor="c1">Mon Club</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="opponent-vs-opponent" id="c2" />
-                        <Label htmlFor="c2">Adversaires</Label>
-                      </div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="club-match" id="c1" /><Label htmlFor="c1">Mon Club</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="opponent-vs-opponent" id="c2" /><Label htmlFor="c2">Adversaires</Label></div>
                     </RadioGroup>
                     {newEvent.matchType === 'club-match' ? (
                       <div className="grid grid-cols-2 gap-4">
@@ -174,8 +172,10 @@ export default function CalendarPage() {
               </div>
             </div>
             <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
-              <Button type="submit">Enregistrer</Button>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>Annuler</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : "Enregistrer"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -66,7 +67,7 @@ export default function CoachesPage() {
     return (coaches || []).filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [coaches, searchQuery]);
 
-  if (loading && coaches.length === 0) return <div className="p-8 text-center">Chargement...</div>;
+  if (loading && coaches.length === 0) return <div className="p-8 text-center text-muted-foreground">Chargement des entraîneurs...</div>;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
@@ -87,7 +88,7 @@ export default function CoachesPage() {
               <CardHeader className="p-4 flex flex-row items-center gap-4">
                 <Avatar className="size-16">
                   <AvatarImage src={c.photo || undefined} />
-                  <AvatarFallback>{c.name.substring(0, 2)}</AvatarFallback>
+                  <AvatarFallback>{c.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1"><CardTitle className="text-base">{c.name}</CardTitle><CardDescription>{c.specialization}</CardDescription></div>
               </CardHeader>

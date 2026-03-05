@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, Eye, Search } from "lucide-react";
+import { PlusCircle, Eye, Search, Loader2 } from "lucide-react";
 import type { Payment } from "@/lib/financial-data";
 
 type MemberStatus = 'À jour' | 'En attente' | 'Partiel';
@@ -32,6 +32,7 @@ export default function FinancesPage() {
   const [open, setOpen] = useState(false);
   const [paymentType, setPaymentType] = useState<'player' | 'coach'>('player');
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newPaymentData, setNewPaymentData] = useState({
     member: '', totalAmount: '', initialPaidAmount: '', dueDate: format(new Date(), 'yyyy-MM'),
   });
@@ -76,10 +77,15 @@ export default function FinancesPage() {
       toast({ variant: "destructive", title: "Erreur", description: "Le montant versé dépasse le total." });
       return;
     }
-    if (paymentType === 'player') await addPlayerPayment({ ...newPaymentData, totalAmount: total, initialPaidAmount: paid });
-    else await addCoachSalary({ ...newPaymentData, totalAmount: total, initialPaidAmount: paid });
-    setOpen(false);
-    setNewPaymentData({ member: '', totalAmount: '', initialPaidAmount: '', dueDate: format(new Date(), 'yyyy-MM') });
+    setIsSubmitting(true);
+    try {
+      if (paymentType === 'player') await addPlayerPayment({ ...newPaymentData, totalAmount: total, initialPaidAmount: paid });
+      else await addCoachSalary({ ...newPaymentData, totalAmount: total, initialPaidAmount: paid });
+      setOpen(false);
+      setNewPaymentData({ member: '', totalAmount: '', initialPaidAmount: '', dueDate: format(new Date(), 'yyyy-MM') });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderTable = (data: any[], type: 'players' | 'coaches') => (
@@ -107,7 +113,7 @@ export default function FinancesPage() {
     </Card>
   );
 
-  if (loading) return <div className="p-8">Chargement des finances...</div>;
+  if (loading && playerPayments.length === 0 && coachSalaries.length === 0) return <div className="p-8">Chargement des finances...</div>;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
@@ -148,8 +154,10 @@ export default function FinancesPage() {
               </div>
             </div>
             <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
-              <Button type="submit">Enregistrer</Button>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>Annuler</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : "Enregistrer"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

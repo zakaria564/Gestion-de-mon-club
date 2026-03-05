@@ -7,7 +7,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Mail, Phone, Award, Users, Edit, Trash2, Camera, FileText, ExternalLink, PlusCircle, X, MapPin, Flag, UserSquare, Home, VenetianMask } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Award, Users, Edit, Trash2, Camera, FileText, ExternalLink, PlusCircle, X, MapPin, Flag, UserSquare, Home, VenetianMask, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -73,6 +73,7 @@ export function CoachDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const context = useCoachesContext();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!context) throw new Error("CoachDetailClient must be used within a CoachesProvider");
 
@@ -117,9 +118,14 @@ export function CoachDetailClient({ id }: { id: string }) {
   if (!coach) return notFound();
 
   const onSubmit = async (data: CoachFormValues) => {
-    const gender = data.category.endsWith(' F') ? 'Féminin' : 'Masculin';
-    await updateCoach({ ...coach, ...data, gender, id: coach.id, uid: coach.uid });
-    setDialogOpen(false);
+    setIsSubmitting(true);
+    try {
+      const gender = data.category.endsWith(' F') ? 'Féminin' : 'Masculin';
+      await updateCoach({ ...coach, ...data, gender, id: coach.id, uid: coach.uid });
+      setDialogOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   const handleDeleteCoach = async () => {
@@ -140,7 +146,7 @@ export function CoachDetailClient({ id }: { id: string }) {
       <Card>
         <CardHeader className="flex flex-row items-center gap-6">
           <Avatar className="h-32 w-32 border">
-            <AvatarImage src={coach.photo ?? undefined} alt={coach.name} />
+            <AvatarImage src={coach.photo || undefined} alt={coach.name} />
             <AvatarFallback className="text-4xl">{coach.name.substring(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
@@ -204,7 +210,7 @@ export function CoachDetailClient({ id }: { id: string }) {
                   <div className="space-y-6">
                       <div className="flex flex-col items-center gap-4">
                         <Avatar className="h-24 w-24 border">
-                          <AvatarImage src={form.watch('photo')} alt="Aperçu" /><AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
+                          <AvatarImage src={form.watch('photo') || undefined} alt="Aperçu" /><AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
                         </Avatar>
                         <FormField control={form.control} name="photo" render={({ field }) => <FormItem className="w-full max-w-sm"><FormLabel>URL Photo</FormLabel><Input {...field} /></FormItem>} />
                       </div>
@@ -262,8 +268,10 @@ export function CoachDetailClient({ id }: { id: string }) {
                   </div>
                 </div>
                 <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
-                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Annuler</Button>
-                  <Button type="submit">Mettre à jour</Button>
+                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={isSubmitting}>Annuler</Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Mise à jour...</> : "Mettre à jour"}
+                  </Button>
                 </DialogFooter>
               </form>
             </Form>

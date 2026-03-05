@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -76,7 +77,7 @@ export default function OpponentsPage() {
       toast({ title: isEditing ? "Équipe mise à jour" : "Équipe ajoutée" });
       resetForm();
     } catch (error) {
-      toast({ variant: "destructive", title: "Erreur", description: "Une erreur est survenue." });
+      toast({ variant: "destructive", title: "Erreur" });
     } finally {
       setIsSubmitting(false);
     }
@@ -101,9 +102,7 @@ export default function OpponentsPage() {
     toast({ variant: "destructive", title: "Équipe supprimée" });
   };
 
-  if (loading && opponents.length === 0) {
-    return <div className="p-8 text-center">Chargement...</div>;
-  }
+  if (loading && opponents.length === 0) return <div className="p-8 text-center text-muted-foreground">Chargement des adversaires...</div>;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
@@ -120,48 +119,27 @@ export default function OpponentsPage() {
                 <AvatarImage src={group.logoUrl || undefined} />
                 <AvatarFallback>{group.name.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
-              <div className="flex-1">
-                <CardTitle className="text-lg">{group.name}</CardTitle>
-              </div>
+              <div className="flex-1"><CardTitle className="text-lg">{group.name}</CardTitle></div>
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
-                </DropdownMenuTrigger>
+                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => handleEdit(group)}><Edit className="mr-2 h-4 w-4" /> Modifier</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Supprimer l'équipe {group.name} ?</AlertDialogTitle>
-                        <AlertDialogDescription>Cela supprimera toutes les versions de cette équipe.</AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Annuler</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDeleteGroup(group)}>Supprimer</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
+                    <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem></AlertDialogTrigger>
+                    <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Supprimer {group.name} ?</AlertDialogTitle><AlertDialogDescription>Toutes les versions de ce club seront supprimées.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Annuler</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteGroup(group)}>Supprimer</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
                   </AlertDialog>
                 </DropdownMenuContent>
               </DropdownMenu>
             </CardHeader>
           </Card>
         ))}
-        {displayOpponents.length === 0 && (
-          <div className="col-span-full text-center py-20 text-muted-foreground border-2 border-dashed rounded-xl">
-            Aucun adversaire enregistré.
-          </div>
-        )}
+        {displayOpponents.length === 0 && <div className="col-span-full text-center py-20 text-muted-foreground border-2 border-dashed rounded-xl">Aucun adversaire enregistré.</div>}
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md flex flex-col p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>{isEditing ? "Modifier" : "Ajouter"} une équipe</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-md flex flex-col p-0 overflow-hidden max-h-[90vh]">
+          <DialogHeader className="p-6 pb-2"><DialogTitle>{isEditing ? "Modifier" : "Ajouter"} une équipe</DialogTitle></DialogHeader>
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
             <div className="flex-1 overflow-y-auto px-6 py-4">
               <div className="space-y-6">
@@ -170,35 +148,20 @@ export default function OpponentsPage() {
                     <AvatarImage src={formData.logoUrl || undefined} />
                     <AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
                   </Avatar>
-                  <div className="w-full space-y-2">
-                    <Label htmlFor="logoUrl">URL du logo</Label>
-                    <Input id="logoUrl" value={formData.logoUrl} onChange={(e) => setFormData({...formData, logoUrl: e.target.value})} placeholder="https://..." />
-                  </div>
+                  <div className="w-full space-y-2"><Label>URL du logo</Label><Input value={formData.logoUrl} onChange={(e) => setFormData({...formData, logoUrl: e.target.value})} placeholder="https://..." /></div>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Nom de l'équipe</Label>
-                  <Input id="name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
-                </div>
-                <div className="space-y-3">
-                  <Label>Genres disponibles</Label>
+                <div className="grid gap-2"><Label>Nom de l'équipe</Label><Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required /></div>
+                <div className="space-y-3"><Label>Genres disponibles</Label>
                   <div className="flex gap-6">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="masc" checked={formData.isMasculin} onCheckedChange={(v) => setFormData({...formData, isMasculin: !!v})} />
-                      <Label htmlFor="masc" className="font-normal">Masculin</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="fem" checked={formData.isFeminin} onCheckedChange={(v) => setFormData({...formData, isFeminin: !!v})} />
-                      <Label htmlFor="fem" className="font-normal">Féminin</Label>
-                    </div>
+                    <div className="flex items-center space-x-2"><Checkbox id="masc" checked={formData.isMasculin} onCheckedChange={(v) => setFormData({...formData, isMasculin: !!v})} /><Label htmlFor="masc">Masculin</Label></div>
+                    <div className="flex items-center space-x-2"><Checkbox id="fem" checked={formData.isFeminin} onCheckedChange={(v) => setFormData({...formData, isFeminin: !!v})} /><Label htmlFor="fem">Féminin</Label></div>
                   </div>
                 </div>
               </div>
             </div>
             <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
               <Button type="button" variant="outline" onClick={resetForm} disabled={isSubmitting}>Annuler</Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : "Enregistrer"}
-              </Button>
+              <Button type="submit" disabled={isSubmitting}>{isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : "Enregistrer"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

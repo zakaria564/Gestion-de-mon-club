@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -7,7 +8,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useResultsContext, NewResult, Result } from "@/context/results-context";
-import { Edit, PlusCircle, Trash2, Calendar, MapPin, MoreHorizontal } from "lucide-react";
+import { Edit, PlusCircle, Trash2, Calendar, MapPin, MoreHorizontal, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -36,6 +37,7 @@ export default function ResultsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingResult, setEditingResult] = useState<Result | null>(null);
   const [matchType, setMatchType] = useState<'club-match' | 'opponent-vs-opponent'>('club-match');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [newResult, setNewResult] = useState<NewResult>({
     opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: '', teamCategory: '', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match',
@@ -45,7 +47,7 @@ export default function ResultsPage() {
 
   const resetForm = () => {
     setNewResult({ opponent: '', homeTeam: '', awayTeam: '', date: '', time: '', location: '', score: '', scorers: [], assists: [], category: '', teamCategory: '', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match' });
-    setOpen(false); setIsEditing(false); setEditingResult(null); setMatchType('club-match');
+    setOpen(false); setIsEditing(false); setEditingResult(null); setMatchType('club-match'); setIsSubmitting(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,11 +57,16 @@ export default function ResultsPage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const finalResult = { ...newResult, matchType };
-    if (matchType === 'opponent-vs-opponent') finalResult.opponent = `${finalResult.homeTeam} vs ${finalResult.awayTeam}`;
-    if (isEditing && editingResult) await context?.updateResult({ id: editingResult.id, ...finalResult });
-    else await context?.addResult(finalResult);
-    resetForm();
+    setIsSubmitting(true);
+    try {
+      const finalResult = { ...newResult, matchType };
+      if (matchType === 'opponent-vs-opponent') finalResult.opponent = `${finalResult.homeTeam} vs ${finalResult.awayTeam}`;
+      if (isEditing && editingResult) await context?.updateResult({ id: editingResult.id, ...finalResult });
+      else await context?.addResult(finalResult);
+      resetForm();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const openEdit = (res: Result) => {
@@ -70,7 +77,7 @@ export default function ResultsPage() {
     setOpen(true);
   };
 
-  if (loading) return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;
+  if (loading && results.length === 0) return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
@@ -189,8 +196,10 @@ export default function ResultsPage() {
               </div>
             </div>
             <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
-              <Button type="button" variant="outline" onClick={resetForm}>Annuler</Button>
-              <Button type="submit">Enregistrer</Button>
+              <Button type="button" variant="outline" onClick={resetForm} disabled={isSubmitting}>Annuler</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : "Enregistrer"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

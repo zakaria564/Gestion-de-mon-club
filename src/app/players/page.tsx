@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo, Suspense } from "react";
@@ -23,26 +24,22 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const playerCategories = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
-const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise", "Américaine", "Russe", "Japonaise", "Chinoise", "Indienne", "Turque", "Égyptienne", "Nigériane", "Sud-africaine", "Ghanéenne"];
+const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne"];
 const documentOptions = ["Certificat Médical", "Carte d'identité", "Passeport", "Extrait de naissance", "Photo d'identité", "Licence sportive", "Assurance", "Autre"];
 
 const playerSchema = z.object({
-  name: z.string().min(1, "Le nom est requis."),
-  birthDate: z.string().min(1, "La date de naissance est requise."),
-  phone: z.string().min(1, "Le téléphone est requis."),
-  email: z.string().email("L'adresse email est invalide.").optional().or(z.literal('')),
-  address: z.string().min(1, "L'adresse est requise."),
-  country: z.string().min(1, "La nationalité est requise."),
-  poste: z.string().min(1, "Le poste est requis."),
-  jerseyNumber: z.coerce.number().min(1, "Le numéro de maillot doit être supérieur à 0."),
-  photo: z.string().url("URL de photo invalide").optional().or(z.literal('')),
+  name: z.string().min(1, "Nom requis"),
+  birthDate: z.string().min(1, "Date requise"),
+  phone: z.string().min(1, "Téléphone requis"),
+  email: z.string().email("Email invalide").optional().or(z.literal('')),
+  address: z.string().min(1, "Adresse requise"),
+  country: z.string().min(1, "Nationalité requise"),
+  poste: z.string().min(1, "Poste requis"),
+  jerseyNumber: z.coerce.number().min(1),
+  photo: z.string().url("URL invalide").optional().or(z.literal('')),
   cin: z.string().optional(),
-  tutorName: z.string().optional(),
-  tutorPhone: z.string().optional(),
-  tutorEmail: z.string().email("Email tuteur invalide").optional().or(z.literal('')),
-  tutorCin: z.string().optional(),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
-  category: z.string().min(1, "Catégorie requise"),
+  category: z.string().min(1, "La catégorie est requise."),
   gender: z.enum(['Masculin', 'Féminin']),
   coachName: z.string().optional(),
   documents: z.array(z.object({ name: z.string(), url: z.string().url() })).optional(),
@@ -70,7 +67,7 @@ function PlayersContent() {
 
   const form = useForm<PlayerFormValues>({
     resolver: zodResolver(playerSchema),
-    defaultValues: { name: '', birthDate: '', address: '', phone: '', email: '', country: 'Marocaine', poste: '', jerseyNumber: 0, photo: '', cin: '', tutorName: '', tutorPhone: '', tutorEmail: '', tutorCin: '', status: 'Actif', category: 'Sénior', gender: 'Masculin', coachName: '', documents: [] },
+    defaultValues: { name: '', birthDate: '', address: '', phone: '', email: '', country: 'Marocaine', poste: '', jerseyNumber: 0, photo: '', cin: '', status: 'Actif', category: 'Sénior', gender: 'Masculin', coachName: '', documents: [] },
   });
 
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "documents" });
@@ -84,12 +81,12 @@ function PlayersContent() {
   const onSubmit = async (data: PlayerFormValues) => {
     setIsSubmitting(true);
     try {
-      await addPlayer(data);
+      await addPlayer(data as any);
       setOpen(false);
       form.reset();
       toast({ title: "Joueur ajouté" });
     } catch (e) {
-      toast({ variant: "destructive", title: "Erreur lors de l'ajout" });
+      toast({ variant: "destructive", title: "Erreur" });
     } finally {
       setIsSubmitting(false);
     }
@@ -97,10 +94,7 @@ function PlayersContent() {
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase();
-    return (players || []).filter(p => 
-      p.name.toLowerCase().includes(q) || 
-      p.poste.toLowerCase().includes(q)
-    );
+    return (players || []).filter(p => p.name.toLowerCase().includes(q) || p.poste.toLowerCase().includes(q));
   }, [players, searchQuery]);
 
   const grouped = useMemo(() => {
@@ -119,7 +113,7 @@ function PlayersContent() {
   const currentCat = activeCategory && currentGroups[activeCategory] ? activeCategory : (cats[0] || '');
 
   if (loading && players.length === 0) {
-    return <div className="p-8 text-center">Chargement...</div>;
+    return <div className="p-8 text-center text-muted-foreground">Chargement des joueurs...</div>;
   }
 
   return (
@@ -131,7 +125,7 @@ function PlayersContent() {
 
       <div className="relative my-4 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input placeholder="Rechercher..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
+        <Input placeholder="Rechercher par nom ou poste..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
       </div>
 
       <Tabs value={activeGender} onValueChange={(v) => handleTabChange('gender', v)}>
@@ -144,9 +138,7 @@ function PlayersContent() {
             <Tabs value={currentCat} onValueChange={(v) => handleTabChange('category', v)}>
               <TabsList className="h-auto p-1 bg-muted rounded-md flex-wrap justify-start">
                 {cats.map(c => (
-                  <TabsTrigger key={c} value={c} style={{ backgroundColor: categoryColors[c] }} className="text-white m-1">
-                    {c}
-                  </TabsTrigger>
+                  <TabsTrigger key={c} value={c} style={{ backgroundColor: categoryColors[c] }} className="text-white m-1">{c}</TabsTrigger>
                 ))}
               </TabsList>
               {currentCat && currentGroups[currentCat] && (
@@ -159,9 +151,9 @@ function PlayersContent() {
                           <Card key={p.id} className="hover:shadow-lg transition-shadow">
                             <Link href={`/players/${p.id}`}>
                               <CardHeader className="p-4 flex flex-row items-center gap-4">
-                                <Avatar className="h-16 w-16 border">
+                                <Avatar className="h-16 w-16">
                                   <AvatarImage src={p.photo || undefined} />
-                                  <AvatarFallback>{p.name.substring(0, 2)}</AvatarFallback>
+                                  <AvatarFallback>{p.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1">
                                   <CardTitle className="text-base font-bold">{p.name}</CardTitle>
@@ -183,7 +175,7 @@ function PlayersContent() {
             </Tabs>
           ) : (
             <div className="text-center py-20 text-muted-foreground border-2 border-dashed rounded-xl">
-              Aucun joueur trouvé dans cette section.
+              Aucun joueur trouvé pour cette sélection.
             </div>
           )}
         </TabsContent>
@@ -213,11 +205,16 @@ function PlayersContent() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <div className="space-y-4">
                       <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Identité & Contact</h4>
-                      <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom complet</FormLabel><Input {...field} required /></FormItem>} />
-                      <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de naissance</FormLabel><Input type="date" {...field} required /></FormItem>} />
+                      <FormField control={form.control} name="name" render={({field}) => (
+                        <FormItem><FormLabel>Nom complet</FormLabel><Input {...field} required /></FormItem>
+                      )} />
+                      <FormField control={form.control} name="birthDate" render={({field}) => (
+                        <FormItem><FormLabel>Date de naissance</FormLabel><Input type="date" {...field} required /></FormItem>
+                      )} />
                       <div className="grid grid-cols-2 gap-4">
                         <FormField control={form.control} name="gender" render={({field}) => (
-                          <FormItem><FormLabel>Genre</FormLabel>
+                          <FormItem>
+                            <FormLabel>Genre</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                               <SelectContent>
@@ -228,7 +225,8 @@ function PlayersContent() {
                           </FormItem>
                         )} />
                         <FormField control={form.control} name="country" render={({field}) => (
-                          <FormItem><FormLabel>Nationalité</FormLabel>
+                          <FormItem>
+                            <FormLabel>Nationalité</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                               <SelectContent>
@@ -238,15 +236,21 @@ function PlayersContent() {
                           </FormItem>
                         )} />
                       </div>
-                      <FormField control={form.control} name="cin" render={({field}) => <FormItem><FormLabel>N° CIN</FormLabel><Input {...field} /></FormItem>} />
-                      <FormField control={form.control} name="email" render={({field}) => <FormItem><FormLabel>Email</FormLabel><Input type="email" {...field} /></FormItem>} />
-                      <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone</FormLabel><Input {...field} required /></FormItem>} />
-                      <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><Input {...field} required /></FormItem>} />
+                      <FormField control={form.control} name="email" render={({field}) => (
+                        <FormItem><FormLabel>Email</FormLabel><Input type="email" {...field} /></FormItem>
+                      )} />
+                      <FormField control={form.control} name="phone" render={({field}) => (
+                        <FormItem><FormLabel>Téléphone</FormLabel><Input {...field} required /></FormItem>
+                      )} />
+                      <FormField control={form.control} name="address" render={({field}) => (
+                        <FormItem><FormLabel>Adresse</FormLabel><Input {...field} required /></FormItem>
+                      )} />
                     </div>
                     <div className="space-y-4">
                       <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Sportif</h4>
                       <FormField control={form.control} name="category" render={({field}) => (
-                        <FormItem><FormLabel>Catégorie</FormLabel>
+                        <FormItem>
+                          <FormLabel>Catégorie</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
@@ -256,7 +260,8 @@ function PlayersContent() {
                         </FormItem>
                       )} />
                       <FormField control={form.control} name="poste" render={({field}) => (
-                        <FormItem><FormLabel>Poste</FormLabel>
+                        <FormItem>
+                          <FormLabel>Poste</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
@@ -274,9 +279,12 @@ function PlayersContent() {
                           </Select>
                         </FormItem>
                       )} />
-                      <FormField control={form.control} name="jerseyNumber" render={({field}) => <FormItem><FormLabel>N° Maillot</FormLabel><Input type="number" {...field} required /></FormItem>} />
+                      <FormField control={form.control} name="jerseyNumber" render={({field}) => (
+                        <FormItem><FormLabel>N° Maillot</FormLabel><Input type="number" {...field} required /></FormItem>
+                      )} />
                       <FormField control={form.control} name="coachName" render={({field}) => (
-                        <FormItem><FormLabel>Entraîneur</FormLabel>
+                        <FormItem>
+                          <FormLabel>Entraîneur</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
@@ -286,7 +294,8 @@ function PlayersContent() {
                         </FormItem>
                       )} />
                       <FormField control={form.control} name="status" render={({field}) => (
-                        <FormItem><FormLabel>Statut</FormLabel>
+                        <FormItem>
+                          <FormLabel>Statut</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
@@ -300,15 +309,6 @@ function PlayersContent() {
                       )} />
                     </div>
                   </div>
-                  <div className="space-y-4">
-                    <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Tuteur (Mineurs)</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField control={form.control} name="tutorName" render={({field}) => <FormItem><FormLabel>Nom tuteur</FormLabel><Input {...field} /></FormItem>} />
-                      <FormField control={form.control} name="tutorPhone" render={({field}) => <FormItem><FormLabel>Téléphone tuteur</Label><Input {...field} /></FormItem>} />
-                      <FormField control={form.control} name="tutorEmail" render={({field}) => <FormItem><FormLabel>Email tuteur</FormLabel><Input type="email" {...field} /></FormItem>} />
-                      <FormField control={form.control} name="tutorCin" render={({field}) => <FormItem><FormLabel>N° CIN tuteur</Label><Input {...field} /></FormItem>} />
-                    </div>
-                  </div>
                   <div className="space-y-4 pb-10">
                     <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Documents</h4>
                     {fields.map((f, i) => (
@@ -317,7 +317,8 @@ function PlayersContent() {
                           <X className="h-4 w-4" />
                         </Button>
                         <FormField control={form.control} name={`documents.${i}.name`} render={({field}) => (
-                          <FormItem><FormLabel>Nom du document</FormLabel>
+                          <FormItem>
+                            <FormLabel>Nom du document</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                               <SelectContent>
@@ -326,7 +327,9 @@ function PlayersContent() {
                             </Select>
                           </FormItem>
                         )} />
-                        <FormField control={form.control} name={`documents.${i}.url`} render={({field}) => <FormItem><FormLabel>Lien URL</FormLabel><Input {...field} /></FormItem>} />
+                        <FormField control={form.control} name={`documents.${i}.url`} render={({field}) => (
+                          <FormItem><FormLabel>Lien URL</FormLabel><Input {...field} /></FormItem>
+                        )} />
                       </div>
                     ))}
                     <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}>
@@ -351,7 +354,7 @@ function PlayersContent() {
 
 export default function PlayersPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center">Chargement...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Chargement...</div>}>
       <PlayersContent />
     </Suspense>
   );
