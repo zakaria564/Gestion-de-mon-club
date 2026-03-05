@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -35,7 +36,7 @@ const coachSchema = z.object({
 
 type CoachFormValues = z.infer<typeof coachSchema>;
 
-const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne"];
+const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Belge", "Suisse", "Canadienne"];
 
 export default function CoachesPage() {
   const { coaches, addCoach, loading } = useCoachesContext();
