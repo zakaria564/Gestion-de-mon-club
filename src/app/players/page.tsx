@@ -207,7 +207,10 @@ function PlayersContent() {
                           <FormItem><FormLabel>Genre</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                              <SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent>
+                              <SelectContent>
+                                <SelectItem value="Masculin">Masculin</SelectItem>
+                                <SelectItem value="Féminin">Féminin</SelectItem>
+                              </SelectContent>
                             </Select>
                           </FormItem>
                         )} />
@@ -215,7 +218,9 @@ function PlayersContent() {
                           <FormItem><FormLabel>Nationalité</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                              <SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
+                              <SelectContent>
+                                {nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+                              </SelectContent>
                             </Select>
                           </FormItem>
                         )} />
@@ -231,7 +236,9 @@ function PlayersContent() {
                         <FormItem><FormLabel>Catégorie</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                            <SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                            <SelectContent>
+                              {playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                            </SelectContent>
                           </Select>
                         </FormItem>
                       )} />
@@ -259,7 +266,9 @@ function PlayersContent() {
                         <FormItem><FormLabel>Entraîneur</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                            <SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
+                            <SelectContent>
+                              {coaches.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
+                            </SelectContent>
                           </Select>
                         </FormItem>
                       )} />
@@ -291,19 +300,25 @@ function PlayersContent() {
                     <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Documents</h4>
                     {fields.map((f, i) => (
                       <div key={f.id} className="p-4 border rounded-md relative bg-muted/20 space-y-4">
-                        <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => remove(i)}><X className="h-4 w-4" /></Button>
+                        <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => remove(i)}>
+                          <X className="h-4 w-4" />
+                        </Button>
                         <FormField control={form.control} name={`documents.${i}.name`} render={({field}) => (
                           <FormItem><FormLabel>Nom du document</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                              <SelectContent>{documentOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                              <SelectContent>
+                                {documentOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                              </SelectContent>
                             </Select>
                           </FormItem>
                         )} />
                         <FormField control={form.control} name={`documents.${i}.url`} render={({field}) => <FormItem><FormLabel>Lien URL</FormLabel><Input {...field} /></FormItem>} />
                       </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un document</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}>
+                      <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un document
+                    </Button>
                   </div>
                 </div>
               </div>
