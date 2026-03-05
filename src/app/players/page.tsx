@@ -112,8 +112,12 @@ function PlayersContent() {
   const cats = Object.keys(currentGroups).sort((a,b) => playerCategories.indexOf(a) - playerCategories.indexOf(b));
   const currentCat = activeCategory && currentGroups[activeCategory] ? activeCategory : (cats[0] || '');
 
-  if (loading && players.length === 0) {
-    return <div className="p-8 text-center text-muted-foreground">Chargement des joueurs...</div>;
+  if (loading && !isSubmitting && players.length === 0) {
+    return (
+      <div className="flex-1 p-8 text-center text-muted-foreground">
+        Chargement des joueurs...
+      </div>
+    );
   }
 
   return (

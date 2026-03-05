@@ -100,7 +100,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
     }
   };
 
-  if (loading) return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;
+  if (loading && !isSubmitting) return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;
   if (!player) return notFound();
 
   return (

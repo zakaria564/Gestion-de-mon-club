@@ -96,13 +96,18 @@ export default function OpponentsPage() {
   };
 
   const handleDeleteGroup = async (group: any) => {
-    for (const item of group.originalItems) {
-      await deleteOpponent(item.id);
+    setIsSubmitting(true);
+    try {
+      for (const item of group.originalItems) {
+        await deleteOpponent(item.id);
+      }
+      toast({ variant: "destructive", title: "Équipe supprimée" });
+    } finally {
+      setIsSubmitting(false);
     }
-    toast({ variant: "destructive", title: "Équipe supprimée" });
   };
 
-  if (loading && opponents.length === 0) return <div className="p-8 text-center text-muted-foreground">Chargement des adversaires...</div>;
+  if (loading && !isSubmitting && opponents.length === 0) return <div className="p-8 text-center text-muted-foreground">Chargement des adversaires...</div>;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
