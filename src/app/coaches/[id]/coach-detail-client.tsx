@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useMemo, useState, useEffect } from 'react';
@@ -167,7 +166,7 @@ export function CoachDetailClient({ id }: { id: string }) {
                 <h3 className="font-semibold text-lg">Informations Sportives</h3>
                 <div className="flex items-center gap-4"><Award className="h-5 w-5 text-muted-foreground" /><span>{coach.specialization}</span></div>
                 <div className="flex items-center gap-4"><Users className="h-5 w-5 text-muted-foreground" /><span>{coach.experience} ans d'expérience</span></div>
-                 <div className="flex items-center gap-4"><Home className="h-5 w-5 text-muted-foreground" /><span><Badge style={{ backgroundColor: categoryColors[coach.category.replace(' F', '')], color: 'white' }}>{coach.category}</Badge></span></div>
+                 <div className="flex items-center gap-4"><Home className="h-5 w-5 text-muted-foreground" /><span><Badge style={{ backgroundColor: categoryColors[coach.category.replace(' F', '')] || 'hsl(var(--primary))', color: 'white' }}>{coach.category}</Badge></span></div>
                 <div className="flex items-center gap-4"><Award className="h-5 w-5 text-muted-foreground" /><span><Badge variant={getBadgeVariant(coach.status) as any}>{coach.status}</Badge></span></div>
             </div>
             {coach.documents && coach.documents.length > 0 && (

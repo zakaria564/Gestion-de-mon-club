@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -58,7 +57,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { players, loading, updatePlayer, deletePlayer, getPlayerById } = context;
+  const { loading, updatePlayer, deletePlayer, getPlayerById } = context;
   const { coaches } = coachesContext;
   
   const player = useMemo(() => getPlayerById(id), [id, getPlayerById]);
@@ -105,7 +104,10 @@ export function PlayerDetailClient({ id }: { id: string }) {
     }
   };
 
-  if (loading && !isSubmitting) return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;
+  if (loading && !isSubmitting) {
+    return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;
+  }
+
   if (!player) return notFound();
 
   return (
@@ -136,7 +138,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold border-b pb-1">Club</h3>
             <div className="flex items-center gap-3"><Shirt className="h-4 w-4 text-muted-foreground" /><span>{player.poste} (# {player.jerseyNumber})</span></div>
-            <div className="flex items-center gap-3"><Home className="h-4 w-4 text-muted-foreground" /><Badge style={{ backgroundColor: categoryColors[player.category as keyof typeof categoryColors], color: 'white' }}>{player.category}</Badge></div>
+            <div className="flex items-center gap-3"><Home className="h-4 w-4 text-muted-foreground" /><Badge style={{ backgroundColor: categoryColors[player.category as keyof typeof categoryColors] || 'hsl(var(--primary))', color: 'white' }}>{player.category}</Badge></div>
             <div className="flex items-center gap-3"><UserCheck className="h-4 w-4 text-muted-foreground" /><span>{player.coachName || 'Sans coach'}</span></div>
             <Badge variant="outline">{player.status}</Badge>
           </div>
