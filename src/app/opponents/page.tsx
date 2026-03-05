@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Edit, Trash2, Shield, Camera, MoreHorizontal } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Shield, Camera, MoreHorizontal, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,18 +62,24 @@ export default function OpponentsPage() {
 
     setIsSubmitting(true);
 
-    if (isEditing) {
-      const toDelete = opponents.filter(o => o.name.trim() === editingName.trim());
-      for (const o of toDelete) {
-        await deleteOpponent(o.id);
+    try {
+      if (isEditing) {
+        const toDelete = opponents.filter(o => o.name.trim() === editingName.trim());
+        for (const o of toDelete) {
+          await deleteOpponent(o.id);
+        }
       }
+
+      if (formData.isMasculin) await addOpponent({ name: formData.name, logoUrl: formData.logoUrl, gender: "Masculin" });
+      if (formData.isFeminin) await addOpponent({ name: formData.name, logoUrl: formData.logoUrl, gender: "Féminin" });
+
+      toast({ title: isEditing ? "Équipe mise à jour" : "Équipe ajoutée" });
+      resetForm();
+    } catch (error) {
+      toast({ variant: "destructive", title: "Erreur", description: "Une erreur est survenue." });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    if (formData.isMasculin) await addOpponent({ name: formData.name, logoUrl: formData.logoUrl, gender: "Masculin" });
-    if (formData.isFeminin) await addOpponent({ name: formData.name, logoUrl: formData.logoUrl, gender: "Féminin" });
-
-    toast({ title: isEditing ? "Équipe mise à jour" : "Équipe ajoutée" });
-    resetForm();
   };
 
   const handleEdit = (group: any) => {
@@ -111,7 +117,7 @@ export default function OpponentsPage() {
           <Card key={group.name} className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center gap-4 pb-4">
               <Avatar className="h-12 w-12 border">
-                <AvatarImage src={group.logoUrl} alt={group.name} />
+                <AvatarImage src={group.logoUrl || undefined} alt={group.name} />
                 <AvatarFallback>{group.name.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
@@ -161,7 +167,7 @@ export default function OpponentsPage() {
               <div className="space-y-6">
                 <div className="flex flex-col items-center gap-4">
                   <Avatar className="h-24 w-24 border">
-                    <AvatarImage src={formData.logoUrl} />
+                    <AvatarImage src={formData.logoUrl || undefined} />
                     <AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
                   </Avatar>
                   <div className="w-full space-y-2">
@@ -191,7 +197,7 @@ export default function OpponentsPage() {
             <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
               <Button type="button" variant="outline" onClick={resetForm} disabled={isSubmitting}>Annuler</Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Enregistrement..." : "Enregistrer"}
+                {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : "Enregistrer"}
               </Button>
             </DialogFooter>
           </form>

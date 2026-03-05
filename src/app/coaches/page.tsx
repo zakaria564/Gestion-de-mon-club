@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
-import { PlusCircle, Search, Camera } from "lucide-react";
+import { PlusCircle, Search, Camera, Loader2 } from "lucide-react";
 
 const playerCategories = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'].flatMap(c => [c, `${c} F`]);
 const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Belge", "Suisse", "Canadienne"];
@@ -41,6 +41,7 @@ export default function CoachesPage() {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<CoachFormValues>({
     resolver: zodResolver(coachSchema),
@@ -48,10 +49,17 @@ export default function CoachesPage() {
   });
 
   const onSubmit = async (data: CoachFormValues) => {
-    await addCoach({ ...data, gender: data.category.endsWith(' F') ? 'Féminin' : 'Masculin', status: 'Actif' } as any);
-    setOpen(false);
-    form.reset();
-    toast({ title: "Entraîneur ajouté" });
+    setIsSubmitting(true);
+    try {
+      await addCoach({ ...data, gender: data.category.endsWith(' F') ? 'Féminin' : 'Masculin', status: 'Actif' } as any);
+      setOpen(false);
+      form.reset();
+      toast({ title: "Entraîneur ajouté" });
+    } catch (e) {
+      toast({ variant: "destructive", title: "Erreur" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -77,7 +85,10 @@ export default function CoachesPage() {
           <Card key={c.id} className="hover:shadow-lg transition-shadow">
             <Link href={`/coaches/${c.id}`}>
               <CardHeader className="p-4 flex flex-row items-center gap-4">
-                <Avatar className="size-16"><AvatarImage src={c.photo} /><AvatarFallback>{c.name.substring(0, 2)}</AvatarFallback></Avatar>
+                <Avatar className="size-16">
+                  <AvatarImage src={c.photo || undefined} />
+                  <AvatarFallback>{c.name.substring(0, 2)}</AvatarFallback>
+                </Avatar>
                 <div className="flex-1"><CardTitle className="text-base">{c.name}</CardTitle><CardDescription>{c.specialization}</CardDescription></div>
               </CardHeader>
               <CardContent className="p-4 pt-0 flex justify-between items-center"><Badge variant="outline">{c.category}</Badge><Badge>{c.status}</Badge></CardContent>
@@ -94,7 +105,10 @@ export default function CoachesPage() {
               <div className="flex-1 overflow-y-auto px-6 py-4">
                 <div className="space-y-6">
                   <div className="flex flex-col items-center gap-4">
-                    <Avatar className="h-24 w-24 border"><AvatarImage src={form.watch('photo')} /><AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback></Avatar>
+                    <Avatar className="h-24 w-24 border">
+                      <AvatarImage src={form.watch('photo') || undefined} />
+                      <AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
+                    </Avatar>
                     <FormField control={form.control} name="photo" render={({field}) => <FormItem className="w-full max-w-sm"><FormLabel>URL Photo</FormLabel><Input {...field} /></FormItem>} />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -111,8 +125,10 @@ export default function CoachesPage() {
                 </div>
               </div>
               <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
-                <Button type="submit">Enregistrer</Button>
+                <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>Annuler</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : "Enregistrer"}
+                </Button>
               </DialogFooter>
             </form>
           </Form>

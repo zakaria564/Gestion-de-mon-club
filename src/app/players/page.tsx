@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Camera, Search, X } from "lucide-react";
+import { PlusCircle, Camera, Search, X, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,6 +63,7 @@ function PlayersContent() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const activeGender = searchParams.get('gender') || 'male';
   const activeCategory = searchParams.get('category');
@@ -81,10 +82,17 @@ function PlayersContent() {
   };
 
   const onSubmit = async (data: PlayerFormValues) => {
-    await addPlayer(data);
-    setOpen(false);
-    form.reset();
-    toast({ title: "Joueur ajouté" });
+    setIsSubmitting(true);
+    try {
+      await addPlayer(data);
+      setOpen(false);
+      form.reset();
+      toast({ title: "Joueur ajouté" });
+    } catch (e) {
+      toast({ variant: "destructive", title: "Erreur lors de l'ajout" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -147,7 +155,7 @@ function PlayersContent() {
                             <Link href={`/players/${p.id}`}>
                               <CardHeader className="p-4 flex flex-row items-center gap-4">
                                 <Avatar className="h-16 w-16 border">
-                                  <AvatarImage src={p.photo} />
+                                  <AvatarImage src={p.photo || undefined} />
                                   <AvatarFallback>{p.name.substring(0, 2)}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1">
@@ -187,7 +195,7 @@ function PlayersContent() {
                 <div className="space-y-8">
                   <div className="flex flex-col items-center gap-4">
                     <Avatar className="h-24 w-24 border">
-                      <AvatarImage src={form.watch('photo')} />
+                      <AvatarImage src={form.watch('photo') || undefined} />
                       <AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
                     </Avatar>
                     <FormField control={form.control} name="photo" render={({field}) => (
@@ -291,7 +299,7 @@ function PlayersContent() {
                     <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Tuteur (Mineurs)</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField control={form.control} name="tutorName" render={({field}) => <FormItem><FormLabel>Nom tuteur</FormLabel><Input {...field} /></FormItem>} />
-                      <FormField control={form.control} name="tutorPhone" render={({field}) => <FormItem><FormLabel>Téléphone tuteur</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="tutorPhone" render={({field}) => <FormItem><FormLabel>Téléphone tuteur</Label><Input {...field} /></FormItem>} />
                       <FormField control={form.control} name="tutorEmail" render={({field}) => <FormItem><FormLabel>Email tuteur</FormLabel><Input type="email" {...field} /></FormItem>} />
                       <FormField control={form.control} name="tutorCin" render={({field}) => <FormItem><FormLabel>N° CIN tuteur</FormLabel><Input {...field} /></FormItem>} />
                     </div>
@@ -323,8 +331,10 @@ function PlayersContent() {
                 </div>
               </div>
               <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
-                <Button type="submit">Enregistrer</Button>
+                <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>Annuler</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : "Enregistrer"}
+                </Button>
               </DialogFooter>
             </form>
           </Form>
