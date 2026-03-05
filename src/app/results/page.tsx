@@ -77,10 +77,10 @@ export default function ResultsPage() {
   if (loading) return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Résultats</h2>
-        <Button onClick={() => setOpen(true)}><PlusCircle className="mr-2 h-4 w-4" /> Ajouter</Button>
+        <Button onClick={() => setOpen(true)}><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un résultat</Button>
       </div>
 
       <div className="grid gap-4">
@@ -98,7 +98,7 @@ export default function ResultsPage() {
                       {res.matchType === 'opponent-vs-opponent' ? res.opponent : (res.homeOrAway === 'home' ? `${clubInfo.name} vs ${res.opponent}` : `${res.opponent} vs ${clubInfo.name}`)}
                     </p>
                     <div className="flex gap-2 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {format(parseISO(res.date), 'dd/MM/yyyy')}</span>
+                      <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {res.date ? format(parseISO(res.date), 'dd/MM/yyyy') : 'N/A'}</span>
                       <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {res.location}</span>
                     </div>
                   </div>
@@ -132,28 +132,64 @@ export default function ResultsPage() {
               <div className="space-y-6">
                 <RadioGroup value={matchType} onValueChange={(v: any) => setMatchType(v)} className="flex gap-4">
                   <div className="flex items-center space-x-2"><RadioGroupItem value="club-match" id="club" /><Label htmlFor="club">Mon Club</Label></div>
-                  <div className="flex items-center space-x-2"><RadioGroupItem value="opponent-vs-opponent" id="opp" /><Label htmlFor="opponent">Adversaires</Label></div>
+                  <div className="flex items-center space-x-2"><RadioGroupItem value="opponent-vs-opponent" id="opp" /><Label htmlFor="opp">Adversaires</Label></div>
                 </RadioGroup>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2"><Label>Date</Label><Input id="date" type="date" value={newResult.date} onChange={handleInputChange} required /></div>
-                  <div className="grid gap-2"><Label>Score (ex: 2-1)</Label><Input id="score" value={newResult.score} onChange={handleInputChange} required className="text-center font-bold text-lg" /></div>
+                  <div className="grid gap-2"><Label htmlFor="date">Date</Label><Input id="date" type="date" value={newResult.date} onChange={handleInputChange} required /></div>
+                  <div className="grid gap-2"><Label htmlFor="score">Score (ex: 2-1)</Label><Input id="score" value={newResult.score} onChange={handleInputChange} required className="text-center font-bold text-lg" /></div>
                 </div>
                 {matchType === 'club-match' ? (
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2"><Label>Lieu</Label><Select value={newResult.homeOrAway} onValueChange={(v: any) => setNewResult(p => ({...p, homeOrAway: v}))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="home">Domicile</SelectItem><SelectItem value="away">Extérieur</SelectItem></SelectContent></Select></div>
-                    <div className="grid gap-2"><Label>Adversaire</Label><Select value={newResult.opponent} onValueChange={(v) => setNewResult(p => ({...p, opponent: v}))}><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger><SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="grid gap-2">
+                      <Label>Lieu</Label>
+                      <Select value={newResult.homeOrAway} onValueChange={(v: any) => setNewResult(p => ({...p, homeOrAway: v}))}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent><SelectItem value="home">Domicile</SelectItem><SelectItem value="away">Extérieur</SelectItem></SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Adversaire</Label>
+                      <Select value={newResult.opponent} onValueChange={(v) => setNewResult(p => ({...p, opponent: v}))}>
+                        <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
+                        <SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2"><Label>Équipe Domicile</Label><Select value={newResult.homeTeam} onValueChange={(v) => setNewResult(p => ({...p, homeTeam: v}))}><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger><SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent></Select></div>
-                    <div className="grid gap-2"><Label>Équipe Extérieur</Label><Select value={newResult.awayTeam} onValueChange={(v) => setNewResult(p => ({...p, awayTeam: v}))}><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger><SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="grid gap-2">
+                      <Label>Équipe Domicile</Label>
+                      <Select value={newResult.homeTeam} onValueChange={(v) => setNewResult(p => ({...p, homeTeam: v}))}>
+                        <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
+                        <SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Équipe Extérieur</Label>
+                      <Select value={newResult.awayTeam} onValueChange={(v) => setNewResult(p => ({...p, awayTeam: v}))}>
+                        <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
+                        <SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2"><Label>Type</Label><Select value={newResult.category} onValueChange={(v) => setNewResult(p => ({...p, category: v}))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{matchCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-                  <div className="grid gap-2"><Label>Catégorie</Label><Select value={newResult.teamCategory} onValueChange={(v) => setNewResult(p => ({...p, teamCategory: v}))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="grid gap-2">
+                    <Label>Type</Label>
+                    <Select value={newResult.category} onValueChange={(v) => setNewResult(p => ({...p, category: v}))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{matchCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Catégorie</Label>
+                    <Select value={newResult.teamCategory} onValueChange={(v) => setNewResult(p => ({...p, teamCategory: v}))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="grid gap-2"><Label>Lieu exact</Label><Input id="location" value={newResult.location} onChange={handleInputChange} required placeholder="ex: Stade Municipal" /></div>
+                <div className="grid gap-2"><Label htmlFor="location">Lieu exact</Label><Input id="location" value={newResult.location} onChange={handleInputChange} required placeholder="ex: Stade Municipal" /></div>
               </div>
             </div>
             <DialogFooter className="p-6 border-t bg-background flex gap-2 shrink-0">
