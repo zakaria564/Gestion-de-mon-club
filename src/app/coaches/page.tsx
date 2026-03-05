@@ -93,7 +93,7 @@ export default function CoachesPage() {
         <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
           <DialogHeader className="p-6 pb-2"><DialogTitle>Nouvel Entraîneur</DialogTitle></DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               <ScrollArea className="flex-1 px-6">
                 <div className="space-y-6 py-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -108,7 +108,7 @@ export default function CoachesPage() {
                   </div>
                 </div>
               </ScrollArea>
-              <DialogFooter className="p-6 border-t bg-background flex gap-2">
+              <DialogFooter className="p-6 border-t bg-background flex gap-2 shrink-0">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Annuler</Button>
                 <Button type="submit">Enregistrer</Button>
               </DialogFooter>

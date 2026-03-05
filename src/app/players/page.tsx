@@ -189,7 +189,7 @@ function PlayersContent() {
             <DialogDescription>Remplissez les informations pour inscrire un nouveau joueur.</DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               <ScrollArea className="flex-1 px-6">
                 <div className="space-y-8 py-4">
                   <div className="flex flex-col items-center gap-4">
@@ -313,7 +313,7 @@ function PlayersContent() {
                   </div>
                 </div>
               </ScrollArea>
-              <DialogFooter className="p-6 border-t bg-background flex gap-2">
+              <DialogFooter className="p-6 border-t bg-background flex gap-2 shrink-0">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Annuler</Button>
                 <Button type="submit">Enregistrer le joueur</Button>
               </DialogFooter>

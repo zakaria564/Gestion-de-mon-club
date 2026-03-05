@@ -32,7 +32,9 @@ const documentSchema = z.object({
   expirationDate: z.string().optional(),
 });
 
-const playerCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+const playerCategories = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
+const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise", "Américaine", "Russe", "Japonaise", "Chinoise", "Indienne", "Turque", "Égyptienne", "Nigériane", "Sud-africaine", "Ghanéenne"];
+const documentOptions = ["Certificat Médical", "Carte d'identité", "Passeport", "Extrait de naissance", "Photo d'identité", "Autorisation Parentale", "Fiche de renseignements", "Justificatif de domicile", "Licence sportive", "Assurance", "Autre"];
 
 const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
@@ -59,12 +61,6 @@ const playerSchema = z.object({
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
-
-const documentOptions = [
-  "Certificat Médical", "Carte d'identité", "Passeport", "Extrait de naissance", "Photo d'identité", "Autorisation Parentale", "Fiche de renseignements", "Justificatif de domicile", "Licence sportive", "Assurance", "Autre"
-];
-
-const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise", "Américaine", "Russe", "Japonaise", "Chinoise", "Indienne", "Turque", "Égyptienne", "Nigériane", "Sud-africaine", "Ghanéenne"];
 
 const categoryColors: Record<string, string> = {
   'Sénior': 'hsl(var(--chart-1))', 'U23': 'hsl(var(--chart-2))', 'U20': 'hsl(340, 80%, 55%)', 'U19': 'hsl(var(--chart-3))', 'U18': 'hsl(var(--chart-4))', 'U17': 'hsl(var(--chart-5))', 'U16': 'hsl(var(--chart-6))', 'U15': 'hsl(var(--chart-7))', 'U13': 'hsl(var(--chart-8))', 'U9': 'hsl(25 60% 45%)', 'U11': 'hsl(var(--chart-10))', 'U7': 'hsl(var(--chart-11))',
@@ -212,35 +208,146 @@ export function PlayerDetailClient({ id: idParam }: { id: string }) {
             <Button variant="outline" onClick={() => setDialogOpen(true)}><Edit className="h-4 w-4 mr-2" /> Modifier</Button>
             <AlertDialog>
                 <AlertDialogTrigger asChild><Button variant="destructive"><Trash2 className="h-4 w-4 mr-2" /> Supprimer</Button></AlertDialogTrigger>
-                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle><AlertDialogDescription>Action irréversible.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Annuler</AlertDialogCancel><AlertDialogAction onClick={handleDeletePlayer}>Supprimer</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle><AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Annuler</AlertDialogCancel><AlertDialogAction onClick={handleDeletePlayer}>Supprimer</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
             </AlertDialog>
         </CardFooter>
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 flex flex-col overflow-hidden">
-          <DialogHeader className="p-6 pb-2"><DialogTitle>Modifier un joueur</DialogTitle></DialogHeader>
+          <DialogHeader className="p-6 pb-2">
+            <DialogTitle>Modifier un joueur</DialogTitle>
+          </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
                 <ScrollArea className="flex-1 px-6">
-                  <div className="space-y-6 py-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                            <h4 className="font-bold border-b">Identité & Contact</h4>
-                            <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom complet</FormLabel><Input {...field} /></FormItem>} />
-                            <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de naissance</FormLabel><Input type="date" {...field} /></FormItem>} />
-                            <FormField control={form.control} name="email" render={({field}) => <FormItem><FormLabel>Email</FormLabel><Input type="email" {...field} /></FormItem>} />
-                            <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone</FormLabel><Input {...field} /></FormItem>} />
+                  <div className="space-y-8 py-4">
+                    <div className="flex flex-col items-center gap-4">
+                      <Avatar className="h-24 w-24 border">
+                        <AvatarImage src={form.watch('photo')} /><AvatarFallback className="bg-muted"><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
+                      </Avatar>
+                      <FormField control={form.control} name="photo" render={({field}) => (
+                        <FormItem className="w-full max-w-sm">
+                          <FormLabel>URL Photo</FormLabel>
+                          <Input {...field} placeholder="https://..." />
+                        </FormItem>
+                      )} />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                      <div className="space-y-4">
+                        <h4 className="font-bold text-sm uppercase text-primary tracking-wider border-b pb-1">Identité & Contact</h4>
+                        <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom complet</FormLabel><Input {...field} required /></FormItem>} />
+                        <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de naissance</FormLabel><Input type="date" {...field} required /></FormItem>} />
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField control={form.control} name="gender" render={({field}) => (
+                            <FormItem><FormLabel>Genre</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                <SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent>
+                              </Select>
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="country" render={({field}) => (
+                            <FormItem><FormLabel>Nationalité</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                <SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
+                              </Select>
+                            </FormItem>
+                          )} />
                         </div>
-                        <div className="space-y-4">
-                            <h4 className="font-bold border-b">Sportif</h4>
-                            <FormField control={form.control} name="poste" render={({field}) => <FormItem><FormLabel>Poste</FormLabel><Input {...field} /></FormItem>} />
-                            <FormField control={form.control} name="jerseyNumber" render={({field}) => <FormItem><FormLabel>N° Maillot</FormLabel><Input type="number" {...field} /></FormItem>} />
+                        <FormField control={form.control} name="cin" render={({field}) => <FormItem><FormLabel>N° CIN</FormLabel><Input {...field} /></FormItem>} />
+                        <FormField control={form.control} name="email" render={({field}) => <FormItem><FormLabel>Email</FormLabel><Input type="email" {...field} /></FormItem>} />
+                        <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone</FormLabel><Input {...field} required /></FormItem>} />
+                        <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><Input {...field} required /></FormItem>} />
+                      </div>
+
+                      <div className="space-y-4">
+                        <h4 className="font-bold text-sm uppercase text-primary tracking-wider border-b pb-1">Sportif</h4>
+                        <FormField control={form.control} name="category" render={({field}) => (
+                          <FormItem><FormLabel>Catégorie</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                              <SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                            </Select>
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="poste" render={({field}) => (
+                          <FormItem><FormLabel>Poste</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                              <SelectContent>
+                                <SelectItem value="Gardien">Gardien</SelectItem>
+                                <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
+                                <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
+                                <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
+                                <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
+                                <SelectItem value="Milieu Central">Milieu Central</SelectItem>
+                                <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
+                                <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
+                                <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
+                                <SelectItem value="Avant-centre">Avant-centre</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="jerseyNumber" render={({field}) => <FormItem><FormLabel>N° Maillot</FormLabel><Input type="number" {...field} required /></FormItem>} />
+                        <FormField control={form.control} name="coachName" render={({field}) => (
+                          <FormItem><FormLabel>Entraîneur</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                              <SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
+                            </Select>
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="status" render={({field}) => (
+                          <FormItem><FormLabel>Statut</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                              <SelectContent>
+                                <SelectItem value="Actif">Actif</SelectItem>
+                                <SelectItem value="Blessé">Blessé</SelectItem>
+                                <SelectItem value="Suspendu">Suspendu</SelectItem>
+                                <SelectItem value="Inactif">Inactif</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )} />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="font-bold text-sm uppercase text-primary tracking-wider border-b pb-1">Tuteur (Mineurs)</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField control={form.control} name="tutorName" render={({field}) => <FormItem><FormLabel>Nom tuteur</FormLabel><Input {...field} /></FormItem>} />
+                        <FormField control={form.control} name="tutorPhone" render={({field}) => <FormItem><FormLabel>Téléphone tuteur</FormLabel><Input {...field} /></FormItem>} />
+                        <FormField control={form.control} name="tutorEmail" render={({field}) => <FormItem><FormLabel>Email tuteur</FormLabel><Input type="email" {...field} /></FormItem>} />
+                        <FormField control={form.control} name="tutorCin" render={({field}) => <FormItem><FormLabel>N° CIN tuteur</FormLabel><Input {...field} /></FormItem>} />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 pb-10">
+                      <h4 className="font-bold text-sm uppercase text-primary tracking-wider border-b pb-1">Documents</h4>
+                      {fields.map((field, index) => (
+                        <div key={field.id} className="p-4 border rounded-md space-y-4 relative bg-muted/20">
+                          <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => remove(index)}><X className="h-4 w-4" /></Button>
+                          <FormField control={form.control} name={`documents.${index}.name`} render={({field}) => (
+                            <FormItem><FormLabel>Nom du doc</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                <SelectContent>{documentOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                              </Select>
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name={`documents.${index}.url`} render={({field}) => <FormItem><FormLabel>Lien du document (URL)</FormLabel><Input {...field} /></FormItem>} />
                         </div>
+                      ))}
+                      <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un document</Button>
                     </div>
                   </div>
                 </ScrollArea>
-                <DialogFooter className="p-6 border-t bg-background flex gap-2">
+                <DialogFooter className="p-6 border-t bg-background flex gap-2 shrink-0">
                   <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                   <Button type="submit">Mettre à jour</Button>
                 </DialogFooter>
