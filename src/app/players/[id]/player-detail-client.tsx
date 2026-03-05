@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useMemo, useState, useEffect } from 'react';
 import type { Player } from "@/lib/data";
@@ -112,7 +112,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
       <Card>
         <CardHeader className="flex flex-row items-center gap-6">
           <Avatar className="h-32 w-32 border">
-            <AvatarImage src={player.photo} />
+            <AvatarImage src={player.photo || undefined} />
             <AvatarFallback className="text-4xl">{player.name.substring(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex-1">

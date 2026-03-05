@@ -96,9 +96,10 @@ function PlayersContent() {
   };
 
   const filtered = useMemo(() => {
+    const q = searchQuery.toLowerCase();
     return (players || []).filter(p => 
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      p.poste.toLowerCase().includes(searchQuery.toLowerCase())
+      p.name.toLowerCase().includes(q) || 
+      p.poste.toLowerCase().includes(q)
     );
   }, [players, searchQuery]);
 
@@ -305,7 +306,7 @@ function PlayersContent() {
                       <FormField control={form.control} name="tutorName" render={({field}) => <FormItem><FormLabel>Nom tuteur</FormLabel><Input {...field} /></FormItem>} />
                       <FormField control={form.control} name="tutorPhone" render={({field}) => <FormItem><FormLabel>Téléphone tuteur</Label><Input {...field} /></FormItem>} />
                       <FormField control={form.control} name="tutorEmail" render={({field}) => <FormItem><FormLabel>Email tuteur</FormLabel><Input type="email" {...field} /></FormItem>} />
-                      <FormField control={form.control} name="tutorCin" render={({field}) => <FormItem><FormLabel>N° CIN tuteur</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="tutorCin" render={({field}) => <FormItem><FormLabel>N° CIN tuteur</Label><Input {...field} /></FormItem>} />
                     </div>
                   </div>
                   <div className="space-y-4 pb-10">
