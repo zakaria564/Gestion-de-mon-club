@@ -3,7 +3,7 @@
 
 import React, { useMemo, useRef, use } from "react";
 import { notFound, useRouter } from "next/navigation";
-import jsPDF from "jspdf";
+import jsPDF from "jsPDF";
 import html2canvas from "html2canvas";
 import { useFinancialContext } from "@/context/financial-context";
 import { useClubContext } from "@/context/club-context";
