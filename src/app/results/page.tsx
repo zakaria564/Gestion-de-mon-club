@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -28,11 +27,10 @@ export default function ResultsPage() {
   const clubContext = useClubContext();
   const opponentsContext = useOpponentsContext();
 
-  if (!context || !clubContext || !opponentsContext) return null;
-
-  const { results, loading, addResult, updateResult, deleteResult } = context;
-  const { clubInfo } = clubContext;
-  const { opponents } = opponentsContext;
+  const results = context?.results || [];
+  const loading = context?.loading || false;
+  const clubInfo = clubContext?.clubInfo || { name: 'Mon Club' };
+  const opponents = opponentsContext?.opponents || [];
 
   const [open, setOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -59,8 +57,8 @@ export default function ResultsPage() {
     event.preventDefault();
     const finalResult = { ...newResult, matchType };
     if (matchType === 'opponent-vs-opponent') finalResult.opponent = `${finalResult.homeTeam} vs ${finalResult.awayTeam}`;
-    if (isEditing && editingResult) await updateResult({ id: editingResult.id, ...finalResult });
-    else await addResult(finalResult);
+    if (isEditing && editingResult) await context?.updateResult({ id: editingResult.id, ...finalResult });
+    else await context?.addResult(finalResult);
     resetForm();
   };
 
@@ -71,8 +69,6 @@ export default function ResultsPage() {
     setIsEditing(true);
     setOpen(true);
   };
-
-  const filteredOpponents = opponents.filter(op => op.gender === newResult.gender);
 
   if (loading) return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;
 
@@ -112,7 +108,7 @@ export default function ResultsPage() {
                       <DropdownMenuSeparator />
                       <AlertDialog>
                         <AlertDialogTrigger asChild><DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem></AlertDialogTrigger>
-                        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Confirmer</AlertDialogTitle><AlertDialogDescription>Supprimer ce résultat ?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Annuler</AlertDialogCancel><AlertDialogAction onClick={() => deleteResult(res.id)}>Supprimer</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Confirmer</AlertDialogTitle><AlertDialogDescription>Supprimer ce résultat ?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Annuler</AlertDialogCancel><AlertDialogAction onClick={() => context?.deleteResult(res.id)}>Supprimer</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
                       </AlertDialog>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -151,7 +147,7 @@ export default function ResultsPage() {
                       <Label>Adversaire</Label>
                       <Select value={newResult.opponent} onValueChange={(v) => setNewResult(p => ({...p, opponent: v}))}>
                         <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
-                        <SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
+                        <SelectContent>{opponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
                   </div>
@@ -161,14 +157,14 @@ export default function ResultsPage() {
                       <Label>Équipe Domicile</Label>
                       <Select value={newResult.homeTeam} onValueChange={(v) => setNewResult(p => ({...p, homeTeam: v}))}>
                         <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
-                        <SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
+                        <SelectContent>{opponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
                     <div className="grid gap-2">
                       <Label>Équipe Extérieur</Label>
                       <Select value={newResult.awayTeam} onValueChange={(v) => setNewResult(p => ({...p, awayTeam: v}))}>
                         <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
-                        <SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
+                        <SelectContent>{opponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
                   </div>
