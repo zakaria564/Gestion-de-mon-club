@@ -12,7 +12,6 @@ import { useOpponentsContext, Opponent } from "@/context/opponents-context";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export default function OpponentsPage() {
@@ -109,11 +108,6 @@ export default function OpponentsPage() {
               </Avatar>
               <div className="flex-1">
                 <CardTitle className="text-lg">{group.name}</CardTitle>
-                <div className="flex gap-1 mt-1">
-                  {group.genders.map(g => (
-                    <Badge key={g} variant="outline" className="text-[10px] px-1 py-0">{g}</Badge>
-                  ))}
-                </div>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -129,7 +123,7 @@ export default function OpponentsPage() {
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Supprimer l'équipe {group.name} ?</AlertDialogTitle>
-                        <AlertDialogDescription>Cela supprimera les versions Masculine et Féminine enregistrées.</AlertDialogDescription>
+                        <AlertDialogDescription>Cela supprimera toutes les versions de cette équipe.</AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Annuler</AlertDialogCancel>
