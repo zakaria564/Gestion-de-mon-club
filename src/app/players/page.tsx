@@ -46,7 +46,7 @@ const playerSchema = z.object({
   cin: z.string().optional(),
   tutorName: z.string().optional(),
   tutorPhone: z.string().optional(),
-  tutorEmail: z.string().optional(),
+  tutorEmail: z.string().email("L'adresse email du tuteur est invalide.").optional().or(z.literal('')),
   tutorCin: z.string().optional(),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
   category: z.string().min(1, "Catégorie requise"),
@@ -98,7 +98,6 @@ function PlayersContent() {
   };
 
   const filteredPlayers = useMemo(() => {
-    if (!searchQuery) return players;
     return players.filter(p => 
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
       p.poste.toLowerCase().includes(searchQuery.toLowerCase())
@@ -206,7 +205,7 @@ function PlayersContent() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <div className="space-y-4">
-                      <h4 className="font-bold text-sm uppercase text-primary tracking-wider border-b pb-1">Identité</h4>
+                      <h4 className="font-bold text-sm uppercase text-primary tracking-wider border-b pb-1">Identité & Contact</h4>
                       <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom complet</FormLabel><Input {...field} required /></FormItem>} />
                       <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de naissance</FormLabel><Input type="date" {...field} required /></FormItem>} />
                       <div className="grid grid-cols-2 gap-4">
@@ -228,6 +227,7 @@ function PlayersContent() {
                         )} />
                       </div>
                       <FormField control={form.control} name="cin" render={({field}) => <FormItem><FormLabel>N° CIN</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="email" render={({field}) => <FormItem><FormLabel>Email</FormLabel><Input type="email" {...field} placeholder="exemple@mail.com" /></FormItem>} />
                       <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone</FormLabel><Input {...field} required /></FormItem>} />
                       <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><Input {...field} required /></FormItem>} />
                     </div>
@@ -289,7 +289,7 @@ function PlayersContent() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField control={form.control} name="tutorName" render={({field}) => <FormItem><FormLabel>Nom tuteur</FormLabel><Input {...field} /></FormItem>} />
                       <FormField control={form.control} name="tutorPhone" render={({field}) => <FormItem><FormLabel>Téléphone tuteur</FormLabel><Input {...field} /></FormItem>} />
-                      <FormField control={form.control} name="tutorEmail" render={({field}) => <FormItem><FormLabel>Email tuteur</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="tutorEmail" render={({field}) => <FormItem><FormLabel>Email tuteur</FormLabel><Input type="email" {...field} /></FormItem>} />
                       <FormField control={form.control} name="tutorCin" render={({field}) => <FormItem><FormLabel>N° CIN tuteur</FormLabel><Input {...field} /></FormItem>} />
                     </div>
                   </div>

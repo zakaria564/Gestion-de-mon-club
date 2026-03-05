@@ -62,8 +62,8 @@ export default function FinancesPage() {
         else if (currentMonthPayment.status === 'partiel' || (currentMonthPayment.status === 'payé' && hasPastArrears)) status = 'Partiel';
       }
 
-      return { member: member.name, totalPaid: memberPayments.reduce((s, p) => s + p.paidAmount, 0), paymentCount: memberPayments.length, status };
-    }).sort((a, b) => a.member.localeCompare(b.member));
+      return { member: member.name, totalPaid: memberPayments.reduce((s, p) => s + p.paidAmount, 0), status };
+    });
   };
 
   const filteredPlayerMembers = useMemo(() => aggregatePayments(playerPayments, players).filter(p => p.member.toLowerCase().includes(searchQuery.toLowerCase())), [playerPayments, players, searchQuery]);
@@ -74,7 +74,7 @@ export default function FinancesPage() {
     const total = parseFloat(newPaymentData.totalAmount);
     const paid = parseFloat(newPaymentData.initialPaidAmount);
     if (paid > total) {
-      toast({ variant: "destructive", title: "Erreur", description: "Le montant versé dépasse le total dû." });
+      toast({ variant: "destructive", title: "Erreur", description: "Le montant versé dépasse le total." });
       return;
     }
     if (paymentType === 'player') await addPlayerPayment({ ...newPaymentData, totalAmount: total, initialPaidAmount: paid });
@@ -89,12 +89,12 @@ export default function FinancesPage() {
       <CardContent>
         <div className="relative mb-4"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" /><Input placeholder="Rechercher..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" /></div>
         <Table>
-          <TableHeader><TableRow><TableHead>Membre</TableHead><TableHead className="hidden sm:table-cell">Total Payé</TableHead><TableHead>Statut</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>Membre</TableHead><TableHead>Total Payé</TableHead><TableHead>Statut</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
           <TableBody>
             {data.map((item) => (
               <TableRow key={item.member}>
                 <TableCell className="font-medium">{item.member}</TableCell>
-                <TableCell className="hidden sm:table-cell">{item.totalPaid.toFixed(2)} DH</TableCell>
+                <TableCell>{item.totalPaid.toFixed(2)} DH</TableCell>
                 <TableCell><Badge variant={item.status === 'À jour' ? 'default' : item.status === 'Partiel' ? 'secondary' : 'destructive'}>{item.status}</Badge></TableCell>
                 <TableCell className="text-right flex justify-end gap-2">
                   <Button asChild variant="ghost" size="icon"><Link href={`/finances/${type === 'players' ? 'cotisations' : 'coaches'}/${encodeURIComponent(item.member)}`}><Eye className="h-4 w-4" /></Link></Button>
@@ -115,17 +115,17 @@ export default function FinancesPage() {
         <TabsList><TabsTrigger value="players">Joueurs</TabsTrigger><TabsTrigger value="coaches">Entraîneurs</TabsTrigger></TabsList>
         <TabsContent value="players" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
-            <Card><CardHeader className="pb-2 text-xs font-medium uppercase text-muted-foreground">Total dû</CardHeader><CardContent className="text-2xl font-bold">{playerPaymentsOverview.totalDue.toFixed(2)} DH</CardContent></Card>
-            <Card><CardHeader className="pb-2 text-xs font-medium uppercase text-muted-foreground">Encaissé</CardHeader><CardContent className="text-2xl font-bold text-green-600">{playerPaymentsOverview.paymentsMade.toFixed(2)} DH</CardContent></Card>
-            <Card><CardHeader className="pb-2 text-xs font-medium uppercase text-muted-foreground">Reste</CardHeader><CardContent className="text-2xl font-bold text-red-600">{playerPaymentsOverview.paymentsRemaining.toFixed(2)} DH</CardContent></Card>
+            <Card><CardHeader className="pb-2 text-xs font-medium uppercase">Total dû</CardHeader><CardContent className="text-2xl font-bold">{playerPaymentsOverview.totalDue.toFixed(2)} DH</CardContent></Card>
+            <Card><CardHeader className="pb-2 text-xs font-medium uppercase">Encaissé</CardHeader><CardContent className="text-2xl font-bold text-green-600">{playerPaymentsOverview.paymentsMade.toFixed(2)} DH</CardContent></Card>
+            <Card><CardHeader className="pb-2 text-xs font-medium uppercase">Reste</CardHeader><CardContent className="text-2xl font-bold text-red-600">{playerPaymentsOverview.paymentsRemaining.toFixed(2)} DH</CardContent></Card>
           </div>
           {renderTable(filteredPlayerMembers, 'players')}
         </TabsContent>
         <TabsContent value="coaches" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
-            <Card><CardHeader className="pb-2 text-xs font-medium uppercase text-muted-foreground">Total salaires</CardHeader><CardContent className="text-2xl font-bold">{coachSalariesOverview.totalDue.toFixed(2)} DH</CardContent></Card>
-            <Card><CardHeader className="pb-2 text-xs font-medium uppercase text-muted-foreground">Payé</CardHeader><CardContent className="text-2xl font-bold text-green-600">{coachSalariesOverview.paymentsMade.toFixed(2)} DH</CardContent></Card>
-            <Card><CardHeader className="pb-2 text-xs font-medium uppercase text-muted-foreground">Reste à payer</CardHeader><CardContent className="text-2xl font-bold text-red-600">{coachSalariesOverview.paymentsRemaining.toFixed(2)} DH</CardContent></Card>
+            <Card><CardHeader className="pb-2 text-xs font-medium uppercase">Total salaires</CardHeader><CardContent className="text-2xl font-bold">{coachSalariesOverview.totalDue.toFixed(2)} DH</CardContent></Card>
+            <Card><CardHeader className="pb-2 text-xs font-medium uppercase">Payé</CardHeader><CardContent className="text-2xl font-bold text-green-600">{coachSalariesOverview.paymentsMade.toFixed(2)} DH</CardContent></Card>
+            <Card><CardHeader className="pb-2 text-xs font-medium uppercase">Reste à payer</CardHeader><CardContent className="text-2xl font-bold text-red-600">{coachSalariesOverview.paymentsRemaining.toFixed(2)} DH</CardContent></Card>
           </div>
           {renderTable(filteredCoachMembers, 'coaches')}
         </TabsContent>
