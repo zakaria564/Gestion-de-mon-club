@@ -272,7 +272,7 @@ function PlayersContent() {
                         </FormItem>
                       )} />
                       <FormField control={form.control} name="status" render={({field}) => (
-                        <FormItem><FormLabel>Statut</Label>
+                        <FormItem><FormLabel>Statut</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
