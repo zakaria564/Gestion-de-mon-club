@@ -58,7 +58,7 @@ export default function CoachesPage() {
     return (coaches || []).filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [coaches, searchQuery]);
 
-  if (loading) return <div className="p-8 text-center">Chargement...</div>;
+  if (loading && coaches.length === 0) return <div className="p-8 text-center">Chargement...</div>;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">

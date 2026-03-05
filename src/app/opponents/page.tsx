@@ -21,6 +21,7 @@ export default function OpponentsPage() {
   const [open, setOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingName, setEditingName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -49,6 +50,7 @@ export default function OpponentsPage() {
     setIsEditing(false);
     setEditingName("");
     setOpen(false);
+    setIsSubmitting(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,9 +60,13 @@ export default function OpponentsPage() {
       return;
     }
 
+    setIsSubmitting(true);
+
     if (isEditing) {
       const toDelete = opponents.filter(o => o.name.trim() === editingName.trim());
-      for (const o of toDelete) await deleteOpponent(o.id);
+      for (const o of toDelete) {
+        await deleteOpponent(o.id);
+      }
     }
 
     if (formData.isMasculin) await addOpponent({ name: formData.name, logoUrl: formData.logoUrl, gender: "Masculin" });
@@ -89,7 +95,9 @@ export default function OpponentsPage() {
     toast({ variant: "destructive", title: "Équipe supprimée" });
   };
 
-  if (loading) return <div className="p-8 text-center">Chargement...</div>;
+  if (loading && opponents.length === 0) {
+    return <div className="p-8 text-center">Chargement...</div>;
+  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
@@ -181,8 +189,10 @@ export default function OpponentsPage() {
               </div>
             </div>
             <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
-              <Button type="button" variant="outline" onClick={resetForm}>Annuler</Button>
-              <Button type="submit">Enregistrer</Button>
+              <Button type="button" variant="outline" onClick={resetForm} disabled={isSubmitting}>Annuler</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Enregistrement..." : "Enregistrer"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
