@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
 import type { Player } from "@/lib/data";
 
 const playerCategories = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
@@ -77,7 +78,7 @@ function PlayersContent() {
   const form = useForm<PlayerFormValues>({
     resolver: zodResolver(playerSchema),
     defaultValues: {
-      name: '', birthDate: '', address: '', phone: '', email: '', country: 'Marocaine', poste: '', jerseyNumber: 0, photo: '', cin: '', tutorName: '', tutorPhone: '', tutorEmail: '', tutorCin: '', status: 'Actif', category: '', gender: 'Masculin', coachName: '', documents: [],
+      name: '', birthDate: '', address: '', phone: '', email: '', country: 'Marocaine', poste: '', jerseyNumber: 0, photo: '', cin: '', tutorName: '', tutorPhone: '', tutorEmail: '', tutorCin: '', status: 'Actif', category: 'Sénior', gender: 'Masculin', coachName: '', documents: [],
     },
   });
 
@@ -97,7 +98,7 @@ function PlayersContent() {
   };
 
   const filteredPlayers = useMemo(() => {
-    return players.filter(p => 
+    return (players || []).filter(p => 
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
       p.poste.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -119,10 +120,10 @@ function PlayersContent() {
   }, [filteredPlayers]);
 
   const currentGroups = activeGender === 'female' ? groupedPlayers.female : groupedPlayers.male;
-  const availableCategories = Object.keys(currentGroups).sort((a,b) => playerCategories.indexOf(a) - playerCategories.indexOf(b));
+  const availableCategories = Object.keys(currentGroups || {}).sort((a,b) => playerCategories.indexOf(a) - playerCategories.indexOf(b));
   const currentCategory = activeCategory && currentGroups[activeCategory] ? activeCategory : (availableCategories[0] || '');
 
-  if (loading) return <div className="p-8">Chargement des joueurs...</div>;
+  if (loading) return <div className="p-8 text-center">Chargement des joueurs...</div>;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
@@ -161,7 +162,7 @@ function PlayersContent() {
                           <Card key={p.id} className="hover:shadow-lg transition-shadow">
                             <Link href={`/players/${p.id}`}>
                               <CardHeader className="p-4 flex flex-row items-center gap-4">
-                                <Avatar className="h-16 w-16"><AvatarImage src={p.photo} alt={p.name} /><AvatarFallback>{p.name.substring(0, 2)}</AvatarFallback></Avatar>
+                                <Avatar className="h-16 w-16 border"><AvatarImage src={p.photo} alt={p.name} /><AvatarFallback>{p.name.substring(0, 2)}</AvatarFallback></Avatar>
                                 <div className="flex-1"><CardTitle className="text-base font-bold">{p.name}</CardTitle><CardDescription>{p.poste}</CardDescription></div>
                               </CardHeader>
                               <CardContent className="p-4 pt-0 flex justify-between items-center">
@@ -265,7 +266,7 @@ function PlayersContent() {
                       <FormField control={form.control} name="coachName" render={({field}) => (
                         <FormItem><FormLabel>Entraîneur</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Choisir un entraîneur..." /></SelectTrigger></FormControl>
                             <SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
                           </Select>
                         </FormItem>
@@ -328,7 +329,7 @@ function PlayersContent() {
 
 export default function PlayersPage() {
   return (
-    <Suspense fallback={<div className="p-8">Chargement...</div>}>
+    <Suspense fallback={<div className="p-8 text-center">Chargement...</div>}>
       <PlayersContent />
     </Suspense>
   );

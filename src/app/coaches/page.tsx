@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { PlusCircle, Search } from "lucide-react";
 
 const playerCategories = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'].flatMap(c => [c, `${c} F`]);
@@ -60,7 +60,7 @@ export default function CoachesPage() {
     return (coaches || []).filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [coaches, searchQuery]);
 
-  if (loading) return <div className="p-8">Chargement...</div>;
+  if (loading) return <div className="p-8 text-center">Chargement...</div>;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">

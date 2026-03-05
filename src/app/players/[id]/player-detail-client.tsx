@@ -1,15 +1,14 @@
 
 'use client';
 
-import { useMemo, useState, useEffect, use } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import React from 'react';
 import type { Player } from "@/lib/data";
 import { notFound, useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield, Mail, MapPin, FileText, PlusCircle, X, ExternalLink, VenetianMask, UserSquare, Calendar, LogIn, LogOut, UserCheck } from "lucide-react";
-import Link from "next/link";
+import { ArrowLeft, Cake, Edit, Trash2, Camera, Home, Shirt, Phone, Flag, Shield, Mail, MapPin, PlusCircle, X, VenetianMask, UserSquare, UserCheck } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -22,7 +21,7 @@ import { format, parseISO, isValid } from 'date-fns';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { useCoachesContext } from '@/context/coaches-context';
 
 const documentSchema = z.object({
@@ -33,7 +32,7 @@ const documentSchema = z.object({
 
 const playerCategories = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise", "Américaine", "Russe", "Japonaise", "Chinoise", "Indienne", "Turque", "Égyptienne", "Nigériane", "Sud-africaine", "Ghanéenne"];
-const documentOptions = ["Certificat Médical", "Carte d'identité", "Passeport", "Extrait de naissance", "Photo d'identité", "Autorisation Parentale", "Fiche de renseignements", "Justificatif de domicile", "Licence sportive", "Assurance", "Autre"];
+const documentOptions = ["Certificat Médical", "Carte d'identité", "Passeport", "Extrait de naissance", "Photo d'identité", "Autorisation Parentale", "Licence sportive", "Assurance", "Autre"];
 
 const playerSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
@@ -53,8 +52,6 @@ const playerSchema = z.object({
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
   category: z.string().min(1, "La catégorie est requise."),
   gender: z.enum(['Masculin', 'Féminin']),
-  entryDate: z.string().optional(),
-  exitDate: z.string().optional(),
   coachName: z.string().optional(),
   documents: z.array(documentSchema).optional(),
 });
@@ -65,13 +62,11 @@ const categoryColors: Record<string, string> = {
   'Sénior': 'hsl(var(--chart-1))', 'U23': 'hsl(var(--chart-2))', 'U20': 'hsl(340, 80%, 55%)', 'U19': 'hsl(var(--chart-3))', 'U18': 'hsl(var(--chart-4))', 'U17': 'hsl(var(--chart-5))', 'U16': 'hsl(var(--chart-6))', 'U15': 'hsl(var(--chart-7))', 'U13': 'hsl(var(--chart-8))', 'U9': 'hsl(25 60% 45%)', 'U11': 'hsl(var(--chart-10))', 'U7': 'hsl(var(--chart-11))',
 };
 
-export function PlayerDetailClient({ id: idParam }: { id: string }) {
+export function PlayerDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const { toast } = useToast();
   const context = usePlayersContext();
   const coachesContext = useCoachesContext();
-
-  const id = typeof idParam === 'string' ? idParam : use(idParam as unknown as Promise<{id: string}>).id;
 
   if (!context || !coachesContext) {
     throw new Error("PlayerDetailClient must be used within a PlayersProvider and CoachesProvider");
@@ -98,14 +93,13 @@ export function PlayerDetailClient({ id: idParam }: { id: string }) {
       })) || [];
 
       form.reset({
-        ...player,
         name: player.name || '',
         birthDate: player.birthDate && isValid(parseISO(player.birthDate)) ? format(parseISO(player.birthDate), 'yyyy-MM-dd') : '',
         phone: player.phone || '',
         email: player.email || '',
         address: player.address || '',
         poste: player.poste || '',
-        jerseyNumber: player.jerseyNumber || ('' as unknown as number),
+        jerseyNumber: player.jerseyNumber || 0,
         photo: player.photo || '',
         country: player.country || 'Marocaine',
         cin: player.cin || '',
@@ -117,20 +111,13 @@ export function PlayerDetailClient({ id: idParam }: { id: string }) {
         category: player.category || 'Sénior',
         gender: player.gender || 'Masculin',
         coachName: player.coachName || '',
-        entryDate: player.entryDate && isValid(parseISO(player.entryDate)) ? format(parseISO(player.entryDate), 'yyyy-MM-dd') : '',
-        exitDate: player.exitDate && isValid(parseISO(player.exitDate)) ? format(parseISO(player.exitDate), 'yyyy-MM-dd') : '',
         documents,
       });
-    } else if (!dialogOpen) {
-      form.reset();
     }
   }, [player, dialogOpen, form]);
 
 
-  if (loading || coachesLoading) {
-    return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;
-  }
-
+  if (loading || coachesLoading) return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;
   if (!player) return notFound();
 
   const onSubmit = async (data: PlayerFormValues) => {
@@ -155,8 +142,6 @@ export function PlayerDetailClient({ id: idParam }: { id: string }) {
   };
   
   const formattedBirthDate = player.birthDate && isValid(parseISO(player.birthDate)) ? format(parseISO(player.birthDate), 'dd/MM/yyyy') : 'N/A';
-  const playerStatus = player.status || 'Actif';
-  const playerCategory = player.category || 'Sénior';
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -198,9 +183,9 @@ export function PlayerDetailClient({ id: idParam }: { id: string }) {
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Informations Club</h3>
                 <div className="flex items-center gap-4"><Shirt className="h-5 w-5 text-muted-foreground" /><span>{player.poste} - <Badge variant="outline">#{player.jerseyNumber}</Badge></span></div>
-                <div className="flex items-center gap-4"><Home className="h-5 w-5 text-muted-foreground" /><span><Badge style={{ backgroundColor: categoryColors[playerCategory.replace(' F', '')], color: 'white' }}>{playerCategory}</Badge></span></div>
+                <div className="flex items-center gap-4"><Home className="h-5 w-5 text-muted-foreground" /><span><Badge style={{ backgroundColor: categoryColors[player.category.replace(' F', '')], color: 'white' }}>{player.category}</Badge></span></div>
                 <div className="flex items-center gap-4"><UserCheck className="h-5 w-5 text-muted-foreground" /><span>Entraîneur: {player.coachName || 'Non assigné'}</span></div>
-                <div className="flex items-center gap-4"><Shirt className="h-5 w-5 text-muted-foreground" /><span>Statut : <Badge variant={getBadgeVariant(playerStatus) as any}>{playerStatus}</Badge></span></div>
+                <div className="flex items-center gap-4"><Shirt className="h-5 w-5 text-muted-foreground" /><span>Statut : <Badge variant={getBadgeVariant(player.status) as any}>{player.status}</Badge></span></div>
             </div>
         </CardContent>
         <CardFooter className="justify-end gap-2">
@@ -214,9 +199,7 @@ export function PlayerDetailClient({ id: idParam }: { id: string }) {
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 flex flex-col overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>Modifier un joueur</DialogTitle>
-          </DialogHeader>
+          <DialogHeader className="p-6 pb-2"><DialogTitle>Modifier un joueur</DialogTitle></DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
                 <div className="flex-1 overflow-y-auto px-6 py-4">
@@ -225,17 +208,11 @@ export function PlayerDetailClient({ id: idParam }: { id: string }) {
                       <Avatar className="h-24 w-24 border">
                         <AvatarImage src={form.watch('photo')} /><AvatarFallback className="bg-muted"><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
                       </Avatar>
-                      <FormField control={form.control} name="photo" render={({field}) => (
-                        <FormItem className="w-full max-w-sm">
-                          <FormLabel>URL Photo</FormLabel>
-                          <Input {...field} placeholder="https://..." />
-                        </FormItem>
-                      )} />
+                      <FormField control={form.control} name="photo" render={({field}) => <FormItem className="w-full max-w-sm"><FormLabel>URL Photo</FormLabel><Input {...field} placeholder="https://..." /></FormItem>} />
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                       <div className="space-y-4">
-                        <h4 className="font-bold text-sm uppercase text-primary tracking-wider border-b pb-1">Identité & Contact</h4>
+                        <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Identité & Contact</h4>
                         <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom complet</FormLabel><Input {...field} required /></FormItem>} />
                         <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de naissance</FormLabel><Input type="date" {...field} required /></FormItem>} />
                         <div className="grid grid-cols-2 gap-4">
@@ -261,9 +238,8 @@ export function PlayerDetailClient({ id: idParam }: { id: string }) {
                         <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone</FormLabel><Input {...field} required /></FormItem>} />
                         <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><Input {...field} required /></FormItem>} />
                       </div>
-
                       <div className="space-y-4">
-                        <h4 className="font-bold text-sm uppercase text-primary tracking-wider border-b pb-1">Sportif</h4>
+                        <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Sportif</h4>
                         <FormField control={form.control} name="category" render={({field}) => (
                           <FormItem><FormLabel>Catégorie</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
@@ -276,18 +252,7 @@ export function PlayerDetailClient({ id: idParam }: { id: string }) {
                           <FormItem><FormLabel>Poste</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                              <SelectContent>
-                                <SelectItem value="Gardien">Gardien</SelectItem>
-                                <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
-                                <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
-                                <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
-                                <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
-                                <SelectItem value="Milieu Central">Milieu Central</SelectItem>
-                                <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
-                                <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
-                                <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
-                                <SelectItem value="Avant-centre">Avant-centre</SelectItem>
-                              </SelectContent>
+                              <SelectContent><SelectItem value="Gardien">Gardien</SelectItem><SelectItem value="Défenseur Central">Défenseur Central</SelectItem><SelectItem value="Latéral Droit">Latéral Droit</SelectItem><SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem><SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem><SelectItem value="Milieu Central">Milieu Central</SelectItem><SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem><SelectItem value="Ailier Droit">Ailier Droit</SelectItem><SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem><SelectItem value="Avant-centre">Avant-centre</SelectItem></SelectContent>
                             </Select>
                           </FormItem>
                         )} />
@@ -304,20 +269,14 @@ export function PlayerDetailClient({ id: idParam }: { id: string }) {
                           <FormItem><FormLabel>Statut</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                              <SelectContent>
-                                <SelectItem value="Actif">Actif</SelectItem>
-                                <SelectItem value="Blessé">Blessé</SelectItem>
-                                <SelectItem value="Suspendu">Suspendu</SelectItem>
-                                <SelectItem value="Inactif">Inactif</SelectItem>
-                              </SelectContent>
+                              <SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="Blessé">Blessé</SelectItem><SelectItem value="Suspendu">Suspendu</SelectItem><SelectItem value="Inactif">Inactif</SelectItem></SelectContent>
                             </Select>
                           </FormItem>
                         )} />
                       </div>
                     </div>
-
                     <div className="space-y-4">
-                      <h4 className="font-bold text-sm uppercase text-primary tracking-wider border-b pb-1">Tuteur (Mineurs)</h4>
+                      <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Tuteur</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={form.control} name="tutorName" render={({field}) => <FormItem><FormLabel>Nom tuteur</FormLabel><Input {...field} /></FormItem>} />
                         <FormField control={form.control} name="tutorPhone" render={({field}) => <FormItem><FormLabel>Téléphone tuteur</FormLabel><Input {...field} /></FormItem>} />
@@ -325,9 +284,8 @@ export function PlayerDetailClient({ id: idParam }: { id: string }) {
                         <FormField control={form.control} name="tutorCin" render={({field}) => <FormItem><FormLabel>N° CIN tuteur</FormLabel><Input {...field} /></FormItem>} />
                       </div>
                     </div>
-
                     <div className="space-y-4 pb-10">
-                      <h4 className="font-bold text-sm uppercase text-primary tracking-wider border-b pb-1">Documents</h4>
+                      <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Documents</h4>
                       {fields.map((field, index) => (
                         <div key={field.id} className="p-4 border rounded-md space-y-4 relative bg-muted/20">
                           <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => remove(index)}><X className="h-4 w-4" /></Button>
@@ -339,7 +297,7 @@ export function PlayerDetailClient({ id: idParam }: { id: string }) {
                               </Select>
                             </FormItem>
                           )} />
-                          <FormField control={form.control} name={`documents.${index}.url`} render={({field}) => <FormItem><FormLabel>Lien du document (URL)</FormLabel><Input {...field} /></FormItem>} />
+                          <FormField control={form.control} name={`documents.${index}.url`} render={({field}) => <FormItem><FormLabel>Lien (URL)</FormLabel><Input {...field} /></FormItem>} />
                         </div>
                       ))}
                       <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un document</Button>

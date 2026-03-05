@@ -1,21 +1,18 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
-  CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter
+  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Edit, Trash2, Shield, Camera, MoreHorizontal } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -75,13 +72,13 @@ export default function OpponentsPage() {
     setOpen(true);
   };
 
-  if (loading) return <div className="p-8"><Skeleton className="h-[400px] w-full" /></div>;
+  if (loading) return <div className="p-8 text-center">Chargement...</div>;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2"><Shield /> Adversaires</h2>
-        <Button onClick={() => setOpen(true)}><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un adversaire</Button>
+        <Button onClick={() => setOpen(true)}><PlusCircle className="mr-2 h-4 w-4" /> Ajouter</Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
