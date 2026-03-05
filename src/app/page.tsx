@@ -26,14 +26,21 @@ export default function Dashboard() {
   const loading = playersLoading || coachesLoading || calendarLoading;
 
   const upcomingEvents = useMemo(() => {
-    const today = startOfDay(new Date());
+    const now = new Date();
+    const todayStart = startOfDay(now);
 
-    return calendarEvents
+    return (calendarEvents || [])
       .filter(event => {
         try {
           const eventDate = parseISO(event.date);
-          // Garder les événements d'aujourd'hui et futurs
-          return isSameDay(eventDate, today) || isAfter(eventDate, today);
+          if (isSameDay(eventDate, todayStart)) {
+            if (!event.time) return true;
+            const [hours, minutes] = event.time.split(':').map(Number);
+            const eventTime = new Date(eventDate);
+            eventTime.setHours(hours, minutes);
+            return eventTime >= now; // Visible tant que l'heure n'est pas passée
+          }
+          return isAfter(eventDate, todayStart);
         } catch (e) { return false; }
       })
       .sort((a, b) => a.date.localeCompare(b.date) || (a.time || "").localeCompare(b.time || ""))

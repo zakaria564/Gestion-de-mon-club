@@ -1,9 +1,9 @@
 
 "use client";
 
-import React, { useMemo, useRef, use } from "react";
+import React, { useMemo, useRef } from "react";
 import { notFound, useRouter } from "next/navigation";
-import jsPDF from "jsPDF";
+import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useFinancialContext } from "@/context/financial-context";
 import { useClubContext } from "@/context/club-context";
@@ -15,13 +15,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Download, History } from "lucide-react";
 
-export function PlayerPaymentDetailClient({ id: idParam }: { id: any }) {
+export function PlayerPaymentDetailClient({ id }: { id: string }) {
   const { getPlayerPaymentById, loading: financialLoading } = useFinancialContext();
   const { clubInfo } = useClubContext();
   const receiptRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   
-  const id = typeof idParam === 'string' ? idParam : use(idParam as unknown as Promise<{id: string}>).id;
   const payment = useMemo(() => getPlayerPaymentById(id), [id, getPlayerPaymentById]);
 
   if (financialLoading) return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;

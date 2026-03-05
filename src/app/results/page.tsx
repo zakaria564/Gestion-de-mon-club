@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useResultsContext, NewResult, Result } from "@/context/results-context";
 import { Edit, PlusCircle, Trash2, Calendar, MapPin, MoreHorizontal } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -192,7 +192,7 @@ export default function ResultsPage() {
                 <div className="grid gap-2"><Label htmlFor="location">Lieu exact</Label><Input id="location" value={newResult.location} onChange={handleInputChange} required placeholder="ex: Stade Municipal" /></div>
               </div>
             </div>
-            <DialogFooter className="p-6 border-t bg-background flex gap-2 shrink-0">
+            <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
               <Button type="button" variant="outline" onClick={resetForm}>Annuler</Button>
               <Button type="submit">Enregistrer</Button>
             </DialogFooter>

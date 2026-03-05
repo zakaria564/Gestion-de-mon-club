@@ -119,7 +119,7 @@ export default function CoachesPage() {
                   </div>
                 </div>
               </div>
-              <DialogFooter className="p-6 border-t bg-background flex gap-2 shrink-0">
+              <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Annuler</Button>
                 <Button type="submit">Enregistrer</Button>
               </DialogFooter>
