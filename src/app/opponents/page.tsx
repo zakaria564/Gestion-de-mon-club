@@ -33,13 +33,14 @@ export default function OpponentsPage() {
   const displayOpponents = useMemo(() => {
     const groups: Record<string, { name: string, logoUrl?: string, genders: string[], originalItems: Opponent[] }> = {};
     (opponents || []).forEach(op => {
-      if (!groups[op.name]) {
-        groups[op.name] = { name: op.name, logoUrl: op.logoUrl, genders: [], originalItems: [] };
+      const cleanName = op.name.trim();
+      if (!groups[cleanName]) {
+        groups[cleanName] = { name: cleanName, logoUrl: op.logoUrl, genders: [], originalItems: [] };
       }
-      if (!groups[op.name].genders.includes(op.gender)) {
-        groups[op.name].genders.push(op.gender);
+      if (!groups[cleanName].genders.includes(op.gender)) {
+        groups[cleanName].genders.push(op.gender);
       }
-      groups[op.name].originalItems.push(op);
+      groups[cleanName].originalItems.push(op);
     });
     return Object.values(groups).sort((a, b) => a.name.localeCompare(b.name));
   }, [opponents]);
@@ -59,7 +60,7 @@ export default function OpponentsPage() {
     }
 
     if (isEditing) {
-      const toDelete = opponents.filter(o => o.name === editingName);
+      const toDelete = opponents.filter(o => o.name.trim() === editingName.trim());
       for (const o of toDelete) await deleteOpponent(o.id);
     }
 

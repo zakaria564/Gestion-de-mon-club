@@ -109,7 +109,9 @@ function PlayersContent() {
   const cats = Object.keys(currentGroups).sort((a,b) => playerCategories.indexOf(a) - playerCategories.indexOf(b));
   const currentCat = activeCategory && currentGroups[activeCategory] ? activeCategory : (cats[0] || '');
 
-  if (loading) return <div className="p-8 text-center">Chargement...</div>;
+  if (loading) {
+    return <div className="p-8 text-center">Chargement...</div>;
+  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
@@ -124,7 +126,10 @@ function PlayersContent() {
       </div>
 
       <Tabs value={activeGender} onValueChange={(v) => handleTabChange('gender', v)}>
-        <TabsList className="grid w-full grid-cols-2"><TabsTrigger value="male">Masculin</TabsTrigger><TabsTrigger value="female">Féminin</TabsTrigger></TabsList>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="male">Masculin</TabsTrigger>
+          <TabsTrigger value="female">Féminin</TabsTrigger>
+        </TabsList>
         <TabsContent value={activeGender} className="mt-4">
           {cats.length > 0 ? (
             <Tabs value={currentCat} onValueChange={(v) => handleTabChange('category', v)}>
@@ -141,10 +146,19 @@ function PlayersContent() {
                           <Card key={p.id} className="hover:shadow-lg transition-shadow">
                             <Link href={`/players/${p.id}`}>
                               <CardHeader className="p-4 flex flex-row items-center gap-4">
-                                <Avatar className="h-16 w-16 border"><AvatarImage src={p.photo} /><AvatarFallback>{p.name.substring(0, 2)}</AvatarFallback></Avatar>
-                                <div className="flex-1"><CardTitle className="text-base font-bold">{p.name}</CardTitle><CardDescription>{p.poste}</CardDescription></div>
+                                <Avatar className="h-16 w-16 border">
+                                  <AvatarImage src={p.photo} />
+                                  <AvatarFallback>{p.name.substring(0, 2)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                  <CardTitle className="text-base font-bold">{p.name}</CardTitle>
+                                  <CardDescription>{p.poste}</CardDescription>
+                                </div>
                               </CardHeader>
-                              <CardContent className="p-4 pt-0 flex justify-between items-center"><Badge style={{ backgroundColor: categoryColors[p.category], color: 'white' }}>{p.category}</Badge><Badge variant={p.status === 'Actif' ? 'default' : 'secondary'}>{p.status}</Badge></CardContent>
+                              <CardContent className="p-4 pt-0 flex justify-between items-center">
+                                <Badge style={{ backgroundColor: categoryColors[p.category], color: 'white' }}>{p.category}</Badge>
+                                <Badge variant={p.status === 'Actif' ? 'default' : 'secondary'}>{p.status}</Badge>
+                              </CardContent>
                             </Link>
                           </Card>
                         ))}
@@ -154,20 +168,34 @@ function PlayersContent() {
                 </div>
               )}
             </Tabs>
-          ) : <div className="text-center py-20 text-muted-foreground border-2 border-dashed rounded-xl">Aucun joueur.</div>}
+          ) : (
+            <div className="text-center py-20 text-muted-foreground border-2 border-dashed rounded-xl">
+              Aucun joueur trouvé dans cette section.
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2"><DialogTitle>Nouveau Joueur</DialogTitle></DialogHeader>
+          <DialogHeader className="p-6 pb-2">
+            <DialogTitle>Nouveau Joueur</DialogTitle>
+          </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               <div className="flex-1 overflow-y-auto px-6 py-4">
                 <div className="space-y-8">
                   <div className="flex flex-col items-center gap-4">
-                    <Avatar className="h-24 w-24 border"><AvatarImage src={form.watch('photo')} /><AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback></Avatar>
-                    <FormField control={form.control} name="photo" render={({field}) => <FormItem className="w-full max-w-sm"><FormLabel>URL Photo</FormLabel><Input {...field} /></FormItem>} />
+                    <Avatar className="h-24 w-24 border">
+                      <AvatarImage src={form.watch('photo')} />
+                      <AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
+                    </Avatar>
+                    <FormField control={form.control} name="photo" render={({field}) => (
+                      <FormItem className="w-full max-w-sm">
+                        <FormLabel>URL Photo</FormLabel>
+                        <Input {...field} />
+                      </FormItem>
+                    )} />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <div className="space-y-4">
@@ -175,8 +203,22 @@ function PlayersContent() {
                       <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom complet</FormLabel><Input {...field} required /></FormItem>} />
                       <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de naissance</FormLabel><Input type="date" {...field} required /></FormItem>} />
                       <div className="grid grid-cols-2 gap-4">
-                        <FormField control={form.control} name="gender" render={({field}) => <FormItem><FormLabel>Genre</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select></FormItem>} />
-                        <FormField control={form.control} name="country" render={({field}) => <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent></Select></FormItem>} />
+                        <FormField control={form.control} name="gender" render={({field}) => (
+                          <FormItem><FormLabel>Genre</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                              <SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent>
+                            </Select>
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="country" render={({field}) => (
+                          <FormItem><FormLabel>Nationalité</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                              <SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
+                            </Select>
+                          </FormItem>
+                        )} />
                       </div>
                       <FormField control={form.control} name="cin" render={({field}) => <FormItem><FormLabel>N° CIN</FormLabel><Input {...field} /></FormItem>} />
                       <FormField control={form.control} name="email" render={({field}) => <FormItem><FormLabel>Email</FormLabel><Input type="email" {...field} /></FormItem>} />
@@ -185,18 +227,62 @@ function PlayersContent() {
                     </div>
                     <div className="space-y-4">
                       <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Sportif</h4>
-                      <FormField control={form.control} name="category" render={({field}) => <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>} />
-                      <FormField control={form.control} name="poste" render={({field}) => <FormItem><FormLabel>Poste</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Gardien">Gardien</SelectItem><SelectItem value="Défenseur Central">Défenseur Central</SelectItem><SelectItem value="Latéral Droit">Latéral Droit</SelectItem><SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem><SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem><SelectItem value="Milieu Central">Milieu Central</SelectItem><SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem><SelectItem value="Ailier Droit">Ailier Droit</SelectItem><SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem><SelectItem value="Avant-centre">Avant-centre</SelectItem></Select></FormItem>} />
+                      <FormField control={form.control} name="category" render={({field}) => (
+                        <FormItem><FormLabel>Catégorie</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                            <SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="poste" render={({field}) => (
+                        <FormItem><FormLabel>Poste</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                            <SelectContent>
+                              <SelectItem value="Gardien">Gardien</SelectItem>
+                              <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
+                              <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
+                              <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
+                              <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
+                              <SelectItem value="Milieu Central">Milieu Central</SelectItem>
+                              <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
+                              <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
+                              <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
+                              <SelectItem value="Avant-centre">Avant-centre</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )} />
                       <FormField control={form.control} name="jerseyNumber" render={({field}) => <FormItem><FormLabel>N° Maillot</FormLabel><Input type="number" {...field} required /></FormItem>} />
-                      <FormField control={form.control} name="coachName" render={({field}) => <FormItem><FormLabel>Entraîneur</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent></Select></FormItem>} />
-                      <FormField control={form.control} name="status" render={({field}) => <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="Blessé">Blessé</SelectItem><SelectItem value="Suspendu">Suspendu</SelectItem><SelectItem value="Inactif">Inactif</SelectItem></Select></FormItem>} />
+                      <FormField control={form.control} name="coachName" render={({field}) => (
+                        <FormItem><FormLabel>Entraîneur</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                            <SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="status" render={({field}) => (
+                        <FormItem><FormLabel>Statut</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                            <SelectContent>
+                              <SelectItem value="Actif">Actif</SelectItem>
+                              <SelectItem value="Blessé">Blessé</SelectItem>
+                              <SelectItem value="Suspendu">Suspendu</SelectItem>
+                              <SelectItem value="Inactif">Inactif</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )} />
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Tuteur</h4>
+                    <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Tuteur (Mineurs)</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField control={form.control} name="tutorName" render={({field}) => <FormItem><FormLabel>Nom tuteur</FormLabel><Input {...field} /></FormItem>} />
-                      <FormField control={form.control} name="tutorPhone" render={({field}) => <FormItem><FormLabel>Téléphone tuteur</Label><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="tutorPhone" render={({field}) => <FormItem><FormLabel>Téléphone tuteur</FormLabel><Input {...field} /></FormItem>} />
                       <FormField control={form.control} name="tutorEmail" render={({field}) => <FormItem><FormLabel>Email tuteur</FormLabel><Input type="email" {...field} /></FormItem>} />
                       <FormField control={form.control} name="tutorCin" render={({field}) => <FormItem><FormLabel>N° CIN tuteur</FormLabel><Input {...field} /></FormItem>} />
                     </div>
@@ -206,11 +292,18 @@ function PlayersContent() {
                     {fields.map((f, i) => (
                       <div key={f.id} className="p-4 border rounded-md relative bg-muted/20 space-y-4">
                         <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => remove(i)}><X className="h-4 w-4" /></Button>
-                        <FormField control={form.control} name={`documents.${i}.name`} render={({field}) => <FormItem><FormLabel>Nom du doc</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{documentOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select></FormItem>} />
+                        <FormField control={form.control} name={`documents.${i}.name`} render={({field}) => (
+                          <FormItem><FormLabel>Nom du document</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                              <SelectContent>{documentOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                            </Select>
+                          </FormItem>
+                        )} />
                         <FormField control={form.control} name={`documents.${i}.url`} render={({field}) => <FormItem><FormLabel>Lien URL</FormLabel><Input {...field} /></FormItem>} />
                       </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un document</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un document</Button>
                   </div>
                 </div>
               </div>
