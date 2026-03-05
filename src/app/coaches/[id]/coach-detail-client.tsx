@@ -21,7 +21,6 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { format, isValid, parseISO } from 'date-fns';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 const baseCategories: ('Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7')[] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const playerCategories: string[] = baseCategories.flatMap(cat => [cat, `${cat} F`]);
@@ -41,7 +40,6 @@ const categoryColors: Record<string, string> = {
   'U7': 'hsl(var(--chart-11))',
 };
 
-// Add colors for female categories
 Object.keys(categoryColors).forEach(key => {
     categoryColors[`${key} F`] = categoryColors[key];
 });
@@ -68,31 +66,17 @@ const coachSchema = z.object({
 
 type CoachFormValues = z.infer<typeof coachSchema>;
 
-const documentOptions = [
-  "Contrat",
-  "Diplôme",
-  "Certificat de Formation",
-  "Carte d'identité",
-  "Passeport",
-  "Assurance",
-  "Autre"
-];
-
+const documentOptions = ["Contrat", "Diplôme", "Certificat de Formation", "Carte d'identité", "Passeport", "Assurance", "Autre"];
 const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise", "Américaine", "Russe", "Japonaise", "Chinoise", "Indienne", "Turque", "Égyptienne", "Nigériane", "Sud-africaine", "Ghanéenne"];
 
 export function CoachDetailClient({ id }: { id: string }) {
   const router = useRouter();
-  
   const context = useCoachesContext();
-  
-  if (!context) {
-    throw new Error("CoachDetailClient must be used within a CoachesProvider");
-  }
-
-  const { loading, updateCoach, deleteCoach, getCoachById } = context;
-
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  if (!context) throw new Error("CoachDetailClient must be used within a CoachesProvider");
+
+  const { loading, updateCoach, deleteCoach, getCoachById } = context;
   const coach = useMemo(() => getCoachById(id), [id, getCoachById]);
   
   const form = useForm<CoachFormValues>({
@@ -100,10 +84,7 @@ export function CoachDetailClient({ id }: { id: string }) {
     defaultValues: {},
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "documents",
-  });
+  const { fields, append, remove } = useFieldArray({ control: form.control, name: "documents" });
 
   useEffect(() => {
     if (coach && dialogOpen) {
@@ -132,92 +113,34 @@ export function CoachDetailClient({ id }: { id: string }) {
   }, [coach, dialogOpen, form]);
 
 
-  if (loading) {
-    return (
-       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <Skeleton className="h-8 w-24" />
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-6">
-            <Skeleton className="h-32 w-32 rounded-full" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-8 w-1/2" />
-              <Skeleton className="h-6 w-1/3 mt-1" />
-            </div>
-          </CardHeader>
-          <CardContent className="grid md:grid-cols-2 gap-6 pt-6">
-              <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Informations</h3>
-                  <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-5 w-3/4" />
-              </div>
-              <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Contact</h3>
-                  <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-5 w-3/4" />
-              </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  if (!coach) {
-    return notFound();
-  }
+  if (loading) return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;
+  if (!coach) return notFound();
 
   const onSubmit = async (data: CoachFormValues) => {
-    if (!coach) return;
-    
     const gender = data.category.endsWith(' F') ? 'Féminin' : 'Masculin';
-    
-    const dataToUpdate = { 
-        ...coach, // keep existing fields
-        ...data,
-        gender,
-        id: coach.id,
-        uid: coach.uid
-    };
-    await updateCoach(dataToUpdate);
+    await updateCoach({ ...coach, ...data, gender, id: coach.id, uid: coach.uid });
     setDialogOpen(false);
   };
   
   const handleDeleteCoach = async () => {
-    if (typeof id === 'string') {
-        router.push('/coaches');
-        await deleteCoach(id);
-    }
+    router.push('/coaches');
+    await deleteCoach(id);
   }
 
-  const getBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'Actif':
-        return 'default';
-      case 'Inactif':
-        return 'secondary';
-      default:
-        return 'outline';
-    }
-  };
-
-  const photoPreview = form.watch('photo');
+  const getBadgeVariant = (status: string) => status === 'Actif' ? 'default' : 'secondary';
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <Button 
-          variant="ghost" 
-          onClick={() => router.back()} 
-          className="flex items-center text-sm text-muted-foreground hover:underline p-0 h-auto"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour
+        <Button variant="ghost" onClick={() => router.back()} className="flex items-center text-sm text-muted-foreground p-0 h-auto">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Retour
         </Button>
       </div>
 
       <Card>
         <CardHeader className="flex flex-row items-center gap-6">
           <Avatar className="h-32 w-32 border">
-            <AvatarImage src={coach.photo ?? undefined} alt={coach.name} data-ai-hint="coach photo"/>
+            <AvatarImage src={coach.photo ?? undefined} alt={coach.name} />
             <AvatarFallback className="text-4xl">{coach.name.substring(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
@@ -227,53 +150,19 @@ export function CoachDetailClient({ id }: { id: string }) {
         <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 pt-6">
             <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Informations Personnelles</h3>
-                 {coach.cin && (
-                  <div className="flex items-center gap-4">
-                    <UserSquare className="h-5 w-5 text-muted-foreground" />
-                    <span>{coach.cin}</span>
-                  </div>
-                 )}
-                 <div className="flex items-center gap-4">
-                    <VenetianMask className="h-5 w-5 text-muted-foreground" />
-                    <span>{coach.gender || 'Non spécifié'}</span>
-                </div>
-                 <div className="flex items-center gap-4">
-                    <Mail className="h-5 w-5 text-muted-foreground" />
-                    <a href={`mailto:${coach.email}`} className="text-primary hover:underline">{coach.email}</a>
-                </div>
-                <div className="flex items-center gap-4">
-                    <Phone className="h-5 w-5 text-muted-foreground" />
-                    <a href={`tel:${coach.phone}`} className="text-primary hover:underline">{coach.phone}</a>
-                </div>
-                 <div className="flex items-center gap-4">
-                    <MapPin className="h-5 w-5 text-muted-foreground" />
-                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coach.address)}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        {coach.address}
-                    </a>
-                </div>
-                 <div className="flex items-center gap-4">
-                    <Flag className="h-5 w-5 text-muted-foreground" />
-                    <span>{coach.country}</span>
-                </div>
+                 {coach.cin && <div className="flex items-center gap-4"><UserSquare className="h-5 w-5 text-muted-foreground" /><span>{coach.cin}</span></div>}
+                 <div className="flex items-center gap-4"><VenetianMask className="h-5 w-5 text-muted-foreground" /><span>{coach.gender || 'Non spécifié'}</span></div>
+                 <div className="flex items-center gap-4"><Mail className="h-5 w-5 text-muted-foreground" /><a href={`mailto:${coach.email}`} className="text-primary hover:underline">{coach.email}</a></div>
+                 <div className="flex items-center gap-4"><Phone className="h-5 w-5 text-muted-foreground" /><a href={`tel:${coach.phone}`} className="text-primary hover:underline">{coach.phone}</a></div>
+                 <div className="flex items-center gap-4"><MapPin className="h-5 w-5 text-muted-foreground" /><span>{coach.address}</span></div>
+                 <div className="flex items-center gap-4"><Flag className="h-5 w-5 text-muted-foreground" /><span>{coach.country}</span></div>
             </div>
              <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Informations Sportives</h3>
-                <div className="flex items-center gap-4">
-                    <Award className="h-5 w-5 text-muted-foreground" />
-                    <span>{coach.specialization}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                    <Users className="h-5 w-5 text-muted-foreground" />
-                    <span>{coach.experience} ans d'expérience</span>
-                </div>
-                 <div className="flex items-center gap-4">
-                    <Home className="h-5 w-5 text-muted-foreground" />
-                    <span><Badge style={{ backgroundColor: categoryColors[coach.category.replace(' F', '')], color: 'white' }} className="border-transparent">{coach.category}</Badge></span>
-                </div>
-                <div className="flex items-center gap-4">
-                    <Award className="h-5 w-5 text-muted-foreground" />
-                    <span><Badge variant={getBadgeVariant(coach.status) as any}>{coach.status}</Badge></span>
-                </div>
+                <div className="flex items-center gap-4"><Award className="h-5 w-5 text-muted-foreground" /><span>{coach.specialization}</span></div>
+                <div className="flex items-center gap-4"><Users className="h-5 w-5 text-muted-foreground" /><span>{coach.experience} ans d'expérience</span></div>
+                 <div className="flex items-center gap-4"><Home className="h-5 w-5 text-muted-foreground" /><span><Badge style={{ backgroundColor: categoryColors[coach.category.replace(' F', '')], color: 'white' }}>{coach.category}</Badge></span></div>
+                <div className="flex items-center gap-4"><Award className="h-5 w-5 text-muted-foreground" /><span><Badge variant={getBadgeVariant(coach.status) as any}>{coach.status}</Badge></span></div>
             </div>
             {coach.documents && coach.documents.length > 0 && (
                 <div className="space-y-4 mt-6 md:col-span-2 lg:col-span-3">
@@ -285,14 +174,10 @@ export function CoachDetailClient({ id }: { id: string }) {
                                     <FileText className="h-5 w-5 text-muted-foreground" />
                                     <div>
                                         <a href={doc.url} target="_blank" rel="noopener noreferrer" className="font-medium hover:underline">{doc.name}</a>
-                                        {doc.expirationDate && isValid(parseISO(doc.expirationDate)) && (
-                                            <p className="text-xs text-muted-foreground">Expire le: {format(parseISO(doc.expirationDate), 'dd/MM/yyyy')}</p>
-                                        )}
+                                        {doc.expirationDate && isValid(parseISO(doc.expirationDate)) && <p className="text-xs text-muted-foreground">Expire le: {format(parseISO(doc.expirationDate), 'dd/MM/yyyy')}</p>}
                                     </div>
                                 </div>
-                                <Button variant="ghost" size="icon" asChild>
-                                  <a href={doc.url} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a>
-                                </Button>
+                                <Button variant="ghost" size="icon" asChild><a href={doc.url} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a></Button>
                             </li>
                         ))}
                     </ul>
@@ -300,258 +185,83 @@ export function CoachDetailClient({ id }: { id: string }) {
             )}
         </CardContent>
          <CardFooter className="justify-end gap-2">
-            <Button variant="outline" onClick={() => setDialogOpen(true)}>
-                <Edit className="h-4 w-4 mr-2" /> Modifier
-            </Button>
+            <Button variant="outline" onClick={() => setDialogOpen(true)}><Edit className="h-4 w-4 mr-2" /> Modifier</Button>
             <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button variant="destructive">
-                        <Trash2 className="h-4 w-4 mr-2" /> Supprimer
-                    </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Cette action ne peut pas être annulée. Cela supprimera définitivement l'entraîneur.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteCoach}>Supprimer</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
+                <AlertDialogTrigger asChild><Button variant="destructive"><Trash2 className="h-4 w-4 mr-2" /> Supprimer</Button></AlertDialogTrigger>
+                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle><AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Annuler</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCoach}>Supprimer</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
             </AlertDialog>
         </CardFooter>
       </Card>
       
        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh]">
-            <DialogHeader>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 flex flex-col overflow-hidden">
+            <DialogHeader className="p-6 pb-2">
               <DialogTitle>Modifier un entraîneur</DialogTitle>
-              <DialogDescription>
-                Mettez à jour les informations de l'entraîneur ci-dessous.
-              </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)}>
-                <ScrollArea className="h-[70vh] p-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <div className="flex-1 overflow-y-auto px-6 py-4">
                   <div className="space-y-6">
                       <div className="flex flex-col items-center gap-4">
                         <Avatar className="h-24 w-24 border">
-                          <AvatarImage src={photoPreview || undefined} alt="Aperçu de l'entraîneur" data-ai-hint="coach photo"/>
-                          <AvatarFallback className="bg-muted">
-                            <Camera className="h-8 w-8 text-muted-foreground" />
-                          </AvatarFallback>
+                          <AvatarImage src={form.watch('photo')} alt="Aperçu" /><AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
                         </Avatar>
-                        <FormField
-                          control={form.control}
-                          name="photo"
-                          render={({ field }) => (
-                            <FormItem className="w-full max-w-sm">
-                              <FormLabel>URL de la photo</FormLabel>
-                              <FormControl>
-                                <Input type="text" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <FormField control={form.control} name="photo" render={({ field }) => <FormItem className="w-full max-w-sm"><FormLabel>URL Photo</FormLabel><Input {...field} /></FormItem>} />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Nom complet</FormLabel>
-                              <FormControl><Input {...field} required /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="cin"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>N° CIN</FormLabel>
-                              <FormControl><Input {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="specialization"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Spécialité</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value} required>
+                        <FormField control={form.control} name="name" render={({ field }) => <FormItem><FormLabel>Nom complet</FormLabel><Input {...field} required /></FormItem>} />
+                        <FormField control={form.control} name="cin" render={({ field }) => <FormItem><FormLabel>N° CIN</FormLabel><Input {...field} /></FormItem>} />
+                        <FormField control={form.control} name="specialization" render={({ field }) => (
+                            <FormItem><FormLabel>Spécialité</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                  <SelectItem value="Entraîneur Principal">Entraîneur Principal</SelectItem>
-                                  <SelectItem value="Entraîneur Adjoint">Entraîneur Adjoint</SelectItem>
-                                  <SelectItem value="Entraîneur des Gardiens">Entraîneur des Gardiens</SelectItem>
-                                  <SelectItem value="Préparateur Physique">Préparateur Physique</SelectItem>
-                                  <SelectItem value="Analyste Vidéo">Analyste Vidéo</SelectItem>
-                                </SelectContent>
+                                <SelectContent><SelectItem value="Entraîneur Principal">Principal</SelectItem><SelectItem value="Adjoint">Adjoint</SelectItem></SelectContent>
                               </Select>
-                              <FormMessage />
                             </FormItem>
-                          )}
-                        />
-                         <FormField
-                          control={form.control}
-                          name="category"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Catégorie</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value} required>
+                        )} />
+                         <FormField control={form.control} name="category" render={({ field }) => (
+                            <FormItem><FormLabel>Catégorie</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                  {playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                                </SelectContent>
+                                <SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
                               </Select>
-                              <FormMessage />
                             </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="phone"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Téléphone</FormLabel>
-                              <FormControl><Input {...field} required /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email</FormLabel>
-                              <FormControl><Input type="email" {...field} required /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                         <FormField
-                            control={form.control}
-                            name="address"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Adresse</FormLabel>
-                                <FormControl><Input {...field} required /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="country"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Nationalité</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value} required>
-                                    <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                    {nationalities.map(nationality => <SelectItem key={nationality} value={nationality}>{nationality}</SelectItem>)}
-                                    </SelectContent>
+                        )} />
+                        <FormField control={form.control} name="phone" render={({ field }) => <FormItem><FormLabel>Téléphone</FormLabel><Input {...field} required /></FormItem>} />
+                        <FormField control={form.control} name="email" render={({ field }) => <FormItem><FormLabel>Email</FormLabel><Input type="email" {...field} required /></FormItem>} />
+                        <FormField control={form.control} name="address" render={({ field }) => <FormItem><FormLabel>Adresse</FormLabel><Input {...field} required /></FormItem>} />
+                        <FormField control={form.control} name="country" render={({ field }) => (
+                            <FormItem><FormLabel>Nationalité</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                    <SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
                                 </Select>
-                                <FormMessage />
                             </FormItem>
-                            )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="experience"
-                          render={({ field }) => (
-                            <FormItem className="md:col-span-2">
-                              <FormLabel>Expérience (années)</FormLabel>
-                              <FormControl><Input type="number" {...field} required /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        )} />
+                        <FormField control={form.control} name="experience" render={({ field }) => <FormItem className="md:col-span-2"><FormLabel>Expérience (ans)</FormLabel><Input type="number" {...field} required /></FormItem>} />
                       </div>
                        <div className="space-y-4">
-                        <h4 className="text-lg font-medium border-b pb-2">Documents</h4>
+                        <h4 className="text-sm font-bold uppercase text-primary border-b pb-1">Documents</h4>
                           {fields.map((field, index) => (
-                           <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
-                             <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)}>
-                               <X className="h-4 w-4" />
-                             </Button>
-                              <FormField
-                                control={form.control}
-                                name={`documents.${index}.name`}
-                                render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Nom du document</FormLabel>
+                           <div key={field.id} className="p-4 border rounded-md space-y-4 relative bg-muted/20">
+                             <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => remove(index)}><X className="h-4 w-4" /></Button>
+                              <FormField control={form.control} name={`documents.${index}.name`} render={({ field }) => (
+                                <FormItem><FormLabel>Nom du document</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                        <SelectValue />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {documentOptions.map(option => (
-                                        <SelectItem key={option} value={option}>{option}</SelectItem>
-                                        ))}
-                                    </SelectContent>
+                                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                    <SelectContent>{documentOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent>
                                     </Select>
-                                  <FormMessage />
                                 </FormItem>
-                                )}
-                            />
-                             <FormField
-                                control={form.control}
-                                name={`documents.${index}.url`}
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>URL du document</FormLabel>
-                                    <FormControl>
-                                    <Input type="url" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                             <FormField
-                                control={form.control}
-                                name={`documents.${index}.expirationDate`}
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Date d'expiration (optionnel)</FormLabel>
-                                    <FormControl>
-                                    <Input type="date" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
+                              )} />
+                             <FormField control={form.control} name={`documents.${index}.url`} render={({ field }) => <FormItem><FormLabel>URL du document</FormLabel><Input type="url" {...field} /></FormItem>} />
+                             <FormField control={form.control} name={`documents.${index}.expirationDate`} render={({ field }) => <FormItem><FormLabel>Date d'expiration</FormLabel><Input type="date" {...field} /></FormItem>} />
                            </div>
                         ))}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => append({ name: "", url: "", expirationDate: ""})}
-                        >
-                           <PlusCircle className="mr-2 h-4 w-4" />
-                          Ajouter un document
-                        </Button>
+                        <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "", expirationDate: ""})}><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un document</Button>
                     </div>
                   </div>
-                </ScrollArea>
-                <DialogFooter>
+                </div>
+                <DialogFooter className="p-6 border-t bg-background flex gap-2 shrink-0">
                   <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                   <Button type="submit">Mettre à jour</Button>
                 </DialogFooter>

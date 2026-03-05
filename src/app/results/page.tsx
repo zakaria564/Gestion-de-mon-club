@@ -1,43 +1,34 @@
+
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useResultsContext, NewResult, Result } from "@/context/results-context";
-import { Edit, PlusCircle, Trash2, Calendar, MapPin, Trophy, MoreHorizontal } from "lucide-react";
-import { useMemo, useState, useEffect } from "react";
+import { Edit, PlusCircle, Trash2, Calendar, MapPin, MoreHorizontal } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { usePlayersContext } from "@/context/players-context";
 import type { Player } from "@/lib/data";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useClubContext } from "@/context/club-context";
 import { useOpponentsContext } from "@/context/opponents-context";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { format, parseISO } from 'date-fns';
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 
 const playerCategories: Player['category'][] = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const matchCategories = ['Match Championnat', 'Match Coupe', 'Match Amical', 'Match Tournoi'];
 
 export default function ResultsPage() {
   const context = useResultsContext();
-  const playersContext = usePlayersContext();
   const clubContext = useClubContext();
   const opponentsContext = useOpponentsContext();
 
-  if (!context || !playersContext || !clubContext || !opponentsContext) return null;
+  if (!context || !clubContext || !opponentsContext) return null;
 
   const { results, loading, addResult, updateResult, deleteResult } = context;
   const { clubInfo } = clubContext;
@@ -83,7 +74,7 @@ export default function ResultsPage() {
 
   const filteredOpponents = opponents.filter(op => op.gender === newResult.gender);
 
-  if (loading) return <div className="p-8"><Skeleton className="h-10 w-48 mb-8" /><div className="space-y-4"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div></div>;
+  if (loading) return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -136,9 +127,9 @@ export default function ResultsPage() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
           <DialogHeader className="p-6 pb-2"><DialogTitle>{isEditing ? 'Modifier' : 'Ajouter'} un résultat</DialogTitle></DialogHeader>
-          <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-            <ScrollArea className="flex-1 px-6">
-              <div className="space-y-6 pb-6 pt-2">
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <div className="space-y-6">
                 <RadioGroup value={matchType} onValueChange={(v: any) => setMatchType(v)} className="flex gap-4">
                   <div className="flex items-center space-x-2"><RadioGroupItem value="club-match" id="club" /><Label htmlFor="club">Mon Club</Label></div>
                   <div className="flex items-center space-x-2"><RadioGroupItem value="opponent-vs-opponent" id="opp" /><Label htmlFor="opponent">Adversaires</Label></div>
@@ -150,12 +141,12 @@ export default function ResultsPage() {
                 {matchType === 'club-match' ? (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2"><Label>Lieu</Label><Select value={newResult.homeOrAway} onValueChange={(v: any) => setNewResult(p => ({...p, homeOrAway: v}))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="home">Domicile</SelectItem><SelectItem value="away">Extérieur</SelectItem></SelectContent></Select></div>
-                    <div className="grid gap-2"><Label>Adversaire</Label><Select value={newResult.opponent} onValueChange={(v) => setNewResult(p => ({...p, opponent: v}))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="grid gap-2"><Label>Adversaire</Label><Select value={newResult.opponent} onValueChange={(v) => setNewResult(p => ({...p, opponent: v}))}><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger><SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent></Select></div>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2"><Label>Équipe Domicile</Label><Select value={newResult.homeTeam} onValueChange={(v) => setNewResult(p => ({...p, homeTeam: v}))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent></Select></div>
-                    <div className="grid gap-2"><Label>Équipe Extérieur</Label><Select value={newResult.awayTeam} onValueChange={(v) => setNewResult(p => ({...p, awayTeam: v}))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="grid gap-2"><Label>Équipe Domicile</Label><Select value={newResult.homeTeam} onValueChange={(v) => setNewResult(p => ({...p, homeTeam: v}))}><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger><SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="grid gap-2"><Label>Équipe Extérieur</Label><Select value={newResult.awayTeam} onValueChange={(v) => setNewResult(p => ({...p, awayTeam: v}))}><SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger><SelectContent>{filteredOpponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent></Select></div>
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-4">
@@ -164,8 +155,8 @@ export default function ResultsPage() {
                 </div>
                 <div className="grid gap-2"><Label>Lieu exact</Label><Input id="location" value={newResult.location} onChange={handleInputChange} required placeholder="ex: Stade Municipal" /></div>
               </div>
-            </ScrollArea>
-            <DialogFooter className="p-6 pt-4 border-t gap-2 bg-background mt-auto">
+            </div>
+            <DialogFooter className="p-6 border-t bg-background flex gap-2 shrink-0">
               <Button type="button" variant="outline" onClick={resetForm}>Annuler</Button>
               <Button type="submit">Enregistrer</Button>
             </DialogFooter>

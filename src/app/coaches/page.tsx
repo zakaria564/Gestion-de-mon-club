@@ -17,8 +17,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { PlusCircle, Camera, Search } from "lucide-react";
+import { PlusCircle, Search } from "lucide-react";
 
 const playerCategories = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'].flatMap(c => [c, `${c} F`]);
 
@@ -58,7 +57,7 @@ export default function CoachesPage() {
   };
 
   const filtered = useMemo(() => {
-    return coaches.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    return (coaches || []).filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [coaches, searchQuery]);
 
   if (loading) return <div className="p-8">Chargement...</div>;
@@ -94,8 +93,8 @@ export default function CoachesPage() {
           <DialogHeader className="p-6 pb-2"><DialogTitle>Nouvel Entraîneur</DialogTitle></DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-              <ScrollArea className="flex-1 px-6">
-                <div className="space-y-6 py-4">
+              <div className="flex-1 overflow-y-auto px-6 py-4">
+                <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom</FormLabel><Input {...field} required /></FormItem>} />
                     <FormField control={form.control} name="email" render={({field}) => <FormItem><FormLabel>Email</FormLabel><Input type="email" {...field} required /></FormItem>} />
@@ -105,9 +104,21 @@ export default function CoachesPage() {
                         <Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Entraîneur Principal">Principal</SelectItem><SelectItem value="Adjoint">Adjoint</SelectItem></SelectContent></Select>
                       </FormItem>
                     )} />
+                    <FormField control={form.control} name="category" render={({field}) => (
+                      <FormItem><FormLabel>Catégorie</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select>
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="country" render={({field}) => (
+                      <FormItem><FormLabel>Nationalité</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent></Select>
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><Input {...field} required /></FormItem>} />
+                    <FormField control={form.control} name="experience" render={({field}) => <FormItem><FormLabel>Expérience (ans)</FormLabel><Input type="number" {...field} required /></FormItem>} />
                   </div>
                 </div>
-              </ScrollArea>
+              </div>
               <DialogFooter className="p-6 border-t bg-background flex gap-2 shrink-0">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Annuler</Button>
                 <Button type="submit">Enregistrer</Button>

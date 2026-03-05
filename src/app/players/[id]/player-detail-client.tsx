@@ -24,7 +24,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useCoachesContext } from '@/context/coaches-context';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 const documentSchema = z.object({
   name: z.string().min(1, "Le nom du document est requis."),
@@ -220,8 +219,8 @@ export function PlayerDetailClient({ id: idParam }: { id: string }) {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                <ScrollArea className="flex-1 px-6">
-                  <div className="space-y-8 py-4">
+                <div className="flex-1 overflow-y-auto px-6 py-4">
+                  <div className="space-y-8">
                     <div className="flex flex-col items-center gap-4">
                       <Avatar className="h-24 w-24 border">
                         <AvatarImage src={form.watch('photo')} /><AvatarFallback className="bg-muted"><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
@@ -346,7 +345,7 @@ export function PlayerDetailClient({ id: idParam }: { id: string }) {
                       <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un document</Button>
                     </div>
                   </div>
-                </ScrollArea>
+                </div>
                 <DialogFooter className="p-6 border-t bg-background flex gap-2 shrink-0">
                   <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>Annuler</Button>
                   <Button type="submit">Mettre à jour</Button>

@@ -21,11 +21,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Player } from "@/lib/data";
 
 const playerCategories = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
-const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Espagnole", "Portugaise", "Allemande", "Italienne"];
+const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne", "Brésilienne", "Argentine", "Espagnole", "Portugaise", "Allemande", "Italienne", "Néerlandaise", "Anglaise", "Américaine", "Russe", "Japonaise", "Chinoise", "Indienne", "Turque", "Égyptienne", "Nigériane", "Sud-africaine", "Ghanéenne"];
 const documentOptions = ["Certificat Médical", "Carte d'identité", "Passeport", "Extrait de naissance", "Photo d'identité", "Licence sportive", "Assurance", "Autre"];
 
 const documentSchema = z.object({
@@ -62,7 +61,7 @@ const categoryColors: Record<string, string> = {
 };
 
 function PlayersContent() {
-  const { players, addPlayer } = usePlayersContext();
+  const { players, addPlayer, loading } = usePlayersContext();
   const { coaches } = useCoachesContext();
   const { toast } = useToast();
   const searchParams = useSearchParams();
@@ -123,6 +122,8 @@ function PlayersContent() {
   const availableCategories = Object.keys(currentGroups).sort((a,b) => playerCategories.indexOf(a) - playerCategories.indexOf(b));
   const currentCategory = activeCategory && currentGroups[activeCategory] ? activeCategory : (availableCategories[0] || '');
 
+  if (loading) return <div className="p-8">Chargement des joueurs...</div>;
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
       <div className="flex items-center justify-between">
@@ -160,7 +161,7 @@ function PlayersContent() {
                           <Card key={p.id} className="hover:shadow-lg transition-shadow">
                             <Link href={`/players/${p.id}`}>
                               <CardHeader className="p-4 flex flex-row items-center gap-4">
-                                <Avatar className="h-16 w-16"><AvatarImage src={p.photo} /><AvatarFallback>{p.name.substring(0, 2)}</AvatarFallback></Avatar>
+                                <Avatar className="h-16 w-16"><AvatarImage src={p.photo} alt={p.name} /><AvatarFallback>{p.name.substring(0, 2)}</AvatarFallback></Avatar>
                                 <div className="flex-1"><CardTitle className="text-base font-bold">{p.name}</CardTitle><CardDescription>{p.poste}</CardDescription></div>
                               </CardHeader>
                               <CardContent className="p-4 pt-0 flex justify-between items-center">
@@ -190,8 +191,8 @@ function PlayersContent() {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-              <ScrollArea className="flex-1 px-6">
-                <div className="space-y-8 py-4">
+              <div className="flex-1 overflow-y-auto px-6 py-4">
+                <div className="space-y-8">
                   <div className="flex flex-col items-center gap-4">
                     <Avatar className="h-24 w-24 border">
                       <AvatarImage src={form.watch('photo')} /><AvatarFallback className="bg-muted"><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
@@ -312,7 +313,7 @@ function PlayersContent() {
                     <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un document</Button>
                   </div>
                 </div>
-              </ScrollArea>
+              </div>
               <DialogFooter className="p-6 border-t bg-background flex gap-2 shrink-0">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Annuler</Button>
                 <Button type="submit">Enregistrer le joueur</Button>

@@ -12,12 +12,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Eye, Search } from "lucide-react";
 import type { Payment } from "@/lib/financial-data";
@@ -45,7 +44,7 @@ export default function FinancesPage() {
 
   const aggregatePayments = (payments: Payment[], allMembers: { id: string; name: string }[]) => {
     const currentMonthStr = format(new Date(), "yyyy-MM");
-    const paymentsByMember = payments.reduce((acc, p) => {
+    const paymentsByMember = (payments || []).reduce((acc, p) => {
       if (!acc[p.member]) acc[p.member] = [];
       acc[p.member].push(p);
       return acc;
@@ -108,6 +107,8 @@ export default function FinancesPage() {
     </Card>
   );
 
+  if (loading) return <div className="p-8">Chargement des finances...</div>;
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
       <div className="flex items-center justify-between"><h2 className="text-3xl font-bold tracking-tight">Finances</h2><Button onClick={() => setOpen(true)}><PlusCircle className="mr-2 h-4 w-4" /> Nouveau paiement</Button></div>
@@ -134,19 +135,19 @@ export default function FinancesPage() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md flex flex-col p-0 overflow-hidden">
           <DialogHeader className="p-6 pb-2"><DialogTitle>Nouveau Paiement</DialogTitle></DialogHeader>
-          <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-            <ScrollArea className="flex-1 px-6">
-              <div className="space-y-4 py-4">
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <div className="space-y-4">
                 <div className="grid gap-2"><Label>Type</Label><Select value={paymentType} onValueChange={(v: any) => setPaymentType(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="player">Cotisation</SelectItem><SelectItem value="coach">Salaire</SelectItem></SelectContent></Select></div>
                 <div className="grid gap-2"><Label>Mois concerné</Label><Input type="month" value={newPaymentData.dueDate} onChange={e => setNewPaymentData(p => ({...p, dueDate: e.target.value}))} required /></div>
-                <div className="grid gap-2"><Label>Membre</Label><Select value={newPaymentData.member} onValueChange={v => setNewPaymentData(p => ({...p, member: v}))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(paymentType === 'player' ? players : coaches).map(m => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}</SelectContent></Select></div>
+                <div className="grid gap-2"><Label>Membre</Label><Select value={newPaymentData.member} onValueChange={v => setNewPaymentData(p => ({...p, member: v}))}><SelectTrigger><SelectValue placeholder="Choisir un membre..." /></SelectTrigger><SelectContent>{(paymentType === 'player' ? players : coaches).map(m => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}</SelectContent></Select></div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2"><Label>Montant total</Label><Input type="number" value={newPaymentData.totalAmount} onChange={e => setNewPaymentData(p => ({...p, totalAmount: e.target.value}))} required /></div>
                   <div className="grid gap-2"><Label>Versé</Label><Input type="number" value={newPaymentData.initialPaidAmount} onChange={e => setNewPaymentData(p => ({...p, initialPaidAmount: e.target.value}))} required /></div>
                 </div>
               </div>
-            </ScrollArea>
-            <DialogFooter className="p-6 border-t bg-background flex gap-2">
+            </div>
+            <DialogFooter className="p-6 border-t bg-background flex gap-2 shrink-0">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
               <Button type="submit">Enregistrer</Button>
             </DialogFooter>
