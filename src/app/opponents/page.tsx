@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Edit, Trash2, Shield, Camera, MoreHorizontal, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 
 export default function OpponentsPage() {
   const { opponents, loading, addOpponent, deleteOpponent } = useOpponentsContext();
@@ -31,13 +32,16 @@ export default function OpponentsPage() {
   });
 
   const displayOpponents = useMemo(() => {
-    const groups: Record<string, { name: string, logoUrl?: string, originalItems: Opponent[] }> = {};
+    const groups: Record<string, { name: string, logoUrl?: string, genders: string[], originalItems: Opponent[] }> = {};
     (opponents || []).forEach(op => {
       const cleanName = op.name.trim();
       if (!groups[cleanName]) {
-        groups[cleanName] = { name: cleanName, logoUrl: op.logoUrl, originalItems: [] };
+        groups[cleanName] = { name: cleanName, logoUrl: op.logoUrl, genders: [], originalItems: [] };
       }
       groups[cleanName].originalItems.push(op);
+      if (!groups[cleanName].genders.includes(op.gender)) {
+        groups[cleanName].genders.push(op.gender);
+      }
     });
     return Object.values(groups).sort((a, b) => a.name.localeCompare(b.name));
   }, [opponents]);
@@ -81,12 +85,11 @@ export default function OpponentsPage() {
 
   const handleEdit = (group: any) => {
     setEditingName(group.name);
-    const genders = group.originalItems.map((i: any) => i.gender);
     setFormData({
       name: group.name,
       logoUrl: group.logoUrl || "",
-      isMasculin: genders.includes("Masculin"),
-      isFeminin: genders.includes("Féminin"),
+      isMasculin: group.genders.includes("Masculin"),
+      isFeminin: group.genders.includes("Féminin"),
     });
     setIsEditing(true);
     setOpen(true);
@@ -116,7 +119,7 @@ export default function OpponentsPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {displayOpponents.map((group) => (
           <Card key={group.name} className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center gap-4 pb-4">
+            <CardHeader className="flex flex-row items-center gap-4 pb-2">
               <Avatar className="h-12 w-12 border">
                 <AvatarImage src={group.logoUrl || undefined} />
                 <AvatarFallback>{group.name.substring(0, 2).toUpperCase()}</AvatarFallback>
@@ -136,34 +139,35 @@ export default function OpponentsPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </CardHeader>
+            <CardContent className="pt-0 flex gap-2">
+              {group.genders.map(g => (
+                <Badge key={g} variant="outline" className="text-[10px] uppercase">{g}</Badge>
+              ))}
+            </CardContent>
           </Card>
         ))}
         {displayOpponents.length === 0 && <div className="col-span-full text-center py-20 text-muted-foreground border-2 border-dashed rounded-xl">Aucun adversaire enregistré.</div>}
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md flex flex-col p-0 overflow-hidden max-h-[90vh]">
-          <DialogHeader className="p-6 pb-2"><DialogTitle>{isEditing ? "Modifier" : "Ajouter"} une équipe</DialogTitle></DialogHeader>
-          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              <div className="space-y-6">
-                <div className="flex flex-col items-center gap-4">
-                  <Avatar className="h-24 w-24 border">
-                    <AvatarImage src={formData.logoUrl || undefined} />
-                    <AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
-                  </Avatar>
-                  <div className="w-full space-y-2"><Label>URL du logo</Label><Input value={formData.logoUrl} onChange={(e) => setFormData({...formData, logoUrl: e.target.value})} placeholder="https://..." /></div>
-                </div>
-                <div className="grid gap-2"><Label>Nom de l'équipe</Label><Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required /></div>
-                <div className="space-y-3"><Label>Genres disponibles</Label>
-                  <div className="flex gap-6">
-                    <div className="flex items-center space-x-2"><Checkbox id="masc" checked={formData.isMasculin} onCheckedChange={(v) => setFormData({...formData, isMasculin: !!v})} /><Label htmlFor="masc">Masculin</Label></div>
-                    <div className="flex items-center space-x-2"><Checkbox id="fem" checked={formData.isFeminin} onCheckedChange={(v) => setFormData({...formData, isFeminin: !!v})} /><Label htmlFor="fem">Féminin</Label></div>
-                  </div>
-                </div>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{isEditing ? "Modifier" : "Ajouter"} une équipe</DialogTitle></DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="flex flex-col items-center gap-4">
+              <Avatar className="h-24 w-24 border">
+                <AvatarImage src={formData.logoUrl || undefined} />
+                <AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
+              </Avatar>
+              <div className="w-full space-y-2"><Label>URL du logo</Label><Input value={formData.logoUrl} onChange={(e) => setFormData({...formData, logoUrl: e.target.value})} placeholder="https://..." /></div>
+            </div>
+            <div className="grid gap-2"><Label>Nom de l'équipe</Label><Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required /></div>
+            <div className="space-y-3"><Label>Genres disponibles</Label>
+              <div className="flex gap-6">
+                <div className="flex items-center space-x-2"><Checkbox id="masc" checked={formData.isMasculin} onCheckedChange={(v) => setFormData({...formData, isMasculin: !!v})} /><Label htmlFor="masc">Masculin</Label></div>
+                <div className="flex items-center space-x-2"><Checkbox id="fem" checked={formData.isFeminin} onCheckedChange={(v) => setFormData({...formData, isFeminin: !!v})} /><Label htmlFor="fem">Féminin</Label></div>
               </div>
             </div>
-            <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
+            <DialogFooter>
               <Button type="button" variant="outline" onClick={resetForm} disabled={isSubmitting}>Annuler</Button>
               <Button type="submit" disabled={isSubmitting}>{isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : "Enregistrer"}</Button>
             </DialogFooter>

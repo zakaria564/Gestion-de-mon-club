@@ -239,143 +239,139 @@ function PlayersContent() {
       </Tabs>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
             <DialogTitle>Nouveau Joueur</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-              <div className="flex-1 overflow-y-auto px-6 py-4">
-                <div className="space-y-8">
-                  <div className="flex flex-col items-center gap-4">
-                    <Avatar className="h-24 w-24 border">
-                      <AvatarImage src={form.watch('photo') || undefined} />
-                      <AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
-                    </Avatar>
-                    <FormField 
-                      control={form.control} 
-                      name="photo" 
-                      render={({field}) => (
-                        <FormItem className="w-full max-w-sm">
-                          <FormLabel>URL Photo</FormLabel>
-                          <Input {...field} />
-                        </FormItem>
-                      )} 
-                    />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <div className="flex flex-col items-center gap-4">
+                <Avatar className="h-24 w-24 border">
+                  <AvatarImage src={form.watch('photo') || undefined} />
+                  <AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
+                </Avatar>
+                <FormField 
+                  control={form.control} 
+                  name="photo" 
+                  render={({field}) => (
+                    <FormItem className="w-full max-w-sm">
+                      <FormLabel>URL Photo</FormLabel>
+                      <Input {...field} />
+                    </FormItem>
+                  )} 
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="space-y-4">
+                  <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Identité & Contact</h4>
+                  <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom complet</FormLabel><Input {...field} required /></FormItem>} />
+                  <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de naissance</FormLabel><Input type="date" {...field} required /></FormItem>} />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField control={form.control} name="gender" render={({field}) => (
+                      <FormItem><FormLabel>Genre</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                          <SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent>
+                        </Select>
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="country" render={({field}) => (
+                      <FormItem><FormLabel>Nationalité</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                          <SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </FormItem>
+                    )} />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    <div className="space-y-4">
-                      <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Identité & Contact</h4>
-                      <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom complet</FormLabel><Input {...field} required /></FormItem>} />
-                      <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de naissance</FormLabel><Input type="date" {...field} required /></FormItem>} />
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField control={form.control} name="gender" render={({field}) => (
-                          <FormItem><FormLabel>Genre</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                              <SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent>
-                            </Select>
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name="country" render={({field}) => (
-                          <FormItem><FormLabel>Nationalité</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                              <SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
-                            </Select>
-                          </FormItem>
-                        )} />
-                      </div>
-                      <FormField control={form.control} name="email" render={({field}) => <FormItem><FormLabel>Email</FormLabel><Input type="email" {...field} /></FormItem>} />
-                      <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone</FormLabel><Input {...field} required /></FormItem>} />
-                      <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><Input {...field} required /></FormItem>} />
-                    </div>
-                    <div className="space-y-4">
-                      <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Sportif</h4>
-                      <FormField control={form.control} name="category" render={({field}) => (
-                        <FormItem><FormLabel>Catégorie</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                            <SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="poste" render={({field}) => (
-                        <FormItem><FormLabel>Poste</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                            <SelectContent>
-                              <SelectItem value="Gardien">Gardien</SelectItem>
-                              <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
-                              <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
-                              <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
-                              <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
-                              <SelectItem value="Milieu Central">Milieu Central</SelectItem>
-                              <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
-                              <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
-                              <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
-                              <SelectItem value="Avant-centre">Avant-centre</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="jerseyNumber" render={({field}) => <FormItem><FormLabel>N° Maillot</FormLabel><Input type="number" {...field} required /></FormItem>} />
-                      <FormField control={form.control} name="coachName" render={({field}) => (
-                        <FormItem><FormLabel>Entraîneur</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                            <SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="status" render={({field}) => (
-                        <FormItem><FormLabel>Statut</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                            <SelectContent>
-                              <SelectItem value="Actif">Actif</SelectItem>
-                              <SelectItem value="Blessé">Blessé</SelectItem>
-                              <SelectItem value="Suspendu">Suspendu</SelectItem>
-                              <SelectItem value="Inactif">Inactif</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )} />
-                    </div>
-                  </div>
-                  <div className="space-y-4 pb-10">
-                    <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Documents</h4>
-                    {fields.map((f, i) => (
-                      <div key={f.id} className="p-4 border rounded-md relative bg-muted/20 space-y-4">
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          className="absolute top-2 right-2 text-destructive" 
-                          onClick={() => remove(i)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                        <FormField control={form.control} name={`documents.${i}.name`} render={({field}) => (
-                          <FormItem><FormLabel>Nom du document</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                              <SelectContent>{documentOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-                            </Select>
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name={`documents.${i}.url`} render={({field}) => (
-                          <FormItem><FormLabel>Lien URL</FormLabel><Input {...field} /></FormItem>
-                        )} />
-                      </div>
-                    ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}>
-                      <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un document
-                    </Button>
-                  </div>
+                  <FormField control={form.control} name="email" render={({field}) => <FormItem><FormLabel>Email</FormLabel><Input type="email" {...field} /></FormItem>} />
+                  <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone</FormLabel><Input {...field} required /></FormItem>} />
+                  <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><Input {...field} required /></FormItem>} />
+                </div>
+                <div className="space-y-4">
+                  <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Sportif</h4>
+                  <FormField control={form.control} name="category" render={({field}) => (
+                    <FormItem><FormLabel>Catégorie</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                        <SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="poste" render={({field}) => (
+                    <FormItem><FormLabel>Poste</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                        <SelectContent>
+                          <SelectItem value="Gardien">Gardien</SelectItem>
+                          <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
+                          <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
+                          <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
+                          <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
+                          <SelectItem value="Milieu Central">Milieu Central</SelectItem>
+                          <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
+                          <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
+                          <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
+                          <SelectItem value="Avant-centre">Avant-centre</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="jerseyNumber" render={({field}) => <FormItem><FormLabel>N° Maillot</FormLabel><Input type="number" {...field} required /></FormItem>} />
+                  <FormField control={form.control} name="coachName" render={({field}) => (
+                    <FormItem><FormLabel>Entraîneur</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                        <SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="status" render={({field}) => (
+                    <FormItem><FormLabel>Statut</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                        <SelectContent>
+                          <SelectItem value="Actif">Actif</SelectItem>
+                          <SelectItem value="Blessé">Blessé</SelectItem>
+                          <SelectItem value="Suspendu">Suspendu</SelectItem>
+                          <SelectItem value="Inactif">Inactif</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )} />
                 </div>
               </div>
-              <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
+              <div className="space-y-4">
+                <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Documents</h4>
+                {fields.map((f, i) => (
+                  <div key={f.id} className="p-4 border rounded-md relative bg-muted/20 space-y-4">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      className="absolute top-2 right-2 text-destructive" 
+                      onClick={() => remove(i)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <FormField control={form.control} name={`documents.${i}.name`} render={({field}) => (
+                      <FormItem><FormLabel>Nom du document</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                          <SelectContent>{documentOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name={`documents.${i}.url`} render={({field}) => (
+                      <FormItem><FormLabel>Lien URL</FormLabel><Input {...field} /></FormItem>
+                    )} />
+                  </div>
+                ))}
+                <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un document
+                </Button>
+              </div>
+              <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>Annuler</Button>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : "Enregistrer"}
