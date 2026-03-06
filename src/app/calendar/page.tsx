@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -30,7 +29,17 @@ export default function CalendarPage() {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newEvent, setNewEvent] = useState<any>({
-    type: 'Match Championnat', opponent: '', homeTeam: '', awayTeam: '', date: format(new Date(), 'yyyy-MM-dd'), time: '10:00', location: '', teamCategory: 'Sénior', gender: 'Masculin', homeOrAway: 'home', matchType: 'club-match',
+    type: 'Match Championnat', 
+    opponent: '', 
+    homeTeam: '', 
+    awayTeam: '', 
+    date: format(new Date(), 'yyyy-MM-dd'), 
+    time: '10:00', 
+    location: '', 
+    teamCategory: 'Sénior', 
+    gender: 'Masculin', 
+    homeOrAway: 'home', 
+    matchType: 'club-match',
   });
 
   const selectedDateStr = date ? format(date, 'yyyy-MM-dd') : '';
@@ -108,14 +117,15 @@ export default function CalendarPage() {
               <div className="space-y-6">
                 <div className="grid gap-2">
                   <Label>Type</Label>
-                  <Select value={newEvent.type} onValueChange={v => setNewEvent({...newEvent, type: v})}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Match Championnat">Championnat</SelectItem>
-                      <SelectItem value="Match Amical">Amical</SelectItem>
-                      <SelectItem value="Entraînement">Entraînement</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <select 
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                    value={newEvent.type} 
+                    onChange={e => setNewEvent({...newEvent, type: e.target.value})}
+                  >
+                    <option value="Match Championnat">Championnat</option>
+                    <option value="Match Amical">Amical</option>
+                    <option value="Entraînement">Entraînement</option>
+                  </select>
                 </div>
                 {newEvent.type.includes('Match') && (
                   <div className="space-y-4 p-4 border rounded-xl bg-muted/20">
@@ -127,17 +137,25 @@ export default function CalendarPage() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
                           <Label>Lieu</Label>
-                          <Select value={newEvent.homeOrAway} onValueChange={v => setNewEvent({...newEvent, homeOrAway: v})}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent><SelectItem value="home">Domicile</SelectItem><SelectItem value="away">Extérieur</SelectItem></SelectContent>
-                          </Select>
+                          <select 
+                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                            value={newEvent.homeOrAway} 
+                            onChange={e => setNewEvent({...newEvent, homeOrAway: e.target.value})}
+                          >
+                            <option value="home">Domicile</option>
+                            <option value="away">Extérieur</option>
+                          </select>
                         </div>
                         <div className="grid gap-2">
                           <Label>Adversaire</Label>
-                          <Select value={newEvent.opponent} onValueChange={v => setNewEvent({...newEvent, opponent: v})}>
-                            <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
-                            <SelectContent>{opponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
-                          </Select>
+                          <select 
+                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                            value={newEvent.opponent} 
+                            onChange={e => setNewEvent({...newEvent, opponent: e.target.value})}
+                          >
+                            <option value="">Choisir...</option>
+                            {opponents.map(o => <option key={o.id} value={o.name}>{o.name}</option>)}
+                          </select>
                         </div>
                       </div>
                     ) : (
@@ -156,17 +174,24 @@ export default function CalendarPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label>Catégorie</Label>
-                    <Select value={newEvent.teamCategory} onValueChange={v => setNewEvent({...newEvent, teamCategory: v})}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{playerCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
-                    </Select>
+                    <select 
+                      className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                      value={newEvent.teamCategory} 
+                      onChange={e => setNewEvent({...newEvent, teamCategory: e.target.value})}
+                    >
+                      {playerCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
                   </div>
                   <div className="grid gap-2">
                     <Label>Genre</Label>
-                    <Select value={newEvent.gender} onValueChange={v => setNewEvent({...newEvent, gender: v})}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent>
-                    </Select>
+                    <select 
+                      className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                      value={newEvent.gender} 
+                      onChange={e => setNewEvent({...newEvent, gender: e.target.value})}
+                    >
+                      <option value="Masculin">Masculin</option>
+                      <option value="Féminin">Féminin</option>
+                    </select>
                   </div>
                 </div>
               </div>

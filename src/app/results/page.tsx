@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -145,51 +144,75 @@ export default function ResultsPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
                       <Label>Lieu</Label>
-                      <Select value={newResult.homeOrAway} onValueChange={(v: any) => setNewResult(p => ({...p, homeOrAway: v}))}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent><SelectItem value="home">Domicile</SelectItem><SelectItem value="away">Extérieur</SelectItem></SelectContent>
-                      </Select>
+                      <select 
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                        value={newResult.homeOrAway} 
+                        onChange={(e) => setNewResult(p => ({...p, homeOrAway: e.target.value as any}))}
+                      >
+                        <option value="home">Domicile</option>
+                        <option value="away">Extérieur</option>
+                      </select>
                     </div>
                     <div className="grid gap-2">
                       <Label>Adversaire</Label>
-                      <Select value={newResult.opponent} onValueChange={(v) => setNewResult(p => ({...p, opponent: v}))}>
-                        <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
-                        <SelectContent>{opponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
-                      </Select>
+                      <select 
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                        value={newResult.opponent} 
+                        onChange={(e) => setNewResult(p => ({...p, opponent: e.target.value}))}
+                      >
+                        <option value="">Choisir...</option>
+                        {opponents.map(o => <option key={o.id} value={o.name}>{o.name}</option>)}
+                      </select>
                     </div>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
                       <Label>Équipe Domicile</Label>
-                      <Select value={newResult.homeTeam} onValueChange={(v) => setNewResult(p => ({...p, homeTeam: v}))}>
-                        <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
-                        <SelectContent>{opponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
-                      </Select>
+                      <select 
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                        value={newResult.homeTeam} 
+                        onChange={(e) => setNewResult(p => ({...p, homeTeam: e.target.value}))}
+                      >
+                        <option value="">Choisir...</option>
+                        {opponents.map(o => <option key={o.id} value={o.name}>{o.name}</option>)}
+                      </select>
                     </div>
                     <div className="grid gap-2">
                       <Label>Équipe Extérieur</Label>
-                      <Select value={newResult.awayTeam} onValueChange={(v) => setNewResult(p => ({...p, awayTeam: v}))}>
-                        <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
-                        <SelectContent>{opponents.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
-                      </Select>
+                      <select 
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                        value={newResult.awayTeam} 
+                        onChange={(e) => setNewResult(p => ({...p, awayTeam: e.target.value}))}
+                      >
+                        <option value="">Choisir...</option>
+                        {opponents.map(o => <option key={o.id} value={o.name}>{o.name}</option>)}
+                      </select>
                     </div>
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label>Type</Label>
-                    <Select value={newResult.category} onValueChange={(v) => setNewResult(p => ({...p, category: v}))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{matchCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                    </Select>
+                    <select 
+                      className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                      value={newResult.category} 
+                      onChange={(e) => setNewResult(p => ({...p, category: e.target.value}))}
+                    >
+                      <option value="">Choisir...</option>
+                      {matchCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
                   </div>
                   <div className="grid gap-2">
                     <Label>Catégorie</Label>
-                    <Select value={newResult.teamCategory} onValueChange={(v) => setNewResult(p => ({...p, teamCategory: v}))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                    </Select>
+                    <select 
+                      className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                      value={newResult.teamCategory} 
+                      onChange={(e) => setNewResult(p => ({...p, teamCategory: e.target.value}))}
+                    >
+                      <option value="">Choisir...</option>
+                      {playerCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
                   </div>
                 </div>
                 <div className="grid gap-2"><Label htmlFor="location">Lieu exact</Label><Input id="location" value={newResult.location} onChange={handleInputChange} required placeholder="ex: Stade Municipal" /></div>

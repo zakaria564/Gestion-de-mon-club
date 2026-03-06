@@ -47,7 +47,18 @@ const playerSchema = z.object({
 type PlayerFormValues = z.infer<typeof playerSchema>;
 
 const categoryColors: Record<string, string> = {
-  'Sénior': 'hsl(var(--chart-1))', 'U23': 'hsl(var(--chart-2))', 'U20': 'hsl(340, 80%, 55%)', 'U19': 'hsl(var(--chart-3))', 'U18': 'hsl(var(--chart-4))', 'U17': 'hsl(var(--chart-5))', 'U16': 'hsl(var(--chart-6))', 'U15': 'hsl(var(--chart-7))', 'U13': 'hsl(var(--chart-8))', 'U9': 'hsl(25 60% 45%)', 'U11': 'hsl(var(--chart-10))', 'U7': 'hsl(var(--chart-11))',
+  'Sénior': 'hsl(var(--chart-1))',
+  'U23': 'hsl(var(--chart-2))',
+  'U20': 'hsl(340, 80%, 55%)',
+  'U19': 'hsl(var(--chart-3))',
+  'U18': 'hsl(var(--chart-4))',
+  'U17': 'hsl(var(--chart-5))',
+  'U16': 'hsl(var(--chart-6))',
+  'U15': 'hsl(var(--chart-7))',
+  'U13': 'hsl(var(--chart-8))',
+  'U9': 'hsl(25 60% 45%)',
+  'U11': 'hsl(var(--chart-10))',
+  'U7': 'hsl(var(--chart-11))',
 };
 
 function PlayersContent() {
@@ -57,6 +68,7 @@ function PlayersContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,10 +78,29 @@ function PlayersContent() {
 
   const form = useForm<PlayerFormValues>({
     resolver: zodResolver(playerSchema),
-    defaultValues: { name: '', birthDate: '', address: '', phone: '', email: '', country: 'Marocaine', poste: '', jerseyNumber: 0, photo: '', cin: '', status: 'Actif', category: 'Sénior', gender: 'Masculin', coachName: '', documents: [] },
+    defaultValues: {
+      name: '',
+      birthDate: '',
+      address: '',
+      phone: '',
+      email: '',
+      country: 'Marocaine',
+      poste: '',
+      jerseyNumber: 0,
+      photo: '',
+      cin: '',
+      status: 'Actif',
+      category: 'Sénior',
+      gender: 'Masculin',
+      coachName: '',
+      documents: []
+    },
   });
 
-  const { fields, append, remove } = useFieldArray({ control: form.control, name: "documents" });
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "documents"
+  });
 
   const handleTabChange = (key: 'gender' | 'category', value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -83,9 +114,9 @@ function PlayersContent() {
       await addPlayer(data as any);
       setOpen(false);
       form.reset();
-      toast({ title: "Joueur ajouté" });
+      toast({ title: "Joueur ajouté avec succès" });
     } catch (e) {
-      toast({ variant: "destructive", title: "Erreur" });
+      toast({ variant: "destructive", title: "Erreur lors de l'ajout" });
     } finally {
       setIsSubmitting(false);
     }
@@ -93,7 +124,10 @@ function PlayersContent() {
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase();
-    return (players || []).filter(p => p.name.toLowerCase().includes(q) || p.poste.toLowerCase().includes(q));
+    return (players || []).filter(p => 
+      p.name.toLowerCase().includes(q) || 
+      p.poste.toLowerCase().includes(q)
+    );
   }, [players, searchQuery]);
 
   const grouped = useMemo(() => {
@@ -108,13 +142,13 @@ function PlayersContent() {
   }, [filtered]);
 
   const currentGroups = activeGender === 'female' ? grouped.female : grouped.male;
-  const cats = Object.keys(currentGroups).sort((a,b) => playerCategories.indexOf(a) - playerCategories.indexOf(b));
+  const cats = Object.keys(currentGroups).sort((a, b) => playerCategories.indexOf(a) - playerCategories.indexOf(b));
   const currentCat = activeCategory && currentGroups[activeCategory] ? activeCategory : (cats[0] || '');
 
   if (loading && !isSubmitting && players.length === 0) {
     return (
       <div className="flex-1 p-8 text-center text-muted-foreground">
-        Chargement des joueurs...
+        Chargement des données...
       </div>
     );
   }
@@ -123,12 +157,19 @@ function PlayersContent() {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Joueurs</h2>
-        <Button onClick={() => setOpen(true)}><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un joueur</Button>
+        <Button onClick={() => setOpen(true)}>
+          <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un joueur
+        </Button>
       </div>
 
       <div className="relative my-4 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input placeholder="Rechercher par nom ou poste..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
+        <Input 
+          placeholder="Rechercher par nom ou poste..." 
+          value={searchQuery} 
+          onChange={(e) => setSearchQuery(e.target.value)} 
+          className="pl-10" 
+        />
       </div>
 
       <Tabs value={activeGender} onValueChange={(v) => handleTabChange('gender', v)}>
@@ -141,14 +182,23 @@ function PlayersContent() {
             <Tabs value={currentCat} onValueChange={(v) => handleTabChange('category', v)}>
               <TabsList className="h-auto p-1 bg-muted rounded-md flex-wrap justify-start">
                 {cats.map(c => (
-                  <TabsTrigger key={c} value={c} style={{ backgroundColor: categoryColors[c as keyof typeof categoryColors] }} className="text-white m-1">{c}</TabsTrigger>
+                  <TabsTrigger 
+                    key={c} 
+                    value={c} 
+                    style={{ backgroundColor: categoryColors[c] || 'hsl(var(--primary))' }} 
+                    className="text-white m-1"
+                  >
+                    {c}
+                  </TabsTrigger>
                 ))}
               </TabsList>
               {currentCat && currentGroups[currentCat] && (
                 <div className="mt-6 space-y-8">
                   {Object.entries(currentGroups[currentCat]).map(([poste, list]: any) => (
                     <div key={poste}>
-                      <h3 className="text-xl font-semibold mb-4 border-l-4 border-primary pl-3">{poste} ({list.length})</h3>
+                      <h3 className="text-xl font-semibold mb-4 border-l-4 border-primary pl-3">
+                        {poste} ({list.length})
+                      </h3>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {list.map((p: any) => (
                           <Card key={p.id} className="hover:shadow-lg transition-shadow">
@@ -164,8 +214,12 @@ function PlayersContent() {
                                 </div>
                               </CardHeader>
                               <CardContent className="p-4 pt-0 flex justify-between items-center">
-                                <Badge style={{ backgroundColor: categoryColors[p.category as keyof typeof categoryColors], color: 'white' }}>{p.category}</Badge>
-                                <Badge variant={p.status === 'Actif' ? 'default' : 'secondary'}>{p.status}</Badge>
+                                <Badge style={{ backgroundColor: categoryColors[p.category] || 'hsl(var(--primary))', color: 'white' }}>
+                                  {p.category}
+                                </Badge>
+                                <Badge variant={p.status === 'Actif' ? 'default' : 'secondary'}>
+                                  {p.status}
+                                </Badge>
                               </CardContent>
                             </Link>
                           </Card>
@@ -186,7 +240,9 @@ function PlayersContent() {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2"><DialogTitle>Nouveau Joueur</DialogTitle></DialogHeader>
+          <DialogHeader className="p-6 pb-2">
+            <DialogTitle>Nouveau Joueur</DialogTitle>
+          </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               <div className="flex-1 overflow-y-auto px-6 py-4">
@@ -196,7 +252,16 @@ function PlayersContent() {
                       <AvatarImage src={form.watch('photo') || undefined} />
                       <AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
                     </Avatar>
-                    <FormField control={form.control} name="photo" render={({field}) => <FormItem className="w-full max-w-sm"><FormLabel>URL Photo</FormLabel><Input {...field} /></FormItem>} />
+                    <FormField 
+                      control={form.control} 
+                      name="photo" 
+                      render={({field}) => (
+                        <FormItem className="w-full max-w-sm">
+                          <FormLabel>URL Photo</FormLabel>
+                          <Input {...field} />
+                        </FormItem>
+                      )} 
+                    />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <div className="space-y-4">
@@ -204,8 +269,22 @@ function PlayersContent() {
                       <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom complet</FormLabel><Input {...field} required /></FormItem>} />
                       <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de naissance</FormLabel><Input type="date" {...field} required /></FormItem>} />
                       <div className="grid grid-cols-2 gap-4">
-                        <FormField control={form.control} name="gender" render={({field}) => <FormItem><FormLabel>Genre</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent></Select></FormItem>} />
-                        <FormField control={form.control} name="country" render={({field}) => <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent></Select></FormItem>} />
+                        <FormField control={form.control} name="gender" render={({field}) => (
+                          <FormItem><FormLabel>Genre</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                              <SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent>
+                            </Select>
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="country" render={({field}) => (
+                          <FormItem><FormLabel>Nationalité</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                              <SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
+                            </Select>
+                          </FormItem>
+                        )} />
                       </div>
                       <FormField control={form.control} name="email" render={({field}) => <FormItem><FormLabel>Email</FormLabel><Input type="email" {...field} /></FormItem>} />
                       <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone</FormLabel><Input {...field} required /></FormItem>} />
@@ -213,29 +292,94 @@ function PlayersContent() {
                     </div>
                     <div className="space-y-4">
                       <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Sportif</h4>
-                      <FormField control={form.control} name="category" render={({field}) => <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>} />
-                      <FormField control={form.control} name="poste" render={({field}) => <FormItem><FormLabel>Poste</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Gardien">Gardien</SelectItem><SelectItem value="Défenseur Central">Défenseur Central</SelectItem><SelectItem value="Latéral Droit">Latéral Droit</SelectItem><SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem><SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem><SelectItem value="Milieu Central">Milieu Central</SelectItem><SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem><SelectItem value="Ailier Droit">Ailier Droit</SelectItem><SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem><SelectItem value="Avant-centre">Avant-centre</SelectItem></Select></FormItem>} />
+                      <FormField control={form.control} name="category" render={({field}) => (
+                        <FormItem><FormLabel>Catégorie</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                            <SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="poste" render={({field}) => (
+                        <FormItem><FormLabel>Poste</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                            <SelectContent>
+                              <SelectItem value="Gardien">Gardien</SelectItem>
+                              <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
+                              <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
+                              <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
+                              <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
+                              <SelectItem value="Milieu Central">Milieu Central</SelectItem>
+                              <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
+                              <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
+                              <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
+                              <SelectItem value="Avant-centre">Avant-centre</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )} />
                       <FormField control={form.control} name="jerseyNumber" render={({field}) => <FormItem><FormLabel>N° Maillot</FormLabel><Input type="number" {...field} required /></FormItem>} />
-                      <FormField control={form.control} name="coachName" render={({field}) => <FormItem><FormLabel>Entraîneur</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent></Select></FormItem>} />
-                      <FormField control={form.control} name="status" render={({field}) => <FormItem><FormLabel>Statut</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="Blessé">Blessé</SelectItem><SelectItem value="Suspendu">Suspendu</SelectItem><SelectItem value="Inactif">Inactif</SelectItem></Select></FormItem>} />
+                      <FormField control={form.control} name="coachName" render={({field}) => (
+                        <FormItem><FormLabel>Entraîneur</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                            <SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="status" render={({field}) => (
+                        <FormItem><FormLabel>Statut</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                            <SelectContent>
+                              <SelectItem value="Actif">Actif</SelectItem>
+                              <SelectItem value="Blessé">Blessé</SelectItem>
+                              <SelectItem value="Suspendu">Suspendu</SelectItem>
+                              <SelectItem value="Inactif">Inactif</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )} />
                     </div>
                   </div>
                   <div className="space-y-4 pb-10">
                     <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Documents</h4>
                     {fields.map((f, i) => (
                       <div key={f.id} className="p-4 border rounded-md relative bg-muted/20 space-y-4">
-                        <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => remove(i)}><X className="h-4 w-4" /></Button>
-                        <FormField control={form.control} name={`documents.${i}.name`} render={({field}) => <FormItem><FormLabel>Nom du document</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{documentOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select></FormItem>} />
-                        <FormField control={form.control} name={`documents.${i}.url`} render={({field}) => <FormItem><FormLabel>Lien URL</FormLabel><Input {...field} /></FormItem>} />
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="icon" 
+                          className="absolute top-2 right-2 text-destructive" 
+                          onClick={() => remove(i)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <FormField control={form.control} name={`documents.${i}.name`} render={({field}) => (
+                          <FormItem><FormLabel>Nom du document</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                              <SelectContent>{documentOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                            </Select>
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name={`documents.${i}.url`} render={({field}) => (
+                          <FormItem><FormLabel>Lien URL</FormLabel><Input {...field} /></FormItem>
+                        )} />
                       </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un document</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}>
+                      <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un document
+                    </Button>
                   </div>
                 </div>
               </div>
               <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>Annuler</Button>
-                <Button type="submit" disabled={isSubmitting}>{isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : "Enregistrer"}</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : "Enregistrer"}
+                </Button>
               </DialogFooter>
             </form>
           </Form>

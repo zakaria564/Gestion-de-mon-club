@@ -31,14 +31,11 @@ export default function OpponentsPage() {
   });
 
   const displayOpponents = useMemo(() => {
-    const groups: Record<string, { name: string, logoUrl?: string, genders: string[], originalItems: Opponent[] }> = {};
+    const groups: Record<string, { name: string, logoUrl?: string, originalItems: Opponent[] }> = {};
     (opponents || []).forEach(op => {
       const cleanName = op.name.trim();
       if (!groups[cleanName]) {
-        groups[cleanName] = { name: cleanName, logoUrl: op.logoUrl, genders: [], originalItems: [] };
-      }
-      if (!groups[cleanName].genders.includes(op.gender)) {
-        groups[cleanName].genders.push(op.gender);
+        groups[cleanName] = { name: cleanName, logoUrl: op.logoUrl, originalItems: [] };
       }
       groups[cleanName].originalItems.push(op);
     });
@@ -84,11 +81,12 @@ export default function OpponentsPage() {
 
   const handleEdit = (group: any) => {
     setEditingName(group.name);
+    const genders = group.originalItems.map((i: any) => i.gender);
     setFormData({
       name: group.name,
       logoUrl: group.logoUrl || "",
-      isMasculin: group.genders.includes("Masculin"),
-      isFeminin: group.genders.includes("Féminin"),
+      isMasculin: genders.includes("Masculin"),
+      isFeminin: genders.includes("Féminin"),
     });
     setIsEditing(true);
     setOpen(true);
