@@ -6,7 +6,8 @@ export type PlayerDocument = {
 
 export type Player = {
   id: string;
-  uid: string;
+  uid: string; // ID de l'Admin/Club propriétaire
+  parentId?: string; // ID Firebase Auth du parent
   name: string; // Nom de famille
   firstName?: string; // Prénom
   birthDate: string;
@@ -51,7 +52,7 @@ export type Player = {
 
 export type Coach = {
   id: string;
-  uid: string;
+  uid: string; // ID de l'Admin/Club propriétaire
   name: string;
   specialization: string;
   phone: string;

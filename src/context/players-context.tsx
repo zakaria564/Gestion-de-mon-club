@@ -23,16 +23,31 @@ interface PlayersContextType {
 const PlayersContext = createContext<PlayersContextType | undefined>(undefined);
 
 export function PlayersProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchPlayers = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    const collectionRef = collection(db, "users", user.uid, "players");
+    // On détermine l'ID de l'admin du club à interroger
+    // Pour un admin, c'est lui-même. Pour un staff, c'est son clubId.
+    const clubId = profile?.role === 'admin' ? user?.uid : profile?.clubId;
     
-    getDocs(collectionRef)
+    if (!clubId) {
+      setPlayers([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    const collectionRef = collection(db, "users", clubId, "players");
+    
+    // Si c'est un parent, on filtre par parentId
+    let q = query(collectionRef);
+    if (profile?.role === 'parent') {
+      q = query(collectionRef, where("parentId", "==", user?.uid));
+    }
+    
+    getDocs(q)
       .then((snapshot) => {
         setPlayers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player)));
       })
@@ -44,40 +59,20 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
         errorEmitter.emit('permission-error', permissionError);
       })
       .finally(() => setLoading(false));
-  }, [user]);
+  }, [user, profile]);
   
-  const cleanupSalmaPayments = useCallback(async () => {
-    if (!user) return;
-    const paymentsRef = collection(db, "users", user.uid, "playerPayments");
-    const q = query(paymentsRef, where("member", "==", "Salam Chaddani"));
-    
-    getDocs(q)
-      .then(async (snapshot) => {
-        if (!snapshot.empty) {
-          const batch = writeBatch(db);
-          snapshot.forEach(d => batch.update(d.ref, { member: "Salma Chaddani" }));
-          await batch.commit();
-          window.location.reload();
-        }
-      })
-      .catch(async (err) => {
-        const permissionError = new FirestorePermissionError({
-          path: paymentsRef.path,
-          operation: 'list',
-        } satisfies SecurityRuleContext);
-        errorEmitter.emit('permission-error', permissionError);
-      });
-  }, [user]);
-
   useEffect(() => {
-    if(user) { fetchPlayers(); cleanupSalmaPayments(); }
-    else { setPlayers([]); setLoading(false); }
-  }, [user, fetchPlayers, cleanupSalmaPayments]);
+    if(user && profile) { fetchPlayers(); }
+    else if (!user) { setPlayers([]); setLoading(false); }
+  }, [user, profile, fetchPlayers]);
 
   const addPlayer = async (data: NewPlayer) => {
     if (!user) return;
-    const collectionRef = collection(db, "users", user.uid, "players");
-    const newDocData = { ...data, uid: user.uid };
+    const clubId = profile?.role === 'admin' ? user.uid : profile?.clubId;
+    if (!clubId) return;
+
+    const collectionRef = collection(db, "users", clubId, "players");
+    const newDocData = { ...data, uid: clubId };
     
     addDoc(collectionRef, newDocData)
       .then(() => fetchPlayers())
@@ -93,23 +88,14 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
 
   const updatePlayer = async (data: Player) => {
     if (!user) return;
-    const old = players.find(p => p.id === data.id);
-    if (!old) return;
+    const clubId = profile?.role === 'admin' ? user.uid : profile?.clubId;
+    if (!clubId) return;
 
-    const playerRef = doc(db, "users", user.uid, "players", data.id);
+    const playerRef = doc(db, "users", clubId, "players", data.id);
     const { id, ...toUpdate } = data;
 
     updateDoc(playerRef, toUpdate)
-      .then(async () => {
-        if (old.name !== data.name) {
-          const batch = writeBatch(db);
-          // Mise à jour des résultats et paiements en cascade...
-          // On pourrait aussi ajouter des .catch ici si nécessaire
-          window.location.reload();
-        } else {
-          await fetchPlayers();
-        }
-      })
+      .then(() => fetchPlayers())
       .catch(async (err) => {
         const permissionError = new FirestorePermissionError({
           path: playerRef.path,
@@ -122,7 +108,10 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
 
   const deletePlayer = async (id: string) => {
     if (!user) return;
-    const playerRef = doc(db, "users", user.uid, "players", id);
+    const clubId = profile?.role === 'admin' ? user.uid : profile?.clubId;
+    if (!clubId) return;
+
+    const playerRef = doc(db, "users", clubId, "players", id);
     
     deleteDoc(playerRef)
       .then(() => fetchPlayers())

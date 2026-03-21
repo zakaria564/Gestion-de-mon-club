@@ -7,27 +7,35 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function getProfile() {
+      return get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data;
+    }
+
     function isAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role == 'admin';
+      return isSignedIn() && getProfile().role == 'admin';
     }
 
     // --- PROFILS UTILISATEURS ---
     match /userProfiles/{userId} {
-      // Un utilisateur peut lire et créer son propre profil
       allow get, create: if isSignedIn() && request.auth.uid == userId;
-      
-      // Un utilisateur peut mettre à jour son propre profil (sauf le rôle, idéalement, mais on reste simple ici)
-      // L'admin peut mettre à jour n'importe quel profil (pour changer les rôles)
       allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      
-      // Seul l'admin peut lister tous les profils (pour la page Équipe Staff)
       allow list: if isAdmin();
     }
 
-    // --- DONNÉES PRIVÉES DU CLUB (Hiérarchie existante) ---
-    // Cette règle couvre : players, coaches, calendarEvents, results, playerPayments, coachSalaries, opponents
+    // --- DONNÉES DU CLUB ---
     match /users/{userId}/{document=**} {
+       // L'Admin propriétaire a tous les droits
        allow read, write: if isSignedIn() && request.auth.uid == userId;
+
+       // Le Staff (Coach/Medical) a accès si rattaché au Club (userId)
+       allow read, write: if isSignedIn() && getProfile().clubId == userId;
+
+       // Les Parents peuvent lire les données de leurs propres enfants
+       // Nécessite que le document contienne parentId
+       allow read: if isSignedIn() && (
+         resource.data.parentId == request.auth.uid || 
+         getProfile().role == 'parent' && resource.data.parentId == request.auth.uid
+       );
     }
   }
 }

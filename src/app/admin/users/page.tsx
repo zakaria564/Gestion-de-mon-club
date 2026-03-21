@@ -45,12 +45,16 @@ export default function UserManagementPage() {
 
   const handleRoleChange = async (uid: string, newRole: UserRole) => {
     const docRef = doc(db, "userProfiles", uid);
-    const updateData = { role: newRole };
+    // Quand on change le rôle d'un utilisateur, on le rattache au club de l'admin actuel
+    const updateData: any = { role: newRole };
+    if (profile?.uid) {
+      updateData.clubId = profile.uid;
+    }
 
     updateDoc(docRef, updateData)
       .then(() => {
-        setUsers(prev => prev.map(u => u.uid === uid ? { ...u, role: newRole } : u));
-        toast({ title: "Rôle mis à jour", description: `L'utilisateur est maintenant ${newRole}.` });
+        setUsers(prev => prev.map(u => u.uid === uid ? { ...u, role: newRole, clubId: profile?.uid } : u));
+        toast({ title: "Rôle mis à jour", description: `L'utilisateur est maintenant rattaché à votre club en tant que ${newRole}.` });
       })
       .catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
@@ -81,7 +85,7 @@ export default function UserManagementPage() {
       <Card>
         <CardHeader>
           <CardTitle>Gestion des comptes</CardTitle>
-          <CardDescription>Affectez les rôles appropriés à votre équipe technique et médicale.</CardDescription>
+          <CardDescription>Affectez les rôles appropriés à votre équipe technique et raccordez-les à votre plateforme Maestro Foot.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -90,6 +94,7 @@ export default function UserManagementPage() {
                 <TableHead>Utilisateur</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Rôle actuel</TableHead>
+                <TableHead>Club</TableHead>
                 <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
@@ -102,6 +107,11 @@ export default function UserManagementPage() {
                     <Badge variant={u.role === 'admin' ? 'default' : u.role === 'medical' ? 'secondary' : 'outline'}>
                       {u.role}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-xs text-muted-foreground truncate max-w-[100px] block">
+                      {u.clubId === profile?.uid ? "Votre Club" : u.clubId ? "Autre Club" : "Non rattaché"}
+                    </span>
                   </TableCell>
                   <TableCell className="text-right">
                     <Select value={u.role} onValueChange={(val: UserRole) => handleRoleChange(u.uid, val)}>

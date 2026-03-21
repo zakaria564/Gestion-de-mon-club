@@ -1,10 +1,9 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider, User } from 'firebase/auth';
 import { app, db } from '@/lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { useRouter, usePathname } from 'next/navigation';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
@@ -16,7 +15,7 @@ interface UserProfile {
   email: string;
   displayName: string;
   role: UserRole;
-  clubId?: string;
+  clubId?: string; // L'ID de l'admin propriétaire du club
 }
 
 interface AuthContextType {
@@ -29,7 +28,7 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<any>;
   updateUserProfile: (profileData: { displayName?: string; photoURL?: string; }) => Promise<void>;
   updateUserPassword: (currentPassword: string, newPassword: string) => Promise<void>;
-  updateUserRole: (uid: string, role: UserRole) => Promise<void>;
+  updateUserRole: (uid: string, role: UserRole, clubId?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -61,6 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             email: auth.currentUser?.email || '',
             displayName: auth.currentUser?.displayName || '',
             role: 'admin',
+            clubId: uid, // Par défaut, un admin est son propre clubId
           };
           setDoc(docRef, newProfile)
             .then(() => setProfile(newProfile))
@@ -106,6 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email,
         displayName,
         role: 'admin',
+        clubId: userCredential.user.uid,
       };
       const profileRef = doc(db, "userProfiles", userCredential.user.uid);
       setDoc(profileRef, newProfile)
@@ -139,7 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await updateProfile(auth.currentUser, profileData);
     if (profileData.displayName) {
       const docRef = doc(db, "userProfiles", auth.currentUser.uid);
-      setDoc(docRef, { displayName: profileData.displayName }, { merge: true })
+      updateDoc(docRef, { displayName: profileData.displayName })
         .then(() => {
           setProfile(prev => prev ? { ...prev, displayName: profileData.displayName! } : null);
         })
@@ -163,19 +164,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
      return updatePassword(auth.currentUser, newPassword);
   };
 
-  const updateUserRole = async (uid: string, role: UserRole) => {
+  const updateUserRole = async (uid: string, role: UserRole, clubId?: string) => {
     const docRef = doc(db, "userProfiles", uid);
-    setDoc(docRef, { role }, { merge: true })
+    const updateData: any = { role };
+    if (clubId) updateData.clubId = clubId;
+
+    updateDoc(docRef, updateData)
       .then(() => {
         if (user?.uid === uid) {
-          setProfile(prev => prev ? { ...prev, role } : null);
+          setProfile(prev => prev ? { ...prev, ...updateData } : null);
         }
       })
       .catch(async (err) => {
         const permissionError = new FirestorePermissionError({
           path: docRef.path,
           operation: 'update',
-          requestResourceData: { role },
+          requestResourceData: updateData,
         } satisfies SecurityRuleContext);
         errorEmitter.emit('permission-error', permissionError);
       });
