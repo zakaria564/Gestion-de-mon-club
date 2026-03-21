@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Camera, Search, Loader2, User, Trophy, Phone, HeartPulse, Banknote } from "lucide-react";
+import { PlusCircle, Camera, Search, Loader2, User, Trophy, Phone, HeartPulse, Banknote, Hash } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -157,7 +157,7 @@ function PlayersContent() {
           {cats.length > 0 ? (
             <Tabs value={currentCat} onValueChange={(v) => handleTabChange('category', v)}>
               <TabsList className="h-auto p-1 bg-muted rounded-md flex-wrap justify-start">
-                {cats.map(c => <TabsTrigger key={c} value={c} style={{ backgroundColor: categoryColors[c] }} className="text-white m-1">{c}</TabsTrigger>)}
+                {cats.map(c => <TabsTrigger key={c} value={c} style={{ backgroundColor: categoryColors[c] || 'hsl(var(--primary))' }} className="text-white m-1">{c}</TabsTrigger>)}
               </TabsList>
               {currentCat && currentGroups[currentCat] && (
                 <div className="mt-6 space-y-8">
@@ -180,7 +180,7 @@ function PlayersContent() {
                                 </div>
                               </CardHeader>
                               <CardContent className="p-4 pt-0 flex justify-between items-center">
-                                <Badge style={{ backgroundColor: categoryColors[p.category], color: 'white' }}>{p.category}</Badge>
+                                <Badge style={{ backgroundColor: categoryColors[p.category] || 'hsl(var(--primary))', color: 'white' }}>{p.category}</Badge>
                                 <Badge variant={p.status === 'Actif' ? 'default' : 'secondary'}>{p.status}</Badge>
                               </CardContent>
                             </Link>
@@ -211,26 +211,26 @@ function PlayersContent() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><User className="size-4" /> 1. ÉTAT CIVIL (L'IDENTITÉ)</div>
+                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><User className="size-4" /> 1. ÉTAT CIVIL</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="md:col-span-3 space-y-2">
                         <Label className="text-primary font-black uppercase text-[10px] tracking-widest">Matricule Officiel Maestro Foot</Label>
-                        <Input value="Généré automatiquement à l'enregistrement" readOnly className="bg-muted italic text-xs font-mono" />
+                        <Input value="Généré à l'enregistrement" readOnly className="bg-muted italic text-xs font-mono" />
                       </div>
                       <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom</FormLabel><Input {...field} placeholder="Nom de famille" /></FormItem>} />
-                      <FormField control={form.control} name="firstName" render={({field}) => <FormItem><FormLabel>Prénom</FormLabel><Input {...field} placeholder="Prénom du joueur" /></FormItem>} />
+                      <FormField control={form.control} name="firstName" render={({field}) => <FormItem><FormLabel>Prénom</FormLabel><Input {...field} placeholder="Prénom" /></FormItem>} />
                       <FormField control={form.control} name="gender" render={({field}) => <FormItem><FormLabel>Sexe</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Masculin">Garçon</SelectItem><SelectItem value="Féminin">Fille</SelectItem></SelectContent></Select></FormItem>} />
                       <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de Naissance</FormLabel><Input type="date" {...field} /></FormItem>} />
-                      <FormField control={form.control} name="birthPlace" render={({field}) => <FormItem><FormLabel>Lieu de Naissance</FormLabel><Input {...field} placeholder="Ville" /></FormItem>} />
+                      <FormField control={form.control} name="birthPlace" render={({field}) => <FormItem><FormLabel>Lieu de Naissance</FormLabel><Input {...field} /></FormItem>} />
                       <FormField control={form.control} name="country" render={({field}) => <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent></Select></FormItem>} />
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Trophy className="size-4" /> 2. INFORMATIONS SPORTIVES (LE TERRAIN)</div>
+                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Trophy className="size-4" /> 2. INFORMATIONS SPORTIVES</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <FormField control={form.control} name="category" render={({field}) => <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>} />
-                      <FormField control={form.control} name="poste" render={({field}) => <FormItem><FormLabel>Poste</FormLabel><Input {...field} placeholder="Gardien, Défenseur..." /></FormItem>} />
+                      <FormField control={form.control} name="poste" render={({field}) => <FormItem><FormLabel>Poste</FormLabel><Input {...field} /></FormItem>} />
                       <FormField control={form.control} name="strongFoot" render={({field}) => <FormItem><FormLabel>Pied Fort</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Droitier">Droitier</SelectItem><SelectItem value="Gaucher">Gaucher</SelectItem><SelectItem value="Ambidextre">Ambidextre</SelectItem></SelectContent></Select></FormItem>} />
                       <FormField control={form.control} name="height" render={({field}) => <FormItem><FormLabel>Taille (cm)</FormLabel><Input type="number" {...field} /></FormItem>} />
                       <FormField control={form.control} name="weight" render={({field}) => <FormItem><FormLabel>Poids (kg)</FormLabel><Input type="number" {...field} /></FormItem>} />
@@ -239,28 +239,28 @@ function PlayersContent() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Phone className="size-4" /> 3. CONTACT & PARENTS (L'ADMINISTRATION)</div>
+                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Phone className="size-4" /> 3. CONTACT & PARENTS</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField control={form.control} name="tutorName" render={({field}) => <FormItem><FormLabel>Nom du Tuteur</FormLabel><Input {...field} placeholder="Père, Mère ou tuteur" /></FormItem>} />
-                      <FormField control={form.control} name="parentId" render={({field}) => <FormItem><FormLabel>parentID (Lien Plateforme)</FormLabel><Input {...field} placeholder="UID Firebase du parent (optionnel)" /></FormItem>} />
-                      <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone Principal (WhatsApp)</FormLabel><Input {...field} placeholder="+212..." /></FormItem>} />
+                      <FormField control={form.control} name="tutorName" render={({field}) => <FormItem><FormLabel>Nom du Tuteur</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="parentId" render={({field}) => <FormItem><FormLabel>parentID (Lien Plateforme)</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone Principal</FormLabel><Input {...field} /></FormItem>} />
                       <FormField control={form.control} name="emergencyPhone" render={({field}) => <FormItem><FormLabel>Téléphone d'urgence</FormLabel><Input {...field} /></FormItem>} />
-                      <FormField control={form.control} name="address" render={({field}) => <FormItem className="md:col-span-2"><FormLabel>Adresse</FormLabel><Input {...field} placeholder="Quartier / Ville" /></FormItem>} />
+                      <FormField control={form.control} name="address" render={({field}) => <FormItem className="md:col-span-2"><FormLabel>Adresse</FormLabel><Input {...field} /></FormItem>} />
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><HeartPulse className="size-4" /> 4. DOSSIER MÉDICAL & DOCUMENTS (LES FICHIERS)</div>
+                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><HeartPulse className="size-4" /> 4. DOSSIER MÉDICAL & DOCUMENTS</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <FormField control={form.control} name="bloodGroup" render={({field}) => <FormItem><FormLabel>Groupe Sanguin</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{bloodGroups.map(bg => <SelectItem key={bg} value={bg}>{bg}</SelectItem>)}</SelectContent></Select></FormItem>} />
                       <FormField control={form.control} name="medicalCertificateStatus" render={({field}) => <FormItem><FormLabel>Certificat Médical</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Fourni">Fourni</SelectItem><SelectItem value="Non fourni">Non fourni</SelectItem></SelectContent></Select></FormItem>} />
-                      <FormField control={form.control} name="cin" render={({field}) => <FormItem><FormLabel>N° CIN / Livret Famille</FormLabel><Input {...field} placeholder="Identifiant légal" /></FormItem>} />
-                      <FormField control={form.control} name="medicalConditions" render={({field}) => <FormItem className="md:col-span-3"><FormLabel>Allergies / Traitements</FormLabel><Input {...field} placeholder="Ex: Asthme, Allergie pollen..." /></FormItem>} />
+                      <FormField control={form.control} name="cin" render={({field}) => <FormItem><FormLabel>N° CIN / Livret Famille</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="medicalConditions" render={({field}) => <FormItem className="md:col-span-3"><FormLabel>Allergies / Traitements</FormLabel><Input {...field} /></FormItem>} />
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Banknote className="size-4" /> 5. SUIVI FINANCIER (LA TRÉSORERIE)</div>
+                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Banknote className="size-4" /> 5. SUIVI FINANCIER</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <FormField control={form.control} name="registrationFeeStatus" render={({field}) => <FormItem><FormLabel>Frais d'inscription</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Payé">Payé</SelectItem><SelectItem value="Non payé">Non payé</SelectItem></SelectContent></Select></FormItem>} />
                       <FormField control={form.control} name="subscriptionType" render={({field}) => <FormItem><FormLabel>Type d'abonnement</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Mensuel">Mensuel</SelectItem><SelectItem value="Trimestriel">Trimestriel</SelectItem><SelectItem value="Annuel">Annuel</SelectItem></SelectContent></Select></FormItem>} />

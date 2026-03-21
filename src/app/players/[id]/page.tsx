@@ -1,4 +1,3 @@
-
 import { PlayerDetailClient } from './player-detail-client';
 import React from 'react';
 
