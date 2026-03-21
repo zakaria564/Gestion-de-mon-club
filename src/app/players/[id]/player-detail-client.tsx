@@ -142,7 +142,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
             <div className="space-y-4">
               <h3 className="flex items-center gap-2 font-bold text-primary border-b pb-1 uppercase text-sm"><User className="size-4" /> Identité</h3>
               <div className="grid gap-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">ID Joueur :</span> <span className="font-mono font-bold text-primary">{player.id}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Matricule :</span> <span className="font-mono font-bold text-primary">{player.id}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Prénom :</span> <span className="font-medium">{player.firstName}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Nom :</span> <span className="font-medium">{player.name}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Né le :</span> <span className="font-medium">{player.birthDate} {player.birthPlace ? `à ${player.birthPlace}` : ''}</span></div>
@@ -222,7 +222,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><User className="size-4" /> 1. ÉTAT CIVIL</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="md:col-span-3 space-y-2">
-                        <Label>ID Joueur (Matricule)</Label>
+                        <Label>Matricule (ID unique)</Label>
                         <Input value={player.id} readOnly className="bg-muted font-mono" />
                       </div>
                       <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom</FormLabel><Input {...field} /></FormItem>} />
