@@ -34,7 +34,6 @@ const playerSchema = z.object({
   gender: z.enum(['Masculin', 'Féminin']),
   country: z.string().min(1, "Nationalité requise"),
   
-  // Nouveaux identifiants officiels
   codeMassar: z.string().optional(),
   licenceNumber: z.string().optional(),
 
@@ -166,11 +165,11 @@ function PlayersContent() {
         <TabsContent value={activeGender} className="mt-6">
           {cats.length > 0 ? (
             <Tabs value={currentCat} onValueChange={(v) => handleTabChange('category', v)}>
-              <div className="flex overflow-x-auto pb-4 gap-2 scrollbar-hide">
+              <TabsList className="flex overflow-x-auto pb-4 gap-2 scrollbar-hide bg-transparent h-auto w-full justify-start border-none">
                 {cats.map(c => (
-                  <TabsTrigger key={c} value={c} style={{ backgroundColor: categoryColors[c] || 'hsl(var(--primary))' }} className="text-white font-black px-6 py-3 rounded-full shadow-md whitespace-nowrap">{c}</TabsTrigger>
+                  <TabsTrigger key={c} value={c} style={{ backgroundColor: categoryColors[c] || 'hsl(var(--primary))' }} className="text-white font-black px-6 py-3 rounded-full shadow-md whitespace-nowrap data-[state=active]:ring-2 data-[state=active]:ring-primary data-[state=active]:ring-offset-2">{c}</TabsTrigger>
                 ))}
-              </div>
+              </TabsList>
               
               {currentCat && currentGroups[currentCat] && (
                 <div className="mt-8 space-y-12">
@@ -218,7 +217,6 @@ function PlayersContent() {
         </TabsContent>
       </Tabs>
 
-      {/* FORMULAIRE D'INSCRIPTION "MAESTRO PRO" */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden shadow-2xl rounded-[32px] border-none">
           <DialogHeader className="p-8 border-b bg-primary/5 text-center">
@@ -232,7 +230,6 @@ function PlayersContent() {
               <div className="flex-1 overflow-y-auto px-10 py-8">
                 <div className="space-y-12">
                   
-                  {/* Photo Section */}
                   <div className="flex flex-col items-center gap-6 bg-primary/5 p-8 rounded-[32px] border-2 border-dashed border-primary/20">
                     <Avatar className="h-32 w-32 border-4 border-white shadow-2xl">
                       <AvatarImage src={form.watch('photo')} />
@@ -246,7 +243,6 @@ function PlayersContent() {
                     )} />
                   </div>
 
-                  {/* 1. ÉTAT CIVIL & OFFICIEL */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-4 border-primary/10 pb-3 uppercase text-sm tracking-tighter italic">
                       <Hash className="size-5" /> 1. Identité Officielle (FRMF / MASSAR)
@@ -282,7 +278,6 @@ function PlayersContent() {
                     </div>
                   </div>
 
-                  {/* 2. SPORTIF */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-4 border-primary/10 pb-3 uppercase text-sm tracking-tighter italic"><Trophy className="size-5" /> 2. Profil Athlétique & Terrain</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -309,7 +304,6 @@ function PlayersContent() {
                     </div>
                   </div>
 
-                  {/* 3. CONTACT & PARENTS */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-4 border-primary/10 pb-3 uppercase text-sm tracking-tighter italic"><Phone className="size-5" /> 3. Contacts & Tutorat</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -321,7 +315,6 @@ function PlayersContent() {
                     </div>
                   </div>
 
-                  {/* 4. MÉDICAL */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-4 border-primary/10 pb-3 uppercase text-sm tracking-tighter italic"><HeartPulse className="size-5" /> 4. Dossier Santé</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -351,7 +344,6 @@ function PlayersContent() {
                     </div>
                   </div>
 
-                  {/* 5. FINANCES */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-4 border-primary/10 pb-3 uppercase text-sm tracking-tighter italic"><Banknote className="size-5" /> 5. Situation Financière</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

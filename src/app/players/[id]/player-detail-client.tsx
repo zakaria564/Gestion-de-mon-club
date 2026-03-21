@@ -155,7 +155,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
               <CardTitle className="text-5xl font-black uppercase tracking-tighter italic text-primary">{player.firstName} {player.name}</CardTitle>
               <Badge variant="secondary" className="w-fit mx-auto md:mx-0 font-mono text-lg py-2 px-6 border-2 border-primary/20 bg-white text-primary flex items-center gap-3 shadow-lg rounded-2xl">
                 <ShieldCheck className="size-6" />
-                {player.professionalId || `MF-${player.id.substring(0, 8).toUpperCase()}`}
+                {player.professionalId || `MAE-${new Date().getFullYear().toString().slice(-2)}-${player.category}-000`}
               </Badge>
             </div>
             <p className="text-2xl font-black text-muted-foreground/60 flex items-center justify-center md:justify-start gap-4 uppercase tracking-tighter">
@@ -167,7 +167,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
         <CardContent className="p-10 space-y-12">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
             
-            {/* 1. ÉTAT CIVIL & OFFICIEL */}
             <div className="space-y-6">
               <h3 className="flex items-center gap-3 font-black text-primary border-b-4 border-primary/10 pb-3 uppercase text-xs tracking-widest italic"><User className="size-5" /> Identité Officielle</h3>
               <div className="grid gap-4">
@@ -191,7 +190,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
               </div>
             </div>
 
-            {/* 2. PERFORMANCE */}
             <div className="space-y-6">
               <h3 className="flex items-center gap-3 font-black text-primary border-b-4 border-primary/10 pb-3 uppercase text-xs tracking-widest italic"><Trophy className="size-5" /> Profil Terrain</h3>
               <div className="grid gap-4">
@@ -216,7 +214,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
               </div>
             </div>
 
-            {/* 3. MÉDICAL */}
             <div className="space-y-6">
               <h3 className="flex items-center gap-3 font-black text-primary border-b-4 border-primary/10 pb-3 uppercase text-xs tracking-widest italic"><HeartPulse className="size-5" /> Suivi Santé</h3>
               <div className="grid gap-4 text-sm">
@@ -237,7 +234,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
               </div>
             </div>
 
-            {/* 4. ADMINISTRATION & CONTACT */}
             <div className="space-y-6 lg:col-span-2">
               <h3 className="flex items-center gap-3 font-black text-primary border-b-4 border-primary/10 pb-3 uppercase text-xs tracking-widest italic"><Phone className="size-5" /> Dossier Administratif & Tuteur</h3>
               <div className="grid md:grid-cols-2 gap-8">
@@ -276,7 +272,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
               </div>
             </div>
 
-            {/* 5. TRÉSORERIE */}
             <div className="space-y-6">
               <h3 className="flex items-center gap-3 font-black text-primary border-b-4 border-primary/10 pb-3 uppercase text-xs tracking-widest italic"><Banknote className="size-5" /> Trésorerie</h3>
               <div className="grid gap-4">
@@ -325,7 +320,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
         </CardFooter>
       </Card>
 
-      {/* FORMULAIRE DE MODIFICATION "MAESTRO PRO" */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden shadow-2xl rounded-[32px] border-none">
           <DialogHeader className="p-8 border-b bg-primary/5">
@@ -338,7 +332,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
               <div className="flex-1 overflow-y-auto px-10 py-8">
                 <div className="space-y-12">
                   
-                  {/* Photo Section */}
                   <div className="flex flex-col items-center gap-6 bg-primary/5 p-8 rounded-[32px] border-2 border-dashed border-primary/20">
                     <Avatar className="h-32 w-32 border-4 border-white shadow-2xl">
                       <AvatarImage src={form.watch('photo')} />
@@ -352,7 +345,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     )} />
                   </div>
 
-                  {/* 1. ÉTAT CIVIL & OFFICIEL */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-4 border-primary/10 pb-3 uppercase text-xs tracking-widest italic">
                       <Hash className="size-5" /> 1. Identité & Officiel
@@ -360,7 +352,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                       <div className="md:col-span-3 bg-muted/30 p-4 rounded-2xl border-l-4 border-primary">
                         <Label className="text-primary font-black uppercase text-[10px] tracking-widest mb-2 block">Matricule Officiel Maestro Foot</Label>
-                        <Input value={player.professionalId || `MF-${player.id.substring(0,8).toUpperCase()}`} readOnly className="bg-transparent border-none font-mono font-black text-primary text-xl p-0 h-auto cursor-default focus-visible:ring-0" />
+                        <Input value={player.professionalId || `MAE-${new Date().getFullYear().toString().slice(-2)}-${player.category}-000`} readOnly className="bg-transparent border-none font-mono font-black text-primary text-xl p-0 h-auto cursor-default focus-visible:ring-0" />
                       </div>
                       <FormField control={form.control} name="codeMassar" render={({field}) => <FormItem><FormLabel className="font-black uppercase text-[10px] text-muted-foreground">Code MASSAR</FormLabel><Input {...field} className="h-12 rounded-xl" /></FormItem>} />
                       <FormField control={form.control} name="licenceNumber" render={({field}) => <FormItem><FormLabel className="font-black uppercase text-[10px] text-muted-foreground">Licence FRMF</FormLabel><Input {...field} className="h-12 rounded-xl" /></FormItem>} />
@@ -388,7 +380,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
 
-                  {/* 2. SPORTIF */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-4 border-primary/10 pb-3 uppercase text-xs tracking-widest italic"><Trophy className="size-5" /> 2. Informations Sportives</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -428,7 +419,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
 
-                  {/* 3. CONTACT & PARENTS */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-4 border-primary/10 pb-3 uppercase text-xs tracking-widest italic"><Phone className="size-5" /> 3. Contact & Parents</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -441,7 +431,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
 
-                  {/* 4. DOSSIER MÉDICAL */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-4 border-primary/10 pb-3 uppercase text-xs tracking-widest italic"><HeartPulse className="size-5" /> 4. Dossier Médical</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -471,7 +460,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
 
-                  {/* 5. FINANCIER */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-4 border-primary/10 pb-3 uppercase text-xs tracking-widest italic"><Banknote className="size-5" /> 5. Suivi Financier</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
