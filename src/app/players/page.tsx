@@ -214,8 +214,8 @@ function PlayersContent() {
                     <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><User className="size-4" /> 1. ÉTAT CIVIL (L'IDENTITÉ)</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="md:col-span-3 space-y-2">
-                        <Label>ID Joueur (Matricule)</Label>
-                        <Input value="Généré automatiquement à l'enregistrement" readOnly className="bg-muted italic text-xs" />
+                        <Label className="text-primary font-black uppercase text-[10px] tracking-widest">Matricule Officiel Maestro Foot</Label>
+                        <Input value="Généré automatiquement à l'enregistrement" readOnly className="bg-muted italic text-xs font-mono" />
                       </div>
                       <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom</FormLabel><Input {...field} placeholder="Nom de famille" /></FormItem>} />
                       <FormField control={form.control} name="firstName" render={({field}) => <FormItem><FormLabel>Prénom</FormLabel><Input {...field} placeholder="Prénom du joueur" /></FormItem>} />

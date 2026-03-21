@@ -222,8 +222,8 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><User className="size-4" /> 1. ÉTAT CIVIL</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="md:col-span-3 space-y-2">
-                        <Label>Matricule (ID unique)</Label>
-                        <Input value={player.id} readOnly className="bg-muted font-mono" />
+                        <Label className="text-primary font-black uppercase text-[10px] tracking-widest">Matricule Maestro Foot</Label>
+                        <Input value={player.id} readOnly className="bg-muted font-mono font-bold text-primary border-primary/20" />
                       </div>
                       <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom</FormLabel><Input {...field} /></FormItem>} />
                       <FormField control={form.control} name="firstName" render={({field}) => <FormItem><FormLabel>Prénom</FormLabel><Input {...field} /></FormItem>} />
