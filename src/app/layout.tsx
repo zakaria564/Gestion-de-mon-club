@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -17,6 +16,7 @@ import "./globals.css";
 import { ClubLogo } from "@/components/club-logo";
 import { ThemeProvider } from "@/components/theme-provider";
 import { OpponentsProvider } from "@/context/opponents-context";
+import { FirebaseErrorListener } from "@/components/FirebaseErrorListener";
 
 
 const inter = Inter({
@@ -44,7 +44,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
     }
   }, [user, authLoading, isAuthPage, pathname, router]);
 
-  // Global loading state for the whole app
   if ((authLoading || (user && clubLoading)) && !isAuthPage) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
@@ -61,7 +60,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Fallback for edge cases, e.g. initial load before routing logic kicks in
   return (
     <div className="flex h-screen w-full items-center justify-center">
         <ClubLogo className="size-12" imageClassName="animate-pulse" />
@@ -90,6 +88,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <FirebaseErrorListener />
             <AuthProvider>
               <ClubProvider>
                 <ResultsProvider>

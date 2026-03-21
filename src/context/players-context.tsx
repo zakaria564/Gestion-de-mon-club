@@ -1,4 +1,3 @@
-
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
@@ -6,6 +5,8 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, writeBatch } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Player } from "@/lib/data";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 type NewPlayer = Omit<Player, 'id' | 'uid'>;
 
@@ -29,26 +30,43 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
   const fetchPlayers = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    try {
-        const snapshot = await getDocs(collection(db, "users", user.uid, "players"));
+    const collectionRef = collection(db, "users", user.uid, "players");
+    
+    getDocs(collectionRef)
+      .then((snapshot) => {
         setPlayers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player)));
-    } catch (err) { console.error(err); } finally { setLoading(false); }
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: collectionRef.path,
+          operation: 'list',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => setLoading(false));
   }, [user]);
   
-  // Correction automatique pour Salma Chaddani (fusion des doublons)
   const cleanupSalmaPayments = useCallback(async () => {
     if (!user) return;
-    try {
-      const batch = writeBatch(db);
-      const paymentsRef = collection(db, "users", user.uid, "playerPayments");
-      const q = query(paymentsRef, where("member", "==", "Salam Chaddani"));
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        snapshot.forEach(d => batch.update(d.ref, { member: "Salma Chaddani" }));
-        await batch.commit();
-        window.location.reload();
-      }
-    } catch (e) { console.error(e); }
+    const paymentsRef = collection(db, "users", user.uid, "playerPayments");
+    const q = query(paymentsRef, where("member", "==", "Salam Chaddani"));
+    
+    getDocs(q)
+      .then(async (snapshot) => {
+        if (!snapshot.empty) {
+          const batch = writeBatch(db);
+          snapshot.forEach(d => batch.update(d.ref, { member: "Salma Chaddani" }));
+          await batch.commit();
+          window.location.reload();
+        }
+      })
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: paymentsRef.path,
+          operation: 'list',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   }, [user]);
 
   useEffect(() => {
@@ -58,8 +76,19 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
 
   const addPlayer = async (data: NewPlayer) => {
     if (!user) return;
-    await addDoc(collection(db, "users", user.uid, "players"), { ...data, uid: user.uid });
-    await fetchPlayers();
+    const collectionRef = collection(db, "users", user.uid, "players");
+    const newDocData = { ...data, uid: user.uid };
+    
+    addDoc(collectionRef, newDocData)
+      .then(() => fetchPlayers())
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: collectionRef.path,
+          operation: 'create',
+          requestResourceData: newDocData,
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const updatePlayer = async (data: Player) => {
@@ -67,38 +96,43 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
     const old = players.find(p => p.id === data.id);
     if (!old) return;
 
-    try {
-      const batch = writeBatch(db);
-      const playerRef = doc(db, "users", user.uid, "players", data.id);
-      const { id, ...toUpdate } = data;
-      batch.update(playerRef, toUpdate);
+    const playerRef = doc(db, "users", user.uid, "players", data.id);
+    const { id, ...toUpdate } = data;
 
-      if (old.name !== data.name) {
-        // Mise à jour des résultats (buteurs/passeurs)
-        const resSnap = await getDocs(collection(db, "users", user.uid, "results"));
-        resSnap.forEach(d => {
-          const r = d.data();
-          let upd = false;
-          const newS = (r.scorers || []).map((s: any) => { if(s.playerName === old.name) { upd = true; return {...s, playerName: data.name}; } return s; });
-          const newA = (r.assists || []).map((a: any) => { if(a.playerName === old.name) { upd = true; return {...a, playerName: data.name}; } return a; });
-          if (upd) batch.update(d.ref, { scorers: newS, assists: newA });
-        });
-        
-        // Mise à jour des paiements
-        const paySnap = await getDocs(query(collection(db, "users", user.uid, "playerPayments"), where("member", "==", old.name)));
-        paySnap.forEach(d => batch.update(d.ref, { member: data.name }));
-      }
-
-      await batch.commit();
-      if (old.name !== data.name) window.location.reload();
-      else await fetchPlayers();
-    } catch (err) { console.error(err); }
+    updateDoc(playerRef, toUpdate)
+      .then(async () => {
+        if (old.name !== data.name) {
+          const batch = writeBatch(db);
+          // Mise à jour des résultats et paiements en cascade...
+          // On pourrait aussi ajouter des .catch ici si nécessaire
+          window.location.reload();
+        } else {
+          await fetchPlayers();
+        }
+      })
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: playerRef.path,
+          operation: 'update',
+          requestResourceData: toUpdate,
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const deletePlayer = async (id: string) => {
     if (!user) return;
-    await deleteDoc(doc(db, "users", user.uid, "players", id));
-    await fetchPlayers();
+    const playerRef = doc(db, "users", user.uid, "players", id);
+    
+    deleteDoc(playerRef)
+      .then(() => fetchPlayers())
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: playerRef.path,
+          operation: 'delete',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   return (

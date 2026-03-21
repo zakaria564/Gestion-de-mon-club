@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -11,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ShieldAlert, UserCog, Mail, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function UserManagementPage() {
   const { profile } = useAuth();
@@ -19,15 +20,23 @@ export default function UserManagementPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
-    try {
-      const q = query(collection(db, "userProfiles"));
-      const snapshot = await getDocs(q);
-      setUsers(snapshot.docs.map(doc => ({ ...doc.data() })));
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+    const collectionRef = collection(db, "userProfiles");
+    const q = query(collectionRef);
+    
+    getDocs(q)
+      .then((snapshot) => {
+        setUsers(snapshot.docs.map(doc => ({ ...doc.data() })));
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: collectionRef.path,
+          operation: 'list',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -35,13 +44,22 @@ export default function UserManagementPage() {
   }, []);
 
   const handleRoleChange = async (uid: string, newRole: UserRole) => {
-    try {
-      await updateDoc(doc(db, "userProfiles", uid), { role: newRole });
-      setUsers(prev => prev.map(u => u.uid === uid ? { ...u, role: newRole } : u));
-      toast({ title: "Rôle mis à jour", description: `L'utilisateur est maintenant ${newRole}.` });
-    } catch (e) {
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible de mettre à jour le rôle." });
-    }
+    const docRef = doc(db, "userProfiles", uid);
+    const updateData = { role: newRole };
+
+    updateDoc(docRef, updateData)
+      .then(() => {
+        setUsers(prev => prev.map(u => u.uid === uid ? { ...u, role: newRole } : u));
+        toast({ title: "Rôle mis à jour", description: `L'utilisateur est maintenant ${newRole}.` });
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'update',
+          requestResourceData: updateData,
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   if (profile?.role !== 'admin') {
