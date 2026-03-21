@@ -6,6 +6,8 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { CalendarEvent } from "@/lib/data";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export type NewCalendarEvent = Omit<CalendarEvent, 'id' | 'uid'>;
 
@@ -39,27 +41,25 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
     }
 
     setLoading(true);
-    try {
-        const q = query(collectionRef, orderBy("date", "desc"));
-        const snapshot = await getDocs(q);
+    getDocs(query(collectionRef, orderBy("date", "desc")))
+      .then((snapshot) => {
         const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as CalendarEvent));
-        
-        // Tri côté client par heure car Firestore ne peut pas faire un double tri sans index composite
         data.sort((a, b) => {
           if (a.date > b.date) return -1;
           if (a.date < b.date) return 1;
-          if (a.time && b.time) {
-            return a.time.localeCompare(b.time);
-          }
+          if (a.time && b.time) return a.time.localeCompare(b.time);
           return 0;
         });
-
         setCalendarEvents(data);
-    } catch (err) {
-        console.error("Error fetching calendar events: ", err);
-    } finally {
-        setLoading(false);
-    }
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: collectionRef.path,
+          operation: 'list',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => setLoading(false));
   }, [getCalendarCollection]);
 
   useEffect(() => {
@@ -69,42 +69,53 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
         setCalendarEvents([]);
         setLoading(false);
     }
-  }, [user]);
+  }, [user, fetchCalendarEvents]);
 
 
   const addEvent = async (eventData: NewCalendarEvent) => {
     const collectionRef = getCalendarCollection();
     if (!collectionRef || !user) return;
-    try {
-      const newEventData = { ...eventData, uid: user.uid };
-      await addDoc(collectionRef, newEventData);
-      await fetchCalendarEvents();
-    } catch (err) {
-      console.error("Error adding event: ", err);
-    }
+    const newDocData = { ...eventData, uid: user.uid };
+    addDoc(collectionRef, newDocData)
+      .then(() => fetchCalendarEvents())
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: collectionRef.path,
+          operation: 'create',
+          requestResourceData: newDocData,
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const updateEvent = async (eventData: CalendarEvent) => {
     if (!user) return;
-    try {
-      const eventDoc = doc(db, "users", user.uid, "calendarEvents", eventData.id);
-      const { id, ...dataToUpdate } = eventData;
-      await updateDoc(eventDoc, dataToUpdate);
-      await fetchCalendarEvents();
-    } catch (err) {
-      console.error("Error updating event: ", err);
-    }
+    const eventDoc = doc(db, "users", user.uid, "calendarEvents", eventData.id);
+    const { id, ...dataToUpdate } = eventData;
+    updateDoc(eventDoc, dataToUpdate)
+      .then(() => fetchCalendarEvents())
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: eventDoc.path,
+          operation: 'update',
+          requestResourceData: dataToUpdate,
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const deleteEvent = async (id: string) => {
     if (!user) return;
-    try {
-      const eventDoc = doc(db, "users", user.uid, "calendarEvents", id);
-      await deleteDoc(eventDoc);
-      await fetchCalendarEvents();
-    } catch (err) {
-      console.error("Error deleting event: ", err);
-    }
+    const eventDoc = doc(db, "users", user.uid, "calendarEvents", id);
+    deleteDoc(eventDoc)
+      .then(() => fetchCalendarEvents())
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: eventDoc.path,
+          operation: 'delete',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   return (

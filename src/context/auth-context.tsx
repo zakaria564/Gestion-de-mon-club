@@ -6,6 +6,8 @@ import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWith
 import { app, db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useRouter, usePathname } from 'next/navigation';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export type UserRole = 'admin' | 'coach' | 'medical' | 'parent';
 
@@ -48,25 +50,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (uid: string) => {
-    try {
-      const docRef = doc(db, "userProfiles", uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setProfile(docSnap.data() as UserProfile);
-      } else {
-        // Profil par défaut pour le premier utilisateur (Admin) ou nouvel inscrit
-        const newProfile: UserProfile = {
-          uid,
-          email: auth.currentUser?.email || '',
-          displayName: auth.currentUser?.displayName || '',
-          role: 'admin', // Par défaut pour l'instant
-        };
-        await setDoc(docRef, newProfile);
-        setProfile(newProfile);
-      }
-    } catch (e) {
-      console.error("Error fetching profile:", e);
-    }
+    const docRef = doc(db, "userProfiles", uid);
+    getDoc(docRef)
+      .then((docSnap) => {
+        if (docSnap.exists()) {
+          setProfile(docSnap.data() as UserProfile);
+        } else {
+          const newProfile: UserProfile = {
+            uid,
+            email: auth.currentUser?.email || '',
+            displayName: auth.currentUser?.displayName || '',
+            role: 'admin',
+          };
+          setDoc(docRef, newProfile)
+            .then(() => setProfile(newProfile))
+            .catch(async (err) => {
+              const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'create',
+                requestResourceData: newProfile,
+              } satisfies SecurityRuleContext);
+              errorEmitter.emit('permission-error', permissionError);
+            });
+        }
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'get',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   useEffect(() => {
@@ -91,10 +105,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         uid: userCredential.user.uid,
         email,
         displayName,
-        role: 'admin', // On pourrait changer ça pour 'parent' par défaut plus tard
+        role: 'admin',
       };
-      await setDoc(doc(db, "userProfiles", userCredential.user.uid), newProfile);
-      setProfile(newProfile);
+      const profileRef = doc(db, "userProfiles", userCredential.user.uid);
+      setDoc(profileRef, newProfile)
+        .then(() => setProfile(newProfile))
+        .catch(async (err) => {
+          const permissionError = new FirestorePermissionError({
+            path: profileRef.path,
+            operation: 'create',
+            requestResourceData: newProfile,
+          } satisfies SecurityRuleContext);
+          errorEmitter.emit('permission-error', permissionError);
+        });
     }
     return userCredential;
   };
@@ -115,8 +138,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!auth.currentUser) throw new Error("Utilisateur non authentifié.");
     await updateProfile(auth.currentUser, profileData);
     if (profileData.displayName) {
-      await setDoc(doc(db, "userProfiles", auth.currentUser.uid), { displayName: profileData.displayName }, { merge: true });
-      setProfile(prev => prev ? { ...prev, displayName: profileData.displayName! } : null);
+      const docRef = doc(db, "userProfiles", auth.currentUser.uid);
+      setDoc(docRef, { displayName: profileData.displayName }, { merge: true })
+        .then(() => {
+          setProfile(prev => prev ? { ...prev, displayName: profileData.displayName! } : null);
+        })
+        .catch(async (err) => {
+          const permissionError = new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'update',
+            requestResourceData: { displayName: profileData.displayName },
+          } satisfies SecurityRuleContext);
+          errorEmitter.emit('permission-error', permissionError);
+        });
     }
   };
 
@@ -130,10 +164,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateUserRole = async (uid: string, role: UserRole) => {
-    await setDoc(doc(db, "userProfiles", uid), { role }, { merge: true });
-    if (user?.uid === uid) {
-      setProfile(prev => prev ? { ...prev, role } : null);
-    }
+    const docRef = doc(db, "userProfiles", uid);
+    setDoc(docRef, { role }, { merge: true })
+      .then(() => {
+        if (user?.uid === uid) {
+          setProfile(prev => prev ? { ...prev, role } : null);
+        }
+      })
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'update',
+          requestResourceData: { role },
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const value = {

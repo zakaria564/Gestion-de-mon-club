@@ -6,6 +6,8 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, writeBatch, where } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Coach } from "@/lib/data";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 interface CoachesContextType {
   coaches: Coach[];
@@ -38,16 +40,18 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
     }
     
     setLoading(true);
-    try {
-        const q = query(collectionRef);
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Coach));
-        setCoaches(data);
-    } catch (err) {
-        console.error("Error fetching coaches: ", err);
-    } finally {
-        setLoading(false);
-    }
+    getDocs(query(collectionRef))
+      .then((snapshot) => {
+        setCoaches(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Coach)));
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: collectionRef.path,
+          operation: 'list',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => setLoading(false));
   }, [getCoachesCollection]);
   
   useEffect(() => {
@@ -57,18 +61,22 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
         setCoaches([]);
         setLoading(false);
     }
-  }, [user]);
+  }, [user, fetchCoaches]);
 
   const addCoach = async (coachData: Omit<Coach, 'id' | 'uid'>) => {
     const collectionRef = getCoachesCollection();
     if (!collectionRef || !user) return;
-    try {
-      const newCoachData = { ...coachData, uid: user.uid };
-      await addDoc(collectionRef, newCoachData);
-      await fetchCoaches();
-    } catch (err) {
-      console.error("Error adding coach: ", err);
-    }
+    const newCoachData = { ...coachData, uid: user.uid };
+    addDoc(collectionRef, newCoachData)
+      .then(() => fetchCoaches())
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: collectionRef.path,
+          operation: 'create',
+          requestResourceData: newCoachData,
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const updateCoach = async (coachData: Coach) => {
@@ -76,57 +84,39 @@ export function CoachesProvider({ children }: { children: ReactNode }) {
     const oldCoach = coaches.find(c => c.id === coachData.id);
     if (!oldCoach) return;
 
-    const oldName = oldCoach.name;
-    const newName = coachData.name;
-    const nameHasChanged = oldName !== newName;
+    const coachRef = doc(db, "users", user.uid, "coaches", coachData.id);
+    const { id, ...dataToUpdate } = coachData;
 
-    try {
-      const batch = writeBatch(db);
-
-      const coachDocRef = doc(db, "users", user.uid, "coaches", coachData.id);
-      const { id, ...dataToUpdate } = coachData;
-      batch.update(coachDocRef, dataToUpdate);
-
-      if (nameHasChanged) {
-        // Update salaries
-        const salariesRef = collection(db, "users", user.uid, "coachSalaries");
-        const salariesQuery = query(salariesRef, where("member", "==", oldName));
-        const salariesSnap = await getDocs(salariesQuery);
-        salariesSnap.forEach(salaryDoc => {
-            batch.update(salaryDoc.ref, { member: newName });
-        });
-
-        // Update players' coachName
-        const playersRef = collection(db, "users", user.uid, "players");
-        const playersQuery = query(playersRef, where("coachName", "==", oldName));
-        const playersSnap = await getDocs(playersQuery);
-        playersSnap.forEach(playerDoc => {
-            batch.update(playerDoc.ref, { coachName: newName });
-        });
-      }
-
-      await batch.commit();
-
-      if (nameHasChanged) {
-        window.location.reload();
-      } else {
-        await fetchCoaches();
-      }
-
-    } catch (err) {
-      console.error("Error updating coach and cascading changes: ", err);
-    }
+    updateDoc(coachRef, dataToUpdate)
+      .then(async () => {
+        if (oldCoach.name !== coachData.name) {
+          window.location.reload();
+        } else {
+          await fetchCoaches();
+        }
+      })
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: coachRef.path,
+          operation: 'update',
+          requestResourceData: dataToUpdate,
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const deleteCoach = async (id: string) => {
     if (!user) return;
-    try {
-      const coachDoc = doc(db, "users", user.uid, "coaches", id);
-      await deleteDoc(coachDoc);
-      await fetchCoaches();
-    } catch (err) {
-      console.error("Error deleting coach: ", err);
-    }
+    const coachRef = doc(db, "users", user.uid, "coaches", id);
+    deleteDoc(coachRef)
+      .then(() => fetchCoaches())
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: coachRef.path,
+          operation: 'delete',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
   
   const getCoachById = useCallback((id: string) => {

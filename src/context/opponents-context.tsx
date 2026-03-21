@@ -5,6 +5,8 @@ import { createContext, useContext, useEffect, useState, useCallback, ReactNode 
 import { db } from "@/lib/firebase";
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query } from "firebase/firestore";
 import { useAuth } from "./auth-context";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export interface Opponent {
   id: string;
@@ -46,16 +48,19 @@ export function OpponentsProvider({ children }: { children: ReactNode }) {
     }
     
     setLoading(true);
-    try {
-        const q = query(collectionRef);
-        const snapshot = await getDocs(q);
+    getDocs(query(collectionRef))
+      .then((snapshot) => {
         const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Opponent));
         setOpponents(data.sort((a, b) => a.name.localeCompare(b.name)));
-    } catch (err) {
-        console.error("Error fetching opponents: ", err);
-    } finally {
-        setLoading(false);
-    }
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: collectionRef.path,
+          operation: 'list',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => setLoading(false));
   }, [getOpponentsCollection]);
   
   useEffect(() => {
@@ -65,41 +70,52 @@ export function OpponentsProvider({ children }: { children: ReactNode }) {
         setOpponents([]);
         setLoading(false);
     }
-  }, [user]);
+  }, [user, fetchOpponents]);
 
   const addOpponent = async (opponentData: NewOpponent) => {
     const collectionRef = getOpponentsCollection();
     if (!collectionRef || !user) return;
-    try {
-      const newOpponentData = { ...opponentData, uid: user.uid };
-      await addDoc(collectionRef, newOpponentData);
-      await fetchOpponents();
-    } catch (err) {
-      console.error("Error adding opponent: ", err);
-    }
+    const newDocData = { ...opponentData, uid: user.uid };
+    addDoc(collectionRef, newDocData)
+      .then(() => fetchOpponents())
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: collectionRef.path,
+          operation: 'create',
+          requestResourceData: newDocData,
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const updateOpponent = async (opponentData: Opponent) => {
     if (!user) return;
-    try {
-      const opponentDoc = doc(db, "users", user.uid, "opponents", opponentData.id);
-      const { id, ...dataToUpdate } = opponentData;
-      await updateDoc(opponentDoc, dataToUpdate);
-      await fetchOpponents();
-    } catch (err) {
-      console.error("Error updating opponent: ", err);
-    }
+    const opponentDoc = doc(db, "users", user.uid, "opponents", opponentData.id);
+    const { id, ...dataToUpdate } = opponentData;
+    updateDoc(opponentDoc, dataToUpdate)
+      .then(() => fetchOpponents())
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: opponentDoc.path,
+          operation: 'update',
+          requestResourceData: dataToUpdate,
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const deleteOpponent = async (id: string) => {
     if (!user) return;
-    try {
-      const opponentDoc = doc(db, "users", user.uid, "opponents", id);
-      await deleteDoc(opponentDoc);
-      await fetchOpponents();
-    } catch (err) {
-      console.error("Error deleting opponent: ", err);
-    }
+    const opponentDoc = doc(db, "users", user.uid, "opponents", id);
+    deleteDoc(opponentDoc)
+      .then(() => fetchOpponents())
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: opponentDoc.path,
+          operation: 'delete',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   return (
@@ -111,8 +127,6 @@ export function OpponentsProvider({ children }: { children: ReactNode }) {
 
 export const useOpponentsContext = () => {
     const context = useContext(OpponentsContext);
-    if (context === undefined) {
-        throw new Error("useOpponentsContext must be used within an OpponentsProvider");
-    }
+    if (context === undefined) throw new Error("useOpponentsContext must be used within an OpponentsProvider");
     return context;
 };

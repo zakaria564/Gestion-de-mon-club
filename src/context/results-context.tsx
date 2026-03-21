@@ -5,6 +5,8 @@ import { createContext, useContext, useEffect, useState, useCallback, ReactNode 
 import { db } from "@/lib/firebase";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
 import { useAuth } from "./auth-context";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export interface PerformanceDetail {
   playerName: string;
@@ -62,16 +64,18 @@ export function ResultsProvider({ children }: { children: ReactNode }) {
     }
     
     setLoading(true);
-    try {
-        const q = query(collectionRef, orderBy("date", "desc"));
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Result));
-        setResults(data);
-    } catch (err) {
-        console.error("Error fetching results: ", err);
-    } finally {
-        setLoading(false);
-    }
+    getDocs(query(collectionRef, orderBy("date", "desc")))
+      .then((snapshot) => {
+        setResults(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Result)));
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: collectionRef.path,
+          operation: 'list',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => setLoading(false));
   }, [getResultsCollection]);
   
   useEffect(() => {
@@ -86,39 +90,47 @@ export function ResultsProvider({ children }: { children: ReactNode }) {
   const addResult = async (resultData: NewResult) => {
     const collectionRef = getResultsCollection();
     if (!collectionRef || !user) return;
-    try {
-      const newResultData = { 
-          ...resultData, 
-          uid: user.uid,
-        };
-      await addDoc(collectionRef, newResultData);
-      await fetchResults();
-    } catch (err) {
-      console.error("Error adding result: ", err);
-    }
+    const newDocData = { ...resultData, uid: user.uid };
+    addDoc(collectionRef, newDocData)
+      .then(() => fetchResults())
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: collectionRef.path,
+          operation: 'create',
+          requestResourceData: newDocData,
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const updateResult = async (resultData: Omit<Result, 'uid'>) => {
     if (!user) return;
-    try {
-      const resultDoc = doc(db, "users", user.uid, "results", resultData.id);
-      const { id, ...dataToUpdate } = resultData;
-      await updateDoc(resultDoc, dataToUpdate);
-      await fetchResults();
-    } catch (err) {
-      console.error("Error updating result: ", err);
-    }
+    const resultDoc = doc(db, "users", user.uid, "results", resultData.id);
+    const { id, ...dataToUpdate } = resultData;
+    updateDoc(resultDoc, dataToUpdate)
+      .then(() => fetchResults())
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: resultDoc.path,
+          operation: 'update',
+          requestResourceData: dataToUpdate,
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const deleteResult = async (id: string) => {
     if (!user) return;
-    try {
-      const resultDoc = doc(db, "users", user.uid, "results", id);
-      await deleteDoc(resultDoc);
-      await fetchResults();
-    } catch (err) {
-      console.error("Error deleting result: ", err);
-    }
+    const resultDoc = doc(db, "users", user.uid, "results", id);
+    deleteDoc(resultDoc)
+      .then(() => fetchResults())
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: resultDoc.path,
+          operation: 'delete',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   return (
@@ -130,8 +142,6 @@ export function ResultsProvider({ children }: { children: ReactNode }) {
 
 export const useResultsContext = () => {
     const context = useContext(ResultsContext);
-    if (context === undefined) {
-        throw new Error("useResultsContext must be used within a ResultsProvider");
-    }
+    if (context === undefined) throw new Error("useResultsContext must be used within a ResultsProvider");
     return context;
 };
