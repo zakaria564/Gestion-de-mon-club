@@ -290,7 +290,7 @@ function PlayersContent() {
                       <FormField control={form.control} name="tutorName" render={({field}) => <FormItem><FormLabel className="font-bold">Nom du Tuteur Légal</FormLabel><Input {...field} placeholder="Père, Mère ou tuteur" /></FormItem>} />
                       <FormField control={form.control} name="parentId" render={({field}) => <FormItem><FormLabel className="font-bold">parentID (Lien Plateforme)</FormLabel><Input {...field} placeholder="UID Firebase du parent (si connu)" /></FormItem>} />
                       <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel className="font-bold">Téléphone Principal (WhatsApp)</FormLabel><Input {...field} placeholder="06..." /></FormItem>} />
-                      <FormField control={form.control} name="emergencyPhone" render={({field}) => <FormItem><FormLabel className="font-bold">Téléphone d'Urgence</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="emergencyPhone" render={({field}) => <FormItem><FormLabel className="font-bold">Téléphone d'Urgence</FormLabel><Input {...field} placeholder="06..." /></FormItem>} />
                       <FormField control={form.control} name="address" render={({field}) => <FormItem className="md:col-span-2"><FormLabel className="font-bold">Adresse de résidence</FormLabel><Input {...field} placeholder="Quartier, Ville" /></FormItem>} />
                     </div>
                   </div>
