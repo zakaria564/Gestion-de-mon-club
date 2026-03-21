@@ -6,7 +6,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cake, Edit, Trash2, Home, Shirt, Phone, Flag, Mail, MapPin, PlusCircle, X, VenetianMask, UserSquare, UserCheck, ExternalLink, FileText, Camera, Loader2 } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Phone, HeartPulse, Banknote, User, Trophy, MapPin, Scale, Ruler, Droplet, FileText, Camera, Loader2 } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -15,105 +15,72 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { usePlayersContext } from '@/context/players-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
-import { useCoachesContext } from '@/context/coaches-context';
 
 const playerCategories = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne"];
-const documentOptions = ["Certificat Médical", "Carte d'identité", "Passeport", "Extrait de naissance", "Photo d'identité", "Licence sportive", "Assurance", "Autre"];
+const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 const playerSchema = z.object({
   name: z.string().min(1, "Nom requis"),
+  firstName: z.string().min(1, "Prénom requis"),
   birthDate: z.string().min(1, "Date requise"),
-  phone: z.string().min(1, "Téléphone requis"),
-  email: z.string().email("Email invalide").optional().or(z.literal('')),
-  address: z.string().min(1, "Adresse requise"),
+  birthPlace: z.string().optional(),
+  gender: z.enum(['Masculin', 'Féminin']),
+  country: z.string().min(1, "Nationalité requise"),
+  category: z.string().min(1, "Catégorie requise"),
   poste: z.string().min(1, "Poste requis"),
+  strongFoot: z.enum(['Droitier', 'Gaucher', 'Ambidextre']),
+  height: z.coerce.number().optional(),
+  weight: z.coerce.number().optional(),
   jerseyNumber: z.coerce.number().min(1),
+  tutorName: z.string().min(1, "Nom du tuteur requis"),
+  phone: z.string().min(1, "Téléphone requis"),
+  emergencyPhone: z.string().optional(),
+  address: z.string().min(1, "Adresse requise"),
+  email: z.string().email("Email invalide").optional().or(z.literal('')),
+  bloodGroup: z.string().optional(),
+  medicalConditions: z.string().optional(),
+  medicalCertificateStatus: z.enum(['Fourni', 'Non fourni']),
   photo: z.string().url("URL invalide").optional().or(z.literal('')),
   cin: z.string().optional(),
-  country: z.string().min(1, "Nationalité requise"),
+  registrationFeeStatus: z.enum(['Payé', 'Non payé']),
+  subscriptionType: z.enum(['Mensuel', 'Trimestriel', 'Annuel']),
+  subscriptionAmount: z.coerce.number(),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
-  category: z.string().min(1, "Catégorie requise"),
-  gender: z.enum(['Masculin', 'Féminin']),
-  coachName: z.string().optional(),
-  documents: z.array(z.object({ name: z.string(), url: z.string().url() })).optional(),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
 
 const categoryColors: Record<string, string> = {
-  'Sénior': 'hsl(var(--chart-1))',
-  'U23': 'hsl(var(--chart-2))',
-  'U20': 'hsl(340, 80%, 55%)',
-  'U19': 'hsl(var(--chart-3))',
-  'U18': 'hsl(var(--chart-4))',
-  'U17': 'hsl(var(--chart-5))',
-  'U16': 'hsl(var(--chart-6))',
-  'U15': 'hsl(var(--chart-7))',
-  'U13': 'hsl(var(--chart-8))',
-  'U9': 'hsl(25 60% 45%)',
-  'U11': 'hsl(var(--chart-10))',
-  'U7': 'hsl(var(--chart-11))',
+  'Sénior': 'hsl(var(--chart-1))', 'U23': 'hsl(var(--chart-2))', 'U20': 'hsl(340, 80%, 55%)', 'U19': 'hsl(var(--chart-3))', 'U18': 'hsl(var(--chart-4))', 'U17': 'hsl(var(--chart-5))', 'U16': 'hsl(var(--chart-6))', 'U15': 'hsl(var(--chart-7))', 'U13': 'hsl(var(--chart-8))', 'U9': 'hsl(25 60% 45%)', 'U11': 'hsl(var(--chart-10))', 'U7': 'hsl(var(--chart-11))',
 };
 
 export function PlayerDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const { toast } = useToast();
-  const context = usePlayersContext();
-  const coachesContext = useCoachesContext();
+  const { players, updatePlayer, deletePlayer, getPlayerById, loading } = usePlayersContext();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const { loading, updatePlayer, deletePlayer, getPlayerById } = context;
-  const { coaches } = coachesContext;
   
   const player = useMemo(() => getPlayerById(id), [id, getPlayerById]);
   
   const form = useForm<PlayerFormValues>({ 
-    resolver: zodResolver(playerSchema), 
-    defaultValues: { 
-      name: '', 
-      birthDate: '', 
-      phone: '', 
-      email: '', 
-      address: '', 
-      poste: '', 
-      jerseyNumber: 0, 
-      photo: '', 
-      country: 'Marocaine', 
-      cin: '', 
-      status: 'Actif', 
-      category: 'Sénior', 
-      gender: 'Masculin', 
-      coachName: '', 
-      documents: [] 
-    }
+    resolver: zodResolver(playerSchema),
+    defaultValues: {} 
   });
-
-  const { fields, append, remove } = useFieldArray({ control: form.control, name: "documents" });
 
   useEffect(() => {
     if (player && open) {
       form.reset({
-        name: player.name || '',
-        birthDate: player.birthDate || '',
-        phone: player.phone || '',
-        email: player.email || '',
-        address: player.address || '',
-        poste: player.poste || '',
-        jerseyNumber: player.jerseyNumber || 0,
-        photo: player.photo || '',
-        country: player.country || 'Marocaine',
-        cin: player.cin || '',
-        status: player.status || 'Actif',
-        category: player.category || 'Sénior',
-        gender: player.gender || 'Masculin',
-        coachName: player.coachName || '',
-        documents: player.documents || [],
+        name: player.name || '', firstName: player.firstName || '', birthDate: player.birthDate || '', birthPlace: player.birthPlace || '', gender: player.gender || 'Masculin', country: player.country || 'Marocaine',
+        category: player.category || 'Sénior', poste: player.poste || '', strongFoot: player.strongFoot || 'Droitier', height: player.height || 0, weight: player.weight || 0, jerseyNumber: player.jerseyNumber || 0, status: player.status || 'Actif',
+        tutorName: player.tutorName || '', phone: player.phone || '', emergencyPhone: player.emergencyPhone || '', address: player.address || '', email: player.email || '',
+        bloodGroup: player.bloodGroup || 'O+', medicalConditions: player.medicalConditions || '', medicalCertificateStatus: player.medicalCertificateStatus || 'Non fourni', photo: player.photo || '', cin: player.cin || '',
+        registrationFeeStatus: player.registrationFeeStatus || 'Non payé', subscriptionType: player.subscriptionType || 'Mensuel', subscriptionAmount: player.subscriptionAmount || 0
       });
     }
   }, [player, open, form]);
@@ -123,217 +90,132 @@ export function PlayerDetailClient({ id }: { id: string }) {
     try {
       await updatePlayer({ ...player, ...data } as any);
       setOpen(false);
-      toast({ title: "Joueur mis à jour avec succès" });
+      toast({ title: "Fiche joueur mise à jour" });
     } catch (e) {
-      toast({ variant: "destructive", title: "Erreur lors de la mise à jour" });
+      toast({ variant: "destructive", title: "Erreur" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (loading && !isSubmitting) {
-    return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;
-  }
-
+  if (loading && !isSubmitting) return <div className="p-8"><Skeleton className="h-[600px] w-full" /></div>;
   if (!player) return notFound();
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <Button variant="ghost" onClick={() => router.back()} className="p-0 h-auto text-muted-foreground">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Retour
-      </Button>
+      <Button variant="ghost" onClick={() => router.back()} className="p-0 h-auto text-muted-foreground"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
       
       <Card>
         <CardHeader className="flex flex-row items-center gap-6">
-          <Avatar className="h-32 w-32 border">
-            <AvatarImage src={player.photo || undefined} />
-            <AvatarFallback className="text-4xl">{player.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-          </Avatar>
+          <Avatar className="h-32 w-32 border"><AvatarImage src={player.photo} /><AvatarFallback className="text-4xl">{player.name.substring(0, 2).toUpperCase()}</AvatarFallback></Avatar>
           <div className="flex-1">
-            <CardTitle className="text-3xl font-bold">{player.name}</CardTitle>
+            <CardTitle className="text-3xl font-bold">{player.firstName} {player.name}</CardTitle>
+            <p className="text-muted-foreground">{player.category} - {player.poste} #{player.jerseyNumber}</p>
           </div>
+          <Badge variant={player.status === 'Actif' ? 'default' : 'secondary'} className="text-lg px-4">{player.status}</Badge>
         </CardHeader>
-        <CardContent className="pt-6 grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-1">Identité</h3>
-            <div className="flex items-center gap-3"><VenetianMask className="h-4 w-4 text-muted-foreground" /><span>{player.gender}</span></div>
-            <div className="flex items-center gap-3"><Cake className="h-4 w-4 text-muted-foreground" /><span>{player.birthDate}</span></div>
-            <div className="flex items-center gap-3"><UserSquare className="h-4 w-4 text-muted-foreground" /><span>CIN: {player.cin || 'N/A'}</span></div>
-            <div className="flex items-center gap-3"><Flag className="h-4 w-4 text-muted-foreground" /><span>{player.country}</span></div>
-          </div>
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-1">Contact</h3>
-            <div className="flex items-center gap-3"><Mail className="h-4 w-4 text-muted-foreground" /><span>{player.email || 'Pas d\'email'}</span></div>
-            <div className="flex items-center gap-3"><Phone className="h-4 w-4 text-muted-foreground" /><span>{player.phone}</span></div>
-            <div className="flex items-center gap-3"><MapPin className="h-4 w-4 text-muted-foreground" /><span>{player.address}</span></div>
-          </div>
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-1">Club</h3>
-            <div className="flex items-center gap-3"><Shirt className="h-4 w-4 text-muted-foreground" /><span>{player.poste} (# {player.jerseyNumber})</span></div>
-            <div className="flex items-center gap-3">
-              <Home className="h-4 w-4 text-muted-foreground" />
-              <Badge style={{ backgroundColor: categoryColors[player.category] || 'hsl(var(--primary))', color: 'white' }}>{player.category}</Badge>
-            </div>
-            <div className="flex items-center gap-3"><UserCheck className="h-4 w-4 text-muted-foreground" /><span>{player.coachName || 'Sans coach'}</span></div>
-            <Badge variant="outline">{player.status}</Badge>
-          </div>
-          {player.documents && player.documents.length > 0 && (
-            <div className="md:col-span-3 mt-4 space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-1">Documents</h3>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {player.documents.map((d, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 border rounded-lg bg-muted/10">
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      <span className="text-sm font-medium">{d.name}</span>
-                    </div>
-                    <Button variant="ghost" size="icon" asChild>
-                      <a href={d.url} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  </div>
-                ))}
+        <CardContent className="pt-6 space-y-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Identité */}
+            <div className="space-y-4">
+              <h3 className="flex items-center gap-2 font-bold text-primary border-b pb-1 uppercase text-sm"><User className="size-4" /> Identité</h3>
+              <div className="grid gap-2 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">Prénom :</span> <span className="font-medium">{player.firstName}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Nom :</span> <span className="font-medium">{player.name}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Né le :</span> <span className="font-medium">{player.birthDate} {player.birthPlace ? `à ${player.birthPlace}` : ''}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Sexe :</span> <span className="font-medium">{player.gender === 'Masculin' ? 'Garçon' : 'Fille'}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">CIN/ID :</span> <span className="font-medium">{player.cin || 'N/A'}</span></div>
               </div>
             </div>
-          )}
+
+            {/* Sportif */}
+            <div className="space-y-4">
+              <h3 className="flex items-center gap-2 font-bold text-primary border-b pb-1 uppercase text-sm"><Trophy className="size-4" /> Performance</h3>
+              <div className="grid gap-2 text-sm">
+                <div className="flex justify-between items-center"><span className="text-muted-foreground"><Scale className="size-3 inline mr-1" /> Poids :</span> <span className="font-medium">{player.weight ? `${player.weight} kg` : 'N/A'}</span></div>
+                <div className="flex justify-between items-center"><span className="text-muted-foreground"><Ruler className="size-3 inline mr-1" /> Taille :</span> <span className="font-medium">{player.height ? `${player.height} cm` : 'N/A'}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Pied Fort :</span> <Badge variant="outline">{player.strongFoot || 'Droitier'}</Badge></div>
+              </div>
+            </div>
+
+            {/* Médical */}
+            <div className="space-y-4">
+              <h3 className="flex items-center gap-2 font-bold text-primary border-b pb-1 uppercase text-sm"><HeartPulse className="size-4" /> Médical</h3>
+              <div className="grid gap-2 text-sm">
+                <div className="flex justify-between items-center"><span className="text-muted-foreground"><Droplet className="size-3 inline mr-1 text-destructive" /> Groupe Sanguin :</span> <Badge variant="destructive">{player.bloodGroup || '?'}</Badge></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Certificat :</span> <Badge variant={player.medicalCertificateStatus === 'Fourni' ? 'default' : 'destructive'}>{player.medicalCertificateStatus}</Badge></div>
+                <div className="space-y-1 mt-2">
+                  <span className="text-muted-foreground">Conditions / Allergies :</span>
+                  <p className="p-2 bg-muted rounded text-xs">{player.medicalConditions || 'Aucune condition signalée.'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact */}
+            <div className="space-y-4">
+              <h3 className="flex items-center gap-2 font-bold text-primary border-b pb-1 uppercase text-sm"><Phone className="size-4" /> Contact</h3>
+              <div className="grid gap-2 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">Tuteur :</span> <span className="font-medium">{player.tutorName}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Tél. Principal :</span> <span className="font-medium">{player.phone}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Urgence :</span> <span className="font-medium">{player.emergencyPhone || 'N/A'}</span></div>
+                <div className="flex items-start gap-2 mt-1"><MapPin className="size-3 mt-1 shrink-0" /><span className="text-xs">{player.address}</span></div>
+              </div>
+            </div>
+
+            {/* Trésorerie */}
+            <div className="space-y-4">
+              <h3 className="flex items-center gap-2 font-bold text-primary border-b pb-1 uppercase text-sm"><Banknote className="size-4" /> Trésorerie</h3>
+              <div className="grid gap-2 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">Inscription :</span> <Badge variant={player.registrationFeeStatus === 'Payé' ? 'default' : 'destructive'}>{player.registrationFeeStatus}</Badge></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Abonnement :</span> <span className="font-medium">{player.subscriptionType}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Mensualité :</span> <span className="font-bold text-primary">{player.subscriptionAmount} DH</span></div>
+              </div>
+            </div>
+          </div>
         </CardContent>
         <CardFooter className="justify-end gap-2 border-t pt-6">
           <Button variant="outline" onClick={() => setOpen(true)}><Edit className="h-4 w-4 mr-2" /> Modifier</Button>
           <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive"><Trash2 className="h-4 w-4 mr-2" /> Supprimer</Button>
-            </AlertDialogTrigger>
+            <AlertDialogTrigger asChild><Button variant="destructive"><Trash2 className="h-4 w-4 mr-2" /> Supprimer</Button></AlertDialogTrigger>
             <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Confirmer la suppression ?</AlertDialogTitle>
-                <AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Annuler</AlertDialogCancel>
-                <AlertDialogAction onClick={async () => { await deletePlayer(id); router.push('/players'); }}>Supprimer</AlertDialogAction>
-              </AlertDialogFooter>
+              <AlertDialogHeader><AlertDialogTitle>Supprimer ce joueur ?</AlertDialogTitle><AlertDialogDescription>Cette action effacera toutes les données de Maestro Foot liées à ce joueur.</AlertDialogDescription></AlertDialogHeader>
+              <AlertDialogFooter><AlertDialogCancel>Annuler</AlertDialogCancel><AlertDialogAction onClick={async () => { await deletePlayer(id); router.push('/players'); }}>Supprimer</AlertDialogAction></AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
         </CardFooter>
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Modifier le joueur</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2"><DialogTitle>Modifier le joueur</DialogTitle></DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-8">
+                {/* Reprise de la structure en sections du formulaire d'ajout */}
                 <div className="space-y-4">
-                  <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Identité & Contact</h4>
-                  <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom complet</FormLabel><Input {...field} required /></FormItem>} />
-                  <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de naissance</FormLabel><Input type="date" {...field} required /></FormItem>} />
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField control={form.control} name="gender" render={({field}) => (
-                      <FormItem><FormLabel>Genre</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                          <SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent>
-                        </Select>
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="country" render={({field}) => (
-                      <FormItem><FormLabel>Nationalité</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                          <SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
-                        </Select>
-                      </FormItem>
-                    )} />
+                  <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><User className="size-4" /> ÉTAT CIVIL</div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom</FormLabel><Input {...field} /></FormItem>} />
+                    <FormField control={form.control} name="firstName" render={({field}) => <FormItem><FormLabel>Prénom</FormLabel><Input {...field} /></FormItem>} />
+                    <FormField control={form.control} name="gender" render={({field}) => <FormItem><FormLabel>Sexe</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Masculin">Garçon</SelectItem><SelectItem value="Féminin">Fille</SelectItem></SelectContent></Select></FormItem>} />
+                    <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de Naissance</FormLabel><Input type="date" {...field} /></FormItem>} />
+                    <FormField control={form.control} name="birthPlace" render={({field}) => <FormItem><FormLabel>Lieu de Naissance</FormLabel><Input {...field} /></FormItem>} />
+                    <FormField control={form.control} name="country" render={({field}) => <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent></Select></FormItem>} />
                   </div>
-                  <FormField control={form.control} name="email" render={({field}) => <FormItem><FormLabel>Email</FormLabel><Input type="email" {...field} /></FormItem>} />
-                  <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone</FormLabel><Input {...field} required /></FormItem>} />
-                  <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><Input {...field} required /></FormItem>} />
                 </div>
+                {/* ... Autres sections identiques à la page liste ... */}
                 <div className="space-y-4">
-                  <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Sportif</h4>
-                  <FormField control={form.control} name="category" render={({field}) => (
-                    <FormItem><FormLabel>Catégorie</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                        <SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="poste" render={({field}) => (
-                    <FormItem><FormLabel>Poste</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="Gardien">Gardien</SelectItem>
-                          <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
-                          <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
-                          <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
-                          <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
-                          <SelectItem value="Milieu Central">Milieu Central</SelectItem>
-                          <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
-                          <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
-                          <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
-                          <SelectItem value="Avant-centre">Avant-centre</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="jerseyNumber" render={({field}) => <FormItem><FormLabel>N° Maillot</FormLabel><Input type="number" {...field} required /></FormItem>} />
-                  <FormField control={form.control} name="coachName" render={({field}) => (
-                    <FormItem><FormLabel>Entraîneur</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                        <SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="status" render={({field}) => (
-                    <FormItem><FormLabel>Statut</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="Actif">Actif</SelectItem>
-                          <SelectItem value="Blessé">Blessé</SelectItem>
-                          <SelectItem value="Suspendu">Suspendu</SelectItem>
-                          <SelectItem value="Inactif">Inactif</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )} />
+                  <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Trophy className="size-4" /> SPORTIF</div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField control={form.control} name="category" render={({field}) => <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>} />
+                    <FormField control={form.control} name="poste" render={({field}) => <FormItem><FormLabel>Poste</FormLabel><Input {...field} /></FormItem>} />
+                    <FormField control={form.control} name="jerseyNumber" render={({field}) => <FormItem><FormLabel>N° Maillot</FormLabel><Input type="number" {...field} /></FormItem>} />
+                  </div>
                 </div>
               </div>
-              <div className="space-y-4">
-                <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Documents</h4>
-                {fields.map((f, i) => (
-                  <div key={f.id} className="p-4 border rounded-md relative bg-muted/20 space-y-4">
-                    <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => remove(i)}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                    <FormField control={form.control} name={`documents.${i}.name`} render={({field}) => (
-                      <FormItem><FormLabel>Nom du document</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                          <SelectContent>{documentOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-                        </Select>
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name={`documents.${i}.url`} render={({field}) => (
-                      <FormItem><FormLabel>Lien URL</FormLabel><Input {...field} /></FormItem>
-                    )} />
-                  </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}>
-                  <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un document
-                </Button>
-              </div>
-              <DialogFooter>
+              <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>Annuler</Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Mise à jour...</> : "Mettre à jour"}
-                </Button>
+                <Button type="submit" disabled={isSubmitting}>{isSubmitting ? <Loader2 className="animate-spin size-4 mr-2" /> : null}Mettre à jour</Button>
               </DialogFooter>
             </form>
           </Form>

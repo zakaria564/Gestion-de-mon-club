@@ -14,51 +14,61 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Camera, Search, X, Loader2 } from "lucide-react";
+import { PlusCircle, Camera, Search, X, Loader2, User, Trophy, Phone, HeartPulse, Banknote } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const playerCategories = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
 const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "Sénégalaise", "Ivoirienne", "Camerounaise", "Belge", "Suisse", "Canadienne"];
-const documentOptions = ["Certificat Médical", "Carte d'identité", "Passeport", "Extrait de naissance", "Photo d'identité", "Licence sportive", "Assurance", "Autre"];
+const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 const playerSchema = z.object({
+  // État Civil
   name: z.string().min(1, "Nom requis"),
+  firstName: z.string().min(1, "Prénom requis"),
   birthDate: z.string().min(1, "Date requise"),
-  phone: z.string().min(1, "Téléphone requis"),
-  email: z.string().email("Email invalide").optional().or(z.literal('')),
-  address: z.string().min(1, "Adresse requise"),
+  birthPlace: z.string().optional(),
+  gender: z.enum(['Masculin', 'Féminin']),
   country: z.string().min(1, "Nationalité requise"),
+  
+  // Sportif
+  category: z.string().min(1, "Catégorie requise"),
   poste: z.string().min(1, "Poste requis"),
+  strongFoot: z.enum(['Droitier', 'Gaucher', 'Ambidextre']).default('Droitier'),
+  height: z.coerce.number().optional(),
+  weight: z.coerce.number().optional(),
   jerseyNumber: z.coerce.number().min(1),
+  coachName: z.string().optional(),
+  status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']).default('Actif'),
+
+  // Contact
+  tutorName: z.string().min(1, "Nom du tuteur requis"),
+  phone: z.string().min(1, "Téléphone requis"),
+  emergencyPhone: z.string().optional(),
+  address: z.string().min(1, "Adresse requise"),
+  email: z.string().email("Email invalide").optional().or(z.literal('')),
+
+  // Médical & Documents
+  bloodGroup: z.string().optional(),
+  medicalConditions: z.string().optional(),
+  medicalCertificateStatus: z.enum(['Fourni', 'Non fourni']).default('Non fourni'),
   photo: z.string().url("URL invalide").optional().or(z.literal('')),
   cin: z.string().optional(),
-  status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']),
-  category: z.string().min(1, "La catégorie est requise."),
-  gender: z.enum(['Masculin', 'Féminin']),
-  coachName: z.string().optional(),
-  documents: z.array(z.object({ name: z.string(), url: z.string().url() })).optional(),
+
+  // Financier
+  registrationFeeStatus: z.enum(['Payé', 'Non payé']).default('Non payé'),
+  subscriptionType: z.enum(['Mensuel', 'Trimestriel', 'Annuel']).default('Mensuel'),
+  subscriptionAmount: z.coerce.number().default(0),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
 
 const categoryColors: Record<string, string> = {
-  'Sénior': 'hsl(var(--chart-1))',
-  'U23': 'hsl(var(--chart-2))',
-  'U20': 'hsl(340, 80%, 55%)',
-  'U19': 'hsl(var(--chart-3))',
-  'U18': 'hsl(var(--chart-4))',
-  'U17': 'hsl(var(--chart-5))',
-  'U16': 'hsl(var(--chart-6))',
-  'U15': 'hsl(var(--chart-7))',
-  'U13': 'hsl(var(--chart-8))',
-  'U9': 'hsl(25 60% 45%)',
-  'U11': 'hsl(var(--chart-10))',
-  'U7': 'hsl(var(--chart-11))',
+  'Sénior': 'hsl(var(--chart-1))', 'U23': 'hsl(var(--chart-2))', 'U20': 'hsl(340, 80%, 55%)', 'U19': 'hsl(var(--chart-3))', 'U18': 'hsl(var(--chart-4))', 'U17': 'hsl(var(--chart-5))', 'U16': 'hsl(var(--chart-6))', 'U15': 'hsl(var(--chart-7))', 'U13': 'hsl(var(--chart-8))', 'U9': 'hsl(25 60% 45%)', 'U11': 'hsl(var(--chart-10))', 'U7': 'hsl(var(--chart-11))',
 };
 
 function PlayersContent() {
@@ -79,27 +89,12 @@ function PlayersContent() {
   const form = useForm<PlayerFormValues>({
     resolver: zodResolver(playerSchema),
     defaultValues: {
-      name: '',
-      birthDate: '',
-      address: '',
-      phone: '',
-      email: '',
-      country: 'Marocaine',
-      poste: '',
-      jerseyNumber: 0,
-      photo: '',
-      cin: '',
-      status: 'Actif',
-      category: 'Sénior',
-      gender: 'Masculin',
-      coachName: '',
-      documents: []
+      name: '', firstName: '', birthDate: '', birthPlace: '', gender: 'Masculin', country: 'Marocaine',
+      category: 'Sénior', poste: '', strongFoot: 'Droitier', height: 0, weight: 0, jerseyNumber: 0, coachName: '', status: 'Actif',
+      tutorName: '', phone: '', emergencyPhone: '', address: '', email: '',
+      bloodGroup: 'O+', medicalConditions: '', medicalCertificateStatus: 'Non fourni', photo: '', cin: '',
+      registrationFeeStatus: 'Non payé', subscriptionType: 'Mensuel', subscriptionAmount: 0
     },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "documents"
   });
 
   const handleTabChange = (key: 'gender' | 'category', value: string) => {
@@ -126,6 +121,7 @@ function PlayersContent() {
     const q = searchQuery.toLowerCase();
     return (players || []).filter(p => 
       p.name.toLowerCase().includes(q) || 
+      (p.firstName || "").toLowerCase().includes(q) ||
       p.poste.toLowerCase().includes(q)
     );
   }, [players, searchQuery]);
@@ -145,31 +141,18 @@ function PlayersContent() {
   const cats = Object.keys(currentGroups).sort((a, b) => playerCategories.indexOf(a) - playerCategories.indexOf(b));
   const currentCat = activeCategory && currentGroups[activeCategory] ? activeCategory : (cats[0] || '');
 
-  if (loading && !isSubmitting && players.length === 0) {
-    return (
-      <div className="flex-1 p-8 text-center text-muted-foreground">
-        Chargement des données...
-      </div>
-    );
-  }
+  if (loading && !isSubmitting && players.length === 0) return <div className="p-8 text-center text-muted-foreground">Chargement...</div>;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 w-full">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Joueurs</h2>
-        <Button onClick={() => setOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un joueur
-        </Button>
+        <Button onClick={() => setOpen(true)}><PlusCircle className="mr-2 h-4 w-4" /> Ajouter un joueur</Button>
       </div>
 
       <div className="relative my-4 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input 
-          placeholder="Rechercher par nom ou poste..." 
-          value={searchQuery} 
-          onChange={(e) => setSearchQuery(e.target.value)} 
-          className="pl-10" 
-        />
+        <Input placeholder="Rechercher..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
       </div>
 
       <Tabs value={activeGender} onValueChange={(v) => handleTabChange('gender', v)}>
@@ -181,45 +164,30 @@ function PlayersContent() {
           {cats.length > 0 ? (
             <Tabs value={currentCat} onValueChange={(v) => handleTabChange('category', v)}>
               <TabsList className="h-auto p-1 bg-muted rounded-md flex-wrap justify-start">
-                {cats.map(c => (
-                  <TabsTrigger 
-                    key={c} 
-                    value={c} 
-                    style={{ backgroundColor: categoryColors[c] || 'hsl(var(--primary))' }} 
-                    className="text-white m-1"
-                  >
-                    {c}
-                  </TabsTrigger>
-                ))}
+                {cats.map(c => <TabsTrigger key={c} value={c} style={{ backgroundColor: categoryColors[c] }} className="text-white m-1">{c}</TabsTrigger>)}
               </TabsList>
               {currentCat && currentGroups[currentCat] && (
                 <div className="mt-6 space-y-8">
                   {Object.entries(currentGroups[currentCat]).map(([poste, list]: any) => (
                     <div key={poste}>
-                      <h3 className="text-xl font-semibold mb-4 border-l-4 border-primary pl-3">
-                        {poste} ({list.length})
-                      </h3>
+                      <h3 className="text-xl font-semibold mb-4 border-l-4 border-primary pl-3">{poste} ({list.length})</h3>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {list.map((p: any) => (
                           <Card key={p.id} className="hover:shadow-lg transition-shadow">
                             <Link href={`/players/${p.id}`}>
                               <CardHeader className="p-4 flex flex-row items-center gap-4">
                                 <Avatar className="h-16 w-16">
-                                  <AvatarImage src={p.photo || undefined} />
+                                  <AvatarImage src={p.photo} />
                                   <AvatarFallback>{p.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1">
-                                  <CardTitle className="text-base font-bold">{p.name}</CardTitle>
-                                  <CardDescription>{p.poste}</CardDescription>
+                                  <CardTitle className="text-base font-bold">{p.firstName} {p.name}</CardTitle>
+                                  <CardDescription>{p.poste} - #{p.jerseyNumber}</CardDescription>
                                 </div>
                               </CardHeader>
                               <CardContent className="p-4 pt-0 flex justify-between items-center">
-                                <Badge style={{ backgroundColor: categoryColors[p.category] || 'hsl(var(--primary))', color: 'white' }}>
-                                  {p.category}
-                                </Badge>
-                                <Badge variant={p.status === 'Actif' ? 'default' : 'secondary'}>
-                                  {p.status}
-                                </Badge>
+                                <Badge style={{ backgroundColor: categoryColors[p.category], color: 'white' }}>{p.category}</Badge>
+                                <Badge variant={p.status === 'Actif' ? 'default' : 'secondary'}>{p.status}</Badge>
                               </CardContent>
                             </Link>
                           </Card>
@@ -230,152 +198,87 @@ function PlayersContent() {
                 </div>
               )}
             </Tabs>
-          ) : (
-            <div className="text-center py-20 text-muted-foreground border-2 border-dashed rounded-xl">
-              Aucun joueur trouvé pour cette sélection.
-            </div>
-          )}
+          ) : <div className="text-center py-20 text-muted-foreground border-2 border-dashed rounded-xl">Aucun joueur.</div>}
         </TabsContent>
       </Tabs>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Nouveau Joueur</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2"><DialogTitle>Nouveau Joueur - Maestro Foot</DialogTitle></DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="flex flex-col items-center gap-4">
-                <Avatar className="h-24 w-24 border">
-                  <AvatarImage src={form.watch('photo') || undefined} />
-                  <AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
-                </Avatar>
-                <FormField 
-                  control={form.control} 
-                  name="photo" 
-                  render={({field}) => (
-                    <FormItem className="w-full max-w-sm">
-                      <FormLabel>URL Photo</FormLabel>
-                      <Input {...field} />
-                    </FormItem>
-                  )} 
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <div className="space-y-4">
-                  <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Identité & Contact</h4>
-                  <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom complet</FormLabel><Input {...field} required /></FormItem>} />
-                  <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de naissance</FormLabel><Input type="date" {...field} required /></FormItem>} />
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField control={form.control} name="gender" render={({field}) => (
-                      <FormItem><FormLabel>Genre</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                          <SelectContent><SelectItem value="Masculin">Masculin</SelectItem><SelectItem value="Féminin">Féminin</SelectItem></SelectContent>
-                        </Select>
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="country" render={({field}) => (
-                      <FormItem><FormLabel>Nationalité</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                          <SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
-                        </Select>
-                      </FormItem>
-                    )} />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+              <div className="flex-1 overflow-y-auto px-6 py-4">
+                <div className="space-y-8">
+                  {/* Photo Preview */}
+                  <div className="flex flex-col items-center gap-4">
+                    <Avatar className="h-24 w-24 border">
+                      <AvatarImage src={form.watch('photo')} /><AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
+                    </Avatar>
+                    <FormField control={form.control} name="photo" render={({field}) => <FormItem className="w-full max-w-sm"><FormLabel>URL Photo</FormLabel><Input {...field} /></FormItem>} />
                   </div>
-                  <FormField control={form.control} name="email" render={({field}) => <FormItem><FormLabel>Email</FormLabel><Input type="email" {...field} /></FormItem>} />
-                  <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone</FormLabel><Input {...field} required /></FormItem>} />
-                  <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><Input {...field} required /></FormItem>} />
-                </div>
-                <div className="space-y-4">
-                  <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Sportif</h4>
-                  <FormField control={form.control} name="category" render={({field}) => (
-                    <FormItem><FormLabel>Catégorie</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                        <SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="poste" render={({field}) => (
-                    <FormItem><FormLabel>Poste</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="Gardien">Gardien</SelectItem>
-                          <SelectItem value="Défenseur Central">Défenseur Central</SelectItem>
-                          <SelectItem value="Latéral Droit">Latéral Droit</SelectItem>
-                          <SelectItem value="Latéral Gauche">Latéral Gauche</SelectItem>
-                          <SelectItem value="Milieu Défensif">Milieu Défensif</SelectItem>
-                          <SelectItem value="Milieu Central">Milieu Central</SelectItem>
-                          <SelectItem value="Milieu Offensif">Milieu Offensif</SelectItem>
-                          <SelectItem value="Ailier Droit">Ailier Droit</SelectItem>
-                          <SelectItem value="Ailier Gauche">Ailier Gauche</SelectItem>
-                          <SelectItem value="Avant-centre">Avant-centre</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="jerseyNumber" render={({field}) => <FormItem><FormLabel>N° Maillot</FormLabel><Input type="number" {...field} required /></FormItem>} />
-                  <FormField control={form.control} name="coachName" render={({field}) => (
-                    <FormItem><FormLabel>Entraîneur</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                        <SelectContent>{coaches.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="status" render={({field}) => (
-                    <FormItem><FormLabel>Statut</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="Actif">Actif</SelectItem>
-                          <SelectItem value="Blessé">Blessé</SelectItem>
-                          <SelectItem value="Suspendu">Suspendu</SelectItem>
-                          <SelectItem value="Inactif">Inactif</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )} />
+
+                  {/* 1. État Civil */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><User className="size-4" /> 1. ÉTAT CIVIL</div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="firstName" render={({field}) => <FormItem><FormLabel>Prénom</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="gender" render={({field}) => <FormItem><FormLabel>Sexe</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Masculin">Garçon</SelectItem><SelectItem value="Féminin">Fille</SelectItem></SelectContent></Select></FormItem>} />
+                      <FormField control={form.control} name="birthDate" render={({field}) => <FormItem><FormLabel>Date de Naissance</FormLabel><Input type="date" {...field} /></FormItem>} />
+                      <FormField control={form.control} name="birthPlace" render={({field}) => <FormItem><FormLabel>Lieu de Naissance</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="country" render={({field}) => <FormItem><FormLabel>Nationalité</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent></Select></FormItem>} />
+                    </div>
+                  </div>
+
+                  {/* 2. Sportif */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Trophy className="size-4" /> 2. INFORMATIONS SPORTIVES</div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <FormField control={form.control} name="category" render={({field}) => <FormItem><FormLabel>Catégorie</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{playerCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>} />
+                      <FormField control={form.control} name="poste" render={({field}) => <FormItem><FormLabel>Poste</FormLabel><Input {...field} placeholder="Gardien, Défenseur..." /></FormItem>} />
+                      <FormField control={form.control} name="strongFoot" render={({field}) => <FormItem><FormLabel>Pied Fort</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Droitier">Droitier</SelectItem><SelectItem value="Gaucher">Gaucher</SelectItem><SelectItem value="Ambidextre">Ambidextre</SelectItem></SelectContent></Select></FormItem>} />
+                      <FormField control={form.control} name="height" render={({field}) => <FormItem><FormLabel>Taille (cm)</FormLabel><Input type="number" {...field} /></FormItem>} />
+                      <FormField control={form.control} name="weight" render={({field}) => <FormItem><FormLabel>Poids (kg)</FormLabel><Input type="number" {...field} /></FormItem>} />
+                      <FormField control={form.control} name="jerseyNumber" render={({field}) => <FormItem><FormLabel>N° Maillot</FormLabel><Input type="number" {...field} /></FormItem>} />
+                    </div>
+                  </div>
+
+                  {/* 3. Contact & Parents */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Phone className="size-4" /> 3. CONTACT & PARENTS</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="tutorName" render={({field}) => <FormItem><FormLabel>Nom du Tuteur</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone Principal (WhatsApp)</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="emergencyPhone" render={({field}) => <FormItem><FormLabel>Téléphone d'urgence</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="address" render={({field}) => <FormItem><FormLabel>Adresse</FormLabel><Input {...field} /></FormItem>} />
+                    </div>
+                  </div>
+
+                  {/* 4. Médical & Documents */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><HeartPulse className="size-4" /> 4. DOSSIER MÉDICAL & DOCUMENTS</div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <FormField control={form.control} name="bloodGroup" render={({field}) => <FormItem><FormLabel>Groupe Sanguin</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{bloodGroups.map(bg => <SelectItem key={bg} value={bg}>{bg}</SelectItem>)}</SelectContent></Select></FormItem>} />
+                      <FormField control={form.control} name="medicalCertificateStatus" render={({field}) => <FormItem><FormLabel>Certificat Médical</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Fourni">Fourni</SelectItem><SelectItem value="Non fourni">Non fourni</SelectItem></SelectContent></Select></FormItem>} />
+                      <FormField control={form.control} name="cin" render={({field}) => <FormItem><FormLabel>N° CIN / Livret Famille</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="medicalConditions" render={({field}) => <FormItem className="md:col-span-3"><FormLabel>Allergies / Traitements</FormLabel><Input {...field} placeholder="Ex: Asthme, Allergie pollen..." /></FormItem>} />
+                    </div>
+                  </div>
+
+                  {/* 5. Suivi Financier */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Banknote className="size-4" /> 5. SUIVI FINANCIER</div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <FormField control={form.control} name="registrationFeeStatus" render={({field}) => <FormItem><FormLabel>Frais d'inscription</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Payé">Payé</SelectItem><SelectItem value="Non payé">Non payé</SelectItem></SelectContent></Select></FormItem>} />
+                      <FormField control={form.control} name="subscriptionType" render={({field}) => <FormItem><FormLabel>Type d'abonnement</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Mensuel">Mensuel</SelectItem><SelectItem value="Trimestriel">Trimestriel</SelectItem><SelectItem value="Annuel">Annuel</SelectItem></SelectContent></Select></FormItem>} />
+                      <FormField control={form.control} name="subscriptionAmount" render={({field}) => <FormItem><FormLabel>Montant Cotisation (DH)</FormLabel><Input type="number" {...field} /></FormItem>} />
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-4">
-                <h4 className="font-bold text-sm uppercase text-primary border-b pb-1">Documents</h4>
-                {fields.map((f, i) => (
-                  <div key={f.id} className="p-4 border rounded-md relative bg-muted/20 space-y-4">
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="icon" 
-                      className="absolute top-2 right-2 text-destructive" 
-                      onClick={() => remove(i)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                    <FormField control={form.control} name={`documents.${i}.name`} render={({field}) => (
-                      <FormItem><FormLabel>Nom du document</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                          <SelectContent>{documentOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-                        </Select>
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name={`documents.${i}.url`} render={({field}) => (
-                      <FormItem><FormLabel>Lien URL</FormLabel><Input {...field} /></FormItem>
-                    )} />
-                  </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", url: "" })}>
-                  <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un document
-                </Button>
-              </div>
-              <DialogFooter>
+              <DialogFooter className="p-6 border-t bg-background shrink-0 flex gap-2">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>Annuler</Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : "Enregistrer"}
-                </Button>
+                <Button type="submit" disabled={isSubmitting}>{isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : "Enregistrer"}</Button>
               </DialogFooter>
             </form>
           </Form>

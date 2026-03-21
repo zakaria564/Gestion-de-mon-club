@@ -7,23 +7,42 @@ export type PlayerDocument = {
 export type Player = {
   id: string;
   uid: string;
-  name: string;
+  name: string; // Nom de famille
+  firstName?: string; // Prénom
   birthDate: string;
+  birthPlace?: string; // Lieu de naissance
+  gender: 'Masculin' | 'Féminin';
+  nationality?: string;
+  
+  // Sportif
+  category: 'Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
+  poste: string;
+  jerseyNumber: number;
+  strongFoot?: 'Droitier' | 'Gaucher' | 'Ambidextre';
+  height?: number;
+  weight?: number;
+  
+  // Contact & Parents
   phone: string;
+  emergencyPhone?: string;
   email?: string;
   address: string;
   country: string;
-  poste: string;
-  jerseyNumber: number;
+  tutorName?: string;
+  
+  // Médical
+  bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
+  medicalConditions?: string; // Allergies / Traitement
+  medicalCertificateStatus?: 'Fourni' | 'Non fourni';
   photo?: string;
   cin?: string;
-  gender: 'Masculin' | 'Féminin';
-  tutorName?: string;
-  tutorPhone?: string;
-  tutorEmail?: string;
-  tutorCin?: string;
+  
+  // Financier
+  registrationFeeStatus?: 'Payé' | 'Non payé';
+  subscriptionType?: 'Mensuel' | 'Trimestriel' | 'Annuel';
+  subscriptionAmount?: number;
+
   status: 'Actif' | 'Blessé' | 'Suspendu' | 'Inactif';
-  category: 'Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
   entryDate?: string;
   exitDate?: string;
   coachName?: string;
@@ -78,9 +97,3 @@ export const clubStats = {
   upcomingEvents: 3,
   notifications: 2,
 };
-
-export const results = [
-  { id: 1, opponent: 'FC Bordeaux', date: '2024-08-01', score: '3-1', scorers: ['J. Dupont (2)', 'P. Martin'], notes: 'Belle victoire, bonne performance défensive.' },
-  { id: 2, opponent: 'Paris SG', date: '2024-07-25', score: '0-2', scorers: [], notes: 'Match difficile contre une équipe solide.' },
-  { id: 3, opponent: 'OGC Nice', date: '2024-07-18', score: '2-2', scorers: ['J. Dupont', 'M. Curie'], notes: 'Match nul arraché en fin de partie.' },
-];
