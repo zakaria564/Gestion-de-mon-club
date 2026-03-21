@@ -138,14 +138,14 @@ export function PlayerDetailClient({ id }: { id: string }) {
         </div>
       </div>
       
-      <Card className="overflow-hidden border-none shadow-2xl rounded-[40px] bg-white">
+      <Card className="overflow-hidden border-none shadow-2xl rounded-[40px] bg-card">
         <CardHeader className="flex flex-col md:flex-row items-center md:items-start gap-8 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-10">
           <div className="relative">
-            <Avatar className="h-48 w-48 border-8 border-white shadow-2xl rounded-3xl">
+            <Avatar className="h-48 w-48 border-8 border-background shadow-2xl rounded-3xl">
               <AvatarImage src={player.photo} className="object-cover" />
               <AvatarFallback className="text-6xl bg-primary text-white font-black">{player.name.substring(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <Badge className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-6 py-2 text-sm font-black uppercase tracking-[0.2em] shadow-xl border-4 border-white">
+            <Badge className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-6 py-2 text-sm font-black uppercase tracking-[0.2em] shadow-xl border-4 border-background">
               {player.status}
             </Badge>
           </div>
@@ -153,12 +153,12 @@ export function PlayerDetailClient({ id }: { id: string }) {
           <div className="flex-1 text-center md:text-left space-y-4 pt-4">
             <div className="flex flex-col md:flex-row md:items-end gap-4">
               <CardTitle className="text-5xl font-black uppercase tracking-tighter italic text-primary">{player.firstName} {player.name}</CardTitle>
-              <Badge variant="secondary" className="w-fit mx-auto md:mx-0 font-mono text-lg py-2 px-6 border-2 border-primary/20 bg-white text-primary flex items-center gap-3 shadow-lg rounded-2xl">
+              <Badge variant="secondary" className="w-fit mx-auto md:mx-0 font-mono text-lg py-2 px-6 border-2 border-primary/20 bg-background text-primary flex items-center gap-3 shadow-lg rounded-2xl">
                 <ShieldCheck className="size-6" />
                 {player.professionalId || `MAE-${new Date().getFullYear().toString().slice(-2)}-${player.category}-000`}
               </Badge>
             </div>
-            <p className="text-2xl font-black text-muted-foreground/60 flex items-center justify-center md:justify-start gap-4 uppercase tracking-tighter">
+            <p className="text-2xl font-black text-muted-foreground flex items-center justify-center md:justify-start gap-4 uppercase tracking-tighter">
               {player.category} <span className="text-primary">•</span> {player.poste} <span className="text-primary">•</span> <span className="text-primary text-4xl italic">#{player.jerseyNumber}</span>
             </p>
           </div>
@@ -302,16 +302,16 @@ export function PlayerDetailClient({ id }: { id: string }) {
                 <Trash2 className="h-4 w-4 mr-2" /> RADIATION DU JOUEUR
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="rounded-[32px] border-none shadow-2xl">
+            <AlertDialogContent className="rounded-[32px] border-none shadow-2xl bg-background">
               <AlertDialogHeader>
                 <AlertDialogTitle className="text-2xl font-black uppercase tracking-tighter italic text-destructive">Radiation de l'effectif ?</AlertDialogTitle>
-                <AlertDialogDescription className="font-bold text-sm leading-relaxed">
+                <AlertDialogDescription className="font-bold text-sm leading-relaxed text-muted-foreground">
                   Cette opération est irréversible. Le matricule <span className="text-primary">{player.professionalId}</span> sera désactivé et toutes les archives Maestro Foot liées à ce licencié seront supprimées.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter className="gap-2">
                 <AlertDialogCancel className="rounded-xl font-black uppercase text-xs tracking-widest border-none bg-muted/50">Annuler</AlertDialogCancel>
-                <AlertDialogAction onClick={async () => { await deletePlayer(id); router.push('/players'); }} className="rounded-xl font-black uppercase text-xs tracking-widest bg-destructive hover:bg-destructive/90">
+                <AlertDialogAction onClick={async () => { await deletePlayer(id); router.push('/players'); }} className="rounded-xl font-black uppercase text-xs tracking-widest bg-destructive hover:bg-destructive/90 text-white">
                   Confirmer la Radiation
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -321,7 +321,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden shadow-2xl rounded-[32px] border-none">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden shadow-2xl rounded-[32px] border-none bg-background">
           <DialogHeader className="p-8 border-b bg-primary/5">
             <DialogTitle className="text-2xl font-black flex items-center gap-3 uppercase tracking-tighter text-primary italic">
               <Edit className="text-primary h-7 w-7" /> Rectifier la Licence Maestro
@@ -333,14 +333,14 @@ export function PlayerDetailClient({ id }: { id: string }) {
                 <div className="space-y-12">
                   
                   <div className="flex flex-col items-center gap-6 bg-primary/5 p-8 rounded-[32px] border-2 border-dashed border-primary/20">
-                    <Avatar className="h-32 w-32 border-4 border-white shadow-2xl">
+                    <Avatar className="h-32 w-32 border-4 border-background shadow-2xl">
                       <AvatarImage src={form.watch('photo')} />
                       <AvatarFallback><Camera className="h-10 w-10 text-muted-foreground" /></AvatarFallback>
                     </Avatar>
                     <FormField control={form.control} name="photo" render={({field}) => (
                       <FormItem className="w-full max-w-md">
                         <FormLabel className="font-black text-center block text-primary uppercase text-[10px] tracking-widest">URL de la Photo de profil</FormLabel>
-                        <Input {...field} placeholder="https://..." className="bg-white rounded-xl h-12 border-none shadow-sm" />
+                        <Input {...field} placeholder="https://..." className="bg-background rounded-xl h-12 border-none shadow-sm" />
                       </FormItem>
                     )} />
                   </div>
