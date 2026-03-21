@@ -27,15 +27,12 @@ const nationalities = ["Marocaine", "Française", "Algérienne", "Tunisienne", "
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 const playerSchema = z.object({
-  // 1. État Civil
   name: z.string().min(1, "Nom requis"),
   firstName: z.string().min(1, "Prénom requis"),
   birthDate: z.string().min(1, "Date requise"),
   birthPlace: z.string().optional(),
   gender: z.enum(['Masculin', 'Féminin']),
   country: z.string().min(1, "Nationalité requise"),
-  
-  // 2. Sportif
   category: z.string().min(1, "Catégorie requise"),
   poste: z.string().min(1, "Poste requis"),
   strongFoot: z.enum(['Droitier', 'Gaucher', 'Ambidextre']).default('Droitier'),
@@ -43,23 +40,17 @@ const playerSchema = z.object({
   weight: z.coerce.number().optional(),
   jerseyNumber: z.coerce.number().min(1),
   status: z.enum(['Actif', 'Blessé', 'Suspendu', 'Inactif']).default('Actif'),
-
-  // 3. Contact & Parents
   tutorName: z.string().min(1, "Nom du tuteur requis"),
-  parentId: z.string().optional(), // ID Unique du parent (UID Firebase)
+  parentId: z.string().optional(), 
   phone: z.string().min(1, "Téléphone requis"),
   emergencyPhone: z.string().optional(),
   address: z.string().min(1, "Adresse requise"),
   email: z.string().email("Email invalide").optional().or(z.literal('')),
-
-  // 4. Médical & Documents
   bloodGroup: z.string().optional(),
   medicalConditions: z.string().optional(),
   medicalCertificateStatus: z.enum(['Fourni', 'Non fourni']).default('Non fourni'),
   photo: z.string().url("URL invalide").optional().or(z.literal('')),
   cin: z.string().optional(),
-
-  // 5. Suivi Financier
   registrationFeeStatus: z.enum(['Payé', 'Non payé']).default('Non payé'),
   subscriptionType: z.enum(['Mensuel', 'Trimestriel', 'Annuel']).default('Mensuel'),
   subscriptionAmount: z.coerce.number().default(0),
@@ -185,6 +176,7 @@ function PlayersContent() {
                                 <div className="flex-1">
                                   <CardTitle className="text-base font-bold">{p.firstName} {p.name}</CardTitle>
                                   <CardDescription>{p.poste} - #{p.jerseyNumber}</CardDescription>
+                                  <p className="text-[10px] font-mono text-muted-foreground mt-1">ID: {p.id.substring(0, 8).toUpperCase()}</p>
                                 </div>
                               </CardHeader>
                               <CardContent className="p-4 pt-0 flex justify-between items-center">
@@ -211,7 +203,6 @@ function PlayersContent() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               <div className="flex-1 overflow-y-auto px-6 py-4">
                 <div className="space-y-8">
-                  {/* Photo Preview */}
                   <div className="flex flex-col items-center gap-4">
                     <Avatar className="h-24 w-24 border">
                       <AvatarImage src={form.watch('photo')} /><AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
@@ -219,10 +210,13 @@ function PlayersContent() {
                     <FormField control={form.control} name="photo" render={({field}) => <FormItem className="w-full max-w-sm"><FormLabel>URL Photo</FormLabel><Input {...field} /></FormItem>} />
                   </div>
 
-                  {/* 1. État Civil */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><User className="size-4" /> 1. ÉTAT CIVIL (L'IDENTITÉ)</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="md:col-span-3 space-y-2">
+                        <Label>ID Joueur (Matricule)</Label>
+                        <Input value="Généré automatiquement à l'enregistrement" readOnly className="bg-muted italic text-xs" />
+                      </div>
                       <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom</FormLabel><Input {...field} placeholder="Nom de famille" /></FormItem>} />
                       <FormField control={form.control} name="firstName" render={({field}) => <FormItem><FormLabel>Prénom</FormLabel><Input {...field} placeholder="Prénom du joueur" /></FormItem>} />
                       <FormField control={form.control} name="gender" render={({field}) => <FormItem><FormLabel>Sexe</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Masculin">Garçon</SelectItem><SelectItem value="Féminin">Fille</SelectItem></SelectContent></Select></FormItem>} />
@@ -232,7 +226,6 @@ function PlayersContent() {
                     </div>
                   </div>
 
-                  {/* 2. Sportif */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Trophy className="size-4" /> 2. INFORMATIONS SPORTIVES (LE TERRAIN)</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -245,19 +238,17 @@ function PlayersContent() {
                     </div>
                   </div>
 
-                  {/* 3. Contact & Parents */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Phone className="size-4" /> 3. CONTACT & PARENTS (L'ADMINISTRATION)</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField control={form.control} name="tutorName" render={({field}) => <FormItem><FormLabel>Nom du Tuteur</FormLabel><Input {...field} placeholder="Père, Mère ou tuteur" /></FormItem>} />
                       <FormField control={form.control} name="parentId" render={({field}) => <FormItem><FormLabel>parentID (Lien Plateforme)</FormLabel><Input {...field} placeholder="UID Firebase du parent (optionnel)" /></FormItem>} />
-                      <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone Principal (WhatsApp)</FormLabel><Input {...field} /></FormItem>} />
+                      <FormField control={form.control} name="phone" render={({field}) => <FormItem><FormLabel>Téléphone Principal (WhatsApp)</FormLabel><Input {...field} placeholder="+212..." /></FormItem>} />
                       <FormField control={form.control} name="emergencyPhone" render={({field}) => <FormItem><FormLabel>Téléphone d'urgence</FormLabel><Input {...field} /></FormItem>} />
                       <FormField control={form.control} name="address" render={({field}) => <FormItem className="md:col-span-2"><FormLabel>Adresse</FormLabel><Input {...field} placeholder="Quartier / Ville" /></FormItem>} />
                     </div>
                   </div>
 
-                  {/* 4. Médical & Documents */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><HeartPulse className="size-4" /> 4. DOSSIER MÉDICAL & DOCUMENTS (LES FICHIERS)</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -268,7 +259,6 @@ function PlayersContent() {
                     </div>
                   </div>
 
-                  {/* 5. Suivi Financier */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Banknote className="size-4" /> 5. SUIVI FINANCIER (LA TRÉSORERIE)</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

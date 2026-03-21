@@ -6,7 +6,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, Trash2, Phone, HeartPulse, Banknote, User, Trophy, MapPin, Scale, Ruler, Droplet, Camera, Loader2, Mail, UserRound } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Phone, HeartPulse, Banknote, User, Trophy, MapPin, Scale, Ruler, Droplet, Camera, Loader2, Mail, Hash } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -55,10 +55,6 @@ const playerSchema = z.object({
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
-
-const categoryColors: Record<string, string> = {
-  'Sénior': 'hsl(var(--chart-1))', 'U23': 'hsl(var(--chart-2))', 'U20': 'hsl(340, 80%, 55%)', 'U19': 'hsl(var(--chart-3))', 'U18': 'hsl(var(--chart-4))', 'U17': 'hsl(var(--chart-5))', 'U16': 'hsl(var(--chart-6))', 'U15': 'hsl(var(--chart-7))', 'U13': 'hsl(var(--chart-8))', 'U9': 'hsl(25 60% 45%)', 'U11': 'hsl(var(--chart-10))', 'U7': 'hsl(var(--chart-11))',
-};
 
 export function PlayerDetailClient({ id }: { id: string }) {
   const router = useRouter();
@@ -132,7 +128,10 @@ export function PlayerDetailClient({ id }: { id: string }) {
         <CardHeader className="flex flex-row items-center gap-6">
           <Avatar className="h-32 w-32 border"><AvatarImage src={player.photo} /><AvatarFallback className="text-4xl">{player.name.substring(0, 2).toUpperCase()}</AvatarFallback></Avatar>
           <div className="flex-1">
-            <CardTitle className="text-3xl font-bold">{player.firstName} {player.name}</CardTitle>
+            <div className="flex items-center gap-2 mb-1">
+              <CardTitle className="text-3xl font-bold">{player.firstName} {player.name}</CardTitle>
+              <Badge variant="outline" className="font-mono text-xs"><Hash className="size-3 mr-1" />{player.id.substring(0, 8).toUpperCase()}</Badge>
+            </div>
             <p className="text-muted-foreground">{player.category} - {player.poste} #{player.jerseyNumber}</p>
           </div>
           <Badge variant={player.status === 'Actif' ? 'default' : 'secondary'} className="text-lg px-4">{player.status}</Badge>
@@ -142,6 +141,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
             <div className="space-y-4">
               <h3 className="flex items-center gap-2 font-bold text-primary border-b pb-1 uppercase text-sm"><User className="size-4" /> Identité</h3>
               <div className="grid gap-2 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">ID Joueur :</span> <span className="font-mono font-bold text-primary">{player.id}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Prénom :</span> <span className="font-medium">{player.firstName}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Nom :</span> <span className="font-medium">{player.name}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Né le :</span> <span className="font-medium">{player.birthDate} {player.birthPlace ? `à ${player.birthPlace}` : ''}</span></div>
@@ -210,7 +210,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               <div className="flex-1 overflow-y-auto px-6 py-4">
                 <div className="space-y-8">
-                  {/* Photo Preview */}
                   <div className="flex flex-col items-center gap-4">
                     <Avatar className="h-24 w-24 border">
                       <AvatarImage src={form.watch('photo')} /><AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
@@ -218,10 +217,13 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     <FormField control={form.control} name="photo" render={({field}) => <FormItem className="w-full max-w-sm"><FormLabel>URL Photo</FormLabel><Input {...field} /></FormItem>} />
                   </div>
 
-                  {/* 1. État Civil */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><User className="size-4" /> 1. ÉTAT CIVIL</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="md:col-span-3 space-y-2">
+                        <Label>ID Joueur (Matricule)</Label>
+                        <Input value={player.id} readOnly className="bg-muted font-mono" />
+                      </div>
                       <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel>Nom</FormLabel><Input {...field} /></FormItem>} />
                       <FormField control={form.control} name="firstName" render={({field}) => <FormItem><FormLabel>Prénom</FormLabel><Input {...field} /></FormItem>} />
                       <FormField control={form.control} name="gender" render={({field}) => <FormItem><FormLabel>Sexe</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Masculin">Garçon</SelectItem><SelectItem value="Féminin">Fille</SelectItem></SelectContent></Select></FormItem>} />
@@ -231,7 +233,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
 
-                  {/* 2. Sportif */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Trophy className="size-4" /> 2. INFORMATIONS SPORTIVES</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -245,7 +246,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
 
-                  {/* 3. Contact & Parents */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Phone className="size-4" /> 3. CONTACT & PARENTS</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -258,7 +258,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
 
-                  {/* 4. Médical & Documents */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><HeartPulse className="size-4" /> 4. DOSSIER MÉDICAL & DOCUMENTS</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -269,7 +268,6 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
 
-                  {/* 5. Suivi Financier */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-primary font-bold border-b pb-1"><Banknote className="size-4" /> 5. SUIVI FINANCIER</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
