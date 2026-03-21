@@ -27,6 +27,8 @@ import {
   BarChart,
   Shield,
   FileText,
+  Stethoscope,
+  UsersRound,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { ClubLogo } from "@/components/club-logo";
@@ -39,24 +41,32 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { ProtectedRoute, useAuth } from "@/context/auth-context";
+import { ProtectedRoute, useAuth, type UserRole } from "@/context/auth-context";
 import { useClubContext } from "@/context/club-context";
 import { useToast } from "@/hooks/use-toast";
-import { Skeleton } from "./ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const navItems = [
-  { href: "/", label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/players", label: "Joueurs", icon: Users },
-  { href: "/coaches", label: "Entraîneurs", icon: UserCheck },
-  { href: "/opponents", label: "Adversaires", icon: Shield },
-  { href: "/calendar", label: "Calendrier", icon: Calendar },
-  { href: "/results", label: "Résultats", icon: Trophy },
-  { href: "/ranking", label: "Classement", icon: BarChart },
-  { href: "/finances", label: "Paiements", icon: Banknote },
-  { href: "/registration-form", label: "Fiche d'inscription", icon: FileText },
-  { href: "/settings", label: "Paramètres", icon: Settings },
+interface NavItem {
+  href: string;
+  label: string;
+  icon: any;
+  roles: UserRole[];
+}
+
+const navItems: NavItem[] = [
+  { href: "/", label: "Tableau de bord", icon: LayoutDashboard, roles: ['admin', 'coach', 'medical', 'parent'] },
+  { href: "/players", label: "Joueurs", icon: Users, roles: ['admin', 'coach'] },
+  { href: "/coaches", label: "Entraîneurs", icon: UserCheck, roles: ['admin'] },
+  { href: "/medical", label: "Médical", icon: Stethoscope, roles: ['admin', 'coach', 'medical'] },
+  { href: "/opponents", label: "Adversaires", icon: Shield, roles: ['admin', 'coach'] },
+  { href: "/calendar", label: "Calendrier", icon: Calendar, roles: ['admin', 'coach', 'medical', 'parent'] },
+  { href: "/results", label: "Résultats", icon: Trophy, roles: ['admin', 'coach'] },
+  { href: "/ranking", label: "Classement", icon: BarChart, roles: ['admin', 'coach', 'parent'] },
+  { href: "/finances", label: "Paiements", icon: Banknote, roles: ['admin'] },
+  { href: "/registration-form", label: "Fiche d'inscription", icon: FileText, roles: ['admin', 'parent'] },
+  { href: "/admin/users", label: "Équipe Staff", icon: UsersRound, roles: ['admin'] },
+  { href: "/settings", label: "Paramètres", icon: Settings, roles: ['admin', 'coach', 'medical', 'parent'] },
 ];
 
 function DesktopHeader() {
@@ -67,8 +77,7 @@ function DesktopHeader() {
   );
 }
 
-
-function MobileHeader() {
+function MobileHeader({ activeRole }: { activeRole?: string }) {
     const pathname = usePathname();
     const currentPage = navItems.find((item) => item.href === pathname);
     const pageTitle = currentPage ? currentPage.label : "Gestion Club";
@@ -79,7 +88,10 @@ function MobileHeader() {
                 <SidebarTrigger />
                 <span className="font-semibold">{pageTitle}</span>
             </div>
-            <ClubLogo className="h-9 w-9" />
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold uppercase">{activeRole}</span>
+              <ClubLogo className="h-9 w-9" />
+            </div>
         </header>
     );
 }
@@ -87,12 +99,11 @@ function MobileHeader() {
 function MainAppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logOut, loading } = useAuth();
+  const { user, profile, logOut, loading } = useAuth();
   const { clubInfo, loading: clubLoading } = useClubContext();
   const { toast } = useToast();
   const { setOpenMobile } = useSidebar();
   const isMobile = useIsMobile();
-
 
   const handleLogout = async () => {
     try {
@@ -105,7 +116,7 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
         description: error.message,
       });
     }
-  }
+  };
 
   if (loading || clubLoading) {
     return (
@@ -117,7 +128,9 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
 
   const handleLinkClick = () => {
     setOpenMobile(false);
-  }
+  };
+
+  const filteredItems = navItems.filter(item => profile && item.roles.includes(profile.role));
 
   return (
     <ProtectedRoute>
@@ -126,12 +139,15 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
             <SidebarHeader>
                 <div className="flex items-center gap-2">
                 <ClubLogo className="size-12 shrink-0" />
-                <span className="text-lg font-semibold truncate">{clubInfo.name}</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-lg font-semibold truncate">{clubInfo.name}</span>
+                  <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{profile?.role}</span>
+                </div>
                 </div>
             </SidebarHeader>
             <SidebarContent>
                 <SidebarMenu>
-                {navItems.map((item) => (
+                {filteredItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                         asChild
@@ -153,18 +169,18 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="w-full justify-start gap-2 p-2">
                         <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "Admin"} data-ai-hint="user avatar" />
+                        <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "Admin"} />
                         <AvatarFallback>{user?.email?.substring(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div className="text-left group-data-[collapsible=icon]:hidden">
-                        <p className="font-medium text-sm truncate">Compte</p>
+                        <p className="font-medium text-sm truncate">{profile?.displayName || "Mon Compte"}</p>
                         </div>
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                         <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user?.displayName || "Admin"}</p>
+                        <p className="text-sm font-medium leading-none">{profile?.displayName || "Admin"}</p>
                         <p className="text-xs leading-none text-muted-foreground">
                             {user?.email}
                         </p>
@@ -172,7 +188,6 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push('/settings')}>Profil</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/settings')}>Paramètres</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                         Se déconnecter
@@ -182,7 +197,7 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
             </SidebarFooter>
             </Sidebar>
             <main className="flex-1 flex flex-col overflow-auto w-full">
-                <MobileHeader />
+                <MobileHeader activeRole={profile?.role} />
                 <DesktopHeader />
                 <div className="flex-1 overflow-auto">
                     {children}
@@ -192,7 +207,6 @@ function MainAppLayout({ children }: { children: React.ReactNode }) {
     </ProtectedRoute>
   )
 }
-
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (

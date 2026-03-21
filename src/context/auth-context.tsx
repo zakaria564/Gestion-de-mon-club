@@ -3,11 +3,23 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider, User } from 'firebase/auth';
-import { app } from '@/lib/firebase';
+import { app, db } from '@/lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useRouter, usePathname } from 'next/navigation';
+
+export type UserRole = 'admin' | 'coach' | 'medical' | 'parent';
+
+interface UserProfile {
+  uid: string;
+  email: string;
+  displayName: string;
+  role: UserRole;
+  clubId?: string;
+}
 
 interface AuthContextType {
   user: User | null;
+  profile: UserProfile | null;
   loading: boolean;
   signUp: (email: string, password: string, displayName: string) => Promise<any>;
   logIn: (email: string, password: string) => Promise<any>;
@@ -15,6 +27,7 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<any>;
   updateUserProfile: (profileData: { displayName?: string; photoURL?: string; }) => Promise<void>;
   updateUserPassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  updateUserRole: (uid: string, role: UserRole) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,11 +44,39 @@ const auth = getAuth(app);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchProfile = async (uid: string) => {
+    try {
+      const docRef = doc(db, "userProfiles", uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setProfile(docSnap.data() as UserProfile);
+      } else {
+        // Profil par défaut pour le premier utilisateur (Admin) ou nouvel inscrit
+        const newProfile: UserProfile = {
+          uid,
+          email: auth.currentUser?.email || '',
+          displayName: auth.currentUser?.displayName || '',
+          role: 'admin', // Par défaut pour l'instant
+        };
+        await setDoc(docRef, newProfile);
+        setProfile(newProfile);
+      }
+    } catch (e) {
+      console.error("Error fetching profile:", e);
+    }
+  };
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
+      if (user) {
+        await fetchProfile(user.uid);
+      } else {
+        setProfile(null);
+      }
       setLoading(false);
     });
 
@@ -46,6 +87,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     if (userCredential.user) {
       await updateProfile(userCredential.user, { displayName });
+      const newProfile: UserProfile = {
+        uid: userCredential.user.uid,
+        email,
+        displayName,
+        role: 'admin', // On pourrait changer ça pour 'parent' par défaut plus tard
+      };
+      await setDoc(doc(db, "userProfiles", userCredential.user.uid), newProfile);
+      setProfile(newProfile);
     }
     return userCredential;
   };
@@ -62,27 +111,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return sendPasswordResetEmail(auth, email);
   };
 
-  const updateUserProfile = (profileData: { displayName?: string; photoURL?: string; }) => {
+  const updateUserProfile = async (profileData: { displayName?: string; photoURL?: string; }) => {
     if (!auth.currentUser) throw new Error("Utilisateur non authentifié.");
-    return updateProfile(auth.currentUser, profileData);
-  }
+    await updateProfile(auth.currentUser, profileData);
+    if (profileData.displayName) {
+      await setDoc(doc(db, "userProfiles", auth.currentUser.uid), { displayName: profileData.displayName }, { merge: true });
+      setProfile(prev => prev ? { ...prev, displayName: profileData.displayName! } : null);
+    }
+  };
 
   const updateUserPassword = async (currentPassword: string, newPassword: string) => {
      if (!auth.currentUser || !auth.currentUser.email) {
         throw new Error("Utilisateur non authentifié ou email non disponible.");
      }
-     
      const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
-     
-     // Re-authenticate the user
      await reauthenticateWithCredential(auth.currentUser, credential);
-     
-     // Now, update the password
      return updatePassword(auth.currentUser, newPassword);
-  }
+  };
+
+  const updateUserRole = async (uid: string, role: UserRole) => {
+    await setDoc(doc(db, "userProfiles", uid), { role }, { merge: true });
+    if (user?.uid === uid) {
+      setProfile(prev => prev ? { ...prev, role } : null);
+    }
+  };
 
   const value = {
     user,
+    profile,
     loading,
     signUp,
     logIn,
@@ -90,6 +146,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     resetPassword,
     updateUserProfile,
     updateUserPassword,
+    updateUserRole,
   };
 
   return (
