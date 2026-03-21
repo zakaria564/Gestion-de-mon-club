@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -20,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 
 const playerCategories = ['Sénior', 'U23', 'U20', 'U19', 'U18', 'U17', 'U16', 'U15', 'U13', 'U11', 'U9', 'U7'];
@@ -153,7 +152,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
               <CardTitle className="text-5xl font-black uppercase tracking-tighter italic text-primary">{player.firstName} {player.name}</CardTitle>
               <Badge variant="secondary" className="w-fit mx-auto md:mx-0 font-mono text-lg py-2 px-6 border-2 border-primary/20 bg-background text-primary flex items-center gap-3 shadow-lg rounded-2xl">
                 <ShieldCheck className="size-6" />
-                {player.professionalId || `MAE-25-${player.category}-000`}
+                {player.professionalId}
               </Badge>
             </div>
             <p className="text-2xl font-black text-muted-foreground flex items-center justify-center md:justify-start gap-4 uppercase tracking-tighter">
@@ -316,6 +315,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
         </CardFooter>
       </Card>
 
+      {/* MODAL DE MODIFICATION COMPLETE */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[32px] border-none bg-background">
           <DialogHeader className="p-8 border-b bg-primary/5">
@@ -327,6 +327,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               <div className="flex-1 overflow-y-auto px-10 py-8">
                 <div className="space-y-12">
+                  {/* PHOTO */}
                   <div className="flex flex-col items-center gap-6 bg-primary/5 p-8 rounded-[32px] border-2 border-dashed border-primary/20">
                     <Avatar className="h-32 w-32 border-4 border-background shadow-2xl">
                       <AvatarImage src={form.watch('photo')} />
@@ -340,12 +341,13 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     )} />
                   </div>
 
+                  {/* 1. ETAT CIVIL */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-2 border-primary/10 pb-3 uppercase text-xs italic"><Hash className="size-5" /> 1. ÉTAT CIVIL</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                       <div className="md:col-span-3 bg-muted/30 p-4 rounded-2xl border-l-4 border-primary">
                         <Label className="text-primary font-black uppercase text-[10px] mb-2 block">Matricule Officiel Maestro Foot (Lecture seule)</Label>
-                        <Input value={player.professionalId} readOnly className="bg-transparent border-none font-mono font-black text-primary text-xl p-0 h-auto" />
+                        <Input value={player.professionalId} readOnly className="bg-transparent border-none font-mono font-black text-primary text-xl p-0 h-auto focus-visible:ring-0" />
                       </div>
                       <FormField control={form.control} name="name" render={({field}) => <FormItem><FormLabel className="font-black uppercase text-xs">Nom</FormLabel><Input {...field} className="h-12 rounded-xl" /></FormItem>} />
                       <FormField control={form.control} name="firstName" render={({field}) => <FormItem><FormLabel className="font-black uppercase text-xs">Prénom</FormLabel><Input {...field} className="h-12 rounded-xl" /></FormItem>} />
@@ -372,6 +374,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
 
+                  {/* 2. SPORTIF */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-2 border-primary/10 pb-3 uppercase text-xs italic"><Trophy className="size-5" /> 2. INFORMATIONS SPORTIVES</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -406,6 +409,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
 
+                  {/* 3. CONTACT */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-2 border-primary/10 pb-3 uppercase text-xs italic"><Smartphone className="size-5" /> 3. CONTACT & PARENTS</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -418,6 +422,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
 
+                  {/* 4. MEDICAL */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-2 border-primary/10 pb-3 uppercase text-xs italic"><Activity className="size-5" /> 4. DOSSIER MÉDICAL & DOCUMENTS</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -425,7 +430,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                         <FormItem><FormLabel className="font-black uppercase text-xs">Groupe Sanguin</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger></FormControl>
-                            <SelectContent>{bloodGroups.map(bg => <SelectItem key={n} value={bg}>{bg}</SelectItem>)}</SelectContent>
+                            <SelectContent>{bloodGroups.map(bg => <SelectItem key={bg} value={bg}>{bg}</SelectItem>)}</SelectContent>
                           </Select>
                         </FormItem>
                       )} />
@@ -442,6 +447,7 @@ export function PlayerDetailClient({ id }: { id: string }) {
                     </div>
                   </div>
 
+                  {/* 5. FINANCES */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-3 text-primary font-black border-b-2 border-primary/10 pb-3 uppercase text-xs italic"><Banknote className="size-5" /> 5. SUIVI FINANCIER</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
