@@ -1,0 +1,157 @@
+/**
+ * Firestore Security Rules
+ * 
+ * Core Philosophy:
+ * This ruleset enforces a strict hierarchical ownership model. All data is scoped under a 
+ * specific user's path (/users/{userId}), ensuring that users can only access and 
+ * manage their own sports clubs and related entities.
+ * 
+ * Data Structure:
+ * The data is organized into a nested hierarchy:
+ * - /users/{userId} (Root User)
+ *   - /clubs/{clubId} (Clubs managed by the user)
+ *     - /players/{playerId} (Players in the club)
+ *     - /coaches/{coachId} (Coaches in the club)
+ *     - /events/{eventId} (Matches or training)
+ *       - /matchResults/{resultId} (Outcomes of matches)
+ *     - /membershipFees/{feeId} (Financial obligations)
+ *       - /payments/{paymentId} (Payment records)
+ * 
+ * Key Security Decisions:
+ * 1. Ownership-Based Access: All read and write operations are gated by a check 
+ *    comparing the {userId} wildcard in the URL path to the authenticated user's UID.
+ * 2. Authorization Independence: Critical relationship IDs (userId, clubId) are 
+ *    denormalized into documents to allow for atomic validation without requiring 
+ *    expensive cross-document lookups (get() calls).
+ * 3. Prototyping Flexibility: While authorization is strictly enforced, the rules 
+ *    do not validate the specific data types or presence of non-relational fields 
+ *    (e.g., descriptions, names) to allow for rapid UI iteration.
+ * 4. Path-to-Data Consistency: During document creation, the rules enforce that 
+ *    internal ID fields (like userId or clubId) match the parameters provided in the 
+ *    Firestore path.
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- GLOBAL HELPER FUNCTIONS ---
+
+    /** Checks if the request is from a signed-in user. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** Checks if the authenticated user matches the provided userId. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /** Checks ownership and ensures the document exists for destructive operations. */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /** Validates that a field is not being changed during an update. */
+    function isImmutable(field) {
+      return !(field in request.resource.data) || request.resource.data[field] == resource.data[field];
+    }
+
+    // --- COLLECTION RULES ---
+
+    /**
+     * @description Rules for the root user document.
+     * @path /users/{userId}
+     * @allow (get, list, create, update, delete) if the user's UID matches the document ID.
+     * @deny Any access by a user whose UID does not match {userId}.
+     * @principle Self-creation and strict ownership.
+     */
+    match /users/{userId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update, delete: if isExistingOwner(userId);
+
+      /**
+       * @description Management of sports clubs.
+       * @path /users/{userId}/clubs/{clubId}
+       * @allow (create) if path userId matches auth UID and data.userId matches path.
+       * @deny (update) if attempting to change the userId ownership field.
+       * @principle Enforces consistency between the storage path and internal ownership metadata.
+       */
+      match /clubs/{clubId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId && request.resource.data.id == clubId;
+        allow update: if isExistingOwner(userId) && isImmutable('userId') && isImmutable('id');
+        allow delete: if isExistingOwner(userId);
+
+        /**
+         * @description Players associated with a specific club.
+         * @path /users/{userId}/clubs/{clubId}/players/{playerId}
+         * @allow (create) if internal clubId and userId match the path variables.
+         * @principle Relational integrity via denormalized path validation.
+         */
+        match /players/{playerId} {
+          allow get, list: if isOwner(userId);
+          allow create: if isOwner(userId) && request.resource.data.clubId == clubId && request.resource.data.userId == userId;
+          allow update: if isExistingOwner(userId) && isImmutable('clubId') && isImmutable('userId');
+          allow delete: if isExistingOwner(userId);
+        }
+
+        /**
+         * @description Coaches associated with a specific club.
+         * @path /users/{userId}/clubs/{clubId}/coaches/{coachId}
+         */
+        match /coaches/{coachId} {
+          allow get, list: if isOwner(userId);
+          allow create: if isOwner(userId) && request.resource.data.clubId == clubId && request.resource.data.userId == userId;
+          allow update: if isExistingOwner(userId) && isImmutable('clubId') && isImmutable('userId');
+          allow delete: if isExistingOwner(userId);
+        }
+
+        /**
+         * @description Scheduled club events (Matches/Training).
+         * @path /users/{userId}/clubs/{clubId}/events/{eventId}
+         */
+        match /events/{eventId} {
+          allow get, list: if isOwner(userId);
+          allow create: if isOwner(userId) && request.resource.data.clubId == clubId && request.resource.data.userId == userId;
+          allow update: if isExistingOwner(userId) && isImmutable('clubId') && isImmutable('userId');
+          allow delete: if isExistingOwner(userId);
+
+          /**
+           * @description Outcomes and scores for match events.
+           * @path /users/{userId}/clubs/{clubId}/events/{eventId}/matchResults/{matchResultId}
+           */
+          match /matchResults/{matchResultId} {
+            allow get, list: if isOwner(userId);
+            allow create: if isOwner(userId) && request.resource.data.eventId == eventId && request.resource.data.clubId == clubId;
+            allow update: if isExistingOwner(userId) && isImmutable('eventId') && isImmutable('clubId');
+            allow delete: if isExistingOwner(userId);
+          }
+        }
+
+        /**
+         * @description Membership fees and financial obligations.
+         * @path /users/{userId}/clubs/{clubId}/membershipFees/{membershipFeeId}
+         */
+        match /membershipFees/{membershipFeeId} {
+          allow get, list: if isOwner(userId);
+          allow create: if isOwner(userId) && request.resource.data.clubId == clubId && request.resource.data.userId == userId;
+          allow update: if isExistingOwner(userId) && isImmutable('clubId') && isImmutable('userId');
+          allow delete: if isExistingOwner(userId);
+
+          /**
+           * @description Payment transactions against a specific fee.
+           * @path /users/{userId}/clubs/{clubId}/membershipFees/{membershipFeeId}/payments/{paymentId}
+           */
+          match /payments/{paymentId} {
+            allow get, list: if isOwner(userId);
+            allow create: if isOwner(userId) && request.resource.data.membershipFeeId == membershipFeeId && request.resource.data.clubId == clubId;
+            allow update: if isExistingOwner(userId) && isImmutable('membershipFeeId') && isImmutable('clubId');
+            allow delete: if isExistingOwner(userId);
+          }
+        }
+      }
+    }
+  }
+}

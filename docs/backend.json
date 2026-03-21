@@ -1,0 +1,606 @@
+{
+  "entities": {
+    "Club": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Club",
+      "type": "object",
+      "description": "Represents a sports club managed by a user. This entity holds core information about the club, such as its name, logo, and contact details.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Club entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who manages this club. (Relationship: User 1:N Club)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The official name of the club."
+        },
+        "logoUrl": {
+          "type": "string",
+          "description": "URL to the club's logo image.",
+          "format": "uri"
+        },
+        "address": {
+          "type": "string",
+          "description": "The physical address of the club."
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "The primary contact email for the club.",
+          "format": "email"
+        },
+        "contactPhone": {
+          "type": "string",
+          "description": "The primary contact phone number for the club."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the club record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the club record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Player": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Player",
+      "type": "object",
+      "description": "Represents a player associated with a sports club, including their personal and contact information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Player entity."
+        },
+        "clubId": {
+          "type": "string",
+          "description": "Reference to the Club this player belongs to. (Relationship: Club 1:N Player)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the player."
+        },
+        "age": {
+          "type": "number",
+          "description": "The age of the player."
+        },
+        "position": {
+          "type": "string",
+          "description": "The primary playing position of the player (e.g., 'Forward', 'Midfielder', 'Defender', 'Goalkeeper')."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the player (e.g., 'Active', 'Injured', 'On Loan', 'Inactive')."
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "The contact email address of the player.",
+          "format": "email"
+        },
+        "contactPhone": {
+          "type": "string",
+          "description": "The contact phone number of the player."
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "URL to the player's photo.",
+          "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the player record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the player record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "clubId",
+        "name",
+        "position",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Coach": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Coach",
+      "type": "object",
+      "description": "Represents a coach associated with a sports club, including their specialization and contact information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Coach entity."
+        },
+        "clubId": {
+          "type": "string",
+          "description": "Reference to the Club this coach belongs to. (Relationship: Club 1:N Coach)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the coach."
+        },
+        "specialization": {
+          "type": "string",
+          "description": "The area of expertise or specialization of the coach (e.g., 'Offensive Tactics', 'Goalkeeper Coach', 'Fitness Trainer')."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the coach (e.g., 'Active', 'On Leave', 'Contract Ended')."
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "The contact email address of the coach.",
+          "format": "email"
+        },
+        "contactPhone": {
+          "type": "string",
+          "description": "The contact phone number of the coach."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the coach record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the coach record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "clubId",
+        "name",
+        "specialization",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Event": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Event",
+      "type": "object",
+      "description": "Represents a scheduled club activity, which can be either a match or a training session.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Event entity."
+        },
+        "clubId": {
+          "type": "string",
+          "description": "Reference to the Club this event belongs to. (Relationship: Club 1:N Event)"
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of event (e.g., 'Match', 'Training')."
+        },
+        "title": {
+          "type": "string",
+          "description": "A descriptive title for the event (e.g., 'Vs. Eagles', 'Morning Practice')."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional detailed description of the event or specific instructions."
+        },
+        "eventDateTime": {
+          "type": "string",
+          "description": "The date and time when the event is scheduled to occur.",
+          "format": "date-time"
+        },
+        "location": {
+          "type": "string",
+          "description": "The location where the event will take place."
+        },
+        "opponent": {
+          "type": "string",
+          "description": "The name of the opposing team, if the event is a match."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the event record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the event record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "clubId",
+        "type",
+        "title",
+        "eventDateTime",
+        "location",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "MatchResult": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MatchResult",
+      "type": "object",
+      "description": "Records the outcome and key details of a past match event, including scores and scorers.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MatchResult entity."
+        },
+        "clubId": {
+          "type": "string",
+          "description": "Reference to the Club this match result belongs to. (Relationship: Club 1:N MatchResult)"
+        },
+        "eventId": {
+          "type": "string",
+          "description": "Reference to the Event (which must be a 'Match' type) for which this result is recorded. (Relationship: Event 1:N MatchResult)"
+        },
+        "ourScore": {
+          "type": "number",
+          "description": "The final score achieved by the club's team in the match."
+        },
+        "opponentScore": {
+          "type": "number",
+          "description": "The final score achieved by the opposing team in the match."
+        },
+        "scorerIds": {
+          "type": "array",
+          "description": "An array of Player IDs who scored goals in this match. (Relationship: Player N:N MatchResult via scorerIds)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes or comments about the match performance or key moments."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the match result record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the match result record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "clubId",
+        "eventId",
+        "ourScore",
+        "opponentScore",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "MembershipFee": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MembershipFee",
+      "type": "object",
+      "description": "Represents a financial obligation or fee owed by a specific player or coach for a given purpose (e.g., annual membership, uniform cost).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MembershipFee entity."
+        },
+        "clubId": {
+          "type": "string",
+          "description": "Reference to the Club this membership fee belongs to. (Relationship: Club 1:N MembershipFee)"
+        },
+        "name": {
+          "type": "string",
+          "description": "A descriptive name for the fee (e.g., 'Annual Membership 2024', 'Uniform Fee')."
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional detailed description of what the fee covers."
+        },
+        "amountDue": {
+          "type": "number",
+          "description": "The total amount of money owed for this fee."
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "The date by which this fee is expected to be paid.",
+          "format": "date"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current payment status of the fee (e.g., 'Outstanding', 'Partially Paid', 'Paid', 'Overdue')."
+        },
+        "entityType": {
+          "type": "string",
+          "description": "Indicates whether the fee is owed by a 'Player' or a 'Coach'."
+        },
+        "entityId": {
+          "type": "string",
+          "description": "Reference to the Player or Coach entity who owes this fee. (Relationship: Player/Coach 1:N MembershipFee)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the membership fee record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the membership fee record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "clubId",
+        "name",
+        "amountDue",
+        "dueDate",
+        "status",
+        "entityType",
+        "entityId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Payment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Payment",
+      "type": "object",
+      "description": "Records an individual payment made by a player or coach towards a specific membership fee.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Payment entity."
+        },
+        "clubId": {
+          "type": "string",
+          "description": "Reference to the Club this payment belongs to. (Relationship: Club 1:N Payment)"
+        },
+        "membershipFeeId": {
+          "type": "string",
+          "description": "Reference to the MembershipFee this payment is applied to. (Relationship: MembershipFee 1:N Payment)"
+        },
+        "payerType": {
+          "type": "string",
+          "description": "Indicates whether the payment was made by a 'Player' or a 'Coach'."
+        },
+        "payerId": {
+          "type": "string",
+          "description": "Reference to the Player or Coach entity who made this payment. (Relationship: Player/Coach 1:N Payment)"
+        },
+        "amountPaid": {
+          "type": "number",
+          "description": "The amount of money paid in this transaction."
+        },
+        "paymentDate": {
+          "type": "string",
+          "description": "The date and time when the payment was recorded.",
+          "format": "date-time"
+        },
+        "method": {
+          "type": "string",
+          "description": "The method used for the payment (e.g., 'Cash', 'Bank Transfer', 'Credit Card')."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes or comments related to the payment."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the payment record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the payment record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "clubId",
+        "membershipFeeId",
+        "payerType",
+        "payerId",
+        "amountPaid",
+        "paymentDate",
+        "method",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}/clubs/{clubId}",
+        "definition": {
+          "entityName": "Club",
+          "schema": {
+            "$ref": "#/backend/entities/Club"
+          },
+          "description": "Represents a sports club managed by a specific user. This collection is user-owned. The `userId` field is present in the document and matches the `userId` in the path, ensuring Authorization Independence."
+        }
+      },
+      {
+        "path": "/users/{userId}/clubs/{clubId}/players/{playerId}",
+        "definition": {
+          "entityName": "Player",
+          "schema": {
+            "$ref": "#/backend/entities/Player"
+          },
+          "description": "Players associated with a specific club. Each Player document includes the denormalized `userId` (owner of the club) and `clubId` for Authorization Independence and simplified security rules.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the club."
+            },
+            {
+              "name": "clubId",
+              "description": "The unique identifier of the club this player belongs to."
+            },
+            {
+              "name": "playerId",
+              "description": "The unique identifier of the player."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/clubs/{clubId}/coaches/{coachId}",
+        "definition": {
+          "entityName": "Coach",
+          "schema": {
+            "$ref": "#/backend/entities/Coach"
+          },
+          "description": "Coaches associated with a specific club. Each Coach document includes the denormalized `userId` (owner of the club) and `clubId` for Authorization Independence and simplified security rules.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the club."
+            },
+            {
+              "name": "clubId",
+              "description": "The unique identifier of the club this coach belongs to."
+            },
+            {
+              "name": "coachId",
+              "description": "The unique identifier of the coach."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/clubs/{clubId}/events/{eventId}",
+        "definition": {
+          "entityName": "Event",
+          "schema": {
+            "$ref": "#/backend/entities/Event"
+          },
+          "description": "Scheduled events (matches or training) for a specific club. Each Event document includes the denormalized `userId` (owner of the club) and `clubId` for Authorization Independence and simplified security rules.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the club."
+            },
+            {
+              "name": "clubId",
+              "description": "The unique identifier of the club this event belongs to."
+            },
+            {
+              "name": "eventId",
+              "description": "The unique identifier of the event."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/clubs/{clubId}/events/{eventId}/matchResults/{matchResultId}",
+        "definition": {
+          "entityName": "MatchResult",
+          "schema": {
+            "$ref": "#/backend/entities/MatchResult"
+          },
+          "description": "Results for match events of a specific club. Each MatchResult document includes the denormalized `userId` (owner of the club), `clubId`, and `eventId` for Authorization Independence and simplified security rules.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the club."
+            },
+            {
+              "name": "clubId",
+              "description": "The unique identifier of the club this match result belongs to."
+            },
+            {
+              "name": "eventId",
+              "description": "The unique identifier of the event for which this result is recorded."
+            },
+            {
+              "name": "matchResultId",
+              "description": "The unique identifier of the match result."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/clubs/{clubId}/membershipFees/{membershipFeeId}",
+        "definition": {
+          "entityName": "MembershipFee",
+          "schema": {
+            "$ref": "#/backend/entities/MembershipFee"
+          },
+          "description": "Membership fees and other financial obligations related to a club's players or coaches. Each MembershipFee document includes the denormalized `userId` (owner of the club) and `clubId` for Authorization Independence and simplified security rules.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the club."
+            },
+            {
+              "name": "clubId",
+              "description": "The unique identifier of the club this membership fee belongs to."
+            },
+            {
+              "name": "membershipFeeId",
+              "description": "The unique identifier of the membership fee."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/clubs/{clubId}/membershipFees/{membershipFeeId}/payments/{paymentId}",
+        "definition": {
+          "entityName": "Payment",
+          "schema": {
+            "$ref": "#/backend/entities/Payment"
+          },
+          "description": "Individual payments made towards a specific membership fee. Each Payment document includes the denormalized `userId` (owner of the club), `clubId`, and `membershipFeeId` for Authorization Independence and simplified security rules.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the club."
+            },
+            {
+              "name": "clubId",
+              "description": "The unique identifier of the club this payment belongs to."
+            },
+            {
+              "name": "membershipFeeId",
+              "description": "The unique identifier of the membership fee this payment is applied to."
+            },
+            {
+              "name": "paymentId",
+              "description": "The unique identifier of the payment."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to be secure, scalable, and highly debuggable by adhering strictly to the core design principles and mandates. The primary strategy employed is **Authorization Independence via Denormalization** and **Hierarchical Path-Based Ownership**.\n\nAll application data related to a user's clubs is nested directly under their unique user ID in the path: `/users/{userId}/clubs/{clubId}/...`. This leverages the provided security rule `match /users/{userId}/{document=**} { allow read, write: if request.auth != null && request.auth.uid == userId; }` by ensuring that the `userId` from the path directly corresponds to the authenticated user's ID (`request.auth.uid`).\n\n**Authorization Independence** is achieved by denormalizing the `userId` of the club's owner into every sub-document (Player, Coach, Event, MatchResult, MembershipFee, Payment). This means that a document like `/users/{userId}/clubs/{clubId}/players/{playerId}` will contain a `userId` field with the value `userId` (from the path), and a `clubId` field with the value `clubId` (from the path). This crucial design decision eliminates the need for expensive and complex `get()` calls in security rules to check parent document ownership. Rules can evaluate access directly on the `resource.data.userId` field or simply rely on the `userId` wildcard in the path, making them atomic, efficient, and easy to debug.\n\n**QAPs (Queries are not Filters)** are inherently supported by this hierarchical structure and the single-user ownership model. When a user queries any collection under their specific `/users/{userId}/` path (e.g., `/users/abc/clubs` or `/users/abc/clubs/123/players`), the Firestore security rules automatically filter out any documents that do not belong to `request.auth.uid`. Since all documents within a user's branch belong to that user, any `list` operation will only return data that the authenticated user is authorized to see. This ensures that security is enforced by the structure and rules, not by client-side filtering that could expose unauthorized data.\n\n**Structural Segregation** is maintained as all data under a `userId` path shares the same security posture: it's private to that `userId`. There is no mixing of public and private data within the same collection. **Access Modeling** is consistently applied using path-based ownership for private, user-owned, and nested data.\n\nThis design offers a clear, predictable, and robust security model that directly aligns with Firebase's best practices for Firestore security rules."
+  }
+}
