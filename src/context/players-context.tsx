@@ -2,13 +2,13 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, writeBatch } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
 import { useAuth } from "./auth-context";
 import type { Player } from "@/lib/data";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
-type NewPlayer = Omit<Player, 'id' | 'uid'>;
+type NewPlayer = Omit<Player, 'id' | 'uid' | 'professionalId'>;
 
 interface PlayersContextType {
   players: Player[];
@@ -28,8 +28,6 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchPlayers = useCallback(async () => {
-    // On détermine l'ID de l'admin du club à interroger
-    // Pour un admin, c'est lui-même. Pour un staff, c'est son clubId.
     const clubId = profile?.role === 'admin' ? user?.uid : profile?.clubId;
     
     if (!clubId) {
@@ -41,7 +39,6 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     const collectionRef = collection(db, "users", clubId, "players");
     
-    // Si c'est un parent, on filtre par parentId
     let q = query(collectionRef);
     if (profile?.role === 'parent') {
       q = query(collectionRef, where("parentId", "==", user?.uid));
@@ -71,8 +68,19 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
     const clubId = profile?.role === 'admin' ? user.uid : profile?.clubId;
     if (!clubId) return;
 
+    // --- Génération de l'ID Professionnel "Maestro Pro" ---
+    const currentYearSuffix = new Date().getFullYear().toString().slice(-2);
+    const category = data.category;
+    const prefix = "MAE"; // Préfixe Maestro
+    
+    // On compte le nombre de joueurs dans cette catégorie pour générer le numéro séquentiel
+    const playersInCat = players.filter(p => p.category === category).length;
+    const sequence = (playersInCat + 1).toString().padStart(3, '0');
+    
+    const professionalId = `${prefix}-${currentYearSuffix}-${category}-${sequence}`;
+
     const collectionRef = collection(db, "users", clubId, "players");
-    const newDocData = { ...data, uid: clubId };
+    const newDocData = { ...data, professionalId, uid: clubId };
     
     addDoc(collectionRef, newDocData)
       .then(() => fetchPlayers())

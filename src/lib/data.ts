@@ -7,6 +7,7 @@ export type PlayerDocument = {
 export type Player = {
   id: string;
   uid: string; // ID de l'Admin/Club propriétaire
+  professionalId: string; // Format: MAE-25-U15-001
   parentId?: string; // ID Firebase Auth du parent
   name: string; // Nom de famille
   firstName?: string; // Prénom
@@ -14,6 +15,10 @@ export type Player = {
   birthPlace?: string; // Lieu de naissance
   gender: 'Masculin' | 'Féminin';
   nationality?: string;
+  
+  // Identifiants Officiels Marocains
+  codeMassar?: string; // Identifiant scolaire
+  licenceNumber?: string; // Numéro de licence FRMF
   
   // Sportif
   category: 'Sénior' | 'U23' | 'U20' | 'U19' | 'U18' | 'U17' | 'U16' | 'U15' | 'U13' | 'U11' | 'U9' | 'U7';
